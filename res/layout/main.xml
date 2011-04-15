@@ -1,0 +1,26 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent">
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent" android:id="@+id/layout"
+		android:orientation="vertical" android:layout_height="fill_parent"
+		android:layout_above="@+id/player">
+		<TextView android:id="@+id/header"
+				  android:text="Podax Podcaster"
+				  android:layout_width="fill_parent"
+				  android:layout_height="wrap_content"
+				  android:textSize="20dp"
+				  android:gravity="center_horizontal" />
+		<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+				  android:id="@+id/grid"
+				  android:layout_width="fill_parent" android:layout_height="fill_parent"
+				  android:numColumns="2"
+				  android:padding="20dp"
+				  android:verticalSpacing="20dp" android:horizontalSpacing="20dp">
+		</GridView>
+	</LinearLayout>
+	<include android:id="@+id/player" layout="@layout/player"
+		 android:layout_width="fill_parent"
+		 android:layout_height="wrap_content"
+		 android:layout_alignParentBottom="true" />
+</RelativeLayout>

@@ -1,0 +1,31 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/layout" android:orientation="horizontal"
+	android:layout_width="294dp" android:layout_height="72dp"
+	android:background="@drawable/widget_frame"
+	android:paddingLeft="20dp" android:paddingRight="15dp" 
+	android:paddingTop="18dp" android:paddingBottom="18dp">
+	
+	<ImageButton android:id="@+id/play_btn"
+		android:layout_width="wrap_content" android:layout_height="fill_parent"
+		android:layout_centerVertical="true" android:src="@drawable/android:ic_media_play"
+		android:background="@android:color/transparent" />
+	
+	<LinearLayout android:id="@+id/innerLayout" android:layout_toRightOf="@+id/play_btn"
+		android:layout_width="wrap_content" android:layout_height="fill_parent"
+		android:orientation="vertical">
+		
+		<TextView android:id="@+id/title" android:text="title"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textColor="#000000" />
+		<TextView android:id="@+id/position" android:text="position"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:textColor="#000000" />
+		
+	</LinearLayout>
+	
+	<ImageButton android:id="@+id/playercontrol_btn" android:layout_alignParentRight="true"
+		android:layout_width="wrap_content" android:layout_height="fill_parent"
+		android:layout_centerVertical="true" android:src="@drawable/ic_btn_round_more_normal"
+		android:background="@android:color/transparent" />
+	
+</RelativeLayout>

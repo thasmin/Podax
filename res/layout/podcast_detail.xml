@@ -1,0 +1,48 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/layout" android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<ScrollView android:id="@+id/scrollview"
+		android:layout_width="fill_parent" android:layout_height="fill_parent"
+		android:layout_above="@+id/player">
+		
+		<LinearLayout android:id="@+id/mainlayout"
+			android:layout_width="fill_parent" android:layout_height="fill_parent"
+			android:orientation="vertical">
+
+			<TextView android:id="@+id/title" android:text="podcast_title"
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				android:textSize="20dp" android:gravity="center_horizontal" />
+
+			<TextView android:id="@+id/subscription_title" android:text="subscription_title"
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				android:textSize="16dp" android:gravity="center_horizontal" />
+
+			<LinearLayout android:id="@+id/play_layout"
+				android:orientation="horizontal" android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+				<Button android:id="@+id/play_btn" android:layout_width="wrap_content"
+					android:text="@string/play" android:layout_height="wrap_content" />
+			</LinearLayout>
+
+			<LinearLayout android:id="@+id/queue_layout"
+				android:orientation="horizontal" android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+				<Button android:id="@+id/queue_btn" android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text="@string/add_to_queue" />
+				<TextView android:id="@+id/queue_position" android:layout_width="wrap_content"
+					android:layout_height="fill_parent" android:text="asdf"
+					android:gravity="center_vertical" />
+			</LinearLayout>
+
+			<WebView android:id="@+id/description" android:layout_width="fill_parent"
+				android:layout_height="fill_parent" />
+
+		</LinearLayout>
+	</ScrollView>
+
+	<include android:id="@+id/player" layout="@layout/player"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true" />
+
+</RelativeLayout>

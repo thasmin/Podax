@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="stop_service">Stop Service</string>
+	<string name="start_service">Start Service</string>
+	<string name="hello">Hello World, PodaxActivity!</string>
+	<string name="app_name">Podax</string>
+	<string name="podcastlistactivity_name">PodcastListActivity</string>
+	<string name="pause">Pause</string>
+	<string name="play">Play</string>
+	<string name="add_to_queue">Add To Queue</string>
+	<string name="remove_from_queue">Remove From Queue</string>
+	<string-array name="main_list">
+		<item>Queue</item>
+		<item>Subscriptions</item>
+	</string-array>
+	<string-array name="queue_groups">
+		<item>Queue</item>
+		<!-- <item>Recent Podcasts</item> -->
+	</string-array>
+</resources>

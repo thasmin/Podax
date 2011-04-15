@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.axelby.podax" android:versionCode="1" android:versionName="1.0">
+	<application android:icon="@drawable/icon" android:name=".PodaxApp"
+		android:debuggable="true" android:label="@string/app_name">
+
+		<activity android:label="@string/app_name" android:name=".MainActivity">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<activity android:name=".SubscriptionListActivity" />
+		<activity android:label="@string/podcastlistactivity_name" android:name=".PodcastListActivity" />
+		<activity android:name=".QueueActivity"></activity>
+		<activity android:name=".GoogleAccountChooserActivity"></activity>
+		<activity android:name=".PodcastDetailActivity"></activity>
+		<activity android:name=".PlayerControlActivity"></activity>
+
+		<service android:name=".SubscriptionUpdateService"></service>
+		<service android:name=".PodcastDownloadService"></service>
+		<service android:name=".PlayerService">
+			<intent-filter>
+				<action android:name="com.axelby.podax.IPlayerService"></action>
+			</intent-filter>
+		</service>
+
+		<receiver android:name=".WidgetProvider">
+			<intent-filter>
+				<action android:name="android.appwidget.action.APPWIDGET_UPDATE"></action>
+			</intent-filter>
+			<meta-data android:resource="@xml/podax_widget_info"
+				android:name="android.appwidget.provider"></meta-data>
+		</receiver>
+	</application>
+
+	<uses-sdk android:minSdkVersion="7" />
+
+	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+
+	<uses-permission android:name="android.permission.GET_ACCOUNTS"></uses-permission>
+	<uses-permission android:name="android.permission.USE_CREDENTIALS"></uses-permission>
+	<uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+</manifest> 

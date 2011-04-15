@@ -1,0 +1,84 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/layout" android:layout_width="fill_parent"
+	android:layout_height="fill_parent" android:orientation="vertical">
+
+	<TextView android:text="Title" android:id="@+id/title"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:textSize="30dp" android:gravity="center_horizontal" />
+
+	<TextView android:text="Subscription Title" android:id="@+id/subscription_title"
+		android:layout_width="fill_parent" android:layout_height="wrap_content" 
+		android:textSize="22dp" android:gravity="center_horizontal" />
+
+	<TextView android:text="0:00 of 0:00" android:id="@+id/position"
+		android:layout_width="fill_parent" android:layout_height="wrap_content" 
+		android:textSize="22dp" android:gravity="center_horizontal" />
+
+	<ImageButton android:id="@+id/play_btn" android:src="@drawable/android:ic_media_play"
+		android:layout_width="100dp" android:layout_height="100dp"
+		android:layout_gravity="center_horizontal"
+		android:layout_marginTop="20dp" android:layout_marginBottom="20dp" />
+
+	<RelativeLayout android:id="@+id/layout0"
+		android:layout_width="fill_parent" android:layout_height="wrap_content">
+		<SeekBar android:id="@+id/seekbar"
+			android:layout_width="fill_parent" android:layout_height="wrap_content"
+			android:layout_marginLeft="20dp" android:layout_marginRight="20dp" />  
+	</RelativeLayout>
+
+	<RelativeLayout android:id="@+id/layout1"
+		android:layout_width="fill_parent" android:layout_height="wrap_content">
+		<Button android:id="@+id/restart" android:text="Restart" 
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_alignParentLeft="true" />
+  		<Button android:id="@+id/skiptoend" android:text="Skip To End" 
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_alignParentRight="true" />
+	</RelativeLayout>
+		
+	<RelativeLayout android:id="@+id/layout2" 
+		android:layout_height="wrap_content" android:layout_width="fill_parent">
+		<TextView android:id="@+id/secs30_txt" android:text="30 seconds"
+			android:layout_height="wrap_content" android:layout_width="fill_parent"
+			android:layout_alignTop="@+id/secs30_rewind_btn" android:layout_alignBottom="@+id/secs30_rewind_btn"
+			android:gravity="center" />
+		<Button android:id="@+id/secs30_rewind_btn" android:text="Rewind"
+			android:layout_height="wrap_content" android:layout_width="wrap_content"
+			android:layout_alignParentLeft="true" />
+		<Button android:id="@+id/secs30_skip_btn" android:text="Skip"
+			android:layout_height="wrap_content" android:layout_width="wrap_content" 
+			android:layout_alignTop="@+id/secs30_txt" android:layout_alignBottom="@+id/secs30_txt" 
+			android:layout_alignParentRight="true" />
+	</RelativeLayout>
+
+	<RelativeLayout android:id="@+id/layout3" 
+		android:layout_height="wrap_content" android:layout_width="fill_parent">
+		<TextView android:id="@+id/secs15_txt" android:text="15 seconds"
+			android:layout_height="wrap_content" android:layout_width="fill_parent"
+			android:layout_alignTop="@+id/secs15_rewind_btn" android:layout_alignBottom="@+id/secs15_rewind_btn"
+			android:gravity="center" />
+		<Button android:id="@+id/secs15_rewind_btn" android:text="Rewind"
+			android:layout_height="wrap_content" android:layout_width="wrap_content"
+			android:layout_alignParentLeft="true" />
+		<Button android:id="@+id/secs15_skip_btn" android:text="Skip"
+			android:layout_height="wrap_content" android:layout_width="wrap_content" 
+			android:layout_alignTop="@+id/secs15_txt" android:layout_alignBottom="@+id/secs15_txt" 
+			android:layout_alignParentRight="true" />
+	</RelativeLayout>
+	
+
+	<RelativeLayout android:id="@+id/layout4" 
+		android:layout_height="wrap_content" android:layout_width="fill_parent">
+		<TextView android:id="@+id/secs5_txt" android:text="5 seconds"
+			android:layout_height="wrap_content" android:layout_width="fill_parent"
+			android:layout_alignTop="@+id/secs5_rewind_btn" android:layout_alignBottom="@+id/secs5_rewind_btn"
+			android:gravity="center" />
+		<Button android:id="@+id/secs5_rewind_btn" android:text="Rewind"
+			android:layout_height="wrap_content" android:layout_width="wrap_content"
+			android:layout_alignParentLeft="true" />
+		<Button android:id="@+id/secs5_skip_btn" android:text="Skip"
+			android:layout_height="wrap_content" android:layout_width="wrap_content" 
+			android:layout_alignTop="@+id/secs5_txt" android:layout_alignBottom="@+id/secs5_txt" 
+			android:layout_alignParentRight="true" />
+	</RelativeLayout>
+</LinearLayout>

@@ -1,0 +1,35 @@
+<SlidingDrawer xmlns:android="http://schemas.android.com/apk/res/android"
+			   android:id="@+id/playerDrawer"
+			   android:layout_width="fill_parent"
+			   android:layout_height="wrap_content"
+			   android:topOffset="380dp"
+			   android:handle="@+id/handle"
+			   android:content="@+id/content">
+	<ImageView android:id="@+id/handle" 
+			   android:layout_height="wrap_content"
+			   android:layout_width="wrap_content"
+			   android:src="@drawable/tray_handle_normal" />
+	<LinearLayout android:id="@+id/content"
+				  android:layout_width="fill_parent"
+				  android:layout_height="wrap_content">
+		<Button android:id="@+id/pausebtn"
+				android:text="@string/pause" 
+				android:layout_height="wrap_content"
+				android:layout_width="wrap_content"
+				android:layout_alignParentLeft="true" />
+		<LinearLayout android:id="@+id/podcastdetails"
+					  android:orientation="vertical"
+					  android:layout_width="fill_parent"
+					  android:layout_height="wrap_content"
+					  android:layout_toRightOf="@id/pausebtn">
+			<TextView android:id="@+id/podcasttitle"
+					  android:text="podcast"
+					  android:layout_width="fill_parent"
+					  android:layout_height="wrap_content" />
+			<TextView android:id="@+id/position"
+					  android:text="position / duration"
+					  android:layout_width="fill_parent"
+					  android:layout_height="wrap_content" />
+		</LinearLayout>
+	</LinearLayout>
+</SlidingDrawer>
