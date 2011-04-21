@@ -17,4 +17,9 @@
 		<item>Queue</item>
 		<!-- <item>Recent Podcasts</item> -->
 	</string-array>
+	<string-array name="search_groups">
+		<item>Subscriptions</item>
+		<item>Podcasts</item>
+	</string-array>
+	<string name="search_hint">Search podcasts and subscriptions</string>
 </resources>

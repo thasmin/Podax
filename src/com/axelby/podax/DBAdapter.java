@@ -177,9 +177,7 @@ public class DBAdapter {
 			c.close();
 			return null;
 		}
-		Podcast p = collectPodcasts(c).get(0);
-		c.close();
-		return p;
+		return collectPodcasts(c).get(0);
 	}
 
 	public Podcast loadPodcast(int id) {
@@ -192,9 +190,7 @@ public class DBAdapter {
 			c.close();
 			return null;
 		}
-		Podcast p = collectPodcasts(c).get(0);
-		c.close();
-		return p;
+		return collectPodcasts(c).get(0);
 	}
 
 	private Vector<Podcast> collectPodcasts(Cursor c) {
@@ -328,9 +324,21 @@ public class DBAdapter {
 			return null;
 		}
 		
-		Podcast p = collectPodcasts(c).get(0);
-		c.close();
-		return p;
+		return collectPodcasts(c).get(0);
+	}
+	
+	public Vector<Podcast> searchPodcasts(String query) {
+		String lower = "%" + query.toLowerCase() + "%";
+		Cursor c = _db.rawQuery("SELECT * from podcasts WHERE LOWER(title) LIKE ? OR LOWER(description) LIKE ? ORDER BY pubDate DESC", 
+				new String[] { lower, lower });
+		return collectPodcasts(c);
 	}
 
+	
+	public Vector<Subscription> searchSubscriptions(String query) {
+		String lower = "%" + query.toLowerCase() + "%";
+		Cursor c = _db.rawQuery("SELECT * from subscriptions WHERE LOWER(title) LIKE ? ORDER BY title", 
+				new String[] { lower });
+		return collectSubscriptions(c);
+	}
 }
