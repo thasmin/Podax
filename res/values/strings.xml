@@ -9,6 +9,9 @@
 	<string name="play">Play</string>
 	<string name="add_to_queue">Add To Queue</string>
 	<string name="remove_from_queue">Remove From Queue</string>
+	<string name="queue">Queue</string>
+	<string name="subscriptions">Subscriptions</string>
+	<string name="reader_import">Import from Google Reader</string>
 	<string-array name="main_list">
 		<item>Queue</item>
 		<item>Subscriptions</item>
@@ -23,4 +26,5 @@
 	</string-array>
 	<string name="search_hint">Search podcasts and subscriptions</string>
 	<string name="refresh_subscription">Refresh Subscription</string>
+	<string name="app_long_name">Podax Podcaster</string>
 </resources>
