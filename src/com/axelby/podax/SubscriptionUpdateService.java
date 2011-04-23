@@ -28,6 +28,11 @@ import android.util.Xml;
 import com.axelby.podax.PodcastDownloadService.PodcastDownloadBinder;
 
 public class SubscriptionUpdateService extends Service {
+	private static SubscriptionUpdateService _instance;
+	public static SubscriptionUpdateService getInstance() {
+		return _instance;
+	}
+	
 	private Timer _timer = new Timer();
 	private Vector<Subscription> _toUpdate = new Vector<Subscription>();
 	private UpdateRSSTimerTask _rssTask = new UpdateRSSTimerTask();
@@ -55,6 +60,7 @@ public class SubscriptionUpdateService extends Service {
 
 	@Override
 	public IBinder onBind(Intent arg0) {
+		_instance = this;
 		return _binder;
 	}
 

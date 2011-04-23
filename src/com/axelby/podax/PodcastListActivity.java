@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -26,6 +28,24 @@ public class PodcastListActivity extends ListActivity {
         _subscriptionId = bundle.getInt("subscriptionId");
         
         getListView().setAdapter(new PodcastAdapter(this));
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	getMenuInflater().inflate(R.menu.podcast_list, menu);
+    	return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+        case R.id.refresh_subscription:
+        	Subscription subscription = DBAdapter.getInstance(this).loadSubscription(_subscriptionId);
+            SubscriptionUpdateService.getInstance().updateSubscription(subscription);
+        default:
+            return super.onOptionsItemSelected(item);
+        }
     }
     
     @Override
