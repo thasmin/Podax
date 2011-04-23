@@ -4,6 +4,7 @@
 	<string name="start_service">Start Service</string>
 	<string name="hello">Hello World, PodaxActivity!</string>
 	<string name="app_name">Podax</string>
+	<string name="app_long_name">Podax Podcaster</string>
 	<string name="podcastlistactivity_name">PodcastListActivity</string>
 	<string name="pause">Pause</string>
 	<string name="play">Play</string>
