@@ -60,12 +60,12 @@ public class SubscriptionUpdateService extends Service {
 
 	@Override
 	public IBinder onBind(Intent arg0) {
-		_instance = this;
 		return _binder;
 	}
 
 	@Override
 	public void onCreate() {
+		_instance = this;
 	}
 
 	@Override
@@ -114,11 +114,16 @@ public class SubscriptionUpdateService extends Service {
 				
 			Log.d("Podax", "UpdateRSSTimerTask");
 
-			try {
+			// remove the subscriptions I will update from toUpdate
+        	Vector<Subscription> update = new Vector<Subscription>();
+        	update.addAll(_toUpdate);
+        	_toUpdate.clear();
+
+        	try {
 				final DBAdapter dbAdapter = DBAdapter.getInstance(SubscriptionUpdateService.this);
-		        while (_toUpdate.size() > 0) {
-		        	final Subscription subscription = _toUpdate.get(0);
-		        	_toUpdate.remove(0);
+		        while (update.size() > 0) {
+		        	final Subscription subscription = update.get(0);
+		        	update.remove(0);
 	
 		        	updateNotification(subscription, "Setting up...");
 	
@@ -138,9 +143,10 @@ public class SubscriptionUpdateService extends Service {
 	
 		        	item.setEndElementListener(new EndElementListener() {
 		        		public void end() {
-		    				updateNotification(subscription, podcast.getTitle());
-		        			//Log.d("Podax", "Saving podcast " + podcast.getTitle());
-		        			podcasts.add((RssPodcast)podcast.clone());
+		        			if (podcast.getMediaUrl() != null && podcast.getMediaUrl().length() > 0) {
+			    				updateNotification(subscription, podcast.getTitle());
+			        			podcasts.add((RssPodcast)podcast.clone());
+		        			}
 		        			podcast.setTitle(null);
 		        			podcast.setLink(null);
 		        			podcast.setDescription(null);
@@ -214,7 +220,7 @@ public class SubscriptionUpdateService extends Service {
 			Notification notification = new Notification(icon, tickerText, when);
 			
 			Context context = getApplicationContext();
-			CharSequence contentTitle = "Podax: Error updating " + subscription.getDisplayTitle();
+			CharSequence contentTitle = "Error updating " + subscription.getDisplayTitle();
 			CharSequence contentText = reason;
 			Intent notificationIntent = new Intent(SubscriptionUpdateService.this, SubscriptionListActivity.class);
 			PendingIntent contentIntent = PendingIntent.getActivity(SubscriptionUpdateService.this, 0, notificationIntent, 0);
@@ -233,7 +239,7 @@ public class SubscriptionUpdateService extends Service {
 			Notification notification = new Notification(icon, tickerText, when);
 			
 			Context context = getApplicationContext();
-			CharSequence contentTitle = "Podax: Updating " + subscription.getDisplayTitle();
+			CharSequence contentTitle = "Updating " + subscription.getDisplayTitle();
 			CharSequence contentText = status;
 			Intent notificationIntent = new Intent(SubscriptionUpdateService.this, UpdateRSSTimerTask.class);
 			PendingIntent contentIntent = PendingIntent.getActivity(SubscriptionUpdateService.this, 0, notificationIntent, 0);

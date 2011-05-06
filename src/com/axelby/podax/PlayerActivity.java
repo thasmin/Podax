@@ -1,32 +1,17 @@
 package com.axelby.podax;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.axelby.podax.PlayerService.PlayerBinder;
-
 public class PlayerActivity extends Activity {
 
-	public class PlayerConnection implements ServiceConnection {
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			_player = ((PlayerBinder)service).getService();
-			updateUI();
-		}
-		public void onServiceDisconnected(ComponentName name) {
-		}		
-	}
-	
 	protected PlayerService _player;
-	protected PlayerConnection _connection = new PlayerConnection();
 	
 	protected ImageButton _pausebtn;
 	protected ImageButton _showplayerbtn;
@@ -51,9 +36,7 @@ public class PlayerActivity extends Activity {
 		_pausebtn = (ImageButton) findViewById(R.id.pausebtn);
 		_showplayerbtn = (ImageButton) findViewById(R.id.showplayer);
 		
-		Intent intent = new Intent();
-		intent.setClass(this, PlayerService.class);
-		bindService(intent, _connection, 0);
+		_player = PlayerService.getInstance();
 		
 		_pausebtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {

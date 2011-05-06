@@ -20,6 +20,10 @@ import android.view.KeyEvent;
 import android.widget.RemoteViews;
 
 public class PlayerService extends Service /* implements IPlayerService */ {
+	private static PlayerService _instance;
+	public static PlayerService getInstance() {
+		return _instance;
+	}
 
 	public class PlayerBinder extends Binder {
 		PlayerService getService() {
@@ -54,6 +58,12 @@ public class PlayerService extends Service /* implements IPlayerService */ {
 	public IBinder onBind(Intent intent) {
 		handleStart(intent);
 		return _binder;
+	}
+
+	@Override
+	public void onCreate() {
+		_instance = this;
+		super.onCreate();
 	}
 
 	@Override

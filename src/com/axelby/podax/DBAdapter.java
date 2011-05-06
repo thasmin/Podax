@@ -2,7 +2,6 @@ package com.axelby.podax;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Vector;
 
 import android.content.ContentValues;
@@ -23,8 +22,6 @@ public class DBAdapter {
 	private DBHelper _helper;
 	private SQLiteDatabase _db;
 	
-	private static HashMap<Integer, Subscription> _subscriptionCache = new HashMap<Integer, Subscription>();
-
 	private DBAdapter(Context context) {
 		this._context = context;
 		this._helper = new DBHelper(_context);
@@ -47,7 +44,6 @@ public class DBAdapter {
 					c.getInt(0), c.getString(1), c.getString(2), 
 					new Date(c.getInt(3) * 1000)
 			);
-			_subscriptionCache.put(sub.getId(), sub);
 			subs.add(sub);
 			c.moveToNext();
 		}
@@ -77,9 +73,6 @@ public class DBAdapter {
 	}
 
 	public Subscription loadSubscription(int id) {
-		if (_subscriptionCache.containsKey(id))
-			return _subscriptionCache.get(id);
-
 		Cursor c = this._db.query("subscriptions", SUBSCRIPTION_COLUMNS, 
 				"id = ?", new String[] { Integer.toString(id) }, null, null, null);
 		if (c.isAfterLast())
@@ -98,11 +91,15 @@ public class DBAdapter {
 		Vector<Subscription> s = collectSubscriptions(c);
 		c.close();
 		return s;
-	}	
+	}
 
 	public void deleteSubscription(Subscription subscription) {
 		this._db.delete("subscriptions", "id = ?", 
 				new String[] { Integer.toString(subscription.getId()) });
+	}
+
+	public void deleteAllSubscriptions() {
+		this._db.delete("subscriptions", "", new String[] { });
 	}
 	
 	public Subscription addSubscription(String url) {
@@ -112,19 +109,17 @@ public class DBAdapter {
 		return loadSubscription(url);
 	}
 	
-	public void addSubscription(String url, String title) {
+	public Subscription addSubscription(String url, String title) {
 		ContentValues values = new ContentValues();
 		values.put("url", url);
 		values.put("title", title);
-		this._db.insert("subscriptions", null, values);
+		long newId = this._db.insert("subscriptions", null, values);
+		return loadSubscription((int)newId);
 	}
 
 	public void updateSubscriptionTitle(String url, String title) {
 		this._db.execSQL("UPDATE subscriptions SET title = ?, lastupdate = (DATETIME('now')) WHERE url = ?",
 				new Object[] { title, url });
-		for (Subscription sub : _subscriptionCache.values())
-			if (sub.getUrl().equals(url))
-				_subscriptionCache.remove(sub.getId());
 	}
 	
 	public void updatePodcastsFromFeed(Vector<RssPodcast> podcasts) {

@@ -6,14 +6,11 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.text.InputType;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -28,8 +25,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.axelby.podax.SubscriptionUpdateService.SubscriptionUpdateBinder;
-
 public class SubscriptionListActivity extends ListActivity {
 	private SubscriptionUpdateService _updater = null;
 	
@@ -40,14 +35,6 @@ public class SubscriptionListActivity extends ListActivity {
 			Log.d("Podax", "received a subscription update broadcast");
 			setListAdapter(new SubscriptionAdapter(SubscriptionListActivity.this));
 		}
-	}
-
-	public class SubscriptionUpdateConnection implements ServiceConnection {
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			_updater = ((SubscriptionUpdateBinder)service).getService();
-		}
-		public void onServiceDisconnected(ComponentName name) {
-		}		
 	}
 
 	@Override
@@ -63,8 +50,7 @@ public class SubscriptionListActivity extends ListActivity {
 		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
 		notificationManager.cancel(NotificationIds.SUBSCRIPTION_UPDATE_ERROR);
 		
-		Intent service = new Intent(this, SubscriptionUpdateService.class);
-		bindService(service, new SubscriptionUpdateConnection(), 0);
+		_updater = SubscriptionUpdateService.getInstance();
     }
 	
 	@Override
@@ -90,9 +76,9 @@ public class SubscriptionListActivity extends ListActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-        case R.id.start_service:
-            return true;
-        case R.id.stop_service:
+        case R.id.clear_subscriptions:
+            DBAdapter.getInstance(this).deleteAllSubscriptions();
+            setListAdapter(new SubscriptionAdapter(this));
             return true;
         default:
             return super.onOptionsItemSelected(item);

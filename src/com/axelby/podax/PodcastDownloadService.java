@@ -151,7 +151,7 @@ public class PodcastDownloadService extends Service {
 		Notification notification = new Notification(icon, tickerText, when);
 		
 		Context context = getApplicationContext();
-		CharSequence contentTitle = "Podax: Downloading Podcast";
+		CharSequence contentTitle = "Downloading Podcast";
 		CharSequence contentText = podcast.getTitle();
 		if (podcast.getFileSize() != null)
 			contentText = contentText + " " + Integer.toString((int)(100.0f * downloaded / podcast.getFileSize())) + "%";

@@ -18,7 +18,6 @@ import android.sax.ElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
-import android.util.Log;
 import android.util.Xml;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -59,8 +58,6 @@ public class GoogleAccountChooserActivity extends ListActivity {
 		AccountManagerFuture<Bundle> accountManagerFuture = _accountManager.getAuthToken(account, "reader", true, null, null);
 		try {
 			Bundle authTokenBundle = accountManagerFuture.getResult();
-			for (String s : authTokenBundle.keySet())
-				Log.i("Podax", s);
 			String authToken = authTokenBundle.get(AccountManager.KEY_AUTHTOKEN).toString();
 			headers.setGoogleLogin(authToken);
 			HttpRequest request = transport.buildGetRequest();
@@ -93,7 +90,8 @@ public class GoogleAccountChooserActivity extends ListActivity {
 				}
 
 				public void end() {
-					adapter.addSubscription(id[0], title[0]);
+					Subscription subscription = adapter.addSubscription(id[0], title[0]);
+					SubscriptionUpdateService.getInstance().updateSubscription(subscription);
 				}
 				
 			});
@@ -107,8 +105,11 @@ public class GoogleAccountChooserActivity extends ListActivity {
 			object.getChild("string").setEndTextElementListener(new EndTextElementListener() {
 
 				public void end(String text) {
-					if (stringType[0].equals("id"))
+					if (stringType[0].equals("id")) {
+						if (text != null && text.startsWith("feed/"))
+							text = text.substring(5);
 						id[0] = text;
+					}
 					else if (stringType[0].equals("title"))
 						title[0] = text;
 				}
