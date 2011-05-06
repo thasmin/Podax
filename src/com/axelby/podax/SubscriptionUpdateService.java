@@ -11,10 +11,8 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.IBinder;
 import android.sax.Element;
@@ -24,8 +22,6 @@ import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
-
-import com.axelby.podax.PodcastDownloadService.PodcastDownloadBinder;
 
 public class SubscriptionUpdateService extends Service {
 	private static SubscriptionUpdateService _instance;
@@ -37,15 +33,6 @@ public class SubscriptionUpdateService extends Service {
 	private Vector<Subscription> _toUpdate = new Vector<Subscription>();
 	private UpdateRSSTimerTask _rssTask = new UpdateRSSTimerTask();
 	private RefreshSubscriptionsTimerTask _refreshTask = new RefreshSubscriptionsTimerTask();
-
-	private PodcastDownloadService _downloader = null;
-	public class PodcastDownloadConnection implements ServiceConnection {
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			_downloader = ((PodcastDownloadBinder)service).getService();
-		}
-		public void onServiceDisconnected(ComponentName name) {
-		}		
-	}
 	
 	public void updateSubscription(Subscription subscription) {
 		_toUpdate.add(subscription);
@@ -89,9 +76,6 @@ public class SubscriptionUpdateService extends Service {
 		_timer.scheduleAtFixedRate(_rssTask, 1000, 1000);
 		// populate the queue with all of the scriptions every hour
 		_timer.scheduleAtFixedRate(_refreshTask, 1000, 1000 * 60 * 60);
-		
-		Intent service = new Intent(this, PodcastDownloadService.class);
-		bindService(service, new PodcastDownloadConnection(), 0);
 	}
 	
 	private class RefreshSubscriptionsTimerTask extends TimerTask {
@@ -195,11 +179,6 @@ public class SubscriptionUpdateService extends Service {
 			        	Log.d("Podax", "Saving podcasts");
 						updateNotification(subscription, "Saving...");
 		        		dbAdapter.updatePodcastsFromFeed(podcasts);
-		        		if (_downloader != null)
-		        		{
-			        		Log.d("Podax", "Update is triggering download");
-		        			_downloader.downloadPodcasts();
-		        		}
 		        		Log.d("Podax", "Done saving podcasts");
 		        	}
 		        }

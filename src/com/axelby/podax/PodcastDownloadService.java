@@ -46,21 +46,11 @@ public class PodcastDownloadService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 	    handleCommand(intent);
-	    // We want this service to continue running until it is explicitly stopped, so return sticky.
 	    return START_NOT_STICKY;
 	}
 	
 	private void handleCommand(Intent intent) {
-		Log.d("PodcastDownloadService", "onStart");
 		_timer.scheduleAtFixedRate(_downloadTask, 1000, 3000);
-	}
-	
-	public void downloadPodcasts() {
-		/*
-		if (!_downloadTask._isRunning) {
-			_downloadTask.run();
-		}
-		*/
 	}
 
 	private class PodcastDownloadTimerTask extends TimerTask {
