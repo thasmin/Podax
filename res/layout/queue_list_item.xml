@@ -1,0 +1,23 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    	  android:layout_width="fill_parent"
+			  android:layout_height="wrap_content"
+			  android:orientation="vertical"
+			  android:minHeight="?android:attr/listPreferredItemHeight"
+			  android:paddingLeft="6dip"
+			  android:gravity="center_vertical"
+			  >
+	<TextView
+	    android:id="@+id/title"
+	    android:text="podcast"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:textAppearance="?android:attr/textAppearanceLarge"
+	/>
+	<TextView
+	    android:id="@+id/subscription"
+	    android:text="subscription"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:textAppearance="?android:attr/textAppearanceSmall"
+	/>
+</LinearLayout>

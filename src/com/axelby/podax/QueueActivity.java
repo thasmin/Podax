@@ -12,6 +12,7 @@ import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -93,15 +94,21 @@ public class QueueActivity extends PlayerActivity {
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
-			TextView view;
+			LinearLayout view;
 			if (convertView == null) {
-				view = (TextView)_layoutInflater.inflate(R.layout.list_item, null);
+				view = (LinearLayout)_layoutInflater.inflate(R.layout.queue_list_item, null);
 			}
 			else {
-				view = (TextView)convertView;
+				view = (LinearLayout)convertView;
 			}
 			
-			view.setText(_queue.get(position).getTitle());
+			Podcast p = _queue.get(position);
+			
+			TextView queueText = (TextView)view.findViewById(R.id.title);
+			queueText.setText(p.getTitle());
+			
+			TextView subscriptionText = (TextView)view.findViewById(R.id.subscription);
+			subscriptionText.setText(p.getSubscription().getTitle());
 			
 			return view;
 		}
