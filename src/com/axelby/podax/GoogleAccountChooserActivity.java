@@ -95,7 +95,7 @@ public class GoogleAccountChooserActivity extends ListActivity {
 
 						public void end() {
 							Subscription subscription = adapter.addSubscription(id[0], title[0]);
-							SubscriptionUpdateService.getInstance().updateSubscription(subscription);
+							UpdateService.getInstance().updateSubscription(subscription);
 						}
 
 					});

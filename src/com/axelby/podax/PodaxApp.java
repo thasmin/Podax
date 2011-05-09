@@ -10,8 +10,7 @@ public class PodaxApp extends Application {
 		super.onCreate();
 
 		startService(new Intent(this, PlayerService.class));
-		startService(new Intent(this, PodcastDownloadService.class));
-		startService(new Intent(this, SubscriptionUpdateService.class));
+		startService(new Intent(this, UpdateService.class));
 	}
 
 }

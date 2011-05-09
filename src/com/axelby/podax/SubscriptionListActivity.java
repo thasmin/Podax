@@ -26,7 +26,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class SubscriptionListActivity extends ListActivity {
-	private SubscriptionUpdateService _updater = null;
+	private UpdateService _updater = null;
 	
 	private SubscriptionUpdateReceiver _subscriptionUpdateReceiver = new SubscriptionUpdateReceiver();	
 	private final class SubscriptionUpdateReceiver extends BroadcastReceiver {
@@ -50,7 +50,7 @@ public class SubscriptionListActivity extends ListActivity {
 		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
 		notificationManager.cancel(NotificationIds.SUBSCRIPTION_UPDATE_ERROR);
 		
-		_updater = SubscriptionUpdateService.getInstance();
+		_updater = UpdateService.getInstance();
     }
 	
 	@Override

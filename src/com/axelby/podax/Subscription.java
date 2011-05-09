@@ -6,13 +6,15 @@ public class Subscription {
 	int id;
 	String title;
 	String url;
+	Date lastModified;
 	Date lastUpdate;
 	
-	public Subscription(int id, String title, String url, Date lastUpdate) {
+	public Subscription(int id, String title, String url, Date lastModified, Date lastUpdate) {
 		super();
 		this.id = id;
 		this.title = title;
 		this.url = url;
+		this.lastModified = lastModified;
 		this.lastUpdate = lastUpdate;
 	}
 	public int getId() {
@@ -32,6 +34,12 @@ public class Subscription {
 	}
 	public void setUrl(String url) {
 		this.url = url;
+	}
+	public Date getLastModified() {
+		return lastModified;
+	}
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
 	}
 	public Date getLastUpdate() {
 		return lastUpdate;

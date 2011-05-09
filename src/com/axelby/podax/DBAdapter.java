@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter {
 	private static final String[] SUBSCRIPTION_COLUMNS = new String[] { "id",
-			"title", "url", "lastupdate" };
+			"title", "url", "lastModified", "lastUpdate" };
 	private static final String[] PODCAST_COLUMNS = new String[] { "id",
 			"subscriptionId", "title", "link", "pubDate", "description",
 			"mediaUrl", "fileSize", "queuePosition", "lastPosition" };
@@ -42,7 +42,7 @@ public class DBAdapter {
 		{
 			Subscription sub = new Subscription(
 					c.getInt(0), c.getString(1), c.getString(2), 
-					new Date(c.getInt(3) * 1000)
+					new Date(c.getLong(3) * 1000), new Date(c.getInt(4) * 1000)
 			);
 			subs.add(sub);
 			c.moveToNext();
@@ -54,9 +54,7 @@ public class DBAdapter {
 	public Vector<Subscription> getSubscriptions() {
 		Cursor c = this._db.query("subscriptions", SUBSCRIPTION_COLUMNS, 
 				null, null, null, null, null);
-		Vector<Subscription> s = collectSubscriptions(c);
-		c.close();
-		return s;
+		return collectSubscriptions(c);
 	}
 
 	public Subscription loadSubscription(String url) {
@@ -67,9 +65,7 @@ public class DBAdapter {
 			c.close();
 			return null;
 		}
-		Subscription s = collectSubscriptions(c).get(0);
-		c.close();
-		return s;
+		return collectSubscriptions(c).get(0);
 	}
 
 	public Subscription loadSubscription(int id) {
@@ -80,17 +76,13 @@ public class DBAdapter {
 			c.close();
 			return null;
 		}
-		Subscription s = collectSubscriptions(c).get(0);
-		c.close();
-		return s;
+		return collectSubscriptions(c).get(0);
 	}
 
 	public Vector<Subscription> getUpdatableSubscriptions() {
 		Cursor c = this._db.query("subscriptions", SUBSCRIPTION_COLUMNS, 
-				null /*"lastupdate IS NULL"*/, null, null, null, null);
-		Vector<Subscription> s = collectSubscriptions(c);
-		c.close();
-		return s;
+				null /*"lastUpdate IS NULL"*/, null, null, null, null);
+		return collectSubscriptions(c);
 	}
 
 	public void deleteSubscription(Subscription subscription) {
@@ -118,8 +110,16 @@ public class DBAdapter {
 	}
 
 	public void updateSubscriptionTitle(String url, String title) {
-		this._db.execSQL("UPDATE subscriptions SET title = ?, lastupdate = (DATETIME('now')) WHERE url = ?",
+		this._db.execSQL("UPDATE subscriptions SET title = ?, lastUpdate = (DATETIME('now')) WHERE url = ?",
 				new Object[] { title, url });
+	}
+
+
+	public void updateSubscriptionLastModified(Subscription subscription,
+			Date lastModified) {
+		subscription.setLastModified(lastModified);
+		this._db.execSQL("UPDATE subscriptions SET lastModified = ? WHERE url = ?",
+				new Object[] { lastModified, subscription.getUrl() });
 	}
 	
 	public void updatePodcastsFromFeed(Vector<RssPodcast> podcasts) {
@@ -259,7 +259,8 @@ public class DBAdapter {
 					"id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
 					"title VARCHAR, " + 
 					"url VARCHAR NOT NULL, " + 
-					"lastupdate DATE);");
+					"lastModified DATE, " + 
+					"lastUpdate DATE);");
 			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 			
 			db.execSQL("CREATE TABLE podcasts(" +

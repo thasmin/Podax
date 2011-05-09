@@ -27,8 +27,7 @@
 		<activity android:name=".PodcastDetailActivity"></activity>
 		<activity android:name=".PlayerControlActivity"></activity>
 
-		<service android:name=".SubscriptionUpdateService"></service>
-		<service android:name=".PodcastDownloadService"></service>
+		<service android:name=".UpdateService"></service>
 		<service android:name=".PlayerService">
 			<intent-filter>
 				<action android:name="com.axelby.podax.IPlayerService"></action>
