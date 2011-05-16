@@ -63,7 +63,7 @@ public class PodcastDetailActivity extends PlayerActivity {
 		_playButton.setOnClickListener(new OnClickListener() {
 
 			public void onClick(View v) {
-				playPodcast(_podcast);
+				PodaxApp.getApp().playPodcast(_podcast);
 			}
 			
 		});

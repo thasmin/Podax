@@ -1,12 +1,8 @@
 package com.axelby.podax;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -14,10 +10,9 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.axelby.podax.PlayerService.PlayerBinder;
-
 public class PlayerControlActivity extends Activity {
 	protected DBAdapter _dbAdapter;
+	protected PodaxApp _app;
 
 	protected TextView _title;
 	protected TextView _subscription_title;
@@ -32,18 +27,6 @@ public class PlayerControlActivity extends Activity {
 	protected Button _secs15_skip_btn;
 	protected Button _secs5_rewind_btn;
 	protected Button _secs5_skip_btn;
-
-	protected PlayerService _player;
-	
-	public class PlayerConnection implements ServiceConnection {
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			_player = ((PlayerBinder)service).getService();
-			updateUI();
-		}
-		public void onServiceDisconnected(ComponentName name) {
-		}		
-	}
-	protected PlayerConnection _connection = new PlayerConnection();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +35,7 @@ public class PlayerControlActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		
         _dbAdapter = DBAdapter.getInstance(this);
+		_app = PodaxApp.getApp();
 		
     	_title = (TextView)findViewById(R.id.title);
     	_subscription_title = (TextView)findViewById(R.id.subscription_title);
@@ -69,59 +53,52 @@ public class PlayerControlActivity extends Activity {
     	
     	_play_btn.setOnClickListener(new OnClickListener() {
     		public void onClick(View v) {
-    			if (_player == null)
-    				return;
-				if (_player.isPlaying()) {
-					_player.pause();
+				if (_app.isPlaying()) {
+					_app.pause();
 					_play_btn.setImageResource(android.R.drawable.ic_media_play);
 				} else {
-					_player.play();
+					_app.play();
 					_play_btn.setImageResource(android.R.drawable.ic_media_pause);
 				}
     		}
     	});
     	_restart.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (_player != null)
-					_player.restart();
+				if (_app != null)
+					_app.restart();
 			}
     	});
     	_skiptoend.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (_player != null)
-					_player.skipToEnd();
+				if (_app != null)
+					_app.skipToEnd();
 			}
     	});
     	
     	_secs30_rewind_btn.setOnClickListener(new OnClickListener() {
     		public void onClick(View v) {
-    			if (_player != null)
-    				_player.skip(-30);
+    			if (_app != null)
+    				_app.skip(-30);
     		}
     	});
     	_secs30_skip_btn.setOnClickListener(new OnClickListener() {
     		public void onClick(View v) {
-    			if (_player != null)
-    				_player.skip(30);
+    			if (_app != null)
+    				_app.skip(30);
     		}
     	});
 
-    	Intent intent = new Intent();
-		intent.setClass(this, PlayerService.class);
-		bindService(intent, _connection, 0);
-
-		final Handler handler = new Handler();
+    	final Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
 			public void run() {
-				if (_player != null)
-					updateUI();	
+				updateUI();	
 				handler.postDelayed(this, 400);
 			}
 		}, 200);
 	}
 
 	private void updateUI() {
-		Podcast p = _player.getActivePodcast();
+		Podcast p = _app.getActivePodcast();
     	if (p == null)
     	{
         	_title.setText("");
@@ -142,11 +119,11 @@ public class PlayerControlActivity extends Activity {
 
     	_title.setText(p.getTitle());
     	_subscription_title.setText(p.getSubscription().getTitle());
-		_position.setText(_player.getPositionString());
+		_position.setText(PlayerService.getPositionString(_app.getDuration(), _app.getPosition()));
     	_play_btn.setEnabled(true);
-    	_play_btn.setImageResource(_player.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-		_seekbar.setMax(_player.getDuration());
-		_seekbar.setProgress(_player.getPosition());
+    	_play_btn.setImageResource(_app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+		_seekbar.setMax(_app.getDuration());
+		_seekbar.setProgress(_app.getPosition());
     	_restart.setEnabled(true); 
     	_skiptoend.setEnabled(true);
     	_secs30_rewind_btn.setEnabled(true);

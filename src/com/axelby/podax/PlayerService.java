@@ -11,20 +11,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Binder;
 import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.RemoteViews;
 
-public class PlayerService extends Service /* implements IPlayerService */ {
-	private static PlayerService _instance;
-	public static PlayerService getInstance() {
-		return _instance;
-	}
-
+public class PlayerService extends Service {
 	public class PlayerBinder extends Binder {
 		PlayerService getService() {
 			return PlayerService.this;
@@ -33,7 +28,6 @@ public class PlayerService extends Service /* implements IPlayerService */ {
 	
 	public class UpdateWidgetTimerTask extends TimerTask {
 		public void run() {
-			Log.d("Podax", "UpdateWidgetTimerTask run");
 			updateWidget();
 			if (!PlayerService.this.isPlaying())
 				this.cancel();
@@ -62,7 +56,6 @@ public class PlayerService extends Service /* implements IPlayerService */ {
 
 	@Override
 	public void onCreate() {
-		_instance = this;
 		super.onCreate();
 	}
 
@@ -81,6 +74,10 @@ public class PlayerService extends Service /* implements IPlayerService */ {
 
 	private void handleStart(Intent intent) {
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		_player.setOnCompletionListener(new OnCompletionListener() {
+			public void onCompletion(MediaPlayer mp) {
+			}
+		});
 
 		if (intent.getExtras() != null) {
 			KeyEvent keyEvent = (KeyEvent) intent.getExtras().get(Intent.EXTRA_KEY_EVENT);
@@ -122,10 +119,6 @@ public class PlayerService extends Service /* implements IPlayerService */ {
 			
 		}, PhoneStateListener.LISTEN_CALL_STATE);
 		_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
-	}
-	
-	public void load(int podcastId) {
-		load(_dbAdapter.loadPodcast(podcastId));
 	}
 
 	public void load(Podcast podcast) {

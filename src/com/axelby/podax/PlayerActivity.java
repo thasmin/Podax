@@ -10,8 +10,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class PlayerActivity extends Activity {
-
-	protected PlayerService _player;
 	
 	protected ImageButton _pausebtn;
 	protected ImageButton _showplayerbtn;
@@ -36,15 +34,14 @@ public class PlayerActivity extends Activity {
 		_pausebtn = (ImageButton) findViewById(R.id.pausebtn);
 		_showplayerbtn = (ImageButton) findViewById(R.id.showplayer);
 		
-		_player = PlayerService.getInstance();
-		
 		_pausebtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
-				if (_player.isPlaying()) {
-					_player.pause();
+				PodaxApp app = PodaxApp.getApp();
+				if (app.isPlaying()) {
+					app.pause();
 					_pausebtn.setImageResource(android.R.drawable.ic_media_play);
 				} else {
-					_player.play();
+					app.play();
 					_pausebtn.setImageResource(android.R.drawable.ic_media_pause);
 				}
 			}
@@ -60,28 +57,21 @@ public class PlayerActivity extends Activity {
 		final Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
 			public void run() {
-				if (_player != null)
-					updateUI();				
-				
+				updateUI();				
 				handler.postDelayed(this, 400);
 			}
 		}, 200);
 	}
 
-	protected void playPodcast(Podcast podcast) {
-		if (_player == null)
-			return;
-		_player.load(podcast);
-		_player.play();
-	}
-
 	private void updatePositionText() {
-		_position.setText(PlayerService.getPositionString(_player.getDuration(), _player.getPosition()));
+		PodaxApp app = PodaxApp.getApp();
+		_position.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));
 	}
 
 	private void updateUI() {
-		_podcast = _player.getActivePodcast();
-
+		PodaxApp app = PodaxApp.getApp();
+		_podcast = app.getActivePodcast();
+		
 		if (_podcast == null) {
 			_podcastTitle.setText("");
 			_position.setText("");
@@ -90,10 +80,10 @@ public class PlayerActivity extends Activity {
 		} else {
 			_podcastTitle.setText(_podcast.getTitle());
 			_pausebtn.setEnabled(true);
-			_pausebtn.setImageResource(_player.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+			_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
 			_showplayerbtn.setEnabled(true);
 			updatePositionText();
-			_dbApapter.updatePodcastPosition(_podcast.getId(), _player.getPosition());
+			_dbApapter.updatePodcastPosition(_podcast.getId(), app.getPosition());
 		}
 	}
 

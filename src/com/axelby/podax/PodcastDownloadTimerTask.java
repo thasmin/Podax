@@ -59,7 +59,6 @@ class PodcastDownloadTimerTask extends TimerTask {
 				
 				try {
 					Log.d("Podax", "Downloading " + podcast.getTitle());
-					this.subscriptionUpdateService._downloadTask.updateDownloadNotification(this.subscriptionUpdateService, podcast, 0);
 
 					URL u = new URL(podcast.getMediaUrl());
 					HttpURLConnection c = (HttpURLConnection)u.openConnection();
@@ -78,6 +77,8 @@ class PodcastDownloadTimerTask extends TimerTask {
 						dbAdapter.savePodcast(podcast);
 					}
 					
+					updateDownloadNotification(this.subscriptionUpdateService, podcast, 0);
+
 					FileOutputStream outstream = new FileOutputStream(mediaFile, append);
 					instream = c.getInputStream();
 					int read;
@@ -86,14 +87,14 @@ class PodcastDownloadTimerTask extends TimerTask {
 					{
 						outstream.write(b, 0, read);
 						downloaded += read;
-						this.subscriptionUpdateService._downloadTask.updateDownloadNotification(this.subscriptionUpdateService, podcast, downloaded);
+						updateDownloadNotification(this.subscriptionUpdateService, podcast, downloaded);
 					}
 					instream.close();
 					
 					Log.d("Podax", "Done downloading " + podcast.getTitle());
 				} catch (Exception e) {
 					Log.d("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
-					this.subscriptionUpdateService._downloadTask.removeDownloadNotification(this.subscriptionUpdateService);
+					removeDownloadNotification(this.subscriptionUpdateService);
 					e.printStackTrace();
 					this.subscriptionUpdateService._timer.schedule(this, this.subscriptionUpdateService.ONEMINUTE);
 					try {

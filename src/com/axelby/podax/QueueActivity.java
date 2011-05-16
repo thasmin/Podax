@@ -61,7 +61,7 @@ public class QueueActivity extends PlayerActivity {
 			_view.setAdapter(new QueueListAdapter());
 			break;
 		case OPTION_PLAY:
-			playPodcast(podcast);
+			PodaxApp.getApp().playPodcast(podcast);
 		}
 
 		return true;

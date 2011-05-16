@@ -116,7 +116,6 @@ class UpdateSubscriptionTimerTask extends TimerTask {
 				Date modified = new Date(c.getLastModified());
 				if (subscription.getLastModified() == modified)
 					return;
-				dbAdapter.updateSubscriptionLastModified(subscription, modified);
 
 				updateUpdateNotification(subscription, "Downloading Feed");
 				InputStream response = c.getInputStream();
@@ -124,6 +123,7 @@ class UpdateSubscriptionTimerTask extends TimerTask {
 	        		showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
 	        	} else {
 	        		Xml.parse(response, Xml.Encoding.UTF_8, root.getContentHandler());
+					dbAdapter.updateSubscriptionLastModified(subscription, modified);
 	            	
 		        	Log.d("Podax", "Saving podcasts");
 					updateUpdateNotification(subscription, "Saving...");
