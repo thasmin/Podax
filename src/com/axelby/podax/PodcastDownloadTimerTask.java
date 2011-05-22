@@ -33,8 +33,6 @@ class PodcastDownloadTimerTask extends TimerTask {
 			return;
 		_isRunning = true;
 		
-		Log.d("Podax", "PodcastDownloadTimerTask run");
-		
 		// find next podcast to download - in queue and filesize is null or wrong
 		DBAdapter dbAdapter = DBAdapter.getInstance(this.subscriptionUpdateService);
 		Vector<Integer> toProcess = new Vector<Integer>();

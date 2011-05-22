@@ -18,6 +18,7 @@ public class Podcast {
 	private Integer fileSize;
 	private Integer queuePosition;
 	private int lastPosition = 0;
+	private int duration = 0;
 	
 	static private SimpleDateFormat rssDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
 	
@@ -28,7 +29,7 @@ public class Podcast {
 	
 	public Podcast(int id, Subscription subscription, String title,
 			String link, Date pubDate, String description, String mediaUrl,
-			Integer fileSize, Integer queuePosition, int lastPosition) {
+			Integer fileSize, Integer queuePosition, int lastPosition, int duration) {
 		super();
 		this.id = id;
 		this.subscription = subscription;
@@ -40,6 +41,7 @@ public class Podcast {
 		this.fileSize = fileSize;
 		this.queuePosition = queuePosition;
 		this.lastPosition = lastPosition;
+		this.duration = duration;
 	}
 
 	public int getId() {
@@ -113,6 +115,12 @@ public class Podcast {
 	}
 	public void setLastPosition(int lastPosition) {
 		this.lastPosition = lastPosition;
+	}
+	public int getDuration() {
+		return duration;
+	}
+	public void setDuration(int duration) {
+		this.duration = duration;
 	}
 
 	public static String getStoragePath() {

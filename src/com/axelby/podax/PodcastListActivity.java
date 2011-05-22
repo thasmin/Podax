@@ -6,16 +6,24 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 public class PodcastListActivity extends ListActivity {
+	static final int OPTION_ADDTOQUEUE = 3;
+	static final int OPTION_REMOVEFROMQUEUE = 1;
+	static final int OPTION_PLAY = 2;
+
 	private int _subscriptionId;
 	
     @Override
@@ -28,7 +36,48 @@ public class PodcastListActivity extends ListActivity {
         _subscriptionId = bundle.getInt("subscriptionId");
         
         getListView().setAdapter(new PodcastAdapter(this));
+        getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+			public void onCreateContextMenu(ContextMenu menu, View v,
+					ContextMenuInfo menuInfo) {
+				AdapterView.AdapterContextMenuInfo mi = (AdapterView.AdapterContextMenuInfo) menuInfo;
+				Podcast p = (Podcast) getListView().getItemAtPosition(mi.position);
+				
+				if (p.getQueuePosition() == null)
+					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE,
+							ContextMenu.NONE, "Add to Queue");
+				else
+					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
+							ContextMenu.NONE, "Remove from Queue");
+				
+				if (p.isDownloaded())
+					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
+							"Play");
+			}
+		});
     }
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		DBAdapter adapter = DBAdapter.getInstance(this);
+		
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		Podcast podcast = (Podcast)getListView().getAdapter().getItem(info.position);
+
+		switch (item.getItemId()) {
+		case OPTION_ADDTOQUEUE:
+			adapter.addPodcastToQueue(podcast.getId());
+			getListView().setAdapter(new PodcastAdapter(this));
+			break;
+		case OPTION_REMOVEFROMQUEUE:
+			adapter.removePodcastFromQueue(podcast.getId());
+			getListView().setAdapter(new PodcastAdapter(this));
+			break;
+		case OPTION_PLAY:
+			PodaxApp.getApp().playPodcast(podcast);
+		}
+
+		return true;
+	}
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

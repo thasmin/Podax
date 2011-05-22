@@ -4,12 +4,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 
 public class UpdateService extends Service {
 	private final long ONESECOND = 1000;
@@ -74,7 +72,6 @@ public class UpdateService extends Service {
 	private class RefreshSubscriptionsTimerTask extends TimerTask {
 		@Override
 		public void run() {
-			Log.d("Podax", "RefreshSubscriptionsTimerTask");
 			final DBAdapter dbAdapter = DBAdapter.getInstance(UpdateService.this);
 	        _toUpdate.addAll( dbAdapter.getUpdatableSubscriptions() );
 		}

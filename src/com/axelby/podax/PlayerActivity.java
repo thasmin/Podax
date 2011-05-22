@@ -75,15 +75,12 @@ public class PlayerActivity extends Activity {
 		if (_podcast == null) {
 			_podcastTitle.setText("");
 			_position.setText("");
-			_pausebtn.setEnabled(false);
 			_showplayerbtn.setEnabled(false);
 		} else {
 			_podcastTitle.setText(_podcast.getTitle());
-			_pausebtn.setEnabled(true);
 			_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
 			_showplayerbtn.setEnabled(true);
 			updatePositionText();
-			_dbApapter.updatePodcastPosition(_podcast.getId(), app.getPosition());
 		}
 	}
 

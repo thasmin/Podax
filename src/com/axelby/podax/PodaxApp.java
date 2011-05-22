@@ -11,25 +11,21 @@ public class PodaxApp extends Application {
 	private Podcast _activePodcast;
 	private PlayerService _player;
 	
-	public class PlayerConnection implements ServiceConnection {
+	protected ServiceConnection _playerConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			_player = ((PlayerService.PlayerBinder)service).getService();
-			synchronized (_playerConnection) {
-				_playerConnection.notify();
-			}
 		}
 		public void onServiceDisconnected(ComponentName name) {
 			_player = null;
 		}		
-	}
-	protected PlayerConnection _playerConnection = new PlayerConnection();
+	};
 
 	@Override
 	public void onCreate() {
+		super.onCreate();
+
 		_instance = this;
 		_activePodcast = DBAdapter.getInstance(this).loadLastPlayedPodcast();
-
-		super.onCreate();
 
 		startService(new Intent(this, UpdateService.class));
 	}
@@ -39,6 +35,8 @@ public class PodaxApp extends Application {
 	}
 
 	public Podcast getActivePodcast() {
+		if (_player != null)
+			_activePodcast = _player.getActivePodcast();
 		return _activePodcast;
 	}
 	public boolean isPlaying() {
@@ -49,7 +47,9 @@ public class PodaxApp extends Application {
 			_player.pause();
 	}
 	public void play() {
-		if (_player != null)
+		if (_player == null)
+			startPlayerService(null);
+		else
 			_player.play();
 	}
 	public int getPosition() {
@@ -58,9 +58,9 @@ public class PodaxApp extends Application {
 		return -1;
 	}
 	public int getDuration() {
-		if (_player != null)
-			return _player.getDuration();
-		return -1;
+		if (_activePodcast.getDuration() == 0)
+			_activePodcast = DBAdapter.getInstance(this).loadPodcast(_activePodcast.getId());
+		return _activePodcast.getDuration();
 	}
 	public void skip(int secs) {
 		if (_player != null)
@@ -77,21 +77,17 @@ public class PodaxApp extends Application {
 	
 	public void playPodcast(Podcast podcast) {
 		_activePodcast = podcast;
-		startPlayerService();
-		_player.load(_activePodcast);
-		_player.play();
+		startPlayerService(_activePodcast);
 	}
 
-	private void startPlayerService() {
+	private void startPlayerService(Podcast podcast) {
 		Intent intent = new Intent(this, PlayerService.class);
+		if (podcast != null)
+			intent.putExtra("com.axelby.podax.podcast", podcast.getId());
+		else
+			intent.putExtra("com.axelby.podax.podcast", -1);
 		startService(intent);
-		bindService(intent, _playerConnection, 0);
-		try {
-			synchronized(_playerConnection) {
-				_playerConnection.wait();
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		intent.removeExtra("com.axelby.podax.podcast");
+		bindService(intent, _playerConnection, BIND_AUTO_CREATE);
 	}
 }

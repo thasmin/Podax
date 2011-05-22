@@ -15,7 +15,7 @@ public class DBAdapter {
 			"title", "url", "lastModified", "lastUpdate" };
 	private static final String[] PODCAST_COLUMNS = new String[] { "id",
 			"subscriptionId", "title", "link", "pubDate", "description",
-			"mediaUrl", "fileSize", "queuePosition", "lastPosition" };
+			"mediaUrl", "fileSize", "queuePosition", "lastPosition", "duration" };
 	private static final String DATABASE_NAME = "podax.db";
 	private static final int DATABASE_VERSION = 1;
 	private Context _context;
@@ -159,6 +159,7 @@ public class DBAdapter {
 		values.put("fileSize", podcast.getFileSize());
 		values.put("queuePosition", podcast.getQueuePosition());
 		values.put("lastPosition", podcast.getLastPosition());
+		values.put("duration", podcast.getDuration());
 		if (podcast.getId() != -1)
 			this._db.update("podcasts", values, "id = ?", new String[] { Integer.toString(podcast.getId()) });
 		else
@@ -200,7 +201,7 @@ public class DBAdapter {
 					c.getInt(0), subscription,
 					c.getString(2), c.getString(3), new Date(c.getLong(4) * 1000),
 					c.getString(5), c.getString(6), fileSize, queuePosition,
-					c.getInt(9)
+					c.getInt(9), c.getInt(10)
 			));
 			c.moveToNext();
 		}
@@ -213,6 +214,16 @@ public class DBAdapter {
 				"subscriptionId = ?", new String[] { Integer.toString(subscriptionId) },
 				null, null, "pubDate DESC");
 		return collectPodcasts(c);
+	}
+	
+	public Podcast getFirstInQueue() {
+		Cursor c = this._db.query("podcasts", PODCAST_COLUMNS, 
+				"queuePosition IS NOT NULL", new String[] { },
+				null, null, "queuePosition ASC", "1");
+		Vector<Podcast> queue = collectPodcasts(c);
+		if (queue.size() == 0)
+			return null;
+		return queue.firstElement();
 	}
 
 	private Vector<Integer> collectIds(Cursor c) {
@@ -273,7 +284,8 @@ public class DBAdapter {
 					"mediaUrl VARCHAR," +
 					"fileSize INTEGER," +
 					"queuePosition INTEGER," +
-					"lastPosition INTEGER NOT NULL DEFAULT 0)"
+					"lastPosition INTEGER NOT NULL DEFAULT 0," +
+					"duration INTEGER DEFAULT 0)"
 			);
 			db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
 			db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
@@ -310,6 +322,12 @@ public class DBAdapter {
 		
 		values = new ContentValues();
 		values.put("lastPodcastId", podcastId);
+		_db.update("podax", values, "", null);
+	}
+	
+	public void clearLastPlayedPodcast() {
+		ContentValues values = new ContentValues();
+		values.put("lastPodcastId", -1);
 		_db.update("podax", values, "", null);
 	}
 	

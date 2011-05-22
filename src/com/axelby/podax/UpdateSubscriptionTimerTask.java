@@ -19,7 +19,6 @@ import android.sax.EndElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
-import android.util.Log;
 import android.util.Xml;
 
 class UpdateSubscriptionTimerTask extends TimerTask {
@@ -36,8 +35,6 @@ class UpdateSubscriptionTimerTask extends TimerTask {
 		if (_isRunning || this.subscriptionUpdateService._toUpdate.size() == 0)
 			return;
 		_isRunning = true;
-			
-		Log.d("Podax", "UpdateSubscriptionTimerTask");
 
 		// remove the subscriptions I will update from toUpdate
     	Vector<Subscription> update = new Vector<Subscription>();
@@ -125,10 +122,8 @@ class UpdateSubscriptionTimerTask extends TimerTask {
 	        		Xml.parse(response, Xml.Encoding.UTF_8, root.getContentHandler());
 					dbAdapter.updateSubscriptionLastModified(subscription, modified);
 	            	
-		        	Log.d("Podax", "Saving podcasts");
 					updateUpdateNotification(subscription, "Saving...");
 	        		dbAdapter.updatePodcastsFromFeed(podcasts);
-	        		Log.d("Podax", "Done saving podcasts");
 	        	}
 	        }
     	} catch (Exception e) {
