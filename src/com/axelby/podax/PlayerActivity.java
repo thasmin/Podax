@@ -4,9 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.AbsListView.LayoutParams;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class PlayerActivity extends Activity {
@@ -24,8 +28,10 @@ public class PlayerActivity extends Activity {
 	}
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		
+		injectView(this, R.layout.player);
 		
 		_dbApapter = DBAdapter.getInstance(this);
 
@@ -61,6 +67,30 @@ public class PlayerActivity extends Activity {
 				handler.postDelayed(this, 400);
 			}
 		}, 200);
+	}
+
+	private static View injectView(Activity activity, int resource) {
+		View mainView = activity.findViewById(android.R.id.content);
+		ViewGroup mainParent = (ViewGroup)mainView.getParent();
+		int mainIndex = mainParent.indexOfChild(mainView);
+		mainParent.removeView(mainView);
+		
+		LayoutInflater inflater = (LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE);
+		View outerView = inflater.inflate(resource, null);
+		
+		// inject old view into new view
+		View container = outerView.findViewById(R.id.view);
+		ViewGroup containerGroup = (ViewGroup) container.getParent();
+		int index = containerGroup.indexOfChild(container);
+		containerGroup.removeView(container);
+		containerGroup.addView(mainView, index);
+		mainParent.addView(outerView, mainIndex);
+
+		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+		lp.addRule(RelativeLayout.ABOVE, R.id.footer);
+		mainView.setLayoutParams(lp);
+		
+		return mainParent;
 	}
 
 	private void updatePositionText() {

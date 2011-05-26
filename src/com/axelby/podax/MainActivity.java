@@ -9,9 +9,9 @@ import android.widget.RelativeLayout;
 public class MainActivity extends PlayerActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		setContentView(R.layout.main);
-
 		super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.main);
 
 		RelativeLayout _queue = (RelativeLayout) this.findViewById(R.id.queue);
 		_queue.setOnClickListener(new OnClickListener() {
