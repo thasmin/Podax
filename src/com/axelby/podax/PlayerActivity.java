@@ -2,7 +2,6 @@ package com.axelby.podax;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,32 +12,14 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class PlayerActivity extends Activity {
-	
-	protected ImageButton _pausebtn;
-	protected ImageButton _showplayerbtn;
-	protected TextView _podcastTitle;
-	protected TextView _position;
-	
-	protected Podcast _podcast;
-	protected DBAdapter _dbApapter;
+public class PlayerActivity {
+	public static void injectPlayerFooter(final Activity activity) {
+		injectView(activity, R.layout.player);
 
-	public PlayerActivity() {
-		super();
-	}
-
-	@Override
-	protected void onPostCreate(Bundle savedInstanceState) {
-		super.onPostCreate(savedInstanceState);
-		
-		injectView(this, R.layout.player);
-		
-		_dbApapter = DBAdapter.getInstance(this);
-
-		_podcastTitle = (TextView) findViewById(R.id.podcasttitle);
-		_position = (TextView) findViewById(R.id.position);
-		_pausebtn = (ImageButton) findViewById(R.id.pausebtn);
-		_showplayerbtn = (ImageButton) findViewById(R.id.showplayer);
+		final TextView _podcastTitle = (TextView) activity.findViewById(R.id.podcasttitle);
+		final TextView _position = (TextView) activity.findViewById(R.id.position);
+		final ImageButton _pausebtn = (ImageButton) activity.findViewById(R.id.pausebtn);
+		final ImageButton _showplayerbtn = (ImageButton) activity.findViewById(R.id.showplayer);
 		
 		_pausebtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
@@ -55,15 +36,28 @@ public class PlayerActivity extends Activity {
 		
 		_showplayerbtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
-				Intent intent = new Intent(PlayerActivity.this, PlayerControlActivity.class);
-				startActivity(intent);
+				Intent intent = new Intent(activity, PlayerControlActivity.class);
+				activity.startActivity(intent);
 			}
 		});
 		
 		final Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
 			public void run() {
-				updateUI();				
+				PodaxApp app = PodaxApp.getApp();
+				Podcast _podcast = app.getActivePodcast();
+				
+				if (_podcast == null) {
+					_podcastTitle.setText("");
+					_position.setText("");
+					_showplayerbtn.setEnabled(false);
+				} else {
+					_podcastTitle.setText(_podcast.getTitle());
+					_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+					_showplayerbtn.setEnabled(true);
+					_position.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));
+				}
+
 				handler.postDelayed(this, 400);
 			}
 		}, 200);
@@ -75,7 +69,7 @@ public class PlayerActivity extends Activity {
 		int mainIndex = mainParent.indexOfChild(mainView);
 		mainParent.removeView(mainView);
 		
-		LayoutInflater inflater = (LayoutInflater)activity.getSystemService(LAYOUT_INFLATER_SERVICE);
+		LayoutInflater inflater = (LayoutInflater)activity.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 		View outerView = inflater.inflate(resource, null);
 		
 		// inject old view into new view
@@ -91,27 +85,6 @@ public class PlayerActivity extends Activity {
 		mainView.setLayoutParams(lp);
 		
 		return mainParent;
-	}
-
-	private void updatePositionText() {
-		PodaxApp app = PodaxApp.getApp();
-		_position.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));
-	}
-
-	private void updateUI() {
-		PodaxApp app = PodaxApp.getApp();
-		_podcast = app.getActivePodcast();
-		
-		if (_podcast == null) {
-			_podcastTitle.setText("");
-			_position.setText("");
-			_showplayerbtn.setEnabled(false);
-		} else {
-			_podcastTitle.setText(_podcast.getTitle());
-			_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-			_showplayerbtn.setEnabled(true);
-			updatePositionText();
-		}
 	}
 
 	static String getTimeString(int milliseconds) {

@@ -51,6 +51,8 @@ public class SubscriptionListActivity extends ListActivity {
 		notificationManager.cancel(NotificationIds.SUBSCRIPTION_UPDATE_ERROR);
 		
 		_updater = UpdateService.getInstance();
+		
+		PlayerActivity.injectPlayerFooter(this);
     }
 	
 	@Override

@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -8,7 +9,7 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class PodcastDetailActivity extends PlayerActivity {
+public class PodcastDetailActivity extends Activity {
 	Podcast _podcast;
 	
 	TextView _titleView;
@@ -22,10 +23,10 @@ public class PodcastDetailActivity extends PlayerActivity {
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.podcast_detail);
 		
-		super.onCreate(savedInstanceState);
-	
         _dbAdapter = DBAdapter.getInstance(this);
 
         Intent intent = this.getIntent();
@@ -67,6 +68,8 @@ public class PodcastDetailActivity extends PlayerActivity {
 			}
 			
 		});
+		
+		PlayerActivity.injectPlayerFooter(this);
 	}
 
 	private void updateQueueViews() {

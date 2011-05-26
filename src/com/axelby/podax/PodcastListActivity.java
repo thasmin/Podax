@@ -54,6 +54,8 @@ public class PodcastListActivity extends ListActivity {
 							"Play");
 			}
 		});
+        
+		PlayerActivity.injectPlayerFooter(this);
     }
 	
 	@Override

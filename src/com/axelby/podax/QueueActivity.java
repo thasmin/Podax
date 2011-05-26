@@ -2,6 +2,7 @@ package com.axelby.podax;
 
 import java.util.Vector;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -17,7 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 
-public class QueueActivity extends PlayerActivity {
+public class QueueActivity extends Activity /*PlayerActivity*/ {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
 
@@ -25,9 +26,9 @@ public class QueueActivity extends PlayerActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		setContentView(R.layout.queue);
-
 		super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.queue);
 
 		_view = (ListView) findViewById(R.id.list);
 		_view.setAdapter(new QueueListAdapter());
@@ -46,6 +47,8 @@ public class QueueActivity extends PlayerActivity {
 							"Play");
 			}
 		});
+		
+		PlayerActivity.injectPlayerFooter(this);
 	}
 	
 	@Override

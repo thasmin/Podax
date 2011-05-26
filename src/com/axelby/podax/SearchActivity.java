@@ -2,6 +2,7 @@ package com.axelby.podax;
 
 import java.util.Vector;
 
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -14,13 +15,14 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
-public class SearchActivity extends PlayerActivity {
+public class SearchActivity extends Activity {
 	ExpandableListView epView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-	    setContentView(R.layout.search);
 	    super.onCreate(savedInstanceState);
+
+	    setContentView(R.layout.search);
 
 	    epView = (ExpandableListView) findViewById(R.id.results);
 	    
@@ -37,6 +39,8 @@ public class SearchActivity extends PlayerActivity {
 		    epView.setAdapter(new SearchResultsAdapter(this));
 	    epView.expandGroup(0);
 	    epView.expandGroup(1);
+	    
+	    PlayerActivity.injectPlayerFooter(this);
 	}	
 
     public class SearchResultsAdapter extends BaseExpandableListAdapter {
