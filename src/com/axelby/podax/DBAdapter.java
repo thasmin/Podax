@@ -259,6 +259,28 @@ public class DBAdapter {
 				new Object[] { podcastId });
 	}
 	
+	public void changePodcastQueuePosition(Podcast podcast, int newPosition) {
+		Integer oldPosition = podcast.getQueuePosition();
+		if (oldPosition == null)
+			oldPosition = Integer.MAX_VALUE;
+		
+		if (oldPosition == newPosition)
+			return;
+		// moving up:   1  2  3  4  5     2 -> 4: 3-- 4-- 2->4
+		if (oldPosition < newPosition)
+			this._db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 " +
+					"WHERE queuePosition > ? AND queuePosition <= ?", 
+					new Object[] { oldPosition, newPosition });
+		// moving down: 1  2  3  4  5     4 -> 2: 2++ 3++ 4->2
+		if (newPosition < oldPosition)
+			this._db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 " +
+					"WHERE queuePosition >= ? AND queuePosition < ?", 
+					new Object[] { newPosition, oldPosition });
+		// update
+		this._db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE id = ?", 
+				new Object[] { newPosition, podcast.getId() });
+	}
+	
 	public static class DBHelper extends SQLiteOpenHelper {
 		public DBHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
