@@ -119,6 +119,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			_droppedPosition = listView.pointToPosition((int)event.getX(), (int)event.getY());
 			if (_droppedPosition == AdapterView.INVALID_POSITION)
 				return true;
+			// TODO: tell adapter to put the separator before _droppedposition and redraw
 			View before = listView.getChildAt(_droppedPosition);
 			before.setBackgroundColor(Color.BLUE);
 			return true;
