@@ -279,6 +279,8 @@ public class DBAdapter {
 		// update
 		this._db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE id = ?", 
 				new Object[] { newPosition, podcast.getId() });
+		
+		podcast.setQueuePosition(newPosition);
 	}
 	
 	public static class DBHelper extends SQLiteOpenHelper {
