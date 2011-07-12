@@ -60,6 +60,7 @@ class PodcastDownloadTimerTask extends TimerTask {
 				long downloaded = 0;
 				if (c.getResponseCode() == 206) {
 					downloaded = mediaFile.length();
+					append = true;
 				}
 				else {
 					int fileSize = c.getContentLength();
