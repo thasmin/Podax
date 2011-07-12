@@ -149,4 +149,13 @@ public class Podcast {
 		File file = new File(getFilename());
 		return file.exists() && file.length() == this.fileSize && this.fileSize != 0;
 	}
+	
+	public boolean needsDownload() {
+		// make sure there's a file associated
+		if (getMediaUrl() == null || getMediaUrl().length() == 0)
+			return false;
+		if (isDownloaded())
+			return false;
+		return true;
+	}
 }

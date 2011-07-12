@@ -145,22 +145,16 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
-			try {
-				Podcast p = _queue.get(position);
-				if (p == _heldPodcast) {
-					return _layoutInflater.inflate(R.layout.separator, null);
-				} else {
-					View view = _layoutInflater.inflate(R.layout.queue_list_item, null);
-					View btn = view.findViewById(R.id.dragable);
-					btn.setOnTouchListener(new DownListener(view));
-					updateListItemView(view, p);
-					return view;
-				}
+			Podcast p = _queue.get(position);
+			if (p == _heldPodcast) {
+				return _layoutInflater.inflate(R.layout.separator, null);
+			} else {
+				View view = _layoutInflater.inflate(R.layout.queue_list_item, null);
+				View btn = view.findViewById(R.id.dragable);
+				btn.setOnTouchListener(new DownListener(view));
+				updateListItemView(view, p);
+				return view;
 			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			return null;
 		}
 
 		private void updateListItemView(View view, Podcast p) {

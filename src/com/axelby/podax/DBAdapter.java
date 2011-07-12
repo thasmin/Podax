@@ -314,8 +314,8 @@ public class DBAdapter {
 			db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
 			db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
 			
-			db.execSQL("CREATE TABLE podax(lastPodcastId INTEGER)");
-			db.execSQL("INSERT INTO podax(lastPodcastId) VALUES(NULL)");
+			db.execSQL("CREATE TABLE podax(lastPodcastId INTEGER, activeDownloadId INTEGER)");
+			db.execSQL("INSERT INTO podax(lastPodcastId, activeDownloadId) VALUES(NULL, NULL)");
 		}
 
 		@Override
@@ -363,6 +363,24 @@ public class DBAdapter {
 		}
 		
 		return collectPodcasts(c).get(0);
+	}
+	
+	public void updateActiveDownloadId(Integer podcastId) {
+		ContentValues values = new ContentValues();
+		values.put("activeDownloadId", podcastId);
+		_db.update("podax", values, "", null);
+	}
+	
+	public Integer getActiveDownloadId() {
+		Cursor c = _db.query("podax", new String[] { "activeDownloadId" }, null, null, null, null, null);
+		c.moveToFirst();
+		if (c.isNull(0)) {
+			c.close();
+			return null;
+		}
+		Integer i = c.getInt(0);
+		c.close();
+		return i;
 	}
 	
 	public Vector<Podcast> searchPodcasts(String query) {

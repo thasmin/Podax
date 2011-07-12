@@ -1,0 +1,12 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent">
+	<ListView android:id="@+id/android:list"
+			  android:layout_width="fill_parent"
+			  android:layout_height="fill_parent"
+			  android:layout_alignParentTop="true" />
+	<TextView android:id="@+id/android:empty"
+			   android:layout_width="fill_parent"
+			   android:layout_height="fill_parent"
+			   android:text="There are no podcasts waiting to be downloaded." />
+</LinearLayout>

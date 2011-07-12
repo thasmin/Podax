@@ -17,8 +17,7 @@ public class MainActivity extends Activity {
 		RelativeLayout _queue = (RelativeLayout) this.findViewById(R.id.queue);
 		_queue.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent intent = new Intent();
-				intent.setClassName("com.axelby.podax", "com.axelby.podax.QueueActivity");
+				Intent intent = new Intent(MainActivity.this, QueueActivity.class);
 				startActivity(intent);
 			}
 		});
@@ -27,8 +26,7 @@ public class MainActivity extends Activity {
 		RelativeLayout subscriptions = (RelativeLayout) this.findViewById(R.id.subscriptions);
 		subscriptions.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent intent = new Intent();
-				intent.setClassName("com.axelby.podax", "com.axelby.podax.SubscriptionListActivity");
+				Intent intent = new Intent(MainActivity.this, SubscriptionListActivity.class);
 				startActivity(intent);
 			}
 		});
@@ -36,8 +34,15 @@ public class MainActivity extends Activity {
 		RelativeLayout readerimport = (RelativeLayout) this.findViewById(R.id.readerimport);
 		readerimport.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent intent = new Intent();
-				intent.setClassName("com.axelby.podax", "com.axelby.podax.GoogleAccountChooserActivity");
+				Intent intent = new Intent(MainActivity.this, GoogleAccountChooserActivity.class);
+				startActivity(intent);
+			}
+		});
+
+		RelativeLayout activedownloads = (RelativeLayout) this.findViewById(R.id.activedownloads);
+		activedownloads.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, ActiveDownloadListActivity.class);
 				startActivity(intent);
 			}
 		});

@@ -35,76 +35,69 @@ class PodcastDownloadTimerTask extends TimerTask {
 		
 		// find next podcast to download - in queue and filesize is null or wrong
 		DBAdapter dbAdapter = DBAdapter.getInstance(this.subscriptionUpdateService);
-		Vector<Integer> toProcess = new Vector<Integer>();
-		toProcess.addAll(dbAdapter.getQueueIds());
+		Vector<Integer> toProcess = dbAdapter.getQueueIds();
 		
 		for (Integer podcastId : toProcess) {
 			Podcast podcast = dbAdapter.loadPodcast(podcastId);
+			if (!podcast.needsDownload())
+				continue;
+
+			InputStream instream = null;
 			File mediaFile = new File(podcast.getFilename());
+			
 			try {
-				if (podcast.getMediaUrl().length() == 0 || podcast.isDownloaded())
-					continue;
+				Log.d("Podax", "Downloading " + podcast.getTitle());
+				updateDownloadNotification(this.subscriptionUpdateService, podcast, 0);
+				dbAdapter.updateActiveDownloadId(podcast.getId());
+
+				URL u = new URL(podcast.getMediaUrl());
+				HttpURLConnection c = (HttpURLConnection)u.openConnection();
+				if (mediaFile.exists())
+					c.setRequestProperty("Range", "bytes=" + mediaFile.length() + "-");
+				
+				// response code 206 means partial content and range header worked
+				boolean append = false;
+				long downloaded = 0;
+				if (c.getResponseCode() == 206) {
+					downloaded = mediaFile.length();
+				}
+				else {
+					int fileSize = c.getContentLength();
+					podcast.setFileSize(fileSize);
+					dbAdapter.savePodcast(podcast);
+				}
+				
+				FileOutputStream outstream = new FileOutputStream(mediaFile, append);
+				instream = c.getInputStream();
+				int read;
+				byte[] b = new byte[1024*64];
+				while ((read = instream.read(b, 0, b.length)) != -1)
+				{
+					outstream.write(b, 0, read);
+					downloaded += read;
+					updateDownloadNotification(this.subscriptionUpdateService, podcast, downloaded);
+				}
+				instream.close();
+				
+				Log.d("Podax", "Done downloading " + podcast.getTitle());
 			} catch (Exception e) {
+				Log.d("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
+				removeDownloadNotification(this.subscriptionUpdateService);
+				dbAdapter.updateActiveDownloadId(null);
+
 				e.printStackTrace();
 				this.subscriptionUpdateService._timer.schedule(this, this.subscriptionUpdateService.ONEMINUTE);
-				return;
-			}
-
-			// download file and update notification
-			if (!mediaFile.exists() || podcast.getFileSize() == null || mediaFile.length() != podcast.getFileSize())
-			{
-				InputStream instream = null;
-				
 				try {
-					Log.d("Podax", "Downloading " + podcast.getTitle());
-
-					URL u = new URL(podcast.getMediaUrl());
-					HttpURLConnection c = (HttpURLConnection)u.openConnection();
-					if (mediaFile.exists())
-						c.setRequestProperty("Range", "bytes=" + mediaFile.length() + "-");
-					
-					// response code 206 means partial content and range header worked
-					boolean append = false;
-					long downloaded = 0;
-					if (c.getResponseCode() == 206) {
-						downloaded = mediaFile.length();
-					}
-					else {
-						int fileSize = c.getContentLength();
-						podcast.setFileSize(fileSize);
-						dbAdapter.savePodcast(podcast);
-					}
-					
-					updateDownloadNotification(this.subscriptionUpdateService, podcast, 0);
-
-					FileOutputStream outstream = new FileOutputStream(mediaFile, append);
-					instream = c.getInputStream();
-					int read;
-					byte[] b = new byte[1024*64];
-					while ((read = instream.read(b, 0, b.length)) != -1)
-					{
-						outstream.write(b, 0, read);
-						downloaded += read;
-						updateDownloadNotification(this.subscriptionUpdateService, podcast, downloaded);
-					}
-					instream.close();
-					
-					Log.d("Podax", "Done downloading " + podcast.getTitle());
-				} catch (Exception e) {
-					Log.d("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
-					removeDownloadNotification(this.subscriptionUpdateService);
-					e.printStackTrace();
-					this.subscriptionUpdateService._timer.schedule(this, this.subscriptionUpdateService.ONEMINUTE);
-					try {
-						if (instream != null)
-							instream.close();
-					} catch (IOException e2) {
-						e2.printStackTrace();
-					}
-					break;
+					if (instream != null)
+						instream.close();
+				} catch (IOException e2) {
+					e2.printStackTrace();
 				}
-				this.removeDownloadNotification(this.subscriptionUpdateService);
+				break;
 			}
+
+			removeDownloadNotification(this.subscriptionUpdateService);
+			dbAdapter.updateActiveDownloadId(null);
 		}
 		_isRunning = false;
 	}
@@ -118,8 +111,12 @@ class PodcastDownloadTimerTask extends TimerTask {
 		
 		Context context = updateService.getApplicationContext();
 		CharSequence contentTitle = "Downloading Podcast";
-		String pct = Integer.toString((int)(100.0f * downloaded / podcast.getFileSize()));
-		CharSequence contentText = pct + "% of " + podcast.getTitle();
+		CharSequence contentText = podcast.getTitle();
+		if (podcast.getFileSize() != null)
+		{
+			String pct = Integer.toString((int)(100.0f * downloaded / podcast.getFileSize()));
+			contentText = pct + "% of " + contentText;
+		}
 		Intent notificationIntent = new Intent(updateService, UpdateService.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(updateService, 0, notificationIntent, 0);
 		notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);

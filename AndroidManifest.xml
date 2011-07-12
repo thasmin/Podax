@@ -26,6 +26,7 @@
 		<activity android:name=".GoogleAccountChooserActivity"></activity>
 		<activity android:name=".PodcastDetailActivity"></activity>
 		<activity android:name=".PlayerControlActivity"></activity>
+		<activity android:name=".ActiveDownloadListActivity"></activity>
 
 		<service android:name=".UpdateService"></service>
 		<service android:name=".PlayerService">
