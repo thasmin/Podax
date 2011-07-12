@@ -1,23 +1,36 @@
 package com.axelby.podax;
 
+import java.io.File;
 import java.util.Vector;
 
 import android.app.ListActivity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class ActiveDownloadListActivity extends ListActivity {
+	Runnable refresher;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
+		Runnable refresher = new Runnable() {
+			public void run() {
+				setListAdapter(new ActiveDownloadAdapter());
+				new Handler().postDelayed(this, 1000);
+			}
+		};
+
 		setContentView(R.layout.downloads_list);
-		
-		setListAdapter(new ActiveDownloadAdapter());
+
+		refresher.run();
 		
 		PlayerActivity.injectPlayerFooter(this);
 	}
@@ -39,26 +52,23 @@ public class ActiveDownloadListActivity extends ListActivity {
 			for (Integer podcastId : toProcess) {
 				Podcast podcast = dbAdapter.loadPodcast(podcastId);
 
-				if (podcastId == activeId) {
-					_active = podcast;
+				if (!podcast.needsDownload())
 					continue;
+
+				if (activeId != null && podcast.getId() == activeId) {
+					_active = podcast;
 				}
 
-				if (podcast.needsDownload())
-					_waiting.add(podcast);
+				_waiting.add(podcast);
 			}
 		}
 
 		public int getCount() {
-			return _active != null ? 1 : 0 + _waiting.size();
+			return _waiting.size();
 		}
 
 		public Object getItem(int position) {
-			if (_active == null)
-				return _waiting.get(position);
-			if (position == 0)
-				return _active;
-			return _waiting.get(position - 1);
+			return _waiting.get(position);
 		}
 
 		public long getItemId(int position) {
@@ -68,18 +78,37 @@ public class ActiveDownloadListActivity extends ListActivity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			Podcast podcast = (Podcast)getItem(position);
 			
-			View view;
+			LinearLayout view;
 			if (convertView == null) {
-				view = _layoutInflater.inflate(R.layout.downloads_list_item, null);
+				view = (LinearLayout)_layoutInflater.inflate(R.layout.downloads_list_item, null);
 			}
 			else {
-				view = convertView;
+				view = (LinearLayout)convertView;
 			}
 			
 			TextView title = (TextView)view.findViewById(R.id.title); 
 			title.setText(podcast.getTitle());
 			TextView subscription = (TextView)view.findViewById(R.id.subscription); 
 			subscription.setText(podcast.getSubscription().getDisplayTitle());
+			
+			if (podcast == _active)
+			{
+				int max = podcast.getFileSize();
+				int downloaded = (int) new File(podcast.getFilename()).length();
+				View extras = _layoutInflater.inflate(R.layout.downloads_list_active_item, null);
+				view.addView(extras);
+				ProgressBar progressBar = (ProgressBar)extras.findViewById(R.id.progressBar);
+				progressBar.setMax(max);
+				progressBar.setProgress(downloaded);
+				TextView progressText = (TextView)extras.findViewById(R.id.progressText);
+				progressText.setText(Math.round(100.0f * downloaded / max) + "% done");
+			}
+			else
+			{
+				View extras = view.findViewById(R.id.active);
+				if (extras != null)
+					view.removeView(extras);
+			}
 			
 			return view;
 		}
