@@ -28,12 +28,8 @@
 		<activity android:name=".PlayerControlActivity"></activity>
 		<activity android:name=".ActiveDownloadListActivity"></activity>
 
-		<service android:name=".UpdateService"></service>
-		<service android:name=".PlayerService">
-			<intent-filter>
-				<action android:name="com.axelby.podax.IPlayerService"></action>
-			</intent-filter>
-		</service>
+		<service android:name=".UpdateService" />
+		<service android:name=".PlayerService" />
 
 		<receiver android:name=".WidgetProvider">
 			<intent-filter>
