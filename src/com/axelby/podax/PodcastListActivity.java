@@ -93,7 +93,7 @@ public class PodcastListActivity extends ListActivity {
         switch (item.getItemId()) {
         case R.id.refresh_subscription:
         	Subscription subscription = DBAdapter.getInstance(this).loadSubscription(_subscriptionId);
-            UpdateService.getInstance().updateSubscription(subscription);
+            UpdateService.updateSubscription(this, subscription);
         default:
             return super.onOptionsItemSelected(item);
         }

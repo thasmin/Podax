@@ -26,8 +26,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class SubscriptionListActivity extends ListActivity {
-	private UpdateService _updater = null;
-	
 	private SubscriptionUpdateReceiver _subscriptionUpdateReceiver = new SubscriptionUpdateReceiver();	
 	private final class SubscriptionUpdateReceiver extends BroadcastReceiver {
 		@Override
@@ -49,8 +47,6 @@ public class SubscriptionListActivity extends ListActivity {
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
 		notificationManager.cancel(NotificationIds.SUBSCRIPTION_UPDATE_ERROR);
-		
-		_updater = UpdateService.getInstance();
 		
 		PlayerActivity.injectPlayerFooter(this);
     }
@@ -125,8 +121,7 @@ public class SubscriptionListActivity extends ListActivity {
 				public void onClick(DialogInterface dialog, int which) {
 					Subscription subscription = DBAdapter.getInstance(SubscriptionListActivity.this).addSubscription(input.getText().toString());					
 					getListView().setAdapter(new SubscriptionAdapter(SubscriptionListActivity.this));
-					if (_updater != null)
-						_updater.updateSubscription(subscription);
+					UpdateService.updateSubscription(SubscriptionListActivity.this, subscription);
 				}
 			});
     		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

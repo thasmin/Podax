@@ -1,10 +1,11 @@
 package com.axelby.podax;
 
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.Vector;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -12,30 +13,26 @@ import android.os.IBinder;
 public class UpdateService extends Service {
 	private final long ONESECOND = 1000;
 	final long ONEMINUTE = ONESECOND * 60;
-	private final long ONEHOUR = ONEMINUTE * 60;
-
-	private static UpdateService _instance;
-	public static UpdateService getInstance() {
-		return _instance;
-	}
 	
 	Timer _timer = new Timer();
-	Vector<Subscription> _toUpdate = new Vector<Subscription>();
-	private UpdateSubscriptionTimerTask _rssTask = new UpdateSubscriptionTimerTask(this);
-	private RefreshSubscriptionsTimerTask _refreshTask = new RefreshSubscriptionsTimerTask();
 	PodcastDownloadTimerTask _downloadTask = new PodcastDownloadTimerTask(this);
-	
-	public void updateSubscription(Subscription subscription) {
-		_toUpdate.add(subscription);
+
+	public static void updateSubscription(Context context, Subscription subscription) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.setAction("com.axelby.podax.REFRESH_SUBSCRIPTION");
+		intent.putExtra("com.axelby.podax.SUBSCRIPTION_ID", subscription.getId());
+		context.startService(intent);
 	}
 
 	private SubscriptionUpdateBinder _binder = new SubscriptionUpdateBinder();
+	private PendingIntent _hourlyRefreshIntent;
+	private SubscriptionUpdater _subscriptionUpdater;
+
 	public class SubscriptionUpdateBinder extends Binder {
 		UpdateService getService() {
 			return UpdateService.this;
 		}
 	}
-
 	@Override
 	public IBinder onBind(Intent arg0) {
 		return _binder;
@@ -43,7 +40,7 @@ public class UpdateService extends Service {
 
 	@Override
 	public void onCreate() {
-		_instance = this;
+		_subscriptionUpdater = new SubscriptionUpdater(this);
 	}
 
 	@Override
@@ -52,28 +49,42 @@ public class UpdateService extends Service {
 
 	@Override
 	public void onStart(Intent intent, int startId) {
-	    handleCommand(intent);
+	    handleIntent(intent);
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-	    handleCommand(intent);
+	    handleIntent(intent);
 	    return START_NOT_STICKY;
 	}
 	
-	private void handleCommand(Intent intent) {
-        // check the queue every second
-		_timer.scheduleAtFixedRate(_rssTask, ONESECOND, ONESECOND);
-		// populate the queue with all of the scriptions every hour
-		_timer.scheduleAtFixedRate(_refreshTask, ONESECOND, ONEHOUR);
-		_timer.scheduleAtFixedRate(_downloadTask, ONESECOND, ONESECOND * 3);
-	}
-	
-	private class RefreshSubscriptionsTimerTask extends TimerTask {
-		@Override
-		public void run() {
-			final DBAdapter dbAdapter = DBAdapter.getInstance(UpdateService.this);
-	        _toUpdate.addAll( dbAdapter.getUpdatableSubscriptions() );
+	private void handleIntent(Intent intent) {
+		String action = intent.getAction();
+		if (action == null)
+			return;
+
+		if (action.equals("com.axelby.podax.STARTUP")) {
+			AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+
+			// refresh the feeds
+			Intent refreshIntent = new Intent(this, UpdateService.class);
+			refreshIntent.setAction("com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS");
+			_hourlyRefreshIntent = PendingIntent.getService(this, 0, refreshIntent, 0);
+			alarmManager.setInexactRepeating(AlarmManager.RTC,
+					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyRefreshIntent);
+
+			_timer.scheduleAtFixedRate(_downloadTask, ONESECOND, ONESECOND * 3);
+		}
+		if (action.equals("com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS")) {
+			_subscriptionUpdater.addAllSubscriptions();
+			_subscriptionUpdater.run();
+		}
+		if (action.equals("com.axelby.podax.REFRESH_SUBSCRIPTION")) {
+			int subscriptionId = intent.getIntExtra("com.axelby.podax.SUBSCRIPTION_ID", -1);
+			if (subscriptionId != -1) {
+				_subscriptionUpdater.addSubscriptionId(subscriptionId);
+				_subscriptionUpdater.run();
+			}
 		}
 	}
 }

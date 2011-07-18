@@ -27,7 +27,9 @@ public class PodaxApp extends Application {
 		_instance = this;
 		_activePodcast = DBAdapter.getInstance(this).loadLastPlayedPodcast();
 
-		startService(new Intent(this, UpdateService.class));
+		Intent intent = new Intent(this, UpdateService.class);
+		intent.setAction("com.axelby.podax.STARTUP");
+		startService(intent);
 	}
 
 	public static PodaxApp getApp() {
