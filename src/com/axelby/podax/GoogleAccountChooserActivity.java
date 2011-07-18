@@ -179,6 +179,7 @@ public class GoogleAccountChooserActivity extends ListActivity {
 		}
 
 		Toast.makeText(this, "Google Reader subscriptions imported", Toast.LENGTH_LONG);
+		finish();
 		startActivity(new Intent(this, SubscriptionListActivity.class));
 	}
 }
