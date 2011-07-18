@@ -1,7 +1,5 @@
 package com.axelby.podax;
 
-import java.util.Timer;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -11,12 +9,6 @@ import android.os.Binder;
 import android.os.IBinder;
 
 public class UpdateService extends Service {
-	private final long ONESECOND = 1000;
-	final long ONEMINUTE = ONESECOND * 60;
-	
-	Timer _timer = new Timer();
-	PodcastDownloadTimerTask _downloadTask = new PodcastDownloadTimerTask(this);
-
 	public static void updateSubscription(Context context, Subscription subscription) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction("com.axelby.podax.REFRESH_SUBSCRIPTION");
@@ -24,9 +16,17 @@ public class UpdateService extends Service {
 		context.startService(intent);
 	}
 
+	public static void downloadPodcasts(Context context) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.setAction("com.axelby.podax.DOWNLOAD_PODCASTS");
+		context.startService(intent);
+	}
+
 	private SubscriptionUpdateBinder _binder = new SubscriptionUpdateBinder();
 	private PendingIntent _hourlyRefreshIntent;
 	private SubscriptionUpdater _subscriptionUpdater;
+	private PendingIntent _hourlyDownloadIntent;
+	private PodcastDownloader _podcastDownloader;
 
 	public class SubscriptionUpdateBinder extends Binder {
 		UpdateService getService() {
@@ -41,6 +41,7 @@ public class UpdateService extends Service {
 	@Override
 	public void onCreate() {
 		_subscriptionUpdater = new SubscriptionUpdater(this);
+		_podcastDownloader = new PodcastDownloader(this);
 	}
 
 	@Override
@@ -73,7 +74,11 @@ public class UpdateService extends Service {
 			alarmManager.setInexactRepeating(AlarmManager.RTC,
 					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyRefreshIntent);
 
-			_timer.scheduleAtFixedRate(_downloadTask, ONESECOND, ONESECOND * 3);
+			Intent downloadIntent = new Intent(this, UpdateService.class);
+			downloadIntent.setAction("com.axelby.podax.DOWNLOAD_PODCASTS");
+			_hourlyDownloadIntent = PendingIntent.getService(this, 0, downloadIntent, 0);
+			alarmManager.setInexactRepeating(AlarmManager.RTC,
+					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyDownloadIntent);
 		}
 		if (action.equals("com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS")) {
 			_subscriptionUpdater.addAllSubscriptions();
@@ -85,6 +90,9 @@ public class UpdateService extends Service {
 				_subscriptionUpdater.addSubscriptionId(subscriptionId);
 				_subscriptionUpdater.run();
 			}
+		}
+		if (action.equals("com.axelby.podax.DOWNLOAD_PODCASTS")) {
+			_podcastDownloader.download();
 		}
 	}
 }

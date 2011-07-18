@@ -238,6 +238,12 @@ public class DBAdapter {
 		return ids;
 	}
 
+	public Vector<Podcast> getQueue() {
+		Cursor c = this._db.query("podcasts", PODCAST_COLUMNS, 
+				"queuePosition IS NOT NULL", null, null, null, "queuePosition");
+		return collectPodcasts(c);
+	}
+
 	public Vector<Integer> getQueueIds() {
 		Cursor c = this._db.query("podcasts", new String[] { "id" }, 
 				"queuePosition IS NOT NULL", null, null, null, "queuePosition");

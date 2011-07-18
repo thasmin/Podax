@@ -21,7 +21,6 @@ import android.sax.StartElementListener;
 import android.util.Xml;
 
 class SubscriptionUpdater {
-	// TODO: allow updaters for two contexts?
 	// TODO: allow subscriptions to be added to running process
 	private static boolean _isRunning = false;
 	private Context _context;
@@ -141,6 +140,7 @@ class SubscriptionUpdater {
 				_isRunning = false;
 
 				_context.sendBroadcast(new Intent(NotificationIds.SUBSCRIPTION_UPDATE_BROADCAST));
+				UpdateService.downloadPodcasts(_context);
 			}
 		}
 	};
