@@ -44,14 +44,14 @@ public class PodcastListActivity extends ListActivity {
 				
 				if (p.getQueuePosition() == null)
 					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE,
-							ContextMenu.NONE, "Add to Queue");
+							ContextMenu.NONE, R.string.add_to_queue);
 				else
 					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
-							ContextMenu.NONE, "Remove from Queue");
+							ContextMenu.NONE, R.string.remove_from_queue);
 				
 				if (p.isDownloaded())
 					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
-							"Play");
+							R.string.play);
 			}
 		});
         

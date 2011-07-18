@@ -36,11 +36,11 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 				Podcast p = (Podcast) getListView().getItemAtPosition(mi.position);
 				
 				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
-						ContextMenu.NONE, "Remove from Queue");
+						ContextMenu.NONE, R.string.remove_from_queue);
 				
 				if (p.isDownloaded())
 					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
-							"Play");
+							R.string.play);
 			}
 		});
 		
