@@ -21,6 +21,10 @@ public class PlayerActivity {
 		final ImageButton _pausebtn = (ImageButton) activity.findViewById(R.id.pausebtn);
 		final ImageButton _showplayerbtn = (ImageButton) activity.findViewById(R.id.showplayer);
 		
+		_podcastTitle.setText("");
+		_position.setText("");
+		_showplayerbtn.setEnabled(false);
+
 		_pausebtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
 				PodaxApp app = PodaxApp.getApp();
@@ -43,20 +47,29 @@ public class PlayerActivity {
 		
 		final Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
+			private Podcast _lastPodcast;
+
 			public void run() {
 				PodaxApp app = PodaxApp.getApp();
-				Podcast _podcast = app.getActivePodcast();
+				Podcast podcast = app.getActivePodcast();
 				
-				if (_podcast == null) {
+				if (podcast == _lastPodcast) {
+					if (podcast != null) {
+						_position.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));						
+					}
+				}
+				else if (podcast == null) {
 					_podcastTitle.setText("");
 					_position.setText("");
 					_showplayerbtn.setEnabled(false);
 				} else {
-					_podcastTitle.setText(_podcast.getTitle());
+					_podcastTitle.setText(podcast.getTitle());
 					_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
 					_showplayerbtn.setEnabled(true);
 					_position.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));
 				}
+
+				_lastPodcast = podcast;
 
 				handler.postDelayed(this, 400);
 			}
