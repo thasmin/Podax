@@ -121,7 +121,7 @@ class PodcastDownloader {
 			String pct = Integer.toString((int)(100.0f * downloaded / podcast.getFileSize()));
 			contentText = pct + "% of " + contentText;
 		}
-		Intent notificationIntent = new Intent(_context, UpdateService.class);
+		Intent notificationIntent = new Intent(_context, ActiveDownloadListActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 		notification.setLatestEventInfo(_context, contentTitle, contentText, contentIntent);
 		notification.flags |= Notification.FLAG_ONGOING_EVENT;
