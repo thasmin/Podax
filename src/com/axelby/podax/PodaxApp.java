@@ -55,8 +55,8 @@ public class PodaxApp extends Application {
 			_player.play();
 	}
 	public int getPosition() {
-		if (_player != null)
-			return _player.getPosition();
+		if (_activePodcast != null)
+			return _activePodcast.getLastPosition();
 		return -1;
 	}
 	public int getDuration() {
