@@ -119,7 +119,7 @@ public class DBAdapter {
 			Date lastModified) {
 		subscription.setLastModified(lastModified);
 		this._db.execSQL("UPDATE subscriptions SET lastModified = ? WHERE url = ?",
-				new Object[] { lastModified, subscription.getUrl() });
+				new Object[] { lastModified.getTime() / 1000, subscription.getUrl() });
 	}
 	
 	public void updatePodcastsFromFeed(Vector<RssPodcast> podcasts) {
