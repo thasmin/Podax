@@ -14,6 +14,7 @@ public class PodaxApp extends Application {
 	protected ServiceConnection _playerConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			_player = ((PlayerService.PlayerBinder)service).getService();
+			PlayerService.updateWidget(PodaxApp.this, getActivePodcast(), isPlaying());
 		}
 		public void onServiceDisconnected(ComponentName name) {
 			_player = null;
@@ -30,6 +31,8 @@ public class PodaxApp extends Application {
 		Intent intent = new Intent(this, UpdateService.class);
 		intent.setAction("com.axelby.podax.STARTUP");
 		startService(intent);
+		
+		PlayerService.updateWidget(this, getActivePodcast(), isPlaying());
 	}
 
 	public static PodaxApp getApp() {

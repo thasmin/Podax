@@ -27,19 +27,14 @@ public class PlayerService extends Service {
 		}
 	}
 	
-	public class UpdateWidgetTimerTask extends TimerTask {
+	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
+			_activePodcast.setLastPosition(_player.getCurrentPosition());
+			DBAdapter.getInstance(PlayerService.this).updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
 			updateWidget();
 		}
 	}
-	protected UpdateWidgetTimerTask _updateWidgetTask;
-	
-	public class UpdateCurrentPodcastTimerTask extends TimerTask {
-		public void run() {
-			DBAdapter.getInstance(PlayerService.this).updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
-		}
-	}
-	protected UpdateCurrentPodcastTimerTask _updateCurrentPodcast;
+	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
 
 	protected MediaPlayer _player = new MediaPlayer();
 	protected PlayerBinder _binder = new PlayerBinder();
@@ -107,15 +102,6 @@ public class PlayerService extends Service {
 
 	private void handleStart(Intent intent) {
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-		if (_activePodcast == null) {
-			// see if a specific podcast is supposed to be played
-			int podcastId = intent.getIntExtra("com.axelby.podax.podcast", 0);
-			if (podcastId != -1)
-				play(DBAdapter.getInstance(this).loadPodcast(podcastId));
-			else
-				play();
-		}
 		
 		if (intent.getExtras() != null && intent.getExtras().containsKey(Intent.EXTRA_KEY_EVENT)) {
 			KeyEvent keyEvent = (KeyEvent) intent.getExtras().get(Intent.EXTRA_KEY_EVENT);
@@ -128,8 +114,16 @@ public class PlayerService extends Service {
 					else
 						play();
 				}
-				return;
 			}
+		}
+
+		if (_activePodcast == null) {
+			// see if a specific podcast is supposed to be played
+			int podcastId = intent.getIntExtra("com.axelby.podax.podcast", 0);
+			if (podcastId != -1)
+				play(DBAdapter.getInstance(this).loadPodcast(podcastId));
+			else
+				play();
 		}
 				
 		_telephony = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
@@ -196,15 +190,11 @@ public class PlayerService extends Service {
 		_player.start();
 
 		updateWidget();
-		if (_updateWidgetTask != null)
-			_updateWidgetTask.cancel();
-		_updateWidgetTask = new UpdateWidgetTimerTask();
-		_updateTimer.schedule(_updateWidgetTask, 250, 250);
 		
-		if (_updateCurrentPodcast != null)
-			_updateCurrentPodcast.cancel();
-		_updateCurrentPodcast = new UpdateCurrentPodcastTimerTask();
-		_updateTimer.schedule(_updateCurrentPodcast, 250, 250);
+		if (_updatePlayerPositionTimerTask != null)
+			_updatePlayerPositionTimerTask.cancel();
+		_updatePlayerPositionTimerTask = new UpdatePlayerPositionTimerTask();
+		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 	}
 
 	public void skip(int secs) {
@@ -239,19 +229,22 @@ public class PlayerService extends Service {
 	}
 
 	public void updateWidget() {
-		RemoteViews views = new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget);
-		if (_activePodcast == null || !_player.isPlaying()) {
+		updateWidget(this, _activePodcast, isPlaying());
+	}
+	public static void updateWidget(Context context, Podcast _activePodcast, boolean isPlaying) {
+		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
+		if (_activePodcast == null) {
 			views.setTextViewText(R.id.title, "");
 			views.setTextViewText(R.id.position, "");
 			views.setImageViewResource(R.id.play_btn, android.R.drawable.ic_media_play);
 		} else {
 			views.setTextViewText(R.id.title, _activePodcast.getTitle());
-			views.setTextViewText(R.id.position, PlayerService.getPositionString(getDuration(), getPosition()));
-			int imageRes = isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
+			views.setTextViewText(R.id.position, PlayerService.getPositionString(_activePodcast.getDuration(), _activePodcast.getLastPosition()));
+			int imageRes = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		}
-		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
-		appWidgetManager.updateAppWidget(new ComponentName(this, "com.axelby.podax.WidgetProvider"), views);
+		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+		appWidgetManager.updateAppWidget(new ComponentName(context, "com.axelby.podax.WidgetProvider"), views);
 	}
 
 	public String getPositionString() {
@@ -261,11 +254,8 @@ public class PlayerService extends Service {
 	}
 
 	private void stopPlayerService() {
-		if (_updateWidgetTask != null) {
-			_updateWidgetTask.cancel();
-		}
-		if (_updateCurrentPodcast != null) {
-			_updateCurrentPodcast.cancel();
+		if (_updatePlayerPositionTimerTask != null) {
+			_updatePlayerPositionTimerTask.cancel();
 		}
 
 		stopSelf();

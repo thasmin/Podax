@@ -71,9 +71,9 @@ public class PlayerActivity {
 
 				_lastPodcast = podcast;
 
-				handler.postDelayed(this, 400);
+				handler.postDelayed(this, 250);
 			}
-		}, 200);
+		}, 250);
 	}
 
 	private static View injectView(Activity activity, int resource) {
