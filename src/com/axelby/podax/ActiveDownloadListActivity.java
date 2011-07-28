@@ -7,6 +7,8 @@ import android.app.ListActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -112,6 +114,23 @@ public class ActiveDownloadListActivity extends ListActivity {
 			
 			return view;
 		}
-
 	}
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, 0, 0, "Restart Downloader");
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case 0:
+			UpdateService.downloadPodcasts(this);
+			break;
+		default:
+			return super.onContextItemSelected(item);
+		}
+		return true;
+    }
 }
