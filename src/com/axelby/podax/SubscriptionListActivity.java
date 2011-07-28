@@ -78,6 +78,8 @@ public class SubscriptionListActivity extends ListActivity {
             DBAdapter.getInstance(this).deleteAllSubscriptions();
             setListAdapter(new SubscriptionAdapter(this));
             return true;
+        case R.id.refresh_subscriptions:
+        	UpdateService.updateSubscriptions(this);
         default:
             return super.onOptionsItemSelected(item);
         }

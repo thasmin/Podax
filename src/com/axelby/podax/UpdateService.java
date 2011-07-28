@@ -9,6 +9,12 @@ import android.os.Binder;
 import android.os.IBinder;
 
 public class UpdateService extends Service {
+	public static void updateSubscriptions(Context context) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.setAction("com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS");
+		context.startService(intent);
+	}
+
 	public static void updateSubscription(Context context, Subscription subscription) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction("com.axelby.podax.REFRESH_SUBSCRIPTION");
