@@ -2,12 +2,23 @@
 			  android:id="@+id/layout"
 			  android:layout_width="fill_parent" android:layout_height="fill_parent"
 			  android:orientation="vertical">
-	<TextView android:id="@+id/header"
-			  android:text="@string/app_long_name"
-			  android:layout_width="fill_parent"
-			  android:layout_height="wrap_content"
-			  android:textAppearance="?android:attr/textAppearanceLarge"
-			  android:gravity="center_horizontal" />
+    <RelativeLayout android:id="@+id/relativeLayout1"
+    	android:layout_height="wrap_content"
+    	android:layout_width="fill_parent"
+    	android:gravity="center_horizontal">
+		<TextView android:id="@+id/header"
+				  android:text="@string/app_long_name"
+				  android:layout_width="wrap_content"
+				  android:layout_height="wrap_content"
+				  android:textAppearance="?android:attr/textAppearanceLarge" />
+		<TextView android:id="@+id/version"
+				  android:text="@string/app_version"
+				  android:layout_width="wrap_content"
+				  android:layout_height="wrap_content"
+				  android:textAppearance="?android:attr/textAppearanceSmall"
+				  android:layout_below="@id/header"
+				  android:layout_alignRight="@id/header" />
+    </RelativeLayout>
 
 	<RelativeLayout android:id="@+id/queue"
 					android:layout_width="fill_parent" android:layout_height="wrap_content"
