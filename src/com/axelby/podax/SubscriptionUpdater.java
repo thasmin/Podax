@@ -118,7 +118,7 @@ class SubscriptionUpdater {
 					URLConnection c = u.openConnection();
 
 					Date modified = new Date(c.getLastModified());
-					if (subscription.getLastModified() == modified)
+					if (subscription.getLastModified().getTime() == modified.getTime())
 						return;
 
 					updateUpdateNotification(subscription, "Downloading Feed");
