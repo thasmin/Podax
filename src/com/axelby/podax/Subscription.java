@@ -8,14 +8,16 @@ public class Subscription {
 	String url;
 	Date lastModified;
 	Date lastUpdate;
+	String eTag;
 	
-	public Subscription(int id, String title, String url, Date lastModified, Date lastUpdate) {
+	public Subscription(int id, String title, String url, Date lastModified, Date lastUpdate, String eTag) {
 		super();
 		this.id = id;
 		this.title = title;
 		this.url = url;
 		this.lastModified = lastModified;
 		this.lastUpdate = lastUpdate;
+		this.eTag = eTag;
 	}
 	public int getId() {
 		return id;
@@ -50,5 +52,11 @@ public class Subscription {
 	
 	public String getDisplayTitle() {
 		return this.title != null ? this.title : this.url;
+	}
+	public String getETag() {
+		return eTag;
+	}
+	public void setETag(String eTag) {
+		this.eTag = eTag;
 	}
 }

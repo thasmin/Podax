@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter {
 	private static final String[] SUBSCRIPTION_COLUMNS = new String[] { "id",
-			"title", "url", "lastModified", "lastUpdate" };
+			"title", "url", "lastModified", "lastUpdate", "eTag" };
 	private static final String[] PODCAST_COLUMNS = new String[] { "id",
 			"subscriptionId", "title", "link", "pubDate", "description",
 			"mediaUrl", "fileSize", "queuePosition", "lastPosition", "duration" };
@@ -22,6 +22,47 @@ public class DBAdapter {
 	private DBHelper _helper;
 	private SQLiteDatabase _db;
 	
+	public static class DBHelper extends SQLiteOpenHelper {
+		public DBHelper(Context context) {
+			super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		}
+
+		@Override
+		public void onCreate(SQLiteDatabase db) {
+			db.execSQL("CREATE TABLE subscriptions(" + 
+					"id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+					"title VARCHAR, " + 
+					"url VARCHAR NOT NULL, " + 
+					"lastModified DATE, " + 
+					"lastUpdate DATE," +
+					"eTag VARCHAR);");
+			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
+			
+			db.execSQL("CREATE TABLE podcasts(" +
+					"id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"subscriptionId INTEGER, " +
+					"title VARCHAR, " +
+					"link VARCHAR, " +
+					"pubDate DATE, " + 
+					"description VARCHAR, " + 
+					"mediaUrl VARCHAR," +
+					"fileSize INTEGER," +
+					"queuePosition INTEGER," +
+					"lastPosition INTEGER NOT NULL DEFAULT 0," +
+					"duration INTEGER DEFAULT 0)"
+			);
+			db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
+			db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
+			
+			db.execSQL("CREATE TABLE podax(lastPodcastId INTEGER, activeDownloadId INTEGER)");
+			db.execSQL("INSERT INTO podax(lastPodcastId, activeDownloadId) VALUES(NULL, NULL)");
+		}
+
+		@Override
+		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		}
+	}
+
 	private DBAdapter(Context context) {
 		this._context = context;
 		this._helper = new DBHelper(_context);
@@ -42,7 +83,8 @@ public class DBAdapter {
 		{
 			Subscription sub = new Subscription(
 					c.getInt(0), c.getString(1), c.getString(2), 
-					new Date(c.getLong(3) * 1000), new Date(c.getInt(4) * 1000)
+					new Date(c.getLong(3) * 1000), new Date(c.getInt(4) * 1000),
+					c.getString(5)
 			);
 			subs.add(sub);
 			c.moveToNext();
@@ -114,12 +156,18 @@ public class DBAdapter {
 				new Object[] { title, url });
 	}
 
-
 	public void updateSubscriptionLastModified(Subscription subscription,
 			Date lastModified) {
 		subscription.setLastModified(lastModified);
 		this._db.execSQL("UPDATE subscriptions SET lastModified = ? WHERE url = ?",
 				new Object[] { lastModified.getTime() / 1000, subscription.getUrl() });
+	}
+
+	public void updateSubscriptionETag(Subscription subscription,
+			String eTag) {
+		subscription.setETag(eTag);
+		this._db.execSQL("UPDATE subscriptions SET eTag = ? WHERE url = ?",
+				new Object[] { eTag, subscription.getUrl() });
 	}
 	
 	public void updatePodcastsFromFeed(Vector<RssPodcast> podcasts) {
@@ -289,46 +337,6 @@ public class DBAdapter {
 		podcast.setQueuePosition(newPosition);
 	}
 	
-	public static class DBHelper extends SQLiteOpenHelper {
-		public DBHelper(Context context) {
-			super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		}
-
-		@Override
-		public void onCreate(SQLiteDatabase db) {
-			db.execSQL("CREATE TABLE subscriptions(" + 
-					"id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
-					"title VARCHAR, " + 
-					"url VARCHAR NOT NULL, " + 
-					"lastModified DATE, " + 
-					"lastUpdate DATE);");
-			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
-			
-			db.execSQL("CREATE TABLE podcasts(" +
-					"id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-					"subscriptionId INTEGER, " +
-					"title VARCHAR, " +
-					"link VARCHAR, " +
-					"pubDate DATE, " + 
-					"description VARCHAR, " + 
-					"mediaUrl VARCHAR," +
-					"fileSize INTEGER," +
-					"queuePosition INTEGER," +
-					"lastPosition INTEGER NOT NULL DEFAULT 0," +
-					"duration INTEGER DEFAULT 0)"
-			);
-			db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
-			db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
-			
-			db.execSQL("CREATE TABLE podax(lastPodcastId INTEGER, activeDownloadId INTEGER)");
-			db.execSQL("INSERT INTO podax(lastPodcastId, activeDownloadId) VALUES(NULL, NULL)");
-		}
-
-		@Override
-		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		}
-	}
-
 	public CharSequence getPodcastTitle(Integer podcastId) {
 		Cursor c = this._db.query("podcasts", new String[] { "title" }, 
 				"id = ?", new String[] { Integer.toString(podcastId) }, 
