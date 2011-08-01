@@ -31,7 +31,7 @@ public class PodcastDetailActivity extends Activity {
 
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
-        int podcastId = bundle.getInt("podcastId");
+        int podcastId = bundle.getInt("com.axelby.podax.podcastId");
 		_podcast = _dbAdapter.loadPodcast(podcastId);
 
 		_titleView = (TextView)findViewById(R.id.title);

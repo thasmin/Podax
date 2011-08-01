@@ -3,6 +3,7 @@ package com.axelby.podax;
 import java.util.Vector;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -14,6 +15,7 @@ import android.view.View.OnCreateContextMenuListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -29,6 +31,14 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 		setContentView(R.layout.queue);
 
 		setListAdapter(new QueueListAdapter());
+		getListView().setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View view, int position,
+					long id) {
+				Intent intent = new Intent(QueueActivity.this, PodcastDetailActivity.class);
+		    	intent.putExtra("com.axelby.podax.podcastId", (int)id);
+		    	startActivity(intent);
+			}
+		});
 		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
 			public void onCreateContextMenu(ContextMenu menu, View v,
 					ContextMenuInfo menuInfo) {

@@ -104,7 +104,7 @@ public class PodcastListActivity extends ListActivity {
     	Intent intent = new Intent();
     	intent.setClassName("com.axelby.podax", "com.axelby.podax.PodcastDetailActivity");
     	Podcast pod = (Podcast)list.getItemAtPosition(position);
-    	intent.putExtra("podcastId", pod.getId());
+    	intent.putExtra("com.axelby.podax.podcastId", pod.getId());
     	startActivity(intent);
     }
 
