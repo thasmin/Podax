@@ -235,10 +235,12 @@ public class PlayerService extends Service {
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 		if (_activePodcast == null) {
 			views.setTextViewText(R.id.title, "");
+			views.setTextViewText(R.id.podcast, "");
 			views.setTextViewText(R.id.position, "");
 			views.setImageViewResource(R.id.play_btn, android.R.drawable.ic_media_play);
 		} else {
 			views.setTextViewText(R.id.title, _activePodcast.getTitle());
+			views.setTextViewText(R.id.podcast, _activePodcast.getSubscription().getDisplayTitle());
 			views.setTextViewText(R.id.position, PlayerService.getPositionString(_activePodcast.getDuration(), _activePodcast.getLastPosition()));
 			int imageRes = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
