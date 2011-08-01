@@ -77,7 +77,7 @@ class PodcastDownloader {
 						{
 							outstream.write(b, 0, read);
 							downloaded += read;
-							updateDownloadNotification(podcast, downloaded);
+							//updateDownloadNotification(podcast, downloaded);
 						}
 						instream.close();
 						outstream.close();
@@ -116,11 +116,13 @@ class PodcastDownloader {
 		
 		CharSequence contentTitle = "Downloading Podcast";
 		CharSequence contentText = podcast.getTitle();
+		/*
 		if (podcast.getFileSize() != null)
 		{
 			String pct = Integer.toString((int)(100.0f * downloaded / podcast.getFileSize()));
 			contentText = pct + "% of " + contentText;
 		}
+		*/
 		Intent notificationIntent = new Intent(_context, ActiveDownloadListActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 		notification.setLatestEventInfo(_context, contentTitle, contentText, contentIntent);
