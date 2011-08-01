@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter {
 	private static final String[] SUBSCRIPTION_COLUMNS = new String[] { "id",
-			"title", "url", "lastModified", "lastUpdate", "eTag" };
+			"title", "url", "lastModified", "lastUpdate", "eTag", "thumbnail" };
 	private static final String[] PODCAST_COLUMNS = new String[] { "id",
 			"subscriptionId", "title", "link", "pubDate", "description",
 			"mediaUrl", "fileSize", "queuePosition", "lastPosition", "duration" };
@@ -35,7 +35,8 @@ public class DBAdapter {
 					"url VARCHAR NOT NULL, " + 
 					"lastModified DATE, " + 
 					"lastUpdate DATE," +
-					"eTag VARCHAR);");
+					"eTag VARCHAR," +
+					"thumbnail VARCHAR);");
 			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 			
 			db.execSQL("CREATE TABLE podcasts(" +
@@ -84,7 +85,7 @@ public class DBAdapter {
 			Subscription sub = new Subscription(
 					c.getInt(0), c.getString(1), c.getString(2), 
 					new Date(c.getLong(3) * 1000), new Date(c.getInt(4) * 1000),
-					c.getString(5)
+					c.getString(5), c.getString(6)
 			);
 			subs.add(sub);
 			c.moveToNext();
@@ -168,6 +169,11 @@ public class DBAdapter {
 		subscription.setETag(eTag);
 		this._db.execSQL("UPDATE subscriptions SET eTag = ? WHERE url = ?",
 				new Object[] { eTag, subscription.getUrl() });
+	}
+
+	public void updateSubscriptionThumbnail(Subscription subscription, String thumbnail) {
+		this._db.execSQL("UPDATE subscriptions SET thumbnail = ? WHERE url = ?",
+				new Object[] { thumbnail, subscription.getUrl() });
 	}
 	
 	public void updatePodcastsFromFeed(Vector<RssPodcast> podcasts) {

@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import java.io.File;
 import java.util.Vector;
 
 import android.app.AlertDialog;
@@ -10,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -22,6 +24,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -166,21 +170,33 @@ public class SubscriptionListActivity extends ListActivity {
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
-			TextView view;
+			LinearLayout layout;
 			if (convertView == null) {
-				view = (TextView)_layoutInflater.inflate(R.layout.list_item, null);
+				layout = (LinearLayout)_layoutInflater.inflate(R.layout.subscription_list_item, null);
 			}
 			else {
-				view = (TextView)convertView;
+				layout = (LinearLayout)convertView;
 			}
 			
-			if (position == 0)
-				view.setText("Add subscription");
-			else {
-				view.setText(_subscriptions.get(position - 1).getDisplayTitle());
+			TextView text = (TextView)layout.findViewById(R.id.text);
+			ImageView thumbnail = (ImageView)layout.findViewById(R.id.thumbnail);
+
+			if (position == 0) {
+				text.setText("Add subscription");
+				layout.removeView(thumbnail);
+				return layout;
 			}
+
+			Subscription subscription = _subscriptions.get(position - 1);
+			text.setText(subscription.getDisplayTitle());
+
+			File thumbnailFile = new File(subscription.getThumbnailFilename());
+			if (!thumbnailFile.exists())
+				thumbnail.setImageResource(0);
+			else
+				thumbnail.setImageBitmap(BitmapFactory.decodeFile(subscription.getThumbnailFilename()));
 			
-			return view;
+			return layout;
 		}
     }
 }

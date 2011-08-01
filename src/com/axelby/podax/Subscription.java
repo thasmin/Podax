@@ -1,6 +1,9 @@
 package com.axelby.podax;
 
+import java.io.File;
 import java.util.Date;
+
+import android.os.Environment;
 
 public class Subscription {
 	int id;
@@ -9,8 +12,10 @@ public class Subscription {
 	Date lastModified;
 	Date lastUpdate;
 	String eTag;
+	String thumbnail;
 	
-	public Subscription(int id, String title, String url, Date lastModified, Date lastUpdate, String eTag) {
+	public Subscription(int id, String title, String url, Date lastModified, 
+			Date lastUpdate, String eTag, String thumbnail) {
 		super();
 		this.id = id;
 		this.title = title;
@@ -18,6 +23,7 @@ public class Subscription {
 		this.lastModified = lastModified;
 		this.lastUpdate = lastUpdate;
 		this.eTag = eTag;
+		this.thumbnail = thumbnail;
 	}
 	public int getId() {
 		return id;
@@ -58,5 +64,20 @@ public class Subscription {
 	}
 	public void setETag(String eTag) {
 		this.eTag = eTag;
+	}
+	public String getThumbnail() {
+		return thumbnail;
+	}
+	public void setThumbnail(String thumbnail) {
+		this.thumbnail = thumbnail;
+	}
+
+	public String getThumbnailFilename() {
+		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
+		File podaxFile = new File(podaxDir);
+		if (!podaxFile.exists())
+			podaxFile.mkdirs();
+		return podaxDir + "/" + getId() + ".jpg";
 	}
 }

@@ -1,6 +1,10 @@
 package com.axelby.podax;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
@@ -18,6 +22,8 @@ import android.content.Intent;
 import android.util.Xml;
 
 class SubscriptionUpdater {
+	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
+	private static final String NAMESPACE_MEDIA = "http://search.yahoo.com/mrss/";
 	// TODO: allow subscriptions to be added to running process
 	private static boolean _isRunning = false;
 	private Context _context;
@@ -120,6 +126,14 @@ class SubscriptionUpdater {
 							} else if (name.equalsIgnoreCase("enclosure")) {
 								if (podcast != null)
 									podcast.setMediaUrl(parser.getAttributeValue(null, "url"));
+							} else if (name.equalsIgnoreCase("thumbnail") &&
+									parser.getNamespace() == NAMESPACE_MEDIA) {
+								String thumbnail = parser.getAttributeValue(null, "url");
+								updateSubscriptionThumbnail(dbAdapter, subscription, thumbnail);
+							} else if (name.equalsIgnoreCase("image") &&
+									parser.getNamespace() == NAMESPACE_ITUNES) {
+								String thumbnail = parser.getAttributeValue(null, "href");
+								updateSubscriptionThumbnail(dbAdapter, subscription, thumbnail);
 							}
 							break;
 						case XmlPullParser.END_TAG:
@@ -143,8 +157,7 @@ class SubscriptionUpdater {
 					dbAdapter.updatePodcastsFromFeed(podcasts);
 					if (lastBuildDate != null && lastBuildDate.getTime() != subscription.getLastModified().getTime())
 						dbAdapter.updateSubscriptionLastModified(subscription, lastBuildDate);
-					if (eTag != null && !eTag.equals(subscription.getETag()))
-						dbAdapter.updateSubscriptionETag(subscription, eTag);
+					dbAdapter.updateSubscriptionETag(subscription, eTag);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -154,6 +167,25 @@ class SubscriptionUpdater {
 
 				_context.sendBroadcast(new Intent(NotificationIds.SUBSCRIPTION_UPDATE_BROADCAST));
 				UpdateService.downloadPodcasts(_context);
+			}
+		}
+
+		private void updateSubscriptionThumbnail(DBAdapter dbAdapter, Subscription subscription, String thumbnail)
+				throws IOException, MalformedURLException {
+			try {
+				if (subscription.getThumbnail() == null || !subscription.getThumbnail().equals(thumbnail)) {
+					InputStream thumbIn = new URL(thumbnail).openStream();
+					FileOutputStream thumbOut = new FileOutputStream(subscription.getThumbnailFilename());
+					byte[] buffer = new byte[1024];
+				    int bufferLength = 0;
+				    while ( (bufferLength = thumbIn.read(buffer)) > 0 )
+				        thumbOut.write(buffer, 0, bufferLength);
+				    thumbOut.close();
+				    thumbIn.close();
+					
+					dbAdapter.updateSubscriptionThumbnail(subscription, thumbnail);
+				}
+			} catch (FileNotFoundException ex) {
 			}
 		}
 	};
