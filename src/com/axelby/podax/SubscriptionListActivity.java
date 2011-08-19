@@ -50,7 +50,7 @@ public class SubscriptionListActivity extends ListActivity {
         // remove any subscription update errors
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
-		notificationManager.cancel(NotificationIds.SUBSCRIPTION_UPDATE_ERROR);
+		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
 		
 		PlayerActivity.injectPlayerFooter(this);
     }
@@ -58,7 +58,7 @@ public class SubscriptionListActivity extends ListActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		IntentFilter intentFilter = new IntentFilter(NotificationIds.SUBSCRIPTION_UPDATE_BROADCAST);
+		IntentFilter intentFilter = new IntentFilter(Constants.SUBSCRIPTION_UPDATE_BROADCAST);
 		this.registerReceiver(_subscriptionUpdateReceiver, intentFilter);
 	}
 	

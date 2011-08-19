@@ -59,9 +59,7 @@ class PodcastDownloader {
 	
 						// response code 206 means partial content and range header worked
 						boolean append = false;
-						long downloaded = 0;
 						if (c.getResponseCode() == 206) {
-							downloaded = mediaFile.length();
 							append = true;
 						}
 						else {
@@ -76,13 +74,11 @@ class PodcastDownloader {
 						while ((read = instream.read(b, 0, b.length)) != -1)
 						{
 							outstream.write(b, 0, read);
-							downloaded += read;
-							//updateDownloadNotification(podcast, downloaded);
 						}
 						instream.close();
 						outstream.close();
 	
-						Log.d("Podax", "Done downloading " + podcast.getTitle());
+						Log.d("Podax", "Done downloasding " + podcast.getTitle());
 					} catch (Exception e) {
 						Log.d("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
 						removeDownloadNotification();
@@ -130,12 +126,12 @@ class PodcastDownloader {
 		
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
-		notificationManager.notify(NotificationIds.PODCAST_DOWNLOAD_ONGOING, notification);
+		notificationManager.notify(Constants.PODCAST_DOWNLOAD_ONGOING, notification);
 	}
 
 	void removeDownloadNotification() {
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
-		notificationManager.cancel(NotificationIds.PODCAST_DOWNLOAD_ONGOING);
+		notificationManager.cancel(Constants.PODCAST_DOWNLOAD_ONGOING);
 	}
 }

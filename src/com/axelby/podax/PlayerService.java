@@ -17,7 +17,6 @@ import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.widget.RemoteViews;
 
 public class PlayerService extends Service {
@@ -30,125 +29,138 @@ public class PlayerService extends Service {
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
 			_activePodcast.setLastPosition(_player.getCurrentPosition());
-			DBAdapter.getInstance(PlayerService.this).updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
-			updateWidget();
+			_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+			updateWidget(true);
 		}
 	}
 	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
 
-	protected MediaPlayer _player = new MediaPlayer();
-	protected PlayerBinder _binder = new PlayerBinder();
+	protected MediaPlayer _player;
+	protected PlayerBinder _binder;
 	protected DBAdapter _dbAdapter;
 	protected Podcast _activePodcast;
-	protected boolean _onPhone = false;
-	protected boolean _pausedForPhone = false;
+	protected boolean _onPhone;
+	protected boolean _pausedForPhone;
 	private TelephonyManager _telephony;
-	protected Timer _updateTimer = new Timer();
+	protected Timer _updateTimer;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		handleStart(intent);
+		handleIntent(intent);
 		return _binder;
 	}
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		
+		_player = new MediaPlayer();
+		_binder = new PlayerBinder();
+		_onPhone = false;
+		_pausedForPhone = false;
+		_updateTimer = new Timer();
+		_dbAdapter = DBAdapter.getInstance(this);
 
-		Log.d("Podax", "PlayerService onCreate");
+		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		
+		// may or may not be creating the service
+		if (_telephony == null) {
+			_telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+			_telephony.listen(new PhoneStateListener() {
+				@Override
+				public void onCallStateChanged(int state, String incomingNumber) {
+					_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
+					if (_player.isPlaying() && _onPhone) {
+						_player.pause();
+						_dbAdapter.updatePodcastPosition(_activePodcast.getId(),
+										_player.getCurrentPosition());
+						updateWidget(false);
+						_pausedForPhone = true;
+					}
+					if (!_player.isPlaying() && !_onPhone && _pausedForPhone)
+						_player.start();
+				}
+			}, PhoneStateListener.LISTEN_CALL_STATE);
+			_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
+		}
+
 		_player.setOnCompletionListener(new OnCompletionListener() {
 			public void onCompletion(MediaPlayer player) {
-				// verify completion -- not sure why this is necessary
-				if (player.getCurrentPosition() < player.getDuration()) {
-					return;
-				}
-
-				// not sure how this would happen
-				if (_activePodcast == null) {
-					Log.d("Podax", "PlayerService stopSelf - bug");
-					stopPlayerService();
-					return;
-				}
-				
-				DBAdapter dbAdapter = DBAdapter.getInstance(PlayerService.this);
-				dbAdapter.updatePodcastPosition(_activePodcast.getId(), 0);
-				dbAdapter.removePodcastFromQueue(_activePodcast.getId());
-				Podcast nextPodcast = dbAdapter.getFirstInQueue();
-				if (nextPodcast == null) {
-					Log.d("Podax", "PlayerService stopSelf - queue finished");
-					stopPlayerService();
-					dbAdapter.clearLastPlayedPodcast();
-					return;
-				}
-				
-				play(nextPodcast);
+				playNextPodcast();
 			}
 		});
+	}
+	
+	
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		
+		Log.d("Podax", "destroying PlayerService");
 	}
 
 	@Override
 	public void onStart(Intent intent, int startId) {
-		_dbAdapter = DBAdapter.getInstance(this);
-		handleStart(intent);
+		handleIntent(intent);
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.d("Podax", "Started PlayerService");
-		_dbAdapter = DBAdapter.getInstance(this);
-		handleStart(intent);
+		handleIntent(intent);
 		return START_STICKY;
 	}
 
-	private void handleStart(Intent intent) {
-		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-		
-		if (intent.getExtras() != null && intent.getExtras().containsKey(Intent.EXTRA_KEY_EVENT)) {
-			KeyEvent keyEvent = (KeyEvent) intent.getExtras().get(Intent.EXTRA_KEY_EVENT);
-			if (keyEvent != null) {
-				if (keyEvent.getAction() != KeyEvent.ACTION_DOWN)
-					return;
-				if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
-					if (isPlaying())
-						pause();
-					else
-						play();
-				}
-			}
-		}
-
-		if (_activePodcast == null) {
-			// see if a specific podcast is supposed to be played
-			int podcastId = intent.getIntExtra("com.axelby.podax.podcast", 0);
-			if (podcastId != -1)
-				play(DBAdapter.getInstance(this).loadPodcast(podcastId));
-			else
-				play();
-		}
-				
-		_telephony = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-		_telephony.listen(new PhoneStateListener() {
-			@Override
-			public void onCallStateChanged(int state, String incomingNumber) {
-				_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
-				if (isPlaying() && _onPhone) {
-					pause();
-					_pausedForPhone = true;
-				}
-				if (!isPlaying() && !_onPhone && _pausedForPhone)
+	private void handleIntent(Intent intent) {
+		if (intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND)) {
+			switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
+			case -1:
+				return;
+			case Constants.PLAYER_COMMAND_SKIPTOEND:
+				Log.d("Podax", "PlayerService got a command: skip to end");
+				skipToEnd();
+				break;
+			case Constants.PLAYER_COMMAND_RESTART:
+				Log.d("Podax", "PlayerService got a command: restart");
+				restart();
+				break;
+			case Constants.PLAYER_COMMAND_SKIPBACK:
+				Log.d("Podax", "PlayerService got a command: skip back");
+				skip(-15);
+				break;
+			case Constants.PLAYER_COMMAND_SKIPFORWARD:
+				Log.d("Podax", "PlayerService got a command: skip forward");
+				skip(30);
+				break;
+			case Constants.PLAYER_COMMAND_PLAYPAUSE:
+				Log.d("Podax", "PlayerService got a command: playpause");
+				if (_player.isPlaying()) {
+					Log.d("Podax", "  stopping the player");
+					stop();
+				} else {
+					Log.d("Podax", "  playing a podcast");
 					play();
+				}
+				break;
+			case Constants.PLAYER_COMMAND_PLAY:
+				Log.d("Podax", "PlayerService got a command: play");
+				play();
+				break;
+			case Constants.PLAYER_COMMAND_PAUSE:
+				Log.d("Podax", "PlayerService got a command: pause");
+				stop();
+				break;
 			}
-		}, PhoneStateListener.LISTEN_CALL_STATE);
-		_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
+		}
 	}
 
-	public void pause() {
-		_pausedForPhone = false;
-		_player.pause();
-		DBAdapter.getInstance(this).updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
-		updateWidget();
-		Log.d("Podax", "PlayerService stopSelf - pause");
-		stopPlayerService();
+	public void stop() {
+		Log.d("Podax", "PlayerService stopping");
+		_updatePlayerPositionTimerTask.cancel();
+		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+		updateWidget(false);
+		_player.stop();
+		stopSelf();
 	}
 	
 	public void play() {
@@ -162,14 +174,13 @@ public class PlayerService extends Service {
 		// determine which podcast to play
 		// priority: request, resume, queue
 		_activePodcast = podcast;
-		DBAdapter dbAdapter = DBAdapter.getInstance(this);
 		if (_activePodcast == null)
-			_activePodcast = dbAdapter.loadLastPlayedPodcast();
+			_activePodcast = _dbAdapter.loadLastPlayedPodcast();
 		if (_activePodcast == null)
-			_activePodcast = dbAdapter.getFirstInQueue();
+			_activePodcast = _dbAdapter.getFirstInQueue();
 		if (_activePodcast == null)
 		{
-			stopPlayerService();
+			stop();
 			return;
 		}
 		
@@ -180,16 +191,21 @@ public class PlayerService extends Service {
 			_player.prepare();
 			_player.seekTo(_activePodcast.getLastPosition());
 			_activePodcast.setDuration(_player.getDuration());
-			DBAdapter.getInstance(this).savePodcast(_activePodcast);
+			_dbAdapter.savePodcast(_activePodcast);
 		}
 		catch (IOException ex) {
-			stopPlayerService();
+			stop();
 		}
-		
+				
+		// the user will probably try this if the podcast is over and the next one didn't start
+		if (_player.getCurrentPosition() >= _player.getDuration()) {
+			playNextPodcast();
+		}
+
 		_pausedForPhone = false;
 		_player.start();
 
-		updateWidget();
+		updateWidget(true);
 		
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
@@ -199,37 +215,24 @@ public class PlayerService extends Service {
 
 	public void skip(int secs) {
 		_player.seekTo(_player.getCurrentPosition() + secs * 1000);
-		updateWidget();
+		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+		updateWidget(true);
 	}
 
 	public void restart() {
 		_player.seekTo(0);
-		updateWidget();
+		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+		updateWidget(true);
 	}
 
 	public void skipToEnd() {
 		_player.seekTo(_player.getDuration());
-		updateWidget();
-	}
-	
-	public boolean isPlaying() {
-		return _player.isPlaying();
+		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+		updateWidget(true);
 	}
 
-	public int getDuration() {
-		return _player.getDuration();
-	}
-	
-	public int getPosition() {
-		return _player.getCurrentPosition();
-	}
-
-	public Podcast getActivePodcast() {
-		return _activePodcast;
-	}
-
-	public void updateWidget() {
-		updateWidget(this, _activePodcast, isPlaying());
+	public void updateWidget(boolean isPlaying) {
+		updateWidget(this, _activePodcast, isPlaying);
 	}
 	public static void updateWidget(Context context, Podcast _activePodcast, boolean isPlaying) {
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
@@ -250,22 +253,42 @@ public class PlayerService extends Service {
 	}
 
 	public String getPositionString() {
-		if (this.getDuration() == 0) 
+		if (_player.getDuration() == 0)
 			return "";
-		return PlayerActivity.getTimeString(this.getPosition()) + " / " + PlayerActivity.getTimeString(this.getDuration());
+		return PlayerActivity.getTimeString(_player.getCurrentPosition())
+				+ " / " + PlayerActivity.getTimeString(_player.getDuration());
 	}
 
-	private void stopPlayerService() {
-		if (_updatePlayerPositionTimerTask != null) {
-			_updatePlayerPositionTimerTask.cancel();
+	private void playNextPodcast() {
+		// verify completion -- not sure why this is necessary
+		if (_player.getCurrentPosition() < _player.getDuration()) {
+			return;
 		}
 
-		stopSelf();
+		// not sure how this would happen
+		if (_activePodcast == null) {
+			Log.d("Podax", "PlayerService bug in playNextPodcast");
+			stop();
+			return;
+		}
+		
+		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), 0);
+		_dbAdapter.removePodcastFromQueue(_activePodcast.getId());
+		Podcast nextPodcast = _dbAdapter.getFirstInQueue();
+		if (nextPodcast == null) {
+			Log.d("Podax", "PlayerService queue finished");
+			_dbAdapter.clearLastPlayedPodcast();
+			stop();
+			return;
+		}
+		
+		play(nextPodcast);
 	}
 
 	public static String getPositionString(int duration, int position) {
-		if (duration == 0) 
+		if (duration == 0)
 			return "";
-		return PlayerActivity.getTimeString(position) + " / " + PlayerActivity.getTimeString(duration);
+		return PlayerActivity.getTimeString(position) + " / "
+				+ PlayerActivity.getTimeString(duration);
 	}
 }

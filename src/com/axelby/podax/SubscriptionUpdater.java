@@ -165,7 +165,7 @@ class SubscriptionUpdater {
 				removeUpdateNotification();
 				_isRunning = false;
 
-				_context.sendBroadcast(new Intent(NotificationIds.SUBSCRIPTION_UPDATE_BROADCAST));
+				_context.sendBroadcast(new Intent(Constants.SUBSCRIPTION_UPDATE_BROADCAST));
 				UpdateService.downloadPodcasts(_context);
 			}
 		}
@@ -204,7 +204,7 @@ class SubscriptionUpdater {
 		
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
-		notificationManager.notify(NotificationIds.SUBSCRIPTION_UPDATE_ERROR, notification);
+		notificationManager.notify(Constants.SUBSCRIPTION_UPDATE_ERROR, notification);
 	}
 	
 
@@ -223,12 +223,12 @@ class SubscriptionUpdater {
 		
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
-		notificationManager.notify(NotificationIds.SUBSCRIPTION_UPDATE_ONGOING, notification);
+		notificationManager.notify(Constants.SUBSCRIPTION_UPDATE_ONGOING, notification);
 	}
 	
 	private void removeUpdateNotification() {
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
-		notificationManager.cancel(NotificationIds.SUBSCRIPTION_UPDATE_ONGOING);
+		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ONGOING);
 	}
 }

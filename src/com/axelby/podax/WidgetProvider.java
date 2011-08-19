@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.view.KeyEvent;
 import android.widget.RemoteViews;
 
 public class WidgetProvider extends AppWidgetProvider {
@@ -32,7 +31,7 @@ public class WidgetProvider extends AppWidgetProvider {
 			RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 			
 			Intent active = new Intent(context, PlayerService.class);
-			active.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)); 
+			active.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_PLAYPAUSE);
 			PendingIntent pendingIntent = PendingIntent.getService(context, requestCode++, active, PendingIntent.FLAG_UPDATE_CURRENT);
 			views.setOnClickPendingIntent(R.id.play_btn, pendingIntent);
 			

@@ -28,13 +28,9 @@ public class PlayerActivity {
 		_pausebtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
 				PodaxApp app = PodaxApp.getApp();
-				if (app.isPlaying()) {
-					app.pause();
-					_pausebtn.setImageResource(android.R.drawable.ic_media_play);
-				} else {
-					app.play();
-					_pausebtn.setImageResource(android.R.drawable.ic_media_pause);
-				}
+				app.playpause();
+				_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_play
+						: android.R.drawable.ic_media_pause);
 			}
 		});
 		
@@ -51,23 +47,22 @@ public class PlayerActivity {
 
 			public void run() {
 				PodaxApp app = PodaxApp.getApp();
+				boolean isPlaying = app.isPlaying();
 				Podcast podcast = app.getActivePodcast();
-				
-				if (podcast == _lastPodcast) {
-					if (podcast != null) {
-						_position.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));						
+
+				if (podcast != null) {
+					if (isPlaying)
+						_position.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));
+					if (_lastPodcast != podcast) {
+						_podcastTitle.setText(podcast.getTitle());
+						_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+						_showplayerbtn.setEnabled(true);
 					}
-				}
-				else if (podcast == null) {
+				} else if (_lastPodcast != null) {
 					_podcastTitle.setText("");
 					_position.setText("");
 					_showplayerbtn.setEnabled(false);
-				} else {
-					_podcastTitle.setText(podcast.getTitle());
-					_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-					_showplayerbtn.setEnabled(true);
-					_position.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));
-				}
+				} 
 
 				_lastPodcast = podcast;
 

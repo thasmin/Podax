@@ -78,13 +78,13 @@ public class PlayerControlActivity extends Activity {
     	_secs30_rewind_btn.setOnClickListener(new OnClickListener() {
     		public void onClick(View v) {
     			if (_app != null)
-    				_app.skip(-30);
+    				_app.skipBack();
     		}
     	});
     	_secs30_skip_btn.setOnClickListener(new OnClickListener() {
     		public void onClick(View v) {
     			if (_app != null)
-    				_app.skip(30);
+    				_app.skipForward();
     		}
     	});
 
