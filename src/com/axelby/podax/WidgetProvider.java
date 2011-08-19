@@ -19,7 +19,7 @@ public class WidgetProvider extends AppWidgetProvider {
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 		views.setTextViewText(R.id.title, p.getTitle());
 		views.setTextViewText(R.id.podcast, p.getSubscription().getDisplayTitle());
-		views.setTextViewText(R.id.position, PlayerService.getPositionString(p.getDuration(), p.getLastPosition()));
+		views.setTextViewText(R.id.positionstring, PlayerService.getPositionString(p.getDuration(), p.getLastPosition()));
 	}
 
 	@Override

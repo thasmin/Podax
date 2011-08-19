@@ -359,13 +359,15 @@ public class DBAdapter {
 
 	}
 
-	public void updatePodcastPosition(int podcastId, int position) {
+	public void updatePodcastPosition(Podcast podcast, int position) {
+		podcast.setLastPosition(position);
+
 		ContentValues values = new ContentValues();
 		values.put("lastPosition", position);
-		_db.update("podcasts", values, "id = ?", new String[] { String.valueOf(podcastId) });
+		_db.update("podcasts", values, "id = ?", new String[] { String.valueOf(podcast.getId()) });
 		
 		values = new ContentValues();
-		values.put("lastPodcastId", podcastId);
+		values.put("lastPodcastId", podcast.getId());
 		_db.update("podax", values, "", null);
 	}
 	

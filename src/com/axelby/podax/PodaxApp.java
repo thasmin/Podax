@@ -71,6 +71,17 @@ public class PodaxApp extends Application {
 	public void skipToEnd() {
 		sendPlayerCommand(Constants.PLAYER_COMMAND_SKIPTOEND);
 	}
+	
+	public void skipTo(int secs) {
+		sendPlayerCommand(Constants.PLAYER_COMMAND_SKIPTO, secs);
+	}
+
+	private void sendPlayerCommand(int command, int arg) {
+		Intent intent = new Intent(this, PlayerService.class);
+		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
+		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, arg);
+		startService(intent);
+	}
 
 	private void sendPlayerCommand(int command) {
 		Intent intent = new Intent(this, PlayerService.class);
@@ -78,11 +89,9 @@ public class PodaxApp extends Application {
 		startService(intent);
 	}
 
-	public void playPodcast(Podcast podcast) {
+	public void play(Podcast podcast) {
 		if (podcast == null)
 			return;
-		Intent intent = new Intent(this, PlayerService.class);
-		intent.putExtra("com.axelby.podax.podcast", podcast.getId());
-		startService(intent);
+		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcast.getId());
 	}
 }

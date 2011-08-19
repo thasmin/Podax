@@ -72,7 +72,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			setListAdapter(new QueueListAdapter());
 			break;
 		case OPTION_PLAY:
-			PodaxApp.getApp().playPodcast(podcast);
+			PodaxApp.getApp().play(podcast);
 		}
 
 		return true;

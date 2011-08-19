@@ -75,7 +75,7 @@ public class PodcastListActivity extends ListActivity {
 			getListView().setAdapter(new PodcastAdapter(this));
 			break;
 		case OPTION_PLAY:
-			PodaxApp.getApp().playPodcast(podcast);
+			PodaxApp.getApp().play(podcast);
 		}
 
 		return true;

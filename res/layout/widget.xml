@@ -18,13 +18,14 @@
 			android:text="title"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:textColor="#cccccc" />
+			android:textColor="#cccccc"
+			android:lines="1" />
 		<TextView android:id="@+id/podcast"
 			android:text="podcast"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:textColor="#cccccc" />
-		<TextView android:id="@+id/position"
+		<TextView android:id="@+id/positionstring"
 			android:text="position"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"

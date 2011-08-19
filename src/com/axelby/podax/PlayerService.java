@@ -28,8 +28,12 @@ public class PlayerService extends Service {
 	
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
+			// sometimes the handler doesn't trigger
+			if (_player.getCurrentPosition() >= _player.getDuration())
+				playNextPodcast();
+
 			_activePodcast.setLastPosition(_player.getCurrentPosition());
-			_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+			_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 			updateWidget(true);
 		}
 	}
@@ -72,7 +76,7 @@ public class PlayerService extends Service {
 					_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
 					if (_player.isPlaying() && _onPhone) {
 						_player.pause();
-						_dbAdapter.updatePodcastPosition(_activePodcast.getId(),
+						_dbAdapter.updatePodcastPosition(_activePodcast,
 										_player.getCurrentPosition());
 						updateWidget(false);
 						_pausedForPhone = true;
@@ -116,6 +120,10 @@ public class PlayerService extends Service {
 			switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
 			case -1:
 				return;
+			case Constants.PLAYER_COMMAND_SKIPTO:
+				Log.d("Podax", "PlayerService got a command: skip to");
+				skipTo(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, 0));
+				break;
 			case Constants.PLAYER_COMMAND_SKIPTOEND:
 				Log.d("Podax", "PlayerService got a command: skip to end");
 				skipToEnd();
@@ -150,6 +158,10 @@ public class PlayerService extends Service {
 				Log.d("Podax", "PlayerService got a command: pause");
 				stop();
 				break;
+			case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
+				Log.d("Podax", "PlayerService got a command: pause");
+				play(_dbAdapter.loadPodcast(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1)));
+				break;
 			}
 		}
 	}
@@ -157,7 +169,7 @@ public class PlayerService extends Service {
 	public void stop() {
 		Log.d("Podax", "PlayerService stopping");
 		_updatePlayerPositionTimerTask.cancel();
-		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 		updateWidget(false);
 		_player.stop();
 		stopSelf();
@@ -215,19 +227,25 @@ public class PlayerService extends Service {
 
 	public void skip(int secs) {
 		_player.seekTo(_player.getCurrentPosition() + secs * 1000);
-		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+		updateWidget(true);
+	}
+
+	public void skipTo(int secs) {
+		_player.seekTo(secs * 1000);
+		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 		updateWidget(true);
 	}
 
 	public void restart() {
 		_player.seekTo(0);
-		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 		updateWidget(true);
 	}
 
 	public void skipToEnd() {
 		_player.seekTo(_player.getDuration());
-		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), _player.getCurrentPosition());
+		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 		updateWidget(true);
 	}
 
@@ -239,12 +257,12 @@ public class PlayerService extends Service {
 		if (_activePodcast == null) {
 			views.setTextViewText(R.id.title, "");
 			views.setTextViewText(R.id.podcast, "");
-			views.setTextViewText(R.id.position, "");
+			views.setTextViewText(R.id.positionstring, "");
 			views.setImageViewResource(R.id.play_btn, android.R.drawable.ic_media_play);
 		} else {
 			views.setTextViewText(R.id.title, _activePodcast.getTitle());
 			views.setTextViewText(R.id.podcast, _activePodcast.getSubscription().getDisplayTitle());
-			views.setTextViewText(R.id.position, PlayerService.getPositionString(_activePodcast.getDuration(), _activePodcast.getLastPosition()));
+			views.setTextViewText(R.id.positionstring, PlayerService.getPositionString(_activePodcast.getDuration(), _activePodcast.getLastPosition()));
 			int imageRes = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		}
@@ -272,7 +290,7 @@ public class PlayerService extends Service {
 			return;
 		}
 		
-		_dbAdapter.updatePodcastPosition(_activePodcast.getId(), 0);
+		_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 		_dbAdapter.removePodcastFromQueue(_activePodcast.getId());
 		Podcast nextPodcast = _dbAdapter.getFirstInQueue();
 		if (nextPodcast == null) {
