@@ -33,7 +33,7 @@
 		
 	</LinearLayout>
 	
-	<ImageButton android:id="@+id/playercontrol_btn" android:layout_alignParentRight="true"
+	<ImageButton android:id="@+id/show_btn" android:layout_alignParentRight="true"
 		android:layout_width="wrap_content" android:layout_height="fill_parent"
 		android:layout_centerVertical="true" android:src="@drawable/ic_btn_round_more_normal"
 		android:background="@android:color/transparent" />

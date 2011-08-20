@@ -47,8 +47,10 @@ public class PodcastDetailActivity extends Activity {
 		_app = PodaxApp.getApp();
 
         Intent intent = this.getIntent();
-        int podcastId = intent.getExtras().getInt(Constants.EXTRA_PODCAST_ID);
-		_podcast = _dbAdapter.loadPodcast(podcastId);
+        if (intent.hasExtra(Constants.EXTRA_PODCAST_ID))
+        	_podcast = _dbAdapter.loadPodcast(intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1));
+        else
+        	_podcast = _dbAdapter.loadLastPlayedPodcast();
 
 		_titleView = (TextView)findViewById(R.id.title);
 		_titleView.setText(_podcast.getTitle());
@@ -155,6 +157,7 @@ public class PodcastDetailActivity extends Activity {
 			if (!_seekbar_dragging) {
 				_position.setText(PlayerActivity.getTimeString(_app.getPosition()));
 				_duration.setText(PlayerActivity.getTimeString(_app.getDuration()));
+				_seekbar.setProgress(_app.getPosition());
 			}
 
 			if (!force && _controlsEnabled == true)

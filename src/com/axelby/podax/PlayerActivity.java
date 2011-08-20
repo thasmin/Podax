@@ -52,7 +52,7 @@ public class PlayerActivity {
 				Podcast podcast = app.getActivePodcast();
 
 				if (podcast != null) {
-					if (isPlaying)
+					if (isPlaying || _positionstring.getText().length() == 0)
 						_positionstring.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));
 					if (_lastPodcast != podcast) {
 						_podcastTitle.setText(podcast.getTitle());

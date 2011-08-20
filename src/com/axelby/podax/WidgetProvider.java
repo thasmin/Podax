@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 public class WidgetProvider extends AppWidgetProvider {
@@ -28,12 +29,17 @@ public class WidgetProvider extends AppWidgetProvider {
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 
 		for (int appWidgetId : appWidgetIds) {
+			Log.d("Podax", "widget onUpdate");
 			RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 			
-			Intent active = new Intent(context, PlayerService.class);
-			active.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_PLAYPAUSE);
-			PendingIntent pendingIntent = PendingIntent.getService(context, requestCode++, active, PendingIntent.FLAG_UPDATE_CURRENT);
-			views.setOnClickPendingIntent(R.id.play_btn, pendingIntent);
+			Intent playIntent = new Intent(context, PlayerService.class);
+			playIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_PLAYPAUSE);
+			PendingIntent playPendingIntent = PendingIntent.getService(context, appWidgetId, playIntent, 0);
+			views.setOnClickPendingIntent(R.id.play_btn, playPendingIntent);
+			
+			Intent showIntent = new Intent(context, PodcastDetailActivity.class);
+			PendingIntent showPendingIntent = PendingIntent.getActivity(context, appWidgetId, showIntent, 0);
+			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 			
 			appWidgetManager.updateAppWidget(appWidgetId, views);
 		}
