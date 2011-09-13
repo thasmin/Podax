@@ -28,10 +28,6 @@ public class PlayerService extends Service {
 	
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
-			// sometimes the handler doesn't trigger
-			if (_player.getCurrentPosition() >= _player.getDuration())
-				playNextPodcast();
-
 			_activePodcast.setLastPosition(_player.getCurrentPosition());
 			_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 			updateWidget(true);
@@ -81,8 +77,10 @@ public class PlayerService extends Service {
 						updateWidget(false);
 						_pausedForPhone = true;
 					}
-					if (!_player.isPlaying() && !_onPhone && _pausedForPhone)
+					if (!_player.isPlaying() && !_onPhone && _pausedForPhone) {
 						_player.start();
+						_pausedForPhone = false;
+					}
 				}
 			}, PhoneStateListener.LISTEN_CALL_STATE);
 			_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
@@ -210,7 +208,7 @@ public class PlayerService extends Service {
 		}
 				
 		// the user will probably try this if the podcast is over and the next one didn't start
-		if (_player.getCurrentPosition() >= _player.getDuration()) {
+		if (_player.getCurrentPosition() >= _player.getDuration() - 1000) {
 			playNextPodcast();
 		}
 
