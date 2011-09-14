@@ -28,4 +28,5 @@
 	<string name="refresh_subscription">Refresh Subscription</string>
 	<string name="refresh_subscriptions">Refresh Subscriptions</string>
 	<string name="active_downloads">Active Downloads</string>
+	<string name="widget_label">Podax Podcaster Widget</string>
 </resources>

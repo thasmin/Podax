@@ -3,6 +3,9 @@ package com.axelby.podax;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Debug;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.RelativeLayout;
@@ -49,4 +52,26 @@ public class MainActivity extends Activity {
 		
 		PlayerActivity.injectPlayerFooter(this);
 	}
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, 0, 0, "Start Profiler");
+		menu.add(0, 1, 0, "Stop Profiler");
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case 0:
+			Debug.startMethodTracing("podax");
+			break;
+		case 1:
+			Debug.stopMethodTracing();
+		default:
+			return super.onContextItemSelected(item);
+		}
+		return true;
+    }
+
 }

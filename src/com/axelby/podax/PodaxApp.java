@@ -18,7 +18,7 @@ public class PodaxApp extends Application {
 		intent.setAction("com.axelby.podax.STARTUP");
 		startService(intent);
 		
-		PlayerService.updateWidget(this, getActivePodcast(), isPlaying());
+		WidgetProvider.updateWidget(this);
 	}
 
 	public static PodaxApp getApp() {

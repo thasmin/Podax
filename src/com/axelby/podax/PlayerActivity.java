@@ -50,10 +50,12 @@ public class PlayerActivity {
 				PodaxApp app = PodaxApp.getApp();
 				boolean isPlaying = app.isPlaying();
 				Podcast podcast = app.getActivePodcast();
+				if (podcast == null)
+					podcast = DBAdapter.getInstance(activity).getFirstInQueue();
 
 				if (podcast != null) {
 					if (isPlaying || _positionstring.getText().length() == 0)
-						_positionstring.setText(PlayerService.getPositionString(app.getDuration(), app.getPosition()));
+						_positionstring.setText(PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
 					if (_lastPodcast != podcast) {
 						_podcastTitle.setText(podcast.getTitle());
 						_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);

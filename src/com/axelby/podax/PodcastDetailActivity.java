@@ -52,6 +52,11 @@ public class PodcastDetailActivity extends Activity {
         else
         	_podcast = _dbAdapter.loadLastPlayedPodcast();
 
+        if (_podcast == null) {
+            finish();
+            startActivity(new Intent(this, QueueActivity.class));
+        }
+
 		_titleView = (TextView)findViewById(R.id.title);
 		_titleView.setText(_podcast.getTitle());
 		_subscriptionTitleView = (TextView)findViewById(R.id.subscription_title);

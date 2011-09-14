@@ -31,12 +31,12 @@
 		<service android:name=".UpdateService" />
 		<service android:name=".PlayerService" />
 
-		<receiver android:name=".WidgetProvider">
+		<receiver android:name=".WidgetProvider" android:label="@string/widget_label">
 			<intent-filter>
-				<action android:name="android.appwidget.action.APPWIDGET_UPDATE"></action>
+				<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 			</intent-filter>
 			<meta-data android:resource="@xml/podax_widget_info"
-				android:name="android.appwidget.provider"></meta-data>
+				android:name="android.appwidget.provider" />
 		</receiver>
 		
 		<provider android:name=".SearchSuggestionProvider"

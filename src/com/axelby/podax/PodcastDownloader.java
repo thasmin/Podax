@@ -78,7 +78,7 @@ class PodcastDownloader {
 						instream.close();
 						outstream.close();
 	
-						Log.d("Podax", "Done downloasding " + podcast.getTitle());
+						Log.d("Podax", "Done downloading " + podcast.getTitle());
 					} catch (Exception e) {
 						Log.d("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
 						removeDownloadNotification();
