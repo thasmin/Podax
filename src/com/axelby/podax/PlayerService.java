@@ -35,15 +35,26 @@ public class PlayerService extends Service {
 	protected MediaPlayer _player;
 	protected PlayerBinder _binder;
 	protected DBAdapter _dbAdapter;
-	protected Podcast _activePodcast;
+	protected static Podcast _activePodcast;
 	protected boolean _onPhone;
 	protected boolean _pausedForPhone;
 	private TelephonyManager _telephony;
 	protected Timer _updateTimer;
 	
+	// static methods
 	public static boolean _isPlaying = false;
 	public static boolean isPlaying() {
 		return _isPlaying;
+	}
+	
+	public static Podcast getActivePodcast(Context context) {
+		if (_activePodcast == null) {
+			DBAdapter dbAdapter = DBAdapter.getInstance(context);
+			_activePodcast = dbAdapter.loadLastPlayedPodcast();
+			if (_activePodcast == null)
+				_activePodcast = dbAdapter.getFirstInQueue();
+		}
+		return _activePodcast;
 	}
 	
 	@Override

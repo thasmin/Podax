@@ -37,7 +37,6 @@ public class PlayerActivity {
 		_showplayerbtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
 				Intent intent = new Intent(activity, PodcastDetailActivity.class);
-				intent.putExtra(Constants.EXTRA_PODCAST_ID, PodaxApp.getApp().getActivePodcast().getId());
 				activity.startActivity(intent);
 			}
 		});
@@ -47,11 +46,8 @@ public class PlayerActivity {
 			private Podcast _lastPodcast;
 
 			public void run() {
-				PodaxApp app = PodaxApp.getApp();
 				boolean isPlaying = PlayerService.isPlaying();
-				Podcast podcast = app.getActivePodcast();
-				if (podcast == null)
-					podcast = DBAdapter.getInstance(activity).getFirstInQueue();
+				Podcast podcast = PlayerService.getActivePodcast(activity);
 
 				if (podcast != null) {
 					if (isPlaying || _positionstring.getText().length() == 0)

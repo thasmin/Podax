@@ -23,18 +23,6 @@ public class PodaxApp extends Application {
 		return _instance;
 	}
 
-	public Podcast getActivePodcast() {
-		return DBAdapter.getInstance(this).loadLastPlayedPodcast();
-	}
-	
-	public int getPosition() {
-		return getActivePodcast().getLastPosition();
-	}
-
-	public int getDuration() {
-		return getActivePodcast().getDuration();
-	}
-
 	public void play() {
 		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY);
 	}
