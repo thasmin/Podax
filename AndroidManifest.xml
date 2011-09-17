@@ -31,7 +31,7 @@
 		<service android:name=".UpdateService" />
 		<service android:name=".PlayerService" />
 
-		<receiver android:name=".WidgetProvider" android:label="@string/widget_label">
+		<receiver android:name=".WidgetProvider">
 			<intent-filter>
 				<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 			</intent-filter>
