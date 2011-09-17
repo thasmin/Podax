@@ -22,12 +22,9 @@ public class WidgetProvider extends AppWidgetProvider {
 	}
 
 	public static void updateWidget(Context context) {
-		DBAdapter dbAdapter = DBAdapter.getInstance(context);
 		boolean isPlaying = PlayerService.isPlaying();
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
-		Podcast p = dbAdapter.loadLastPlayedPodcast();
-		if (p == null)
-			p = dbAdapter.getFirstInQueue();
+		Podcast p = PlayerService.getActivePodcast(context);
 
 		if (p == null) {
 			views.setTextViewText(R.id.title, "Queue empty");

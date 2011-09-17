@@ -240,7 +240,7 @@ public class PlayerService extends Service {
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
 		_updatePlayerPositionTimerTask = new UpdatePlayerPositionTimerTask();
-		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
+		_updateTimer.schedule(_updatePlayerPositionTimerTask, 2000, 2000);
 	}
 
 	public void skip(int secs) {
