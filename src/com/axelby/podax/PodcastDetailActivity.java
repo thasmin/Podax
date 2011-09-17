@@ -98,7 +98,7 @@ public class PodcastDetailActivity extends Activity {
 		_playButton = (ImageButton)findViewById(R.id.play_btn);
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (_app.isPlaying() && _app.getActivePodcast().getId() == _podcast.getId())
+				if (PlayerService.isPlaying() && _app.getActivePodcast().getId() == _podcast.getId())
 					_app.playpause();
 				else
 					_app.play(_podcast);
@@ -158,7 +158,7 @@ public class PodcastDetailActivity extends Activity {
 
 	boolean _controlsEnabled = true;
 	private void updatePlayerControls(boolean force) {
-		if (_app.isPlaying() && _app.getActivePodcast().getId() == _podcast.getId()) {
+		if (PlayerService.isPlaying() && _app.getActivePodcast().getId() == _podcast.getId()) {
 			if (!_seekbar_dragging) {
 				_position.setText(PlayerActivity.getTimeString(_app.getPosition()));
 				_duration.setText(PlayerActivity.getTimeString(_app.getDuration()));

@@ -5,8 +5,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Service;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -17,7 +15,6 @@ import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.RemoteViews;
 
 public class PlayerService extends Service {
 	public class PlayerBinder extends Binder {
@@ -44,6 +41,11 @@ public class PlayerService extends Service {
 	private TelephonyManager _telephony;
 	protected Timer _updateTimer;
 	
+	public static boolean _isPlaying = false;
+	public static boolean isPlaying() {
+		return _isPlaying;
+	}
+	
 	@Override
 	public IBinder onBind(Intent intent) {
 		handleIntent(intent);
@@ -63,6 +65,8 @@ public class PlayerService extends Service {
 
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		
+		_isPlaying = true;
+		
 		// may or may not be creating the service
 		if (_telephony == null) {
 			_telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -71,13 +75,15 @@ public class PlayerService extends Service {
 				public void onCallStateChanged(int state, String incomingNumber) {
 					_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
 					if (_player.isPlaying() && _onPhone) {
+						_isPlaying = false;
 						_player.pause();
 						_dbAdapter.updatePodcastPosition(_activePodcast,
 										_player.getCurrentPosition());
-						WidgetProvider.updateWidget(PlayerService.this, false);
+						WidgetProvider.updateWidget(PlayerService.this);
 						_pausedForPhone = true;
 					}
 					if (!_player.isPlaying() && !_onPhone && _pausedForPhone) {
+						_isPlaying = true;
 						_player.start();
 						_pausedForPhone = false;
 						WidgetProvider.updateWidget(PlayerService.this);
@@ -167,10 +173,11 @@ public class PlayerService extends Service {
 
 	public void stop() {
 		Log.d("Podax", "PlayerService stopping");
+		_isPlaying = false;
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
 		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-		WidgetProvider.updateWidget(this, false);
+		WidgetProvider.updateWidget(this);
 		_player.stop();
 		stopSelf();
 	}

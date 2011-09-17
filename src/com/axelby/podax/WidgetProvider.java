@@ -1,8 +1,6 @@
 package com.axelby.podax;
 
-import android.app.ActivityManager;
 import android.app.PendingIntent;
-import android.app.ActivityManager.RunningServiceInfo;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
@@ -23,19 +21,9 @@ public class WidgetProvider extends AppWidgetProvider {
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}
 
-	public static boolean isPlaying(Context context) {
-		ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
-	        if (PlayerService.class.getName().equals(service.service.getClassName()))
-	            return true;
-	    return false;
-	}
-
 	public static void updateWidget(Context context) {
-		updateWidget(context, isPlaying(context));
-	}
-	public static void updateWidget(Context context, boolean isPlaying) {
 		DBAdapter dbAdapter = DBAdapter.getInstance(context);
+		boolean isPlaying = PlayerService.isPlaying();
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 		Podcast p = dbAdapter.loadLastPlayedPodcast();
 		if (p == null)

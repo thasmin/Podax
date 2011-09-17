@@ -1,7 +1,5 @@
 package com.axelby.podax;
 
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningServiceInfo;
 import android.app.Application;
 import android.content.Intent;
 
@@ -27,13 +25,6 @@ public class PodaxApp extends Application {
 
 	public Podcast getActivePodcast() {
 		return DBAdapter.getInstance(this).loadLastPlayedPodcast();
-	}
-	public boolean isPlaying() {
-		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
-	        if (PlayerService.class.getName().equals(service.service.getClassName()))
-	            return true;
-	    return false;
 	}
 	
 	public int getPosition() {

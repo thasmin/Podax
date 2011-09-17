@@ -29,7 +29,7 @@ public class PlayerActivity {
 			public void onClick(View view) {
 				PodaxApp app = PodaxApp.getApp();
 				app.playpause();
-				_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_play
+				_pausebtn.setImageResource(PlayerService.isPlaying() ? android.R.drawable.ic_media_play
 						: android.R.drawable.ic_media_pause);
 			}
 		});
@@ -48,7 +48,7 @@ public class PlayerActivity {
 
 			public void run() {
 				PodaxApp app = PodaxApp.getApp();
-				boolean isPlaying = app.isPlaying();
+				boolean isPlaying = PlayerService.isPlaying();
 				Podcast podcast = app.getActivePodcast();
 				if (podcast == null)
 					podcast = DBAdapter.getInstance(activity).getFirstInQueue();
@@ -58,7 +58,7 @@ public class PlayerActivity {
 						_positionstring.setText(PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
 					if (_lastPodcast != podcast) {
 						_podcastTitle.setText(podcast.getTitle());
-						_pausebtn.setImageResource(app.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+						_pausebtn.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
 						_showplayerbtn.setEnabled(true);
 					}
 				} else if (_lastPodcast != null) {
