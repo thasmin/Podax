@@ -120,7 +120,7 @@ public class SubscriptionListActivity extends ListActivity {
     		alert.setTitle("Podcast URL");
     		alert.setMessage("Type the URL of the podcast RSS");
     		final EditText input = new EditText(this);
-    		input.setText("http://blog.axelby.com/podcast.xml");
+    		//input.setText("http://blog.axelby.com/podcast.xml");
     		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
     		alert.setView(input);
     		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
