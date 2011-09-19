@@ -22,6 +22,11 @@ public class WidgetProvider extends AppWidgetProvider {
 	}
 
 	public static void updateWidget(Context context) {
+		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+		int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(context, "com.axelby.podax.WidgetProvider"));
+		if (ids.length == 0)
+			return;
+
 		boolean isPlaying = PlayerService.isPlaying();
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 		Podcast p = PlayerService.getActivePodcast(context);
@@ -51,7 +56,6 @@ public class WidgetProvider extends AppWidgetProvider {
 			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
 		}
-		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 		appWidgetManager.updateAppWidget(new ComponentName(context, "com.axelby.podax.WidgetProvider"), views);
 	}
 }
