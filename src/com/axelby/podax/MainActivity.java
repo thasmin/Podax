@@ -57,6 +57,7 @@ public class MainActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, 0, 0, "Start Profiler");
 		menu.add(0, 1, 0, "Stop Profiler");
+		menu.add(0, 2, 0, "Preferences");
 		return true;
 	}
 
@@ -68,6 +69,10 @@ public class MainActivity extends Activity {
 			break;
 		case 1:
 			Debug.stopMethodTracing();
+			break;
+		case 2:
+			startActivity(new Intent(this, Preferences.class));
+			break;
 		default:
 			return super.onContextItemSelected(item);
 		}

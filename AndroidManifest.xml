@@ -27,6 +27,7 @@
 		<activity android:name=".PodcastDetailActivity"></activity>
 		<activity android:name=".PlayerControlActivity"></activity>
 		<activity android:name=".ActiveDownloadListActivity"></activity>
+		<activity android:name=".Preferences" />
 
 		<service android:name=".UpdateService" />
 		<service android:name=".PlayerService" />
