@@ -125,7 +125,10 @@ public class SubscriptionListActivity extends ListActivity {
     		alert.setView(input);
     		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
-					Subscription subscription = DBAdapter.getInstance(SubscriptionListActivity.this).addSubscription(input.getText().toString());					
+					String subscriptionUrl = input.getText().toString();
+					if (!subscriptionUrl.contains("://"))
+						subscriptionUrl = "http://" + subscriptionUrl;
+					Subscription subscription = DBAdapter.getInstance(SubscriptionListActivity.this).addSubscription(subscriptionUrl);					
 					getListView().setAdapter(new SubscriptionAdapter(SubscriptionListActivity.this));
 					UpdateService.updateSubscription(SubscriptionListActivity.this, subscription);
 				}
