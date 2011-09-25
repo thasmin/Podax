@@ -75,7 +75,7 @@ public class PodcastDetailActivity extends Activity {
 				if (_podcast.getQueuePosition() == null)
 					_dbAdapter.addPodcastToQueue(_podcast.getId());
 				else
-					_dbAdapter.removePodcastFromQueue(_podcast.getId());
+					_dbAdapter.removePodcastFromQueue(_podcast);
 				_podcast = _dbAdapter.loadPodcast(_podcast.getId());
 				updateQueueViews();
 			}

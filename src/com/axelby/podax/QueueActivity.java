@@ -68,7 +68,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 
 		switch (item.getItemId()) {
 		case OPTION_REMOVEFROMQUEUE:
-			adapter.removePodcastFromQueue(podcast.getId());
+			adapter.removePodcastFromQueue(podcast);
 			setListAdapter(new QueueListAdapter());
 			break;
 		case OPTION_PLAY:

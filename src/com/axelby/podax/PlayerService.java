@@ -25,9 +25,14 @@ public class PlayerService extends Service {
 	
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
-			_activePodcast.setLastPosition(_player.getCurrentPosition());
-			_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-			WidgetProvider.updateWidget(PlayerService.this);
+			int _oldPosition = _lastPosition;
+			_lastPosition = _player.getCurrentPosition();
+			if (_oldPosition / 1000 != _lastPosition / 1000)
+			{
+				_activePodcast.setLastPosition(_player.getCurrentPosition());
+				_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+				WidgetProvider.updateWidget(PlayerService.this);
+			}
 		}
 	}
 	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
@@ -42,7 +47,7 @@ public class PlayerService extends Service {
 	protected Timer _updateTimer;
 	
 	// static methods
-	public static boolean _isPlaying = false;
+	protected static boolean _isPlaying = false;
 	public static boolean isPlaying() {
 		return _isPlaying;
 	}
@@ -55,6 +60,11 @@ public class PlayerService extends Service {
 				_activePodcast = dbAdapter.getFirstInQueue();
 		}
 		return _activePodcast;
+	}
+	
+	protected static int _lastPosition = 0;
+	public static int getLastPosition() {
+		return _lastPosition;
 	}
 	
 	@Override
@@ -240,7 +250,7 @@ public class PlayerService extends Service {
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
 		_updatePlayerPositionTimerTask = new UpdatePlayerPositionTimerTask();
-		_updateTimer.schedule(_updatePlayerPositionTimerTask, 2000, 2000);
+		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 	}
 
 	public void skip(int secs) {
@@ -288,7 +298,7 @@ public class PlayerService extends Service {
 		}
 		
 		_dbAdapter.updatePodcastPosition(_activePodcast, 0);
-		_dbAdapter.removePodcastFromQueue(_activePodcast.getId());
+		_dbAdapter.removePodcastFromQueue(_activePodcast);
 		Podcast nextPodcast = _dbAdapter.getFirstInQueue();
 		if (nextPodcast == null) {
 			Log.d("Podax", "PlayerService queue finished");

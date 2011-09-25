@@ -71,7 +71,7 @@ public class PodcastListActivity extends ListActivity {
 			getListView().setAdapter(new PodcastAdapter(this));
 			break;
 		case OPTION_REMOVEFROMQUEUE:
-			adapter.removePodcastFromQueue(podcast.getId());
+			adapter.removePodcastFromQueue(podcast);
 			getListView().setAdapter(new PodcastAdapter(this));
 			break;
 		case OPTION_PLAY:

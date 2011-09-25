@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Vector;
@@ -311,12 +312,13 @@ public class DBAdapter {
 				new Object[] { podcastId });
 	}
 	
-	public void removePodcastFromQueue(Integer podcastId) {
+	public void removePodcastFromQueue(Podcast podcast) {
+		new File(podcast.getFilename()).delete();
 		this._db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 " +
 				"WHERE queuePosition > (SELECT queuePosition FROM podcasts WHERE id = ?)", 
-				new Object[] { podcastId });
+				new Object[] { podcast.getId() });
 		this._db.execSQL("UPDATE podcasts SET queuePosition = NULL WHERE id = ?", 
-				new Object[] { podcastId });
+				new Object[] { podcast.getId() });
 	}
 	
 	public void changePodcastQueuePosition(Podcast podcast, int newPosition) {
