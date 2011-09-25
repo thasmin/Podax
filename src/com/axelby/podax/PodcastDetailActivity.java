@@ -98,7 +98,8 @@ public class PodcastDetailActivity extends Activity {
 		_playButton = (ImageButton)findViewById(R.id.play_btn);
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (PlayerService.isPlaying())
+				if (PlayerService.isPlaying() && 
+						PlayerService.getActivePodcast(PodcastDetailActivity.this).getId() == _podcast.getId())
 					_app.pause();
 				else
 					_app.play(_podcast);
@@ -158,12 +159,12 @@ public class PodcastDetailActivity extends Activity {
 
 	boolean _controlsEnabled = true;
 	private void updatePlayerControls(boolean force) {
-		Podcast p = DBAdapter.getInstance(this).loadLastPlayedPodcast();
+		Podcast p = PlayerService.getActivePodcast(this);
 		if (PlayerService.isPlaying() && p.getId() == _podcast.getId()) {
 			if (!_seekbar_dragging) {
-				_position.setText(PlayerActivity.getTimeString(p.getLastPosition()));
+				_position.setText(PlayerActivity.getTimeString(PlayerService.getLastPosition()));
 				_duration.setText(PlayerActivity.getTimeString(p.getDuration()));
-				_seekbar.setProgress(p.getLastPosition());
+				_seekbar.setProgress(PlayerService.getLastPosition());
 			}
 
 			if (!force && _controlsEnabled == true)
