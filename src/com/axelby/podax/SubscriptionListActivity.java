@@ -171,19 +171,17 @@ public class SubscriptionListActivity extends ListActivity {
 
 		public View getView(int position, View convertView, ViewGroup parent) {
 			LinearLayout layout;
-			if (convertView == null) {
+			if (convertView == null)
 				layout = (LinearLayout)_layoutInflater.inflate(R.layout.subscription_list_item, null);
-			}
-			else {
+			else
 				layout = (LinearLayout)convertView;
-			}
 			
 			TextView text = (TextView)layout.findViewById(R.id.text);
 			ImageView thumbnail = (ImageView)layout.findViewById(R.id.thumbnail);
 
 			if (position == 0) {
 				text.setText("Add subscription");
-				layout.removeView(thumbnail);
+				thumbnail.setVisibility(0);
 				return layout;
 			}
 
@@ -192,9 +190,12 @@ public class SubscriptionListActivity extends ListActivity {
 
 			File thumbnailFile = new File(subscription.getThumbnailFilename());
 			if (!thumbnailFile.exists())
-				thumbnail.setImageResource(0);
+				thumbnail.setImageDrawable(null);
 			else
+			{
 				thumbnail.setImageBitmap(BitmapFactory.decodeFile(subscription.getThumbnailFilename()));
+				thumbnail.setVisibility(1);
+			}
 			
 			return layout;
 		}
