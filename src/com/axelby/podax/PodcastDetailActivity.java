@@ -98,7 +98,10 @@ public class PodcastDetailActivity extends Activity {
 		_playButton = (ImageButton)findViewById(R.id.play_btn);
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				_app.play(_podcast);
+				if (PlayerService.isPlaying())
+					_app.pause();
+				else
+					_app.play(_podcast);
 			}
 		});
 		
