@@ -137,9 +137,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			
 			DBAdapter dbAdapter = DBAdapter.getInstance(QueueActivity.this);
 			
-			_queue = new Vector<Podcast>();
-			for (int id : dbAdapter.getQueueIds())
-				_queue.add(dbAdapter.loadPodcast(id));
+			_queue = dbAdapter.getQueue();
 		}
 
 		public int getCount() {

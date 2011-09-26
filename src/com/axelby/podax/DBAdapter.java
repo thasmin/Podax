@@ -299,12 +299,6 @@ public class DBAdapter {
 		return collectPodcasts(c);
 	}
 
-	public Vector<Integer> getQueueIds() {
-		Cursor c = this._db.query("podcasts", new String[] { "id" }, 
-				"queuePosition IS NOT NULL", null, null, null, "queuePosition");
-		return collectIds(c);
-	}
-
 	public void addPodcastToQueue(Integer podcastId) {
 		this._db.execSQL("UPDATE podcasts SET queuePosition = " +
 				"(SELECT COALESCE(MAX(queuePosition) + 1, 0) FROM podcasts) " +
