@@ -1,7 +1,12 @@
 package com.axelby.podax;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class PodaxApp extends Application {
 	static private PodaxApp _instance;
@@ -72,5 +77,20 @@ public class PodaxApp extends Application {
 		if (podcast == null)
 			return;
 		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcast.getId());
+	}
+
+	public static boolean ensureWifi(Context context) {
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		if (netInfo == null || !netInfo.isConnectedOrConnecting())
+			return false;
+		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("wifiPref", false) &&
+				netInfo.getType() != ConnectivityManager.TYPE_WIFI)
+		{
+			Log.d("Podax", "Not downloading because Wifi is required and not connected");
+			return false;
+		}
+		
+		return true;
 	}
 }

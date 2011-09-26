@@ -33,6 +33,8 @@ class PodcastDownloader {
 		public void run() {
 			if (_isRunning)
 				return;
+			if (!PodaxApp.ensureWifi(_context))
+				return;
 			
 			DBAdapter dbAdapter = DBAdapter.getInstance(_context);
 

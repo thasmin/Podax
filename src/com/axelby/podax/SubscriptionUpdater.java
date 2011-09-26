@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
@@ -19,6 +18,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ParseException;
 import android.util.Xml;
 
 class SubscriptionUpdater {
@@ -63,6 +63,9 @@ class SubscriptionUpdater {
 	private Runnable _worker = new Runnable() {
 		public void run() {
 			try {
+				if (!PodaxApp.ensureWifi(_context))
+					return;
+
 				final DBAdapter dbAdapter = DBAdapter.getInstance(_context);
 				while (_toUpdate.size() > 0) {
 					final Subscription subscription = dbAdapter.loadSubscription(_toUpdate.get(0));
