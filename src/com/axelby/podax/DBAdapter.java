@@ -281,28 +281,10 @@ public class DBAdapter {
 		return queue.firstElement();
 	}
 
-	private Vector<Integer> collectIds(Cursor c) {
-		Vector<Integer> ids = new Vector<Integer>();
-		c.moveToFirst();
-		while (!c.isAfterLast())
-		{
-			ids.add(c.getInt(0));
-			c.moveToNext();
-		}
-		c.close();
-		return ids;
-	}
-
 	public Vector<Podcast> getQueue() {
 		Cursor c = this._db.query("podcasts", PODCAST_COLUMNS, 
 				"queuePosition IS NOT NULL", null, null, null, "queuePosition");
 		return collectPodcasts(c);
-	}
-
-	public Vector<Integer> getQueueIds() {
-		Cursor c = this._db.query("podcasts", new String[] { "id" }, 
-				"queuePosition IS NOT NULL", null, null, null, "queuePosition");
-		return collectIds(c);
 	}
 
 	public void addPodcastToQueue(Integer podcastId) {

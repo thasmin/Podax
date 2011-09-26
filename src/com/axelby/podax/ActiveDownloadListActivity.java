@@ -50,10 +50,8 @@ public class ActiveDownloadListActivity extends ListActivity {
 			DBAdapter dbAdapter = DBAdapter.getInstance(ActiveDownloadListActivity.this);
 			Integer activeId = dbAdapter.getActiveDownloadId();
 			
-			Vector<Integer> toProcess = dbAdapter.getQueueIds();
-			for (Integer podcastId : toProcess) {
-				Podcast podcast = dbAdapter.loadPodcast(podcastId);
-
+			Vector<Podcast> toProcess = dbAdapter.getQueue();
+			for (Podcast podcast : toProcess) {
 				if (!podcast.needsDownload())
 					continue;
 
