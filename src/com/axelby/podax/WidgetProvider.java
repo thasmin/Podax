@@ -28,7 +28,7 @@ public class WidgetProvider extends AppWidgetProvider {
 			return;
 
 		boolean isPlaying = PlayerService.isPlaying();
-		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
+		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.smallwidget);
 		Podcast p = PlayerService.getActivePodcast(context);
 
 		if (p == null) {
