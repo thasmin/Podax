@@ -170,7 +170,11 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			queueText.setText(p.getTitle());
 			
 			TextView subscriptionText = (TextView)view.findViewById(R.id.subscription);
-			subscriptionText.setText(p.getSubscription().getTitle());
+			Subscription subscription = p.getSubscription();
+			if (subscription != null)
+				subscriptionText.setText(subscription.getTitle());
+			else
+				subscriptionText.setText("");
 		}
 		
 		public int getSeparatorAt() {
