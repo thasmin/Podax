@@ -1,0 +1,84 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/tworow"
+	android:layout_width="fill_parent" android:layout_height="wrap_content"
+	android:orientation="vertical"
+	android:background="@drawable/widget_frame"
+	android:layout_marginLeft="5dp" android:layout_marginRight="5dp"
+	android:paddingLeft="5dp" android:paddingRight="0dp" 
+	android:paddingTop="10dp" android:paddingBottom="0dp">
+
+	<RelativeLayout android:id="@+id/toplayout"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:layout_marginLeft="10dp">
+		
+		<LinearLayout android:id="@+id/innerLayout"
+			android:layout_alignParentLeft="true"
+			android:layout_toLeftOf="@+id/show_btn"
+			android:layout_centerVertical="true"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:orientation="vertical">
+			
+			<TextView android:id="@+id/title"
+				android:text="title"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#cccccc"/>
+			<TextView android:id="@+id/podcast"
+				android:text="podcast"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#cccccc" />
+			<TextView android:id="@+id/positionstring"
+				android:text="position"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#cccccc" />
+			
+		</LinearLayout>
+		
+		<ImageButton android:id="@+id/show_btn" android:layout_alignParentRight="true"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_centerVertical="true" android:src="@drawable/ic_btn_round_more_normal"
+			android:background="@android:color/transparent" />
+			
+	</RelativeLayout>
+	
+	<LinearLayout android:id="@+id/bottomrow"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:layout_marginTop="5dp" android:layout_marginRight="50px"
+		android:gravity="center_horizontal"
+		android:weightSum="5">
+
+		<ImageButton android:id="@+id/restart_btn"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:src="@drawable/android:ic_media_previous"
+			android:layout_weight="1"
+			android:background="@android:color/transparent" />
+
+		<ImageButton android:id="@+id/rewind_btn"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:src="@drawable/android:ic_media_rew"
+			android:layout_weight="1"
+			android:background="@android:color/transparent" />
+						
+		<ImageButton android:id="@+id/play_btn"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:src="@drawable/android:ic_media_play"
+			android:layout_weight="1"
+			android:background="@android:color/transparent" />
+	
+		<ImageButton android:id="@+id/skip_btn"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:src="@drawable/android:ic_media_ff"
+			android:layout_weight="1"
+			android:background="@android:color/transparent" />
+
+		<ImageButton android:id="@+id/next_btn"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:src="@drawable/android:ic_media_next"
+			android:layout_weight="1"
+			android:background="@android:color/transparent" />
+
+	</LinearLayout>
+		
+</LinearLayout>

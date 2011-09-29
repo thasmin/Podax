@@ -32,11 +32,19 @@
 		<service android:name=".UpdateService" />
 		<service android:name=".PlayerService" />
 
-		<receiver android:name=".WidgetProvider">
+		<receiver android:name=".SmallWidgetProvider" android:label="Podax 4x1">
 			<intent-filter>
 				<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 			</intent-filter>
 			<meta-data android:resource="@xml/smallwidget"
+				android:name="android.appwidget.provider" />
+		</receiver>
+
+		<receiver android:name=".LargeWidgetProvider" android:label="Podax 4x2">
+			<intent-filter>
+				<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+			</intent-filter>
+			<meta-data android:resource="@xml/largewidget"
 				android:name="android.appwidget.provider" />
 		</receiver>
 		
