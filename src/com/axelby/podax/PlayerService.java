@@ -286,7 +286,9 @@ public class PlayerService extends Service {
 
 	private void playNextPodcast() {
 		// verify completion -- not sure why this is necessary
-		if (_player.getCurrentPosition() < _player.getDuration()) {
+		if (_player.getCurrentPosition() - _player.getDuration() > 500) {
+			Log.d("Podax", "attempted to move to next podcast before end: " + 
+					String.valueOf(_player.getCurrentPosition()) + " != " + String.valueOf(_player.getDuration()));
 			return;
 		}
 
@@ -297,6 +299,8 @@ public class PlayerService extends Service {
 			return;
 		}
 		
+		Log.d("Podax", "moving to next podcast");
+
 		_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 		_dbAdapter.removePodcastFromQueue(_activePodcast);
 		_activePodcast = _dbAdapter.getFirstInQueue();
