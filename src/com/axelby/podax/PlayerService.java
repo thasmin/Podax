@@ -299,15 +299,15 @@ public class PlayerService extends Service {
 		
 		_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 		_dbAdapter.removePodcastFromQueue(_activePodcast);
-		Podcast nextPodcast = _dbAdapter.getFirstInQueue();
-		if (nextPodcast == null) {
+		_activePodcast = _dbAdapter.getFirstInQueue();
+		if (_activePodcast == null) {
 			Log.d("Podax", "PlayerService queue finished");
 			_dbAdapter.clearLastPlayedPodcast();
 			stop();
 			return;
 		}
 		
-		play(nextPodcast);
+		play(_activePodcast);
 	}
 
 	public static String getPositionString(int duration, int position) {
