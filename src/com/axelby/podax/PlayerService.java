@@ -31,7 +31,7 @@ public class PlayerService extends Service {
 			{
 				_activePodcast.setLastPosition(_player.getCurrentPosition());
 				_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-				WidgetProvider.updateWidget(PlayerService.this);
+				PodaxApp.updateWidgets(PlayerService.this);
 			}
 		}
 	}
@@ -100,14 +100,14 @@ public class PlayerService extends Service {
 						_player.pause();
 						_dbAdapter.updatePodcastPosition(_activePodcast,
 										_player.getCurrentPosition());
-						WidgetProvider.updateWidget(PlayerService.this);
+						PodaxApp.updateWidgets(PlayerService.this);
 						_pausedForPhone = true;
 					}
 					if (!_player.isPlaying() && !_onPhone && _pausedForPhone) {
 						_isPlaying = true;
 						_player.start();
 						_pausedForPhone = false;
-						WidgetProvider.updateWidget(PlayerService.this);
+						PodaxApp.updateWidgets(PlayerService.this);
 					}
 				}
 			}, PhoneStateListener.LISTEN_CALL_STATE);
@@ -198,7 +198,7 @@ public class PlayerService extends Service {
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
 		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-		WidgetProvider.updateWidget(this);
+		PodaxApp.updateWidgets(this);
 		_player.stop();
 		stopSelf();
 	}
@@ -245,7 +245,7 @@ public class PlayerService extends Service {
 		_pausedForPhone = false;
 		_player.start();
 
-		WidgetProvider.updateWidget(this);
+		PodaxApp.updateWidgets(this);
 		
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
@@ -256,25 +256,25 @@ public class PlayerService extends Service {
 	public void skip(int secs) {
 		_player.seekTo(_player.getCurrentPosition() + secs * 1000);
 		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-		WidgetProvider.updateWidget(this);
+		PodaxApp.updateWidgets(this);
 	}
 
 	public void skipTo(int secs) {
 		_player.seekTo(secs * 1000);
 		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-		WidgetProvider.updateWidget(this);
+		PodaxApp.updateWidgets(this);
 	}
 
 	public void restart() {
 		_player.seekTo(0);
 		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-		WidgetProvider.updateWidget(this);
+		PodaxApp.updateWidgets(this);
 	}
 
 	public void skipToEnd() {
 		_player.seekTo(_player.getDuration());
 		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-		WidgetProvider.updateWidget(this);
+		PodaxApp.updateWidgets(this);
 	}
 
 	public String getPositionString() {

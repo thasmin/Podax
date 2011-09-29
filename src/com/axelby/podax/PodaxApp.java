@@ -21,7 +21,7 @@ public class PodaxApp extends Application {
 		intent.setAction("com.axelby.podax.STARTUP");
 		startService(intent);
 		
-		WidgetProvider.updateWidget(this);
+		PodaxApp.updateWidgets(this);
 	}
 
 	public static PodaxApp getApp() {
@@ -77,6 +77,11 @@ public class PodaxApp extends Application {
 		if (podcast == null)
 			return;
 		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcast.getId());
+	}
+
+	public static void updateWidgets(Context context) {
+		SmallWidgetProvider.updateWidget(context);
+		LargeWidgetProvider.updateWidget(context);
 	}
 
 	public static boolean ensureWifi(Context context) {
