@@ -32,8 +32,6 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			views.setTextViewText(R.id.podcast, "");
 			views.setTextViewText(R.id.positionstring, "");
 			views.setImageViewResource(R.id.play_btn, android.R.drawable.ic_media_play);
-			views.setOnClickPendingIntent(R.id.play_btn, null);
-			views.setOnClickPendingIntent(R.id.show_btn, null);
 		} else {
 			views.setTextViewText(R.id.title, p.getTitle());
 			views.setTextViewText(R.id.podcast, p.getSubscription().getDisplayTitle());
