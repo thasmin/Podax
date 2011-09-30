@@ -1,12 +1,18 @@
 package com.axelby.podax;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
@@ -19,6 +25,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ParseException;
+import android.util.Log;
 import android.util.Xml;
 
 class SubscriptionUpdater {
@@ -65,8 +72,11 @@ class SubscriptionUpdater {
 			try {
 				if (!PodaxApp.ensureWifi(_context))
 					return;
-
+				
 				final DBAdapter dbAdapter = DBAdapter.getInstance(_context);
+				
+				sendSubscriptionsToPodaxServer(dbAdapter);
+
 				while (_toUpdate.size() > 0) {
 					final Subscription subscription = dbAdapter.loadSubscription(_toUpdate.get(0));
 					_toUpdate.remove(0);
@@ -170,6 +180,40 @@ class SubscriptionUpdater {
 
 				_context.sendBroadcast(new Intent(Constants.SUBSCRIPTION_UPDATE_BROADCAST));
 				UpdateService.downloadPodcasts(_context);
+			}
+		}
+
+		public void sendSubscriptionsToPodaxServer(final DBAdapter dbAdapter)
+				throws MalformedURLException, IOException, ProtocolException {
+			URL podaxServer = new URL("http://www.axelby.com/podax.php");
+			HttpURLConnection podaxConn = (HttpURLConnection)podaxServer.openConnection();
+			podaxConn.setRequestMethod("POST");
+			podaxConn.setDoOutput(true);
+			podaxConn.setDoInput(true);
+			podaxConn.connect();
+			
+			OutputStreamWriter wr = new OutputStreamWriter(podaxConn.getOutputStream());
+			wr.write("inst=");
+			wr.write(Installation.id(_context));
+			Vector<Subscription> subscriptions = dbAdapter.getSubscriptions();
+			for (int i = 0; i < subscriptions.size(); ++i) {
+				wr.write("&sub[");
+				wr.write(i);
+				wr.write("]=");
+				wr.write(URLEncoder.encode(subscriptions.get(i).getUrl()));
+			}
+			wr.flush();
+			
+			BufferedReader rd = new BufferedReader(new InputStreamReader(podaxConn.getInputStream()));
+			Vector<String> response = new Vector<String>();
+			String line;
+			while ((line = rd.readLine()) != null)
+				response.add(line);
+			if (response.size() > 1 || !response.get(0).equals("OK")) {
+				Log.w("Podax", "Podax server error");
+				Log.w("Podax", "------------------");
+				for (String s : response)
+					Log.w("Podax", s);
 			}
 		}
 
