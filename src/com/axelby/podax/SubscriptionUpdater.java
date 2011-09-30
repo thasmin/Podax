@@ -25,6 +25,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ParseException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Xml;
 
@@ -75,7 +76,13 @@ class SubscriptionUpdater {
 				
 				final DBAdapter dbAdapter = DBAdapter.getInstance(_context);
 				
-				sendSubscriptionsToPodaxServer(dbAdapter);
+				// send subscriptions to the Podax server
+				// errors are acceptible
+				try {
+					sendSubscriptionsToPodaxServer(dbAdapter);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 
 				while (_toUpdate.size() > 0) {
 					final Subscription subscription = dbAdapter.loadSubscription(_toUpdate.get(0));
@@ -185,6 +192,11 @@ class SubscriptionUpdater {
 
 		public void sendSubscriptionsToPodaxServer(final DBAdapter dbAdapter)
 				throws MalformedURLException, IOException, ProtocolException {
+			if (PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("usageDataPref", true) == false)
+				return;
+
+			Log.d("Podax", "Sending usage data - subscription list");
+
 			URL podaxServer = new URL("http://www.axelby.com/podax.php");
 			HttpURLConnection podaxConn = (HttpURLConnection)podaxServer.openConnection();
 			podaxConn.setRequestMethod("POST");

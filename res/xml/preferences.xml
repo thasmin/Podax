@@ -6,5 +6,11 @@
             android:defaultValue="false"
             android:summary="Only update subscriptions or download podcasts while connected to a Wi-Fi network"
             android:key="wifiPref" />
+
+    <CheckBoxPreference
+            android:title="Send Usage Data to Podax Server"
+            android:defaultValue="true"
+            android:summary="Send anonymous usage data improve Podax"
+            android:key="usageDataPref" />
   </PreferenceCategory>
 </PreferenceScreen>
