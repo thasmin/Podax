@@ -84,6 +84,8 @@ public class PlayerService extends Service {
 		_updateTimer = new Timer();
 		_dbAdapter = DBAdapter.getInstance(this);
 
+		getActivePodcast(this);
+
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		
 		_isPlaying = true;
@@ -172,13 +174,13 @@ public class PlayerService extends Service {
 					Log.d("Podax", "  stopping the player");
 					stop();
 				} else {
-					Log.d("Podax", "  playing a podcast");
-					play();
+					Log.d("Podax", "  resuming a podcast");
+					resume();
 				}
 				break;
 			case Constants.PLAYER_COMMAND_PLAY:
 				Log.d("Podax", "PlayerService got a command: play");
-				play();
+				resume();
 				break;
 			case Constants.PLAYER_COMMAND_PAUSE:
 				Log.d("Podax", "PlayerService got a command: pause");
@@ -197,41 +199,28 @@ public class PlayerService extends Service {
 		_isPlaying = false;
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
-		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+		if (_activePodcast != null)
+			_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 		PodaxApp.updateWidgets(this);
 		_player.stop();
 		stopSelf();
 	}
 	
-	public void play() {
-		play(null);
-	}
-
-	public void play(Podcast podcast) {
+	public void resume() {
 		if (_onPhone)
 			return;
-		
-		// determine which podcast to play
-		// priority: request, resume, queue
-		_activePodcast = podcast;
-		if (_activePodcast == null)
-			_activePodcast = _dbAdapter.loadLastPlayedPodcast();
-		if (_activePodcast == null)
-			_activePodcast = _dbAdapter.getFirstInQueue();
-		if (_activePodcast == null)
-		{
-			stop();
+		Podcast p = getActivePodcast(this);
+		if (p == null)
 			return;
-		}
-		
+
 		// prep the MediaPlayer
 		try {
 			_player.reset();
-			_player.setDataSource(_activePodcast.getFilename());
+			_player.setDataSource(p.getFilename());
 			_player.prepare();
-			_player.seekTo(_activePodcast.getLastPosition());
-			_activePodcast.setDuration(_player.getDuration());
-			_dbAdapter.savePodcast(_activePodcast);
+			_player.seekTo(p.getLastPosition());
+			p.setDuration(_player.getDuration());
+			_dbAdapter.savePodcast(p);
 		}
 		catch (IOException ex) {
 			stop();
@@ -253,27 +242,38 @@ public class PlayerService extends Service {
 		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 	}
 
+	public void play(Podcast podcast) {
+		_activePodcast = podcast;
+		if (_activePodcast == null)
+		{
+			stop();
+			return;
+		}
+
+		resume();
+	}
+
 	public void skip(int secs) {
 		_player.seekTo(_player.getCurrentPosition() + secs * 1000);
-		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+		_dbAdapter.updatePodcastPosition(getActivePodcast(this), _player.getCurrentPosition());
 		PodaxApp.updateWidgets(this);
 	}
 
 	public void skipTo(int secs) {
 		_player.seekTo(secs * 1000);
-		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+		_dbAdapter.updatePodcastPosition(getActivePodcast(this), _player.getCurrentPosition());
 		PodaxApp.updateWidgets(this);
 	}
 
 	public void restart() {
 		_player.seekTo(0);
-		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+		_dbAdapter.updatePodcastPosition(getActivePodcast(this), _player.getCurrentPosition());
 		PodaxApp.updateWidgets(this);
 	}
 
 	public void skipToEnd() {
 		_player.seekTo(_player.getDuration());
-		_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+		_dbAdapter.updatePodcastPosition(getActivePodcast(this), _player.getCurrentPosition());
 		PodaxApp.updateWidgets(this);
 	}
 
@@ -285,20 +285,6 @@ public class PlayerService extends Service {
 	}
 
 	private void playNextPodcast() {
-		// verify completion -- not sure why this is necessary
-		if (_player.getCurrentPosition() - _player.getDuration() > 500) {
-			Log.d("Podax", "attempted to move to next podcast before end: " + 
-					String.valueOf(_player.getCurrentPosition()) + " != " + String.valueOf(_player.getDuration()));
-			return;
-		}
-
-		// not sure how this would happen
-		if (_activePodcast == null) {
-			Log.d("Podax", "PlayerService bug in playNextPodcast");
-			stop();
-			return;
-		}
-		
 		Log.d("Podax", "moving to next podcast");
 
 		_dbAdapter.updatePodcastPosition(_activePodcast, 0);
@@ -311,7 +297,7 @@ public class PlayerService extends Service {
 			return;
 		}
 		
-		play(_activePodcast);
+		resume();
 	}
 
 	public static String getPositionString(int duration, int position) {
