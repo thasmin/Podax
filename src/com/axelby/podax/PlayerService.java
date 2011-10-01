@@ -3,6 +3,7 @@ package com.axelby.podax;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 
 import android.app.Service;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
 public class PlayerService extends Service {
 	public class PlayerBinder extends Binder {
@@ -57,11 +59,21 @@ public class PlayerService extends Service {
 			DBAdapter dbAdapter = DBAdapter.getInstance(context);
 			_activePodcast = dbAdapter.loadLastPlayedPodcast();
 			if (_activePodcast == null)
-				_activePodcast = dbAdapter.getFirstInQueue();
+				_activePodcast = findFirstDownloadedInQueue(context);
 		}
 		return _activePodcast;
 	}
-	
+
+	public static Podcast findFirstDownloadedInQueue(Context context) {
+		// make sure the active podcast has been downloaded
+		Vector<Podcast> queue = DBAdapter.getInstance(context).getQueue();
+		for (Podcast p : queue) {
+			if (p.isDownloaded())
+				return p;
+		}
+		return null;
+	}
+
 	protected static int _lastPosition = 0;
 	public static int getLastPosition() {
 		return _lastPosition;
@@ -188,7 +200,11 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
 				Log.d("Podax", "PlayerService got a command: pause");
-				play(_dbAdapter.loadPodcast(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1)));
+				Podcast p = _dbAdapter.loadPodcast(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1));
+				if (p.isDownloaded())
+					play(p);
+				else
+					Toast.makeText(this, R.string.podcast_not_downloaded, Toast.LENGTH_SHORT);
 				break;
 			}
 		}
@@ -287,16 +303,20 @@ public class PlayerService extends Service {
 	private void playNextPodcast() {
 		Log.d("Podax", "moving to next podcast");
 
-		_dbAdapter.updatePodcastPosition(_activePodcast, 0);
-		_dbAdapter.removePodcastFromQueue(_activePodcast);
-		_activePodcast = _dbAdapter.getFirstInQueue();
+		if (_activePodcast != null) {
+			_dbAdapter.updatePodcastPosition(_activePodcast, 0);
+			_dbAdapter.removePodcastFromQueue(_activePodcast);
+		}
+
+		_activePodcast = findFirstDownloadedInQueue(this);
+
 		if (_activePodcast == null) {
 			Log.d("Podax", "PlayerService queue finished");
 			_dbAdapter.clearLastPlayedPodcast();
 			stop();
 			return;
 		}
-		
+
 		resume();
 	}
 

@@ -55,6 +55,7 @@ public class PodcastDetailActivity extends Activity {
         if (_podcast == null) {
             finish();
             startActivity(new Intent(this, QueueActivity.class));
+            return;
         }
 
 		_titleView = (TextView)findViewById(R.id.title);
