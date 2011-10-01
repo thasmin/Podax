@@ -11,20 +11,20 @@ import android.os.IBinder;
 public class UpdateService extends Service {
 	public static void updateSubscriptions(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
-		intent.setAction("com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS");
+		intent.setAction(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS);
 		context.startService(intent);
 	}
 
 	public static void updateSubscription(Context context, Subscription subscription) {
 		Intent intent = new Intent(context, UpdateService.class);
-		intent.setAction("com.axelby.podax.REFRESH_SUBSCRIPTION");
-		intent.putExtra("com.axelby.podax.SUBSCRIPTION_ID", subscription.getId());
+		intent.setAction(Constants.ACTION_REFRESH_SUBSCRIPTION);
+		intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscription.getId());
 		context.startService(intent);
 	}
 
 	public static void downloadPodcasts(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
-		intent.setAction("com.axelby.podax.DOWNLOAD_PODCASTS");
+		intent.setAction(Constants.ACTION_DOWNLOAD_PODCASTS);
 		context.startService(intent);
 	}
 
@@ -70,34 +70,34 @@ public class UpdateService extends Service {
 		if (action == null)
 			return;
 
-		if (action.equals("com.axelby.podax.STARTUP")) {
+		if (action.equals(Constants.ACTION_STARTUP)) {
 			AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
 
 			// refresh the feeds
 			Intent refreshIntent = new Intent(this, UpdateService.class);
-			refreshIntent.setAction("com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS");
+			refreshIntent.setAction(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS);
 			_hourlyRefreshIntent = PendingIntent.getService(this, 0, refreshIntent, 0);
 			alarmManager.setInexactRepeating(AlarmManager.RTC,
 					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyRefreshIntent);
 
 			Intent downloadIntent = new Intent(this, UpdateService.class);
-			downloadIntent.setAction("com.axelby.podax.DOWNLOAD_PODCASTS");
+			downloadIntent.setAction(Constants.ACTION_DOWNLOAD_PODCASTS);
 			_hourlyDownloadIntent = PendingIntent.getService(this, 0, downloadIntent, 0);
 			alarmManager.setInexactRepeating(AlarmManager.RTC,
 					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyDownloadIntent);
 		}
-		if (action.equals("com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS")) {
+		else if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
 			_subscriptionUpdater.addAllSubscriptions();
 			_subscriptionUpdater.run();
 		}
-		if (action.equals("com.axelby.podax.REFRESH_SUBSCRIPTION")) {
-			int subscriptionId = intent.getIntExtra("com.axelby.podax.SUBSCRIPTION_ID", -1);
+		else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
+			int subscriptionId = intent.getIntExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 			if (subscriptionId != -1) {
 				_subscriptionUpdater.addSubscriptionId(subscriptionId);
 				_subscriptionUpdater.run();
 			}
 		}
-		if (action.equals("com.axelby.podax.DOWNLOAD_PODCASTS")) {
+		else if (action.equals(Constants.ACTION_DOWNLOAD_PODCASTS)) {
 			_podcastDownloader.download();
 		}
 	}

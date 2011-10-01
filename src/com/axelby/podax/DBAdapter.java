@@ -292,6 +292,7 @@ public class DBAdapter {
 				"(SELECT COALESCE(MAX(queuePosition) + 1, 0) FROM podcasts) " +
 				"WHERE id = ?", 
 				new Object[] { podcastId });
+		UpdateService.downloadPodcasts(_context);
 	}
 	
 	public void removePodcastFromQueue(Podcast podcast) {

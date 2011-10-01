@@ -5,9 +5,14 @@ public class Constants {
 	public static final int SUBSCRIPTION_UPDATE_ERROR = 2;
 	public static final int PODCAST_DOWNLOAD_ONGOING = 3;
 	
-	public static final String SUBSCRIPTION_UPDATE_BROADCAST = "com.axelby.podax.SUBSCRIPTION_UPDATE_BROADCAST";
+	public static final String ACTION_SUBSCRIPTION_UPDATE_BROADCAST = "com.axelby.podax.SUBSCRIPTION_UPDATE_BROADCAST";
+	public static final String ACTION_REFRESH_ALL_SUBSCRIPTIONS = "com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS";
+	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";
+	public static final String ACTION_DOWNLOAD_PODCASTS = "com.axelby.podax.DOWNLOAD_PODCASTS";
+	public static final String ACTION_STARTUP = "com.axelby.podax.STARTUP";
 	
 	public static final String EXTRA_PODCAST_ID = "com.axelby.podax.podcastId";
+	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
 
 	public static final String EXTRA_PLAYER_COMMAND = "com.axelby.podax.player_command";
 	public static final String EXTRA_PLAYER_COMMAND_ARG = "com.axelby.podax.player_command_arg";

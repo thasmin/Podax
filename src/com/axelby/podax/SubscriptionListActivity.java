@@ -58,7 +58,7 @@ public class SubscriptionListActivity extends ListActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		IntentFilter intentFilter = new IntentFilter(Constants.SUBSCRIPTION_UPDATE_BROADCAST);
+		IntentFilter intentFilter = new IntentFilter(Constants.ACTION_SUBSCRIPTION_UPDATE_BROADCAST);
 		this.registerReceiver(_subscriptionUpdateReceiver, intentFilter);
 	}
 	

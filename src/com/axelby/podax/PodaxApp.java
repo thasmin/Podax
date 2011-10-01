@@ -18,7 +18,7 @@ public class PodaxApp extends Application {
 		_instance = this;
 
 		Intent intent = new Intent(this, UpdateService.class);
-		intent.setAction("com.axelby.podax.STARTUP");
+		intent.setAction(Constants.ACTION_STARTUP);
 		startService(intent);
 		
 		PodaxApp.updateWidgets(this);
