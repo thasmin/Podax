@@ -34,10 +34,10 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		RelativeLayout readerimport = (RelativeLayout) this.findViewById(R.id.readerimport);
-		readerimport.setOnClickListener(new OnClickListener() {
+		RelativeLayout importsubs = (RelativeLayout) this.findViewById(R.id.importsubs);
+		importsubs.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, GoogleAccountChooserActivity.class);
+				Intent intent = new Intent(MainActivity.this, ImportSubscriptionActivity.class);
 				startActivity(intent);
 			}
 		});

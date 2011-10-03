@@ -6,6 +6,12 @@ import java.io.InputStream;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import com.google.api.client.googleapis.GoogleHeaders;
+import com.google.api.client.googleapis.GoogleTransport;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpTransport;
+
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -22,39 +28,33 @@ import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.api.client.googleapis.GoogleHeaders;
-import com.google.api.client.googleapis.GoogleTransport;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpTransport;
+public class ImportSubscriptionActivity extends ListActivity {
 
-public class GoogleAccountChooserActivity extends ListActivity {
-	protected AccountManager _accountManager;
-	protected Account[] _accounts;
-	protected Account _chosenAccount;
+	private AccountManager _accountManager;
+	private Account[] _googleAccounts;
+	private Account _chosenAccount;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.subscription_list);
+
 		_accountManager = AccountManager.get(getApplicationContext());
-		_chosenAccount = null;
 		_accountManager.getAccountsByTypeAndFeatures("com.google", new String[] { "service_reader" },
 				new AccountManagerCallback<Account[]>() {
 					public void run(AccountManagerFuture<Account[]> future) {
 						try {
-							_accounts = future.getResult();
-
-							String[] names = new String[_accounts.length];
-							for (int i = 0; i < _accounts.length; ++i)
-								names[i] = _accounts[i].name;
-							GoogleAccountChooserActivity.this.setListAdapter(
-									new ArrayAdapter<String>(GoogleAccountChooserActivity.this,
-											android.R.layout.simple_list_item_1, names));
+							_googleAccounts = future.getResult();
+							ImportSubscriptionActivity.this
+									.setListAdapter(new ImportSubscriptionAdapter());
 						} catch (OperationCanceledException e) {
 							Log.e("Podax", "Operation Canceled", e);
 						} catch (IOException e) {
@@ -64,12 +64,70 @@ public class GoogleAccountChooserActivity extends ListActivity {
 						}
 					}
 			}, null);
+
+		//registerForContextMenu(getListView());
+		
+		PlayerActivity.injectPlayerFooter(this);
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, final int position, long itemId) {
-		_chosenAccount = _accounts[position];
-		getAuthToken();
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+		
+		if (position > 1) {
+			_chosenAccount = _googleAccounts[position - 2];
+			getAuthToken();
+		}
+	}
+
+
+	public class ImportSubscriptionAdapter extends BaseAdapter {
+		LayoutInflater _inflater;
+		
+		public ImportSubscriptionAdapter() {
+			_inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+		}
+		
+		public int getCount() {
+			return _googleAccounts.length == 0 ? 1 : _googleAccounts.length + 2;
+		}
+
+		public Object getItem(int position) {
+			if (position < 2)
+				return null;
+			return _googleAccounts[position - 2];
+		}
+
+		public long getItemId(int position) {
+			return 0;
+		}
+
+		public View getView(int position, View convertView, ViewGroup parent) {
+			if (position == 0) {
+				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
+				view.setText("Import from OPML file");
+				return view;
+			}
+			if (position == 1) {
+				TextView view = new TextView(ImportSubscriptionActivity.this);
+				view.setTextAppearance(ImportSubscriptionActivity.this, android.R.style.TextAppearance_Medium);
+				view.setBackgroundDrawable(getResources().getDrawable(R.drawable.back));
+				view.setText("Google Reader Accounts");
+				return view;
+			}
+
+			TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
+			view.setText(_googleAccounts[position - 2].name);
+			return view;
+		}
+
+		public boolean areAllItemsEnabled() {
+			return false;
+		}
+
+		public boolean isEnabled(int position) {
+			return position != 1;
+		}
 	}
 
 	private void getAuthToken() {
@@ -140,7 +198,7 @@ public class GoogleAccountChooserActivity extends ListActivity {
 			final String[] id = { "" };
 			final String[] title = { "" };
 			final String[] stringType = { "" };
-			final DBAdapter adapter = DBAdapter.getInstance(GoogleAccountChooserActivity.this);
+			final DBAdapter adapter = DBAdapter.getInstance(this);
 
 			object.setElementListener(new ElementListener() {
 				public void start(Attributes attrs) {
@@ -149,7 +207,7 @@ public class GoogleAccountChooserActivity extends ListActivity {
 				}
 				public void end() {
 					Subscription subscription = adapter.addSubscription(id[0], title[0]);
-					UpdateService.updateSubscription(GoogleAccountChooserActivity.this, subscription);
+					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscription);
 				}
 			});
 
@@ -182,4 +240,5 @@ public class GoogleAccountChooserActivity extends ListActivity {
 		finish();
 		startActivity(new Intent(this, SubscriptionListActivity.class));
 	}
+
 }

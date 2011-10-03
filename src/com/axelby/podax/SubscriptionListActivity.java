@@ -35,7 +35,7 @@ public class SubscriptionListActivity extends ListActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Log.d("Podax", "received a subscription update broadcast");
-			setListAdapter(new SubscriptionAdapter(SubscriptionListActivity.this));
+			setListAdapter(new SubscriptionAdapter());
 		}
 	}
 
@@ -44,7 +44,7 @@ public class SubscriptionListActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.subscription_list);
      
-        setListAdapter(new SubscriptionAdapter(this));
+        setListAdapter(new SubscriptionAdapter());
         registerForContextMenu(getListView());
         
         // remove any subscription update errors
@@ -80,7 +80,7 @@ public class SubscriptionListActivity extends ListActivity {
         switch (item.getItemId()) {
         case R.id.clear_subscriptions:
             DBAdapter.getInstance(this).deleteAllSubscriptions();
-            setListAdapter(new SubscriptionAdapter(this));
+            setListAdapter(new SubscriptionAdapter());
             return true;
         case R.id.refresh_subscriptions:
         	UpdateService.updateSubscriptions(this);
@@ -103,7 +103,7 @@ public class SubscriptionListActivity extends ListActivity {
     		AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
     		Subscription sub = (Subscription)getListView().getAdapter().getItem(menuInfo.position);
     		DBAdapter.getInstance(this).deleteSubscription(sub);
-    		setListAdapter(new SubscriptionAdapter(this));
+    		setListAdapter(new SubscriptionAdapter());
     		break;
     	default:
     	    return super.onContextItemSelected(item);
@@ -129,7 +129,7 @@ public class SubscriptionListActivity extends ListActivity {
 					if (!subscriptionUrl.contains("://"))
 						subscriptionUrl = "http://" + subscriptionUrl;
 					Subscription subscription = DBAdapter.getInstance(SubscriptionListActivity.this).addSubscription(subscriptionUrl);					
-					getListView().setAdapter(new SubscriptionAdapter(SubscriptionListActivity.this));
+					getListView().setAdapter(new SubscriptionAdapter());
 					UpdateService.updateSubscription(SubscriptionListActivity.this, subscription);
 				}
 			});
@@ -150,14 +150,12 @@ public class SubscriptionListActivity extends ListActivity {
 	}
     
     private class SubscriptionAdapter extends BaseAdapter {
-    	private Context _context;
     	private LayoutInflater _layoutInflater;
     	private Vector<Subscription> _subscriptions;
     	
-    	public SubscriptionAdapter(Context context) {
-    		_context = context;
-    		_layoutInflater = LayoutInflater.from(_context);
-    		_subscriptions = DBAdapter.getInstance(_context).getSubscriptions();
+    	public SubscriptionAdapter() {
+    		_layoutInflater = LayoutInflater.from(SubscriptionListActivity.this);
+    		_subscriptions = DBAdapter.getInstance(SubscriptionListActivity.this).getSubscriptions();
     	}
     	
 		public int getCount() {
