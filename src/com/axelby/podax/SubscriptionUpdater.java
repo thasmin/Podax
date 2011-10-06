@@ -99,7 +99,7 @@ class SubscriptionUpdater {
 					HttpGet request = new HttpGet(subscription.getUrl());
 					if (subscription.getETag() != null)
 						request.addHeader("If-None-Match", subscription.getETag());
-					if (subscription.getLastModified() != null) {
+					if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
 						SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 						request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
 					}
@@ -112,7 +112,7 @@ class SubscriptionUpdater {
 						continue;
 					}
 					
-					if (response.containsHeader("ETag") && subscription.getETag().equals(response.getLastHeader("ETag").getValue()))
+					if (response.containsHeader("ETag") && response.getLastHeader("ETag").getValue().equals(subscription.getETag()))
 						continue;
 
 					updateUpdateNotification(subscription, "Downloading Feed");
