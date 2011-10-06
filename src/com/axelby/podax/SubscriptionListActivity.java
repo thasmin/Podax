@@ -43,6 +43,13 @@ public class SubscriptionListActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.subscription_list);
+        
+        Intent intent = getIntent();
+        if (intent.getScheme().equals("http")) {
+    		DBAdapter adapter = DBAdapter.getInstance(this);
+    		Subscription subscription = adapter.addSubscription(intent.getDataString());
+    		UpdateService.updateSubscription(this, subscription);
+        }
      
         setListAdapter(new SubscriptionAdapter());
         registerForContextMenu(getListView());
