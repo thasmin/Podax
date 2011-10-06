@@ -87,6 +87,7 @@ public class UpdateService extends Service {
 					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyDownloadIntent);
 		}
 		else if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
+			_subscriptionUpdater.stop();
 			_subscriptionUpdater.addAllSubscriptions();
 			_subscriptionUpdater.run();
 		}

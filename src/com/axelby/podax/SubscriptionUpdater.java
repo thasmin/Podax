@@ -11,12 +11,15 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.xmlpull.v1.XmlPullParser;
 
 import android.app.Notification;
@@ -32,10 +35,10 @@ import android.util.Xml;
 class SubscriptionUpdater {
 	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
 	private static final String NAMESPACE_MEDIA = "http://search.yahoo.com/mrss/";
-	// TODO: allow subscriptions to be added to running process
-	private static boolean _isRunning = false;
+
 	private Context _context;
 	Vector<Integer> _toUpdate = new Vector<Integer>();
+	Thread _runningThread;
 	
 	public static final SimpleDateFormat rfc822DateFormats[] = new SimpleDateFormat[] {
 			new SimpleDateFormat("EEE, d MMM yy HH:mm:ss z"),
@@ -62,10 +65,15 @@ class SubscriptionUpdater {
 	}
 	
 	public void run() {
-		if (_isRunning)
+		if (_runningThread != null)
 			return;
-		_isRunning = true;
-		new Thread(_worker).start();
+		_runningThread = new Thread(_worker);
+		_runningThread.start();
+	}
+
+	public void stop() {
+		if (_runningThread != null && _runningThread.isAlive())
+			_runningThread.stop();
 	}
 	
 	private Runnable _worker = new Runnable() {
@@ -88,16 +96,28 @@ class SubscriptionUpdater {
 					final Subscription subscription = dbAdapter.loadSubscription(_toUpdate.get(0));
 					_toUpdate.remove(0);
 
-					URL u = new URL(subscription.getUrl());
-					URLConnection c = u.openConnection();
+					HttpGet request = new HttpGet(subscription.getUrl());
+					if (subscription.getETag() != null)
+						request.addHeader("If-None-Match", subscription.getETag());
+					if (subscription.getLastModified() != null) {
+						SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+						request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
+					}
+					HttpClient client = new DefaultHttpClient();
+					HttpResponse response = client.execute(request);
 					
-					String eTag = c.getHeaderField("ETag");
-					if (subscription.getETag() != null && subscription.getETag().equals(eTag))
+					int code = response.getStatusLine().getStatusCode();
+					if (code == 304) {
+						// content not modified
+						continue;
+					}
+					
+					if (response.containsHeader("ETag") && subscription.getETag().equals(response.getLastHeader("ETag").getValue()))
 						continue;
 
 					updateUpdateNotification(subscription, "Downloading Feed");
-					InputStream response = c.getInputStream();
-					if (response == null) {
+					InputStream responseStream = response.getEntity().getContent();
+					if (responseStream == null) {
 						showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
 						continue;
 					} 
@@ -109,7 +129,7 @@ class SubscriptionUpdater {
 					boolean done = false;
 					
 					XmlPullParser parser = Xml.newPullParser();
-					parser.setInput(response, null);
+					parser.setInput(responseStream, null);
 					int eventType = parser.getEventType();
 					do {
 						switch (eventType) {
@@ -177,13 +197,13 @@ class SubscriptionUpdater {
 					dbAdapter.updatePodcastsFromFeed(podcasts);
 					if (lastBuildDate != null && lastBuildDate.getTime() != subscription.getLastModified().getTime())
 						dbAdapter.updateSubscriptionLastModified(subscription, lastBuildDate);
-					dbAdapter.updateSubscriptionETag(subscription, eTag);
+					dbAdapter.updateSubscriptionETag(subscription, response.getLastHeader("ETag").getValue());
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
 				removeUpdateNotification();
-				_isRunning = false;
+				_runningThread = null;
 
 				_context.sendBroadcast(new Intent(Constants.ACTION_SUBSCRIPTION_UPDATE_BROADCAST));
 				UpdateService.downloadPodcasts(_context);
