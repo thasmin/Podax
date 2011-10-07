@@ -45,7 +45,7 @@ public class SubscriptionListActivity extends ListActivity {
         setContentView(R.layout.subscription_list);
         
         Intent intent = getIntent();
-        if (intent.getScheme().equals("http")) {
+        if (intent.getDataString() != null) {
     		DBAdapter adapter = DBAdapter.getInstance(this);
     		Subscription subscription = adapter.addSubscription(intent.getDataString());
     		UpdateService.updateSubscription(this, subscription);
