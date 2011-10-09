@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
 import android.os.Binder;
 import android.os.IBinder;
 import android.telephony.PhoneStateListener;
@@ -127,6 +128,13 @@ public class PlayerService extends Service {
 			}, PhoneStateListener.LISTEN_CALL_STATE);
 			_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
 		}
+
+		// handle errors so the onCompletionListener doens't get called
+		_player.setOnErrorListener(new OnErrorListener() {
+			public boolean onError(MediaPlayer mp, int what, int extra) {
+				return true;
+			}
+		});
 
 		_player.setOnCompletionListener(new OnCompletionListener() {
 			public void onCompletion(MediaPlayer player) {
