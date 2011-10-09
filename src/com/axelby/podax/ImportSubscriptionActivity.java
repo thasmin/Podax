@@ -75,7 +75,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		super.onListItemClick(l, v, position, id);
 		
 		if (position > 1) {
-			_chosenAccount = _googleAccounts[position - 2];
+			_chosenAccount = _googleAccounts[position - 1];
 			getAuthToken();
 		}
 	}
@@ -89,13 +89,13 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 		
 		public int getCount() {
-			return _googleAccounts.length == 0 ? 1 : _googleAccounts.length + 2;
+			return _googleAccounts.length == 0 ? 1 : _googleAccounts.length + 1;
 		}
 
 		public Object getItem(int position) {
-			if (position < 2)
+			if (position < 1)
 				return null;
-			return _googleAccounts[position - 2];
+			return _googleAccounts[position - 1];
 		}
 
 		public long getItemId(int position) {
@@ -103,12 +103,14 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
+			/*
 			if (position == 0) {
 				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
 				view.setText("Import from OPML file");
 				return view;
 			}
-			if (position == 1) {
+			*/
+			if (position == 0) {
 				TextView view = new TextView(ImportSubscriptionActivity.this);
 				view.setTextAppearance(ImportSubscriptionActivity.this, android.R.style.TextAppearance_Medium);
 				view.setBackgroundDrawable(getResources().getDrawable(R.drawable.back));
@@ -117,7 +119,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 			}
 
 			TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
-			view.setText(_googleAccounts[position - 2].name);
+			view.setText(_googleAccounts[position - 1].name);
 			return view;
 		}
 
@@ -126,7 +128,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 
 		public boolean isEnabled(int position) {
-			return position != 1;
+			return position != 0;
 		}
 	}
 

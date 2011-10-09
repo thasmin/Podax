@@ -146,11 +146,20 @@ public class DBAdapter {
 	}
 	
 	public Subscription addSubscription(String url, String title) {
-		ContentValues values = new ContentValues();
-		values.put("url", url);
-		values.put("title", title);
-		long newId = this._db.insert("subscriptions", null, values);
-		return loadSubscription((int)newId);
+		Cursor c = this._db.query("subscriptions", new String[] {"id" },
+				"url= ?", new String[] { url }, null, null, null);
+		if (c.isAfterLast()) {
+			ContentValues values = new ContentValues();
+			values.put("url", url);
+			values.put("title", title);
+			long newId = this._db.insert("subscriptions", null, values);
+			return loadSubscription((int)newId);
+		} else {
+			c.moveToFirst();
+			int subscriptionId = c.getInt(0);
+			c.close();
+			return loadSubscription(subscriptionId);
+		}
 	}
 
 	public void updateSubscriptionTitle(String url, String title) {
