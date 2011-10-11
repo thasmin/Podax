@@ -5,6 +5,6 @@
 	<View
 		android:layout_width="fill_parent"
 		android:layout_height="6dip"
-		android:background="#33FF99"
+		android:background="#FFE59F39"
 	/>
 </FrameLayout>
