@@ -56,7 +56,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 	public static void setClickIntent(Context context, RemoteViews views, int resourceId, int command) {
 		Intent intent = new Intent(context, PlayerService.class);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
-		PendingIntent pendingIntent = PendingIntent.getService(context, resourceId, intent, 0);
+		PendingIntent pendingIntent = PendingIntent.getService(context, command, intent, 0);
 		views.setOnClickPendingIntent(resourceId, pendingIntent);
 	}
 }
