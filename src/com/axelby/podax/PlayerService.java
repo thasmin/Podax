@@ -138,6 +138,7 @@ public class PlayerService extends Service {
 
 		_player.setOnCompletionListener(new OnCompletionListener() {
 			public void onCompletion(MediaPlayer player) {
+				_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 				playNextPodcast();
 			}
 		});
@@ -174,7 +175,7 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_SKIPTOEND:
 				Log.d("Podax", "PlayerService got a command: skip to end");
-				skipToEnd();
+				playNextPodcast();
 				break;
 			case Constants.PLAYER_COMMAND_RESTART:
 				Log.d("Podax", "PlayerService got a command: restart");
@@ -295,12 +296,6 @@ public class PlayerService extends Service {
 		PodaxApp.updateWidgets(this);
 	}
 
-	public void skipToEnd() {
-		_player.seekTo(_player.getDuration());
-		_dbAdapter.updatePodcastPosition(getActivePodcast(this), _player.getCurrentPosition());
-		PodaxApp.updateWidgets(this);
-	}
-
 	public String getPositionString() {
 		if (_player.getDuration() == 0)
 			return "";
@@ -312,7 +307,6 @@ public class PlayerService extends Service {
 		Log.d("Podax", "moving to next podcast");
 
 		if (_activePodcast != null) {
-			_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 			_dbAdapter.removePodcastFromQueue(_activePodcast);
 		}
 
