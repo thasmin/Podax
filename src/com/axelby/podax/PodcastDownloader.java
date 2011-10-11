@@ -56,12 +56,17 @@ class PodcastDownloader {
 	
 						URL u = new URL(podcast.getMediaUrl());
 						HttpURLConnection c = (HttpURLConnection)u.openConnection();
-						if (mediaFile.exists())
+						if (mediaFile.exists() && mediaFile.length() > 0)
 							c.setRequestProperty("Range", "bytes=" + mediaFile.length() + "-");
 	
 						// response code 206 means partial content and range header worked
 						boolean append = false;
 						if (c.getResponseCode() == 206) {
+							if (c.getContentLength() <= 0) {
+								podcast.setFileSize((int)mediaFile.length());
+								dbAdapter.savePodcast(podcast);
+								continue;
+							}
 							append = true;
 						}
 						else {
