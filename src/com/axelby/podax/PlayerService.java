@@ -138,7 +138,7 @@ public class PlayerService extends Service {
 
 		_player.setOnCompletionListener(new OnCompletionListener() {
 			public void onCompletion(MediaPlayer player) {
-				_dbAdapter.updatePodcastPosition(_activePodcast, 0);
+				_dbAdapter.removePodcastFromQueue(_activePodcast);
 				playNextPodcast();
 			}
 		});
@@ -175,6 +175,7 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_SKIPTOEND:
 				Log.d("Podax", "PlayerService got a command: skip to end");
+				_dbAdapter.removePodcastFromQueue(_activePodcast);
 				playNextPodcast();
 				break;
 			case Constants.PLAYER_COMMAND_RESTART:
@@ -234,18 +235,25 @@ public class PlayerService extends Service {
 	public void resume() {
 		if (_onPhone)
 			return;
-		Podcast p = getActivePodcast(this);
+		Podcast p = _activePodcast;
 		if (p == null)
 			return;
 
 		// prep the MediaPlayer
 		try {
+			// don't update the podcast position while the player is reset
+			if (_updatePlayerPositionTimerTask != null)
+				_updatePlayerPositionTimerTask.cancel();
+
 			_player.reset();
 			_player.setDataSource(p.getFilename());
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
 			p.setDuration(_player.getDuration());
 			_dbAdapter.savePodcast(p);
+
+			_updatePlayerPositionTimerTask = new UpdatePlayerPositionTimerTask();
+			_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 		}
 		catch (IOException ex) {
 			stop();
@@ -253,6 +261,7 @@ public class PlayerService extends Service {
 				
 		// the user will probably try this if the podcast is over and the next one didn't start
 		if (_player.getCurrentPosition() >= _player.getDuration() - 1000) {
+			_dbAdapter.removePodcastFromQueue(_activePodcast);
 			playNextPodcast();
 		}
 
@@ -306,11 +315,10 @@ public class PlayerService extends Service {
 	private void playNextPodcast() {
 		Log.d("Podax", "moving to next podcast");
 
-		if (_activePodcast != null) {
-			_dbAdapter.removePodcastFromQueue(_activePodcast);
-		}
-
 		_activePodcast = findFirstDownloadedInQueue(this);
+		// if the podcast has ended and it's back in the queue, restart it
+		if (_activePodcast.getDuration() > 0 && _activePodcast.getLastPosition() > _activePodcast.getDuration() - 1000)
+			_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 
 		if (_activePodcast == null) {
 			Log.d("Podax", "PlayerService queue finished");
