@@ -302,6 +302,7 @@ public class DBAdapter {
 				"WHERE id = ?", 
 				new Object[] { podcastId });
 		UpdateService.downloadPodcasts(_context);
+		QueueActivity.refresh(_context);
 	}
 	
 	public void removePodcastFromQueue(Podcast podcast) {
@@ -311,6 +312,7 @@ public class DBAdapter {
 				new Object[] { podcast.getId() });
 		this._db.execSQL("UPDATE podcasts SET queuePosition = NULL WHERE id = ?", 
 				new Object[] { podcast.getId() });
+		QueueActivity.refresh(_context);
 	}
 	
 	public void changePodcastQueuePosition(Podcast podcast, int newPosition) {
@@ -335,6 +337,7 @@ public class DBAdapter {
 				new Object[] { newPosition, podcast.getId() });
 		
 		podcast.setQueuePosition(newPosition);
+		QueueActivity.refresh(_context);
 	}
 	
 	public CharSequence getPodcastTitle(Integer podcastId) {

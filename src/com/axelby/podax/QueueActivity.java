@@ -3,7 +3,10 @@ package com.axelby.podax;
 import java.util.Vector;
 
 import android.app.ListActivity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -23,6 +26,19 @@ import android.widget.TextView;
 public class QueueActivity extends ListActivity implements OnTouchListener {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
+
+	public static void refresh(Context context) {
+		Intent intent = new Intent("com.axelby.podax.QUEUE_UPDATE");
+		context.sendBroadcast(intent);
+	}
+
+	private class QueueUpdateReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			setListAdapter(new QueueListAdapter());
+		}
+	}
+	private QueueUpdateReceiver _queueUpdateReceiver = new QueueUpdateReceiver();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +76,21 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 	}
 	
 	@Override
+	protected void onResume() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction("com.axelby.podax.QUEUE_UPDATE");
+		registerReceiver(_queueUpdateReceiver, filter);
+		setListAdapter(new QueueListAdapter());
+		super.onResume();
+	}
+	
+	@Override
+	protected void onPause() {
+		unregisterReceiver(_queueUpdateReceiver);
+		super.onPause();
+	}
+
+	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		DBAdapter adapter = DBAdapter.getInstance(this);
 		
@@ -77,7 +108,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 
 		return true;
 	}
-	
+
 	private class DownListener implements OnTouchListener {
 		View _queueItemView;
 		public DownListener(View v) {
