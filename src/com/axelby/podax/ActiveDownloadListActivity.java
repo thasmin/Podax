@@ -92,7 +92,7 @@ public class ActiveDownloadListActivity extends ListActivity {
 			subscription.setText(podcast.getSubscription().getDisplayTitle());
 			
 			// TODO: figure out when this is null
-			if (podcast != null && podcast == _active)
+			if (podcast != null && podcast == _active && podcast.getFileSize() != null)
 			{
 				int max = podcast.getFileSize();
 				int downloaded = (int) new File(podcast.getFilename()).length();
