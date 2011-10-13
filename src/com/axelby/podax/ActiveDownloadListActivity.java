@@ -91,7 +91,8 @@ public class ActiveDownloadListActivity extends ListActivity {
 			TextView subscription = (TextView)view.findViewById(R.id.subscription); 
 			subscription.setText(podcast.getSubscription().getDisplayTitle());
 			
-			if (podcast == _active)
+			// TODO: figure out when this is null
+			if (podcast != null && podcast == _active)
 			{
 				int max = podcast.getFileSize();
 				int downloaded = (int) new File(podcast.getFilename()).length();
