@@ -2,7 +2,7 @@
 <resources>
 	<string name="app_name">Podax</string>
 	<string name="app_long_name">Podax Podcaster</string>
-	<string name="app_version">0.92 beta</string>
+	<string name="app_version">0.93 beta</string>
 	<string name="podcastlistactivity_name">PodcastListActivity</string>
 	<string name="pause">Pause</string>
 	<string name="play">Play</string>
