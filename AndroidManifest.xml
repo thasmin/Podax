@@ -62,7 +62,9 @@
 			</intent-filter>
 		</activity>
 		<activity android:label="@string/podcastlistactivity_name" android:name=".PodcastListActivity" />
-		<activity android:name=".QueueActivity"></activity>
+		<activity android:name=".QueueActivity"
+		    	  android:label="@string/queue"
+		    	  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".PodcastDetailActivity"></activity>
 		<activity android:name=".PlayerControlActivity"></activity>
 		<activity android:name=".ActiveDownloadListActivity"></activity>
