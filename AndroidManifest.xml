@@ -75,7 +75,8 @@
 		<activity android:name=".QueueActivity"
 		    	  android:label="@string/queue"
 		    	  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		<activity android:name=".PodcastDetailActivity"></activity>
+		<activity android:name=".PodcastDetailActivity"
+				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".PlayerControlActivity"></activity>
 		<activity android:name=".ActiveDownloadListActivity"></activity>
 		<activity android:name=".Preferences" />

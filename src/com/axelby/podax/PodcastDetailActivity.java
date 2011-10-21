@@ -40,9 +40,7 @@ public class PodcastDetailActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		setContentView(R.layout.podcast_detail);
-		
+
         _dbAdapter = DBAdapter.getInstance(this);
 		_app = PodaxApp.getApp();
 
@@ -58,8 +56,9 @@ public class PodcastDetailActivity extends Activity {
             return;
         }
 
-		_titleView = (TextView)findViewById(R.id.title);
-		_titleView.setText(_podcast.getTitle());
+        setTitle(_podcast.getTitle());
+        setContentView(R.layout.podcast_detail);
+
 		_subscriptionTitleView = (TextView)findViewById(R.id.subscription_title);
 		_subscriptionTitleView.setText(_podcast.getSubscription().getTitle());
 		
@@ -145,9 +144,7 @@ public class PodcastDetailActivity extends Activity {
 		_position.setText(PlayerActivity.getTimeString(_podcast.getLastPosition()));
 		_duration = (TextView)findViewById(R.id.duration);
 		_duration.setText(PlayerActivity.getTimeString(_podcast.getDuration()));
-		
-		PlayerActivity.injectPlayerFooter(this);
-		
+
 		updatePlayerControls(true);
     	final Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
