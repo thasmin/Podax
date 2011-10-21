@@ -58,8 +58,6 @@ public class SubscriptionListActivity extends ListActivity {
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
 		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
-		
-		PlayerActivity.injectPlayerFooter(this);
     }
 	
 	@Override
