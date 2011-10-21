@@ -7,11 +7,11 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
-public class BottomBar extends RelativeLayout {
+public class BottomBar extends LinearLayout {
 
 	private TextView _podcastTitle;
 	private TextView _positionstring;

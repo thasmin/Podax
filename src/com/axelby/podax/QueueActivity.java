@@ -70,8 +70,6 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			}
 		});
 		
-		PlayerActivity.injectPlayerFooter(this);
-		
 		getListView().setOnTouchListener(this);
 	}
 	
