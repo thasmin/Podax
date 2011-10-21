@@ -49,8 +49,6 @@ public class MainActivity extends Activity {
 				startActivity(intent);
 			}
 		});
-		
-		PlayerActivity.injectPlayerFooter(this);
 	}
 
     @Override

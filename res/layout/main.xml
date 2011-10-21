@@ -1,82 +1,94 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-			  android:id="@+id/layout"
-			  android:layout_width="fill_parent" android:layout_height="fill_parent"
-			  android:orientation="vertical">
-    <RelativeLayout android:id="@+id/relativeLayout1"
-    	android:layout_height="wrap_content"
-    	android:layout_width="fill_parent"
-    	android:gravity="center_horizontal">
-		<TextView android:id="@+id/header"
-				  android:text="@string/app_long_name"
-				  android:layout_width="wrap_content"
-				  android:layout_height="wrap_content"
-				  android:textAppearance="?android:attr/textAppearanceLarge" />
-		<TextView android:id="@+id/version"
-				  android:text="@string/app_version"
-				  android:layout_width="wrap_content"
-				  android:layout_height="wrap_content"
-				  android:textAppearance="?android:attr/textAppearanceSmall"
-				  android:layout_below="@id/header"
-				  android:layout_alignRight="@id/header" />
-    </RelativeLayout>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    			android:layout_width="fill_parent"
+    			android:layout_height="fill_parent">
+			  
+	<LinearLayout android:id="@+id/layout"
+				  android:layout_width="fill_parent"
+				  android:layout_height="fill_parent"
+				  android:orientation="vertical"
+				  android:layout_alignParentTop="true">
+	    <RelativeLayout android:id="@+id/relativeLayout1"
+	    	android:layout_height="wrap_content"
+	    	android:layout_width="fill_parent"
+	    	android:gravity="center_horizontal">
+			<TextView android:id="@+id/header"
+					  android:text="@string/app_long_name"
+					  android:layout_width="wrap_content"
+					  android:layout_height="wrap_content"
+					  android:textAppearance="?android:attr/textAppearanceLarge" />
+			<TextView android:id="@+id/version"
+					  android:text="@string/app_version"
+					  android:layout_width="wrap_content"
+					  android:layout_height="wrap_content"
+					  android:textAppearance="?android:attr/textAppearanceSmall"
+					  android:layout_below="@id/header"
+					  android:layout_alignRight="@id/header" />
+	    </RelativeLayout>
+	
+		<RelativeLayout android:id="@+id/queue"
+						android:layout_width="fill_parent" android:layout_height="wrap_content"
+						android:paddingTop="10dp" android:paddingBottom="10dp" 
+						android:paddingLeft="20dp" android:paddingRight="0dp">
+			<ImageView android:id="@+id/queue_img"
+					   android:layout_width="64px" android:layout_height="64px"
+					   android:src="@drawable/oldicon"/>
+			<TextView android:id="@+id/queue_text"
+					  android:layout_width="fill_parent" android:layout_height="wrap_content"
+					  android:paddingLeft="20dp"
+					  android:text="@string/queue"
+					  android:textAppearance="?android:attr/textAppearanceMedium"
+					  android:layout_toRightOf="@id/queue_img" android:layout_centerVertical="true" />
+		</RelativeLayout>
+	
+		<RelativeLayout android:id="@+id/subscriptions"
+						android:layout_width="fill_parent" android:layout_height="wrap_content"
+						android:paddingTop="10dp" android:paddingBottom="10dp" 
+						android:paddingLeft="20dp" android:paddingRight="0dp">
+			<ImageView android:id="@+id/subscriptions_img"
+					   android:layout_width="64px" android:layout_height="64px"
+					   android:src="@drawable/oldicon"/>
+			<TextView android:id="@+id/subscriptions_text"
+					  android:layout_width="fill_parent" android:layout_height="wrap_content"
+					  android:paddingLeft="20dp"
+					  android:text="@string/subscriptions"
+					  android:textAppearance="?android:attr/textAppearanceMedium"
+					  android:layout_toRightOf="@id/subscriptions_img" android:layout_centerVertical="true" />
+		</RelativeLayout>
+	
+		<RelativeLayout android:id="@+id/importsubs"
+						android:layout_width="fill_parent" android:layout_height="wrap_content"
+						android:paddingTop="10dp" android:paddingBottom="10dp" 
+						android:paddingLeft="20dp" android:paddingRight="0dp">
+			<ImageView android:id="@+id/readerimport_img"
+					   android:layout_width="64px" android:layout_height="64px"
+					   android:src="@drawable/oldicon"/>
+			<TextView android:id="@+id/readerimport_text"
+					  android:layout_width="fill_parent" android:layout_height="wrap_content"
+					  android:paddingLeft="20dp"
+					  android:text="@string/import_subscriptions"
+					  android:textAppearance="?android:attr/textAppearanceMedium"
+					  android:layout_toRightOf="@id/readerimport_img" android:layout_centerVertical="true" />
+		</RelativeLayout>
+	
+		<RelativeLayout android:id="@+id/activedownloads"
+						android:layout_width="fill_parent" android:layout_height="wrap_content"
+						android:paddingTop="10dp" android:paddingBottom="10dp" 
+						android:paddingLeft="20dp" android:paddingRight="0dp">
+			<ImageView android:id="@+id/activedownloads_img"
+					   android:layout_width="64px" android:layout_height="64px"
+					   android:src="@drawable/oldicon"/>
+			<TextView android:id="@+id/activedownloads_text"
+					  android:layout_width="fill_parent" android:layout_height="wrap_content"
+					  android:paddingLeft="20dp"
+					  android:text="@string/active_downloads"
+					  android:textAppearance="?android:attr/textAppearanceMedium"
+					  android:layout_toRightOf="@id/activedownloads_img" android:layout_centerVertical="true" />
+		</RelativeLayout>
+	</LinearLayout>
+	
+	<com.axelby.podax.BottomBar android:id="@+id/bottombar"
+	    						android:layout_width="fill_parent"
+	    						android:layout_height="wrap_content"
+	    						android:layout_alignParentBottom="true" />
 
-	<RelativeLayout android:id="@+id/queue"
-					android:layout_width="fill_parent" android:layout_height="wrap_content"
-					android:paddingTop="10dp" android:paddingBottom="10dp" 
-					android:paddingLeft="20dp" android:paddingRight="0dp">
-		<ImageView android:id="@+id/queue_img"
-				   android:layout_width="64px" android:layout_height="64px"
-				   android:src="@drawable/oldicon"/>
-		<TextView android:id="@+id/queue_text"
-				  android:layout_width="fill_parent" android:layout_height="wrap_content"
-				  android:paddingLeft="20dp"
-				  android:text="@string/queue"
-				  android:textAppearance="?android:attr/textAppearanceMedium"
-				  android:layout_toRightOf="@id/queue_img" android:layout_centerVertical="true" />
-	</RelativeLayout>
-
-	<RelativeLayout android:id="@+id/subscriptions"
-					android:layout_width="fill_parent" android:layout_height="wrap_content"
-					android:paddingTop="10dp" android:paddingBottom="10dp" 
-					android:paddingLeft="20dp" android:paddingRight="0dp">
-		<ImageView android:id="@+id/subscriptions_img"
-				   android:layout_width="64px" android:layout_height="64px"
-				   android:src="@drawable/oldicon"/>
-		<TextView android:id="@+id/subscriptions_text"
-				  android:layout_width="fill_parent" android:layout_height="wrap_content"
-				  android:paddingLeft="20dp"
-				  android:text="@string/subscriptions"
-				  android:textAppearance="?android:attr/textAppearanceMedium"
-				  android:layout_toRightOf="@id/subscriptions_img" android:layout_centerVertical="true" />
-	</RelativeLayout>
-
-	<RelativeLayout android:id="@+id/importsubs"
-					android:layout_width="fill_parent" android:layout_height="wrap_content"
-					android:paddingTop="10dp" android:paddingBottom="10dp" 
-					android:paddingLeft="20dp" android:paddingRight="0dp">
-		<ImageView android:id="@+id/readerimport_img"
-				   android:layout_width="64px" android:layout_height="64px"
-				   android:src="@drawable/oldicon"/>
-		<TextView android:id="@+id/readerimport_text"
-				  android:layout_width="fill_parent" android:layout_height="wrap_content"
-				  android:paddingLeft="20dp"
-				  android:text="@string/import_subscriptions"
-				  android:textAppearance="?android:attr/textAppearanceMedium"
-				  android:layout_toRightOf="@id/readerimport_img" android:layout_centerVertical="true" />
-	</RelativeLayout>
-
-	<RelativeLayout android:id="@+id/activedownloads"
-					android:layout_width="fill_parent" android:layout_height="wrap_content"
-					android:paddingTop="10dp" android:paddingBottom="10dp" 
-					android:paddingLeft="20dp" android:paddingRight="0dp">
-		<ImageView android:id="@+id/activedownloads_img"
-				   android:layout_width="64px" android:layout_height="64px"
-				   android:src="@drawable/oldicon"/>
-		<TextView android:id="@+id/activedownloads_text"
-				  android:layout_width="fill_parent" android:layout_height="wrap_content"
-				  android:paddingLeft="20dp"
-				  android:text="@string/active_downloads"
-				  android:textAppearance="?android:attr/textAppearanceMedium"
-				  android:layout_toRightOf="@id/activedownloads_img" android:layout_centerVertical="true" />
-	</RelativeLayout>
-</LinearLayout>
+</RelativeLayout>
