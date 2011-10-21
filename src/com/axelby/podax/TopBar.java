@@ -42,30 +42,4 @@ public class TopBar extends LinearLayout {
 		if (context instanceof Activity)
 			title.setText(((Activity)context).getTitle());
 	}
-	
-	/*
-	public static void inject(final Activity activity) {
-		PlayerActivity.injectView(activity, R.layout.topbar);
-
-		// remove title bar
-		View v = activity.findViewById(android.R.id.title);
-		if (v != null) {
-			v.setPadding(0, 0, 0, 0);
-			ViewGroup p1 = (ViewGroup)v.getParent();
-			ViewGroup p2 = (ViewGroup)p1.getParent();
-			p2.removeView(p1);
-		}
-
-		
-		TextView title = (TextView)activity.findViewById(R.id.ab_title);
-		title.setText(activity.getTitle());
-		
-		ImageView home = (ImageView)activity.findViewById(R.id.ab_home);
-		home.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Toast.makeText(activity, "go home", Toast.LENGTH_SHORT).show();
-			}
-		});
-	}
-	*/
 }
