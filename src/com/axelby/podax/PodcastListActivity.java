@@ -29,12 +29,17 @@ public class PodcastListActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.podcast_list);
         
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         _subscriptionId = bundle.getInt("subscriptionId");
         
+        // set the title before loading the layout
+        Subscription sub = DBAdapter.getInstance(this).loadSubscription(_subscriptionId);
+        setTitle(sub.getDisplayTitle() + " Podcasts");
+
+        setContentView(R.layout.podcast_list);
+
         getListView().setAdapter(new PodcastAdapter(this));
         getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
 			public void onCreateContextMenu(ContextMenu menu, View v,
@@ -54,8 +59,6 @@ public class PodcastListActivity extends ListActivity {
 							R.string.play);
 			}
 		});
-        
-		PlayerActivity.injectPlayerFooter(this);
     }
 	
 	@Override
