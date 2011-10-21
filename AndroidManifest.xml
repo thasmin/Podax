@@ -77,8 +77,9 @@
 		    	  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".PodcastDetailActivity"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		<activity android:name=".PlayerControlActivity"></activity>
-		<activity android:name=".ActiveDownloadListActivity"></activity>
+		<activity android:name=".ActiveDownloadListActivity"
+				  android:label="@string/active_downloads"
+				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".Preferences" />
 		<activity android:name=".ImportSubscriptionActivity" />
 

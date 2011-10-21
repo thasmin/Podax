@@ -33,8 +33,6 @@ public class ActiveDownloadListActivity extends ListActivity {
 		setContentView(R.layout.downloads_list);
 
 		refresher.run();
-		
-		PlayerActivity.injectPlayerFooter(this);
 	}
 
 	public class ActiveDownloadAdapter extends BaseAdapter {
