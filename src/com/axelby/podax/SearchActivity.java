@@ -137,7 +137,7 @@ public class SearchActivity extends Activity {
 			else {
 				view = (TextView)convertView;
 			}
-			view.setPadding(view.getPaddingLeft() + 25, view.getPaddingTop(), view.getPaddingRight(), view.getPaddingBottom());
+			view.setPadding(60, 0, 0, 0);
 			view.setText(_groups[groupPosition]);			
 			return view;
 		}
