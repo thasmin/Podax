@@ -64,10 +64,6 @@ public class ImportSubscriptionActivity extends ListActivity {
 						}
 					}
 			}, null);
-
-		//registerForContextMenu(getListView());
-		
-		PlayerActivity.injectPlayerFooter(this);
 	}
 
 	@Override
