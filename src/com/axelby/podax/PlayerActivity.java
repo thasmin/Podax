@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 public class PlayerActivity {
 	public static void injectPlayerFooter(final Activity activity) {
+		return;
+		/*
 		injectView(activity, R.layout.player);
 
 		final TextView _podcastTitle = (TextView) activity.findViewById(R.id.podcasttitle);
@@ -68,30 +70,7 @@ public class PlayerActivity {
 				handler.postDelayed(this, 250);
 			}
 		}, 250);
-	}
-
-	private static View injectView(Activity activity, int resource) {
-		View mainView = activity.findViewById(android.R.id.content);
-		ViewGroup mainParent = (ViewGroup)mainView.getParent();
-		int mainIndex = mainParent.indexOfChild(mainView);
-		mainParent.removeView(mainView);
-		
-		LayoutInflater inflater = (LayoutInflater)activity.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-		View outerView = inflater.inflate(resource, null);
-		
-		// inject old view into new view
-		View container = outerView.findViewById(R.id.view);
-		ViewGroup containerGroup = (ViewGroup) container.getParent();
-		int index = containerGroup.indexOfChild(container);
-		containerGroup.removeView(container);
-		containerGroup.addView(mainView, index);
-		mainParent.addView(outerView, mainIndex);
-
-		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
-		lp.addRule(RelativeLayout.ABOVE, R.id.footer);
-		mainView.setLayoutParams(lp);
-		
-		return mainParent;
+		*/
 	}
 
 	static String getTimeString(int milliseconds) {
