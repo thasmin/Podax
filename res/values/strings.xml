@@ -30,4 +30,5 @@
 	<string name="podcast_not_downloaded">This podcast has not been downloaded.</string>
 	<string name="import_subscriptions">Import Subscriptions</string>
 	<string name="search">Search</string>
+	<string name="preferences">Preferences</string>
 </resources>
