@@ -39,8 +39,6 @@ public class SearchActivity extends Activity {
 		    epView.setAdapter(new SearchResultsAdapter(this));
 	    epView.expandGroup(0);
 	    epView.expandGroup(1);
-	    
-	    PlayerActivity.injectPlayerFooter(this);
 	}	
 
     public class SearchResultsAdapter extends BaseExpandableListAdapter {

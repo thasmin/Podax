@@ -308,8 +308,8 @@ public class PlayerService extends Service {
 	public String getPositionString() {
 		if (_player.getDuration() == 0)
 			return "";
-		return PlayerActivity.getTimeString(_player.getCurrentPosition())
-				+ " / " + PlayerActivity.getTimeString(_player.getDuration());
+		return PodaxApp.getTimeString(_player.getCurrentPosition())
+				+ " / " + PodaxApp.getTimeString(_player.getDuration());
 	}
 
 	private void playNextPodcast() {
@@ -333,7 +333,7 @@ public class PlayerService extends Service {
 	public static String getPositionString(int duration, int position) {
 		if (duration == 0)
 			return "";
-		return PlayerActivity.getTimeString(position) + " / "
-				+ PlayerActivity.getTimeString(duration);
+		return PodaxApp.getTimeString(position) + " / "
+				+ PodaxApp.getTimeString(duration);
 	}
 }

@@ -79,6 +79,29 @@ public class PodaxApp extends Application {
 		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcast.getId());
 	}
 
+	static String getTimeString(int milliseconds) {
+		int seconds = milliseconds / 1000;
+		final int SECONDSPERHOUR = 60 * 60;
+		final int SECONDSPERMINUTE = 60;
+		int hours = seconds / SECONDSPERHOUR;
+		int minutes = seconds % SECONDSPERHOUR / SECONDSPERMINUTE;
+		seconds = seconds % SECONDSPERMINUTE;
+		
+		StringBuilder builder = new StringBuilder();
+		if (hours > 0) {
+			builder.append(hours);
+			builder.append(":");
+			if (minutes < 10)
+				builder.append("0");
+		}
+		builder.append(minutes);
+		builder.append(":");
+		if (seconds < 10)
+			builder.append("0");
+		builder.append(seconds);
+		return builder.toString();
+	}
+
 	public static void updateWidgets(Context context) {
 		SmallWidgetProvider.updateWidget(context);
 		LargeWidgetProvider.updateWidget(context);
