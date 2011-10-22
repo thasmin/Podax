@@ -13,6 +13,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.util.Log;
 
 import com.axelby.podax.R.drawable;
@@ -84,6 +85,13 @@ class PodcastDownloader {
 						}
 						instream.close();
 						outstream.close();
+
+						MediaPlayer mp = new MediaPlayer();
+						mp.setDataSource(podcast.getFilename());
+						mp.prepare();
+						podcast.setDuration(mp.getDuration());
+						dbAdapter.savePodcast(podcast);
+						mp.release();
 	
 						Log.d("Podax", "Done downloading " + podcast.getTitle());
 					} catch (Exception e) {
