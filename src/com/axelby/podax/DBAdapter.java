@@ -97,7 +97,7 @@ public class DBAdapter {
 	
 	public Vector<Subscription> getSubscriptions() {
 		Cursor c = this._db.query("subscriptions", SUBSCRIPTION_COLUMNS, 
-				null, null, null, null, null);
+				null, null, null, null, "title");
 		return collectSubscriptions(c);
 	}
 
