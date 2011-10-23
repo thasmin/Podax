@@ -85,7 +85,10 @@
 		<activity android:name=".ImportSubscriptionActivity"
 				  android:label="@string/import_subscriptions"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		
+		<activity android:name=".AboutActivity"
+				  android:label="@string/about_podax"
+				  android:theme="@android:style/Theme.Black.NoTitleBar" />
+				
 		<service android:name=".UpdateService" />
 		<service android:name=".PlayerService" />
 

@@ -31,4 +31,17 @@
 	<string name="import_subscriptions">Import Subscriptions</string>
 	<string name="search">Search</string>
 	<string name="preferences">Preferences</string>
+	<string name="about_content">
+	    <![CDATA[
+	    <p>Podax was created by Dan Goldstein. 
+	    	You can email me at <a href="mailto:dan@axelby.com">dan@axelby.com</a> with any comments or questions you have.</p>
+	    <p>Podax is open source software. You can get the source code at
+	    	<a href="http://github.com/thasmin/Podax">http://github.com/thasmin/Podax</a>.
+	    	It is available under the 2 clause BSD license.</p>
+	    <p>Icons are made by The Working Group and are licensed under a Creative Commons Attribution-Share Alike license.
+	    	You can see their website at <a href="http://twg.ca">http://twg.ca</a> and find the icons at 
+	    	<a href="http://blog.twg.ca/2010/11/retina-display-icon-set/">http://blog.twg.ca/2010/11/retina-display-icon-set/</a>.</p>
+	    ]]>
+	</string>
+	<string name="about_podax">About Podax</string>
 </resources>

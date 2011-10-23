@@ -2,6 +2,7 @@ package com.axelby.podax;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -63,9 +64,12 @@ public class PodcastDetailActivity extends Activity {
 		_subscriptionTitleView.setText(_podcast.getSubscription().getTitle());
 		
 		_descriptionView = (WebView)findViewById(R.id.description);
-		String html = _podcast.getDescription();
-		html = "<html><body style=\"background:black;color:white\">" + html + "</body></html>"; 
+		String html = "<html><head><style type=\"text/css\">" +
+				"a { color: #E59F39 }" +
+				"</style></head>" +
+				"<body style=\"background:black;color:white\">" + _podcast.getDescription() + "</body></html>"; 
 		_descriptionView.loadData(html, "text/html", "utf-8");
+		_descriptionView.setBackgroundColor(Color.BLACK);
 
 		_queuePosition = (TextView)findViewById(R.id.queue_position);
 		_queueButton = (Button)findViewById(R.id.queue_btn);

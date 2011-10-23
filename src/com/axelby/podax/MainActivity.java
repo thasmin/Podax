@@ -49,6 +49,14 @@ public class MainActivity extends Activity {
 				startActivity(intent);
 			}
 		});
+
+		RelativeLayout about = (RelativeLayout) this.findViewById(R.id.about);
+		about.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, AboutActivity.class);
+				startActivity(intent);
+			}
+		});
 	}
 
     @Override
