@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.RelativeLayout;
 
 public class MainActivity extends Activity {
 	@Override
@@ -17,7 +16,7 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.main);
 
-		RelativeLayout _queue = (RelativeLayout) this.findViewById(R.id.queue);
+		View _queue = this.findViewById(R.id.queue);
 		_queue.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				Intent intent = new Intent(MainActivity.this, QueueActivity.class);
@@ -26,7 +25,7 @@ public class MainActivity extends Activity {
 		});
 
 
-		RelativeLayout subscriptions = (RelativeLayout) this.findViewById(R.id.subscriptions);
+		View subscriptions = this.findViewById(R.id.subscriptions);
 		subscriptions.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				Intent intent = new Intent(MainActivity.this, SubscriptionListActivity.class);
@@ -34,7 +33,7 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		RelativeLayout importsubs = (RelativeLayout) this.findViewById(R.id.importsubs);
+		View importsubs = this.findViewById(R.id.importsubs);
 		importsubs.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				Intent intent = new Intent(MainActivity.this, ImportSubscriptionActivity.class);
@@ -42,7 +41,7 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		RelativeLayout activedownloads = (RelativeLayout) this.findViewById(R.id.activedownloads);
+		View activedownloads = this.findViewById(R.id.activedownloads);
 		activedownloads.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				Intent intent = new Intent(MainActivity.this, ActiveDownloadListActivity.class);
@@ -50,7 +49,7 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		RelativeLayout about = (RelativeLayout) this.findViewById(R.id.about);
+		View about = this.findViewById(R.id.about);
 		about.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				Intent intent = new Intent(MainActivity.this, AboutActivity.class);

@@ -4,11 +4,15 @@
 			  android:layout_height="50dp"
 			  android:layout_alignParentTop="true"
 			  android:background="#FFE59F39">
-	<ImageButton android:id="@+id/ab_home" 
-				 android:layout_width="50dp"
-				 android:layout_height="fill_parent"
-				 android:src="@drawable/home_24"
-				 android:background="@android:color/transparent" />
+	<FrameLayout android:layout_width="50dp" android:layout_height="fill_parent">
+		<ImageButton android:id="@+id/ab_home" 
+					 android:layout_width="24dp"
+					 android:layout_height="24dp"
+					 android:layout_gravity="center"
+					 android:scaleType="fitXY"
+					 android:src="@drawable/home"
+					 android:background="@android:color/transparent" />	    
+	</FrameLayout>
 	<View android:id="@+id/ab_separator"
 		  android:layout_height="fill_parent"
 		  android:layout_width="1px"
