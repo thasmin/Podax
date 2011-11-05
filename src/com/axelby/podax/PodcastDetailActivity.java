@@ -162,7 +162,7 @@ public class PodcastDetailActivity extends Activity {
 	boolean _controlsEnabled = true;
 	private void updatePlayerControls(boolean force) {
 		Podcast p = PlayerService.getActivePodcast(this);
-		if (PlayerService.isPlaying() && p.getId() == _podcast.getId()) {
+		if (PlayerService.isPlaying() && p != null && p.getId() == _podcast.getId()) {
 			if (!_seekbar_dragging) {
 				_position.setText(PodaxApp.getTimeString(PlayerService.getLastPosition()));
 				_duration.setText(PodaxApp.getTimeString(p.getDuration()));
