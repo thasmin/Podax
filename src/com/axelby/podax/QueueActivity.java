@@ -34,6 +34,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 		PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 		PodcastProvider.COLUMN_QUEUE_POSITION,
 		PodcastProvider.COLUMN_MEDIA_URL,
+		PodcastProvider.COLUMN_FILE_SIZE,
 	};
 
 	@Override
@@ -84,7 +85,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			podcast.removeFromQueue();
 			break;
 		case OPTION_PLAY:
-			//PodaxApp.getApp().play(podcast);
+			PodaxApp.getApp().play(podcast);
 		}
 
 		return true;

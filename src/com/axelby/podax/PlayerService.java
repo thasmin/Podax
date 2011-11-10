@@ -209,7 +209,7 @@ public class PlayerService extends Service {
 				stop();
 				break;
 			case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
-				Log.d("Podax", "PlayerService got a command: pause");
+				Log.d("Podax", "PlayerService got a command: play specific podcast");
 				Podcast p = _dbAdapter.loadPodcast(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1));
 				if (p.isDownloaded())
 					play(p);

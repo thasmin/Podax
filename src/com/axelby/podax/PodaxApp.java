@@ -79,6 +79,12 @@ public class PodaxApp extends Application {
 		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcast.getId());
 	}
 
+	public void play(PodcastCursor podcast) {
+		if (podcast == null)
+			return;
+		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, (int)(long)podcast.getId());
+	}
+
 	static String getTimeString(int milliseconds) {
 		int seconds = milliseconds / 1000;
 		final int SECONDSPERHOUR = 60 * 60;
