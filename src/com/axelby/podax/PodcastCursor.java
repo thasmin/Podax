@@ -3,6 +3,7 @@ package com.axelby.podax;
 import java.io.File;
 
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -93,5 +94,11 @@ public class PodcastCursor {
 			return false;
 		File file = new File(getFilename());
 		return file.exists() && file.length() == getFileSize() && getFileSize() != 0;
+	}
+
+	public void removeFromQueue() {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
+		_context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 }

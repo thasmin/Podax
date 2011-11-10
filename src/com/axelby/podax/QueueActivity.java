@@ -1,7 +1,6 @@
 package com.axelby.podax;
 
 import android.app.ListActivity;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -76,20 +75,17 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		/*
-		DBAdapter adapter = DBAdapter.getInstance(this);
-		
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
-		Podcast podcast = (Podcast)getListAdapter().getItem(info.position);
+		Cursor cursor = (Cursor)getListAdapter().getItem(info.position);
+		PodcastCursor podcast = new PodcastCursor(this, cursor);
 
 		switch (item.getItemId()) {
 		case OPTION_REMOVEFROMQUEUE:
-			adapter.removePodcastFromQueue(podcast);
+			podcast.removeFromQueue();
 			break;
 		case OPTION_PLAY:
-			PodaxApp.getApp().play(podcast);
+			//PodaxApp.getApp().play(podcast);
 		}
-		*/
 
 		return true;
 	}
@@ -187,32 +183,17 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			if (_heldPosition == -1 || _heldPosition == position)
 				return;
 
-			// swap the held podcast with the one at the new position
+			// update the held cursor to have the new queue position
+			// the queue will automatically reorder
 			Cursor held = (Cursor)getItem(_heldPosition);
 			PodcastCursor heldPodcast = new PodcastCursor(QueueActivity.this, held);
-			long heldId = heldPodcast.getId();
-
-			// update the held cursor to have the new queue position
-			Uri heldUri = ContentUris.withAppendedId(PodcastProvider.URI, heldId);
 			ContentValues heldValues = new ContentValues();
 			heldValues.put(PodcastProvider.COLUMN_QUEUE_POSITION, position);
-			getContentResolver().update(heldUri, heldValues, null, null);
+			getContentResolver().update(heldPodcast.getContentUri(), heldValues, null, null);
 			
-			// rebind the held view and make it the separator
 			ViewSwitcher heldView = (ViewSwitcher)getListView().getChildAt(position);
 			heldView.showNext();
 			
-			Cursor switchWith = (Cursor)getItem(position);
-			PodcastCursor switchPodcast = new PodcastCursor(QueueActivity.this, switchWith);
-			long switchId = switchPodcast.getId();
-
-			// update the other cursor to have the old queue position
-			Uri switchUri = ContentUris.withAppendedId(PodcastProvider.URI, switchId);
-			ContentValues switchValues = new ContentValues();
-			switchValues.put(PodcastProvider.COLUMN_QUEUE_POSITION, _heldPosition);
-			getContentResolver().update(switchUri, switchValues, null, null);
-			
-			// rebind the switched view and show the list view
 			ViewSwitcher switchedView = (ViewSwitcher)getListView().getChildAt(_heldPosition);
 			switchedView.showNext();
 
