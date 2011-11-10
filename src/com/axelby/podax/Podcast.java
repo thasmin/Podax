@@ -133,14 +133,7 @@ public class Podcast {
 	}
 
 	public String getFilename() {
-		// find extension (probably .mp3)
-		String extension = ""; 
-		int i = this.mediaUrl.lastIndexOf('.');
-		if (i > 0) {
-		    extension = this.mediaUrl.substring(i+1);
-		}
-		
-		return getStoragePath() + Integer.toString(this.id) + "." + extension;
+		return getStoragePath() + Integer.toString(this.id) + "." + getExtension(this.mediaUrl);
 	}
 
 	public boolean isDownloaded() {
@@ -157,5 +150,12 @@ public class Podcast {
 		if (isDownloaded())
 			return false;
 		return true;
+	}
+	public static String getExtension(String filename) {
+		String extension = "";
+		int i = filename.lastIndexOf('.');
+		if (i > 0)
+		    extension = filename.substring(i+1);
+		return extension;
 	}
 }

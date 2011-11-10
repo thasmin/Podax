@@ -12,13 +12,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter {
-	private static final String[] SUBSCRIPTION_COLUMNS = new String[] { "id",
+	static final String[] SUBSCRIPTION_COLUMNS = new String[] { "_id",
 			"title", "url", "lastModified", "lastUpdate", "eTag", "thumbnail" };
-	private static final String[] PODCAST_COLUMNS = new String[] { "id",
+	static final String[] PODCAST_COLUMNS = new String[] { "_id",
 			"subscriptionId", "title", "link", "pubDate", "description",
 			"mediaUrl", "fileSize", "queuePosition", "lastPosition", "duration" };
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 2;
 	private Context _context;
 	private DBHelper _helper;
 	private SQLiteDatabase _db;
@@ -31,7 +31,7 @@ public class DBAdapter {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL("CREATE TABLE subscriptions(" + 
-					"id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
 					"title VARCHAR, " + 
 					"url VARCHAR NOT NULL, " + 
 					"lastModified DATE, " + 
@@ -41,7 +41,7 @@ public class DBAdapter {
 			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 			
 			db.execSQL("CREATE TABLE podcasts(" +
-					"id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 					"subscriptionId INTEGER, " +
 					"title VARCHAR, " +
 					"link VARCHAR, " +
@@ -62,13 +62,62 @@ public class DBAdapter {
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+			if (oldVersion < 2) {
+				// rename id in podcasts table
+				db.execSQL("ALTER TABLE podcasts RENAME TO podcasts_old");
+				db.execSQL("CREATE TABLE podcasts(" +
+						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						"subscriptionId INTEGER, " +
+						"title VARCHAR, " +
+						"link VARCHAR, " +
+						"pubDate DATE, " + 
+						"description VARCHAR, " + 
+						"mediaUrl VARCHAR," +
+						"fileSize INTEGER," +
+						"queuePosition INTEGER," +
+						"lastPosition INTEGER NOT NULL DEFAULT 0," +
+						"duration INTEGER DEFAULT 0)"
+				);
+				db.execSQL("INSERT INTO podcasts(_id, subscriptionId, title, link, " +
+							"pubDate, description, mediaUrl, fileSize, " +
+							"queuePosition, lastPosition, duration) " +
+						"SELECT id, subscriptionId, title, link, " +
+							"pubDate, description, mediaUrl, fileSize, " +
+							"queuePosition, lastPosition, duration" +
+						"FROM podcasts_old");
+				db.execSQL("DROP TABLE podcasts_old");
+				db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
+				db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
+				
+				// rename id in subscriptions table
+				db.execSQL("ALTER TABLE subscriptions RENAME TO subscriptions_old"); 
+				db.execSQL("CREATE TABLE subscriptions(" + 
+						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+						"title VARCHAR, " + 
+						"url VARCHAR NOT NULL, " + 
+						"lastModified DATE, " + 
+						"lastUpdate DATE," +
+						"eTag VARCHAR," +
+						"thumbnail VARCHAR);");
+				db.execSQL("INSERT INTO subscriptions(_id, title, url, " +
+							"lastModified, lastUpdate, eTag, thumbnail)" +
+						"SELECT id, title, url, " +
+							"lastModified, lastUpdate, eTag, thumbnail " +
+						"FROM subscriptions_old");
+				db.execSQL("DROP TABLE subscriptions_old");
+				db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
+			}
 		}
 	}
 
-	private DBAdapter(Context context) {
+	public DBAdapter(Context context) {
 		this._context = context;
 		this._helper = new DBHelper(_context);
 		this._db = this._helper.getWritableDatabase();
+	}
+	
+	SQLiteDatabase getRawDB() {
+		return _db;
 	}
 	
 	private static DBAdapter _singleton = null;
@@ -114,7 +163,7 @@ public class DBAdapter {
 
 	public Subscription loadSubscription(int id) {
 		Cursor c = this._db.query("subscriptions", SUBSCRIPTION_COLUMNS, 
-				"id = ?", new String[] { Integer.toString(id) }, null, null, null);
+				"_id = ?", new String[] { Integer.toString(id) }, null, null, null);
 		if (c.isAfterLast())
 		{
 			c.close();
@@ -130,7 +179,7 @@ public class DBAdapter {
 	}
 
 	public void deleteSubscription(Subscription subscription) {
-		this._db.delete("subscriptions", "id = ?", 
+		this._db.delete("subscriptions", "_id = ?", 
 				new String[] { Integer.toString(subscription.getId()) });
 	}
 
@@ -146,7 +195,7 @@ public class DBAdapter {
 	}
 	
 	public Subscription addSubscription(String url, String title) {
-		Cursor c = this._db.query("subscriptions", new String[] {"id" },
+		Cursor c = this._db.query("subscriptions", new String[] {"_id" },
 				"url= ?", new String[] { url }, null, null, null);
 		if (c.isAfterLast()) {
 			ContentValues values = new ContentValues();
@@ -225,7 +274,7 @@ public class DBAdapter {
 		values.put("lastPosition", podcast.getLastPosition());
 		values.put("duration", podcast.getDuration());
 		if (podcast.getId() != -1)
-			this._db.update("podcasts", values, "id = ?", new String[] { Integer.toString(podcast.getId()) });
+			this._db.update("podcasts", values, "_id = ?", new String[] { Integer.toString(podcast.getId()) });
 		else
 			this._db.update("podcasts", values, "link = ?", new String[] { podcast.getLink() });
 	}
@@ -245,7 +294,7 @@ public class DBAdapter {
 			return null;
 		
 		Cursor c = this._db.query("podcasts", PODCAST_COLUMNS, 
-				"id = ?", new String[] { Integer.toString(id) }, null, null, null);
+				"_id = ?", new String[] { Integer.toString(id) }, null, null, null);
 		if (c.isAfterLast()) {
 			c.close();
 			return null;
@@ -299,20 +348,20 @@ public class DBAdapter {
 	public void addPodcastToQueue(Integer podcastId) {
 		this._db.execSQL("UPDATE podcasts SET queuePosition = " +
 				"(SELECT COALESCE(MAX(queuePosition) + 1, 0) FROM podcasts) " +
-				"WHERE id = ?", 
+				"WHERE _id = ?", 
 				new Object[] { podcastId });
 		UpdateService.downloadPodcasts(_context);
-		QueueActivity.refresh(_context);
+		//QueueActivity.refresh(_context);
 	}
 	
 	public void removePodcastFromQueue(Podcast podcast) {
 		new File(podcast.getFilename()).delete();
 		this._db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 " +
-				"WHERE queuePosition > (SELECT queuePosition FROM podcasts WHERE id = ?)", 
+				"WHERE queuePosition > (SELECT queuePosition FROM podcasts WHERE _id = ?)", 
 				new Object[] { podcast.getId() });
-		this._db.execSQL("UPDATE podcasts SET queuePosition = NULL WHERE id = ?", 
+		this._db.execSQL("UPDATE podcasts SET queuePosition = NULL WHERE _id = ?", 
 				new Object[] { podcast.getId() });
-		QueueActivity.refresh(_context);
+		//QueueActivity.refresh(_context);
 	}
 	
 	public void changePodcastQueuePosition(Podcast podcast, int newPosition) {
@@ -333,16 +382,16 @@ public class DBAdapter {
 					"WHERE queuePosition >= ? AND queuePosition < ?", 
 					new Object[] { newPosition, oldPosition });
 		// update
-		this._db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE id = ?", 
+		this._db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?", 
 				new Object[] { newPosition, podcast.getId() });
 		
 		podcast.setQueuePosition(newPosition);
-		QueueActivity.refresh(_context);
+		//QueueActivity.refresh(_context);
 	}
 	
 	public CharSequence getPodcastTitle(Integer podcastId) {
 		Cursor c = this._db.query("podcasts", new String[] { "title" }, 
-				"id = ?", new String[] { Integer.toString(podcastId) }, 
+				"_id = ?", new String[] { Integer.toString(podcastId) }, 
 				null, null, null);
 		c.moveToFirst();
 		if (!c.isAfterLast())
@@ -361,7 +410,7 @@ public class DBAdapter {
 
 		ContentValues values = new ContentValues();
 		values.put("lastPosition", position);
-		_db.update("podcasts", values, "id = ?", new String[] { String.valueOf(podcast.getId()) });
+		_db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(podcast.getId()) });
 		
 		values = new ContentValues();
 		values.put("lastPodcastId", podcast.getId());
@@ -375,7 +424,7 @@ public class DBAdapter {
 	}
 	
 	public Podcast loadLastPlayedPodcast() {
-		Cursor c = _db.rawQuery("SELECT p.* FROM podcasts p JOIN podax ON p.id = podax.lastPodcastId", null);
+		Cursor c = _db.rawQuery("SELECT p.* FROM podcasts p JOIN podax ON p._id = podax.lastPodcastId", null);
 		if (c.isAfterLast()) {
 			c.close();
 			return null;
