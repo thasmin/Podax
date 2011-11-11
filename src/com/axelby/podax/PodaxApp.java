@@ -79,7 +79,7 @@ public class PodaxApp extends Application {
 		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcast.getId());
 	}
 
-	public void play(PodcastCursor podcast) {
+	public void play(PodcastCursor podcast) throws MissingFieldException {
 		if (podcast == null)
 			return;
 		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, (int)(long)podcast.getId());

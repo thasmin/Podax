@@ -433,7 +433,7 @@ public class DBAdapter {
 		return collectPodcasts(c).get(0);
 	}
 	
-	public void updateActiveDownloadId(Integer podcastId) {
+	public void updateActiveDownloadId(Long podcastId) {
 		ContentValues values = new ContentValues();
 		values.put("activeDownloadId", podcastId);
 		_db.update("podax", values, "", null);

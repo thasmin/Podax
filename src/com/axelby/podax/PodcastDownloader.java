@@ -6,14 +6,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Vector;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.util.Log;
 
 import com.axelby.podax.R.drawable;
@@ -36,18 +37,22 @@ class PodcastDownloader {
 				return;
 			if (!PodaxApp.ensureWifi(_context))
 				return;
-			
-			DBAdapter dbAdapter = DBAdapter.getInstance(_context);
 
+			DBAdapter dbAdapter = DBAdapter.getInstance(_context);
+			Cursor cursor = null;
 			try {
 				_isRunning = true;
 	
-				Vector<Podcast> toProcess = dbAdapter.getQueue();
-				for (Podcast podcast : toProcess) {
-					if (!podcast.needsDownload())
-						continue;
-	
+				Uri uri = Uri.withAppendedPath(PodcastProvider.URI, "to_download");
+				String[] projection = {
+						PodcastProvider.COLUMN_ID,
+						PodcastProvider.COLUMN_TITLE,
+						PodcastProvider.COLUMN_MEDIA_URL,
+				};
+				cursor = _context.getContentResolver().query(uri, projection, null, null, null);
+				while (cursor.moveToNext()) {
 					InputStream instream = null;
+					PodcastCursor podcast = new PodcastCursor(_context, cursor);
 					File mediaFile = new File(podcast.getFilename());
 	
 					try {
@@ -64,15 +69,13 @@ class PodcastDownloader {
 						boolean append = false;
 						if (c.getResponseCode() == 206) {
 							if (c.getContentLength() <= 0) {
-								podcast.setFileSize((int)mediaFile.length());
-								dbAdapter.savePodcast(podcast);
+								podcast.setFileSize(mediaFile.length());
 								continue;
 							}
 							append = true;
 						}
 						else {
 							podcast.setFileSize(c.getContentLength());
-							dbAdapter.savePodcast(podcast);
 						}
 	
 						FileOutputStream outstream = new FileOutputStream(mediaFile, append);
@@ -80,9 +83,7 @@ class PodcastDownloader {
 						int read;
 						byte[] b = new byte[1024*64];
 						while ((read = instream.read(b, 0, b.length)) != -1)
-						{
 							outstream.write(b, 0, read);
-						}
 						instream.close();
 						outstream.close();
 
@@ -90,7 +91,6 @@ class PodcastDownloader {
 						mp.setDataSource(podcast.getFilename());
 						mp.prepare();
 						podcast.setDuration(mp.getDuration());
-						dbAdapter.savePodcast(podcast);
 						mp.release();
 	
 						Log.d("Podax", "Done downloading " + podcast.getTitle());
@@ -108,8 +108,12 @@ class PodcastDownloader {
 						break;
 					}
 				}
+			} catch (MissingFieldException e) {
+				e.printStackTrace();
 			}
 			finally {
+				if (cursor != null)
+					cursor.close();
 				removeDownloadNotification();
 				dbAdapter.updateActiveDownloadId(null);
 
@@ -119,7 +123,7 @@ class PodcastDownloader {
 	};
 	
 
-	void updateDownloadNotification(Podcast podcast, long downloaded) {
+	void updateDownloadNotification(PodcastCursor podcast, long downloaded) throws MissingFieldException {
 		int icon = drawable.icon;
 		CharSequence tickerText = "Downloading podcast: " + podcast.getTitle();
 		long when = System.currentTimeMillis();			
@@ -127,13 +131,6 @@ class PodcastDownloader {
 		
 		CharSequence contentTitle = "Downloading Podcast";
 		CharSequence contentText = podcast.getTitle();
-		/*
-		if (podcast.getFileSize() != null)
-		{
-			String pct = Integer.toString((int)(100.0f * downloaded / podcast.getFileSize()));
-			contentText = pct + "% of " + contentText;
-		}
-		*/
 		Intent notificationIntent = new Intent(_context, ActiveDownloadListActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 		notification.setLatestEventInfo(_context, contentTitle, contentText, contentIntent);

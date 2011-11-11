@@ -25,6 +25,7 @@ public class PodcastProvider extends ContentProvider {
 	final static int PODCASTS = 1;
 	final static int PODCASTS_QUEUE = 2;
 	final static int PODCAST_ID = 3;
+	final static int PODCASTS_TO_DOWNLOAD = 4;
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -39,6 +40,7 @@ public class PodcastProvider extends ContentProvider {
 	public static final String COLUMN_DURATION = "duration";
 
 	static UriMatcher uriMatcher;
+	static HashMap<String, String> _columnMap;
 
 	static {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -48,6 +50,23 @@ public class PodcastProvider extends ContentProvider {
 				PodcastProvider.PODCASTS_QUEUE);
 		uriMatcher.addURI(PodcastProvider.AUTHORITY, "podcasts/#",
 				PodcastProvider.PODCAST_ID);
+		uriMatcher.addURI(PodcastProvider.AUTHORITY, "podcasts/to_download",
+				PodcastProvider.PODCASTS_TO_DOWNLOAD);
+		
+		_columnMap = new HashMap<String, String>();
+		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
+		_columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
+		_columnMap.put(COLUMN_SUBSCRIPTION_TITLE,
+				"subscriptions.title AS subscriptionTitle");
+		_columnMap.put(COLUMN_QUEUE_POSITION, "queuePosition");
+		_columnMap.put(COLUMN_MEDIA_URL, "mediaUrl");
+		_columnMap.put(COLUMN_LINK, "link");
+		_columnMap.put(COLUMN_PUB_DATE, "pubDate");
+		_columnMap.put(COLUMN_DESCRIPTION, "description");
+		_columnMap.put(COLUMN_FILE_SIZE, "fileSize");
+		_columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
+		_columnMap.put(COLUMN_DURATION, "duration");
+
 	}
 
 	DBAdapter _dbAdapter;
@@ -63,32 +82,21 @@ public class PodcastProvider extends ContentProvider {
 		switch (uriMatcher.match(uri)) {
 		case PodcastProvider.PODCASTS:
 		case PodcastProvider.PODCASTS_QUEUE:
+		case PodcastProvider.PODCASTS_TO_DOWNLOAD:
 			return PodcastProvider.DIR_TYPE;
 		case PodcastProvider.PODCAST_ID:
 			return PodcastProvider.ITEM_TYPE;
+		default:
+			throw new IllegalArgumentException("Unknown URI");
 		}
-		throw new IllegalArgumentException("Unknown URI");
 	}
 
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-		HashMap<String, String> columnMap = new HashMap<String, String>();
-		columnMap.put(COLUMN_ID, "podcasts._id AS _id");
-		columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
-		columnMap.put(COLUMN_SUBSCRIPTION_TITLE,
-				"subscriptions.title AS subscriptionTitle");
-		columnMap.put(COLUMN_QUEUE_POSITION, "queuePosition");
-		columnMap.put(COLUMN_MEDIA_URL, "mediaUrl");
-		columnMap.put(COLUMN_LINK, "link");
-		columnMap.put(COLUMN_PUB_DATE, "pubDate");
-		columnMap.put(COLUMN_DESCRIPTION, "description");
-		columnMap.put(COLUMN_FILE_SIZE, "fileSize");
-		columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
-		columnMap.put(COLUMN_DURATION, "duration");
 
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
-		sqlBuilder.setProjectionMap(columnMap);
+		sqlBuilder.setProjectionMap(_columnMap);
 		if (Arrays.asList(projection).contains(COLUMN_SUBSCRIPTION_TITLE))
 			sqlBuilder
 					.setTables("podcasts JOIN subscriptions on podcasts.subscriptionId = subscriptions._id");
@@ -106,6 +114,15 @@ public class PodcastProvider extends ContentProvider {
 		case PodcastProvider.PODCAST_ID:
 			sqlBuilder.appendWhere("podcasts._id = " + uri.getLastPathSegment());
 			break;
+		case PodcastProvider.PODCASTS_TO_DOWNLOAD:
+			try {
+				sqlBuilder.appendWhere("podcasts._id IN (" + getNeedsDownloadIds() + ")");
+			} catch (MissingFieldException e) {
+				return null;
+			}
+			if (sortOrder == null)
+				sortOrder = "queuePosition";
+			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
@@ -114,6 +131,25 @@ public class PodcastProvider extends ContentProvider {
 				selection, selectionArgs, null, null, sortOrder);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
+	}
+
+	private String getNeedsDownloadIds() throws MissingFieldException {
+		SQLiteQueryBuilder queueBuilder = new SQLiteQueryBuilder();
+		queueBuilder.setTables("podcasts");
+		queueBuilder.appendWhere("queuePosition IS NOT NULL");
+		Cursor queue = queueBuilder.query(_dbAdapter.getRawDB(), new String[] { "_id, mediaUrl, fileSize" }, null, null, null, null, "queuePosition");
+		
+		String queueIds = "";
+		while (queue.moveToNext()) {
+			PodcastCursor podcast = new PodcastCursor(getContext(), queue);
+			if (!podcast.isDownloaded())
+				queueIds = queueIds + queue.getLong(0) + ",";
+		}
+		queue.close();
+
+		if (queueIds.length() > 0)
+			queueIds = queueIds.substring(0, queueIds.length() - 1);
+		return queueIds;
 	}
 
 	@Override
@@ -159,6 +195,9 @@ public class PodcastProvider extends ContentProvider {
 		if (notifyQueue)
 			getContext().getContentResolver().notifyChange(
 					Uri.withAppendedPath(URI, "queue"), null);
+		if (values.containsKey(COLUMN_FILE_SIZE))
+			getContext().getContentResolver().notifyChange(
+					Uri.withAppendedPath(URI, "to_download"), null);
 		return count;
 	}
 
