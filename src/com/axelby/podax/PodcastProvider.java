@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import android.content.ContentProvider;
@@ -61,9 +62,10 @@ public class PodcastProvider extends ContentProvider {
 	public String getType(Uri uri) {
 		switch (uriMatcher.match(uri)) {
 		case PodcastProvider.PODCASTS:
-			return PodcastProvider.DIR_TYPE;
 		case PodcastProvider.PODCASTS_QUEUE:
 			return PodcastProvider.DIR_TYPE;
+		case PodcastProvider.PODCAST_ID:
+			return PodcastProvider.ITEM_TYPE;
 		}
 		throw new IllegalArgumentException("Unknown URI");
 	}
@@ -71,9 +73,6 @@ public class PodcastProvider extends ContentProvider {
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
-		sqlBuilder
-				.setTables("podcasts JOIN subscriptions on podcasts.subscriptionId = subscriptions._id");
 		HashMap<String, String> columnMap = new HashMap<String, String>();
 		columnMap.put(COLUMN_ID, "podcasts._id AS _id");
 		columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
@@ -88,15 +87,24 @@ public class PodcastProvider extends ContentProvider {
 		columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
 		columnMap.put(COLUMN_DURATION, "duration");
 
+		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(columnMap);
+		if (Arrays.asList(projection).contains(COLUMN_SUBSCRIPTION_TITLE))
+			sqlBuilder
+					.setTables("podcasts JOIN subscriptions on podcasts.subscriptionId = subscriptions._id");
+		else
+			sqlBuilder.setTables("podcasts");
 
 		switch (uriMatcher.match(uri)) {
 		case PodcastProvider.PODCASTS:
 			break;
 		case PodcastProvider.PODCASTS_QUEUE:
 			sqlBuilder.appendWhere("queuePosition IS NOT NULL");
-			if (sortOrder == null || sortOrder == "")
+			if (sortOrder == null)
 				sortOrder = "queuePosition";
+			break;
+		case PodcastProvider.PODCAST_ID:
+			sqlBuilder.appendWhere("podcasts._id = " + uri.getLastPathSegment());
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -164,6 +172,7 @@ public class PodcastProvider extends ContentProvider {
 		Integer oldPosition = Integer.MAX_VALUE;
 		if (!c.isNull(0))
 			oldPosition = c.getInt(0);
+		c.close();
 
 		// no need to remove from queue if it's not in queue
 		if (oldPosition == null && newPosition == null)
@@ -192,7 +201,16 @@ public class PodcastProvider extends ContentProvider {
 								+ "WHERE queuePosition >= ? AND queuePosition < ?",
 						new Object[] { newPosition, oldPosition });
 		}
-		// update
+
+		// if new position is max_value, put the podcast at the end
+		if (newPosition != null && newPosition == Integer.MAX_VALUE) {
+			Cursor max = db.rawQuery("SELECT COALESCE(MAX(queuePosition) + 1, 0) FROM podcasts", null);
+			max.moveToFirst();
+			newPosition = max.getInt(0);
+			max.close();
+		}
+
+		// update specified podcast
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
 				new Object[] { newPosition, podcastId });
 	}

@@ -1,8 +1,12 @@
 package com.axelby.podax;
 
 import android.app.Activity;
+import android.content.ContentUris;
 import android.content.Intent;
+import android.database.ContentObserver;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -15,7 +19,11 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 public class PodcastDetailActivity extends Activity {
-	Podcast _podcast;
+	PodaxApp _app;
+	Cursor _cursor;
+	PodcastCursor _podcast;
+	long _podcastId;
+	Handler _handler = new Handler();
 
 	TextView _titleView;
 	TextView _subscriptionTitleView;
@@ -35,33 +43,60 @@ public class PodcastDetailActivity extends Activity {
 	TextView _position;
 	TextView _duration;
 
-	DBAdapter _dbAdapter;
-	PodaxApp _app;
+	String[] _projection = new String[] {
+			PodcastProvider.COLUMN_ID,
+			PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+			PodcastProvider.COLUMN_DESCRIPTION,
+			PodcastProvider.COLUMN_DURATION,
+			PodcastProvider.COLUMN_LAST_POSITION,
+			PodcastProvider.COLUMN_QUEUE_POSITION,
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        _dbAdapter = DBAdapter.getInstance(this);
 		_app = PodaxApp.getApp();
 
-        Intent intent = this.getIntent();
-        if (intent.hasExtra(Constants.EXTRA_PODCAST_ID))
-        	_podcast = _dbAdapter.loadPodcast(intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1));
-        else
-        	_podcast = _dbAdapter.loadLastPlayedPodcast();
+		Intent intent = this.getIntent();
+		if (intent.hasExtra(Constants.EXTRA_PODCAST_ID)) {
+			Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1));
+			_cursor = managedQuery(uri, _projection, null, null, null);
+		} else {
+			Uri uri = Uri.withAppendedPath(PodcastProvider.URI, "firstinqueue");
+			_cursor = managedQuery(uri, _projection, null, null, null);
+			// if the queue is empty, don't show this
+			if (_cursor.isAfterLast()) {
+				finish();
+				startActivity(new Intent(this, QueueActivity.class));
+				return;
+			}
+		}
 
-        if (_podcast == null) {
-            finish();
-            startActivity(new Intent(this, QueueActivity.class));
-            return;
-        }
+		_podcast = new PodcastCursor(this, _cursor);
+		_podcastId = _podcast.getId();
+		class PodcastObserver extends ContentObserver {
+			public PodcastObserver(Handler handler) {
+				super(handler);
+			}
+			@Override
+			public void onChange(boolean selfChange) {
+				super.onChange(selfChange);
+				_cursor.close();
+				Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
+				_cursor = managedQuery(uri, _projection, null, null, null);
+				_podcast = new PodcastCursor(PodcastDetailActivity.this, _cursor);
+				updateQueueViews();
+				updatePlayerControls(false);
+			}
+		}
+		_podcast.registerContentObserver(new PodcastObserver(_handler));
 
         setTitle(_podcast.getTitle());
         setContentView(R.layout.podcast_detail);
 
 		_subscriptionTitleView = (TextView)findViewById(R.id.subscription_title);
-		_subscriptionTitleView.setText(_podcast.getSubscription().getTitle());
+		_subscriptionTitleView.setText(_podcast.getSubscriptionTitle());
 		
 		_descriptionView = (WebView)findViewById(R.id.description);
 		String html = "<html><head><style type=\"text/css\">" +
@@ -77,11 +112,9 @@ public class PodcastDetailActivity extends Activity {
 		_queueButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if (_podcast.getQueuePosition() == null)
-					_dbAdapter.addPodcastToQueue(_podcast.getId());
+					_podcast.addToQueue();
 				else
-					_dbAdapter.removePodcastFromQueue(_podcast);
-				_podcast = _dbAdapter.loadPodcast(_podcast.getId());
-				updateQueueViews();
+					_podcast.removeFromQueue();
 			}
 		});
 
@@ -150,13 +183,6 @@ public class PodcastDetailActivity extends Activity {
 		_duration.setText(PodaxApp.getTimeString(_podcast.getDuration()));
 
 		updatePlayerControls(true);
-    	final Handler handler = new Handler();
-		handler.postDelayed(new Runnable() {
-			public void run() {
-				updatePlayerControls(false);	
-				handler.postDelayed(this, 250);
-			}
-		}, 250);
 	}
 
 	boolean _controlsEnabled = true;
