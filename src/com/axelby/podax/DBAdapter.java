@@ -83,7 +83,7 @@ public class DBAdapter {
 							"queuePosition, lastPosition, duration) " +
 						"SELECT id, subscriptionId, title, link, " +
 							"pubDate, description, mediaUrl, fileSize, " +
-							"queuePosition, lastPosition, duration" +
+							"queuePosition, lastPosition, duration " +
 						"FROM podcasts_old");
 				db.execSQL("DROP TABLE podcasts_old");
 				db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
@@ -100,7 +100,7 @@ public class DBAdapter {
 						"eTag VARCHAR," +
 						"thumbnail VARCHAR);");
 				db.execSQL("INSERT INTO subscriptions(_id, title, url, " +
-							"lastModified, lastUpdate, eTag, thumbnail)" +
+							"lastModified, lastUpdate, eTag, thumbnail) " +
 						"SELECT id, title, url, " +
 							"lastModified, lastUpdate, eTag, thumbnail " +
 						"FROM subscriptions_old");
