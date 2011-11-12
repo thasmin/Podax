@@ -27,6 +27,8 @@ public class PodcastCursor {
 	public PodcastCursor(Context context, Cursor cursor) {
 		_context = context;
 		_cursor = cursor;
+		if (_cursor.getCount() == 0)
+			return;
 		if (_cursor.isBeforeFirst())
 			_cursor.moveToFirst();
 
@@ -39,6 +41,10 @@ public class PodcastCursor {
 		_idColumn = _cursor.getColumnIndex(PodcastProvider.COLUMN_ID);
 		if (!_cursor.isNull(_idColumn))
 			cursor.setNotificationUri(_context.getContentResolver(), ContentUris.withAppendedId(PodcastProvider.URI, _cursor.getLong(_idColumn)));
+	}
+
+	public boolean isNull() {
+		return _cursor.getCount() == 0;
 	}
 
 	public Uri getContentUri() throws MissingFieldException {

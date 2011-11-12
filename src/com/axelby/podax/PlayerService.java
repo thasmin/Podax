@@ -6,12 +6,15 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 import android.app.Service;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.telephony.PhoneStateListener;
@@ -33,7 +36,10 @@ public class PlayerService extends Service {
 			if (_oldPosition / 1000 != _lastPosition / 1000)
 			{
 				_activePodcast.setLastPosition(_player.getCurrentPosition());
-				_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+				ContentValues values = new ContentValues();
+				values.put(PodcastProvider.COLUMN_LAST_POSITION, _player.getCurrentPosition());
+				Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _activePodcast.getId());
+				PlayerService.this.getContentResolver().update(podcastUri, values, null, null);
 				PodaxApp.updateWidgets(PlayerService.this);
 			}
 		}
@@ -54,7 +60,7 @@ public class PlayerService extends Service {
 	public static boolean isPlaying() {
 		return _isPlaying;
 	}
-	
+
 	public static Podcast getActivePodcast(Context context) {
 		if (_activePodcast == null) {
 			DBAdapter dbAdapter = DBAdapter.getInstance(context);
@@ -63,6 +69,11 @@ public class PlayerService extends Service {
 				_activePodcast = findFirstDownloadedInQueue(context);
 		}
 		return _activePodcast;
+	}
+	
+	public static Integer getActivePodcastId(Context context) {
+		Podcast podcast = getActivePodcast(context);
+		return podcast == null ? null : podcast.getId();
 	}
 
 	public static Podcast findFirstDownloadedInQueue(Context context) {
@@ -316,9 +327,6 @@ public class PlayerService extends Service {
 		Log.d("Podax", "moving to next podcast");
 
 		_activePodcast = findFirstDownloadedInQueue(this);
-		// if the podcast has ended and it's back in the queue, restart it
-		if (_activePodcast.getDuration() > 0 && _activePodcast.getLastPosition() > _activePodcast.getDuration() - 1000)
-			_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 
 		if (_activePodcast == null) {
 			Log.d("Podax", "PlayerService queue finished");
@@ -326,6 +334,10 @@ public class PlayerService extends Service {
 			stop();
 			return;
 		}
+
+		// if the podcast has ended and it's back in the queue, restart it
+		if (_activePodcast.getDuration() > 0 && _activePodcast.getLastPosition() > _activePodcast.getDuration() - 1000)
+			_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 
 		resume();
 	}

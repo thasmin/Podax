@@ -26,6 +26,7 @@ public class PodcastProvider extends ContentProvider {
 	final static int PODCASTS_QUEUE = 2;
 	final static int PODCAST_ID = 3;
 	final static int PODCASTS_TO_DOWNLOAD = 4;
+	final static int PODCAST_ACTIVE = 5;
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -44,15 +45,13 @@ public class PodcastProvider extends ContentProvider {
 
 	static {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-		uriMatcher.addURI(PodcastProvider.AUTHORITY, "podcasts",
-				PodcastProvider.PODCASTS);
-		uriMatcher.addURI(PodcastProvider.AUTHORITY, "podcasts/queue",
-				PodcastProvider.PODCASTS_QUEUE);
-		uriMatcher.addURI(PodcastProvider.AUTHORITY, "podcasts/#",
-				PodcastProvider.PODCAST_ID);
-		uriMatcher.addURI(PodcastProvider.AUTHORITY, "podcasts/to_download",
-				PodcastProvider.PODCASTS_TO_DOWNLOAD);
-		
+		uriMatcher.addURI(AUTHORITY, "podcasts", PODCASTS);
+		uriMatcher.addURI(AUTHORITY, "podcasts/queue", PODCASTS_QUEUE);
+		uriMatcher.addURI(AUTHORITY, "podcasts/#", PODCAST_ID);
+		uriMatcher.addURI(AUTHORITY, "podcasts/to_download",
+				PODCASTS_TO_DOWNLOAD);
+		uriMatcher.addURI(AUTHORITY, "podcasts/active", PODCAST_ACTIVE);
+
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
 		_columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
@@ -80,12 +79,13 @@ public class PodcastProvider extends ContentProvider {
 	@Override
 	public String getType(Uri uri) {
 		switch (uriMatcher.match(uri)) {
-		case PodcastProvider.PODCASTS:
-		case PodcastProvider.PODCASTS_QUEUE:
-		case PodcastProvider.PODCASTS_TO_DOWNLOAD:
-			return PodcastProvider.DIR_TYPE;
-		case PodcastProvider.PODCAST_ID:
-			return PodcastProvider.ITEM_TYPE;
+		case PODCASTS:
+		case PODCASTS_QUEUE:
+		case PODCASTS_TO_DOWNLOAD:
+			return DIR_TYPE;
+		case PODCAST_ID:
+		case PODCAST_ACTIVE:
+			return ITEM_TYPE;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
@@ -112,16 +112,22 @@ public class PodcastProvider extends ContentProvider {
 				sortOrder = "queuePosition";
 			break;
 		case PodcastProvider.PODCAST_ID:
-			sqlBuilder.appendWhere("podcasts._id = " + uri.getLastPathSegment());
+			sqlBuilder
+					.appendWhere("podcasts._id = " + uri.getLastPathSegment());
 			break;
 		case PodcastProvider.PODCASTS_TO_DOWNLOAD:
 			try {
-				sqlBuilder.appendWhere("podcasts._id IN (" + getNeedsDownloadIds() + ")");
+				sqlBuilder.appendWhere("podcasts._id IN ("
+						+ getNeedsDownloadIds() + ")");
 			} catch (MissingFieldException e) {
 				return null;
 			}
 			if (sortOrder == null)
 				sortOrder = "queuePosition";
+			break;
+		case PodcastProvider.PODCAST_ACTIVE:
+			sqlBuilder.appendWhere("podcasts._id = "
+					+ PlayerService.getActivePodcastId(getContext()));
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -137,8 +143,10 @@ public class PodcastProvider extends ContentProvider {
 		SQLiteQueryBuilder queueBuilder = new SQLiteQueryBuilder();
 		queueBuilder.setTables("podcasts");
 		queueBuilder.appendWhere("queuePosition IS NOT NULL");
-		Cursor queue = queueBuilder.query(_dbAdapter.getRawDB(), new String[] { "_id, mediaUrl, fileSize" }, null, null, null, null, "queuePosition");
-		
+		Cursor queue = queueBuilder.query(_dbAdapter.getRawDB(),
+				new String[] { "_id, mediaUrl, fileSize" }, null, null, null,
+				null, "queuePosition");
+
 		String queueIds = "";
 		while (queue.moveToNext()) {
 			PodcastCursor podcast = new PodcastCursor(getContext(), queue);
@@ -157,19 +165,25 @@ public class PodcastProvider extends ContentProvider {
 			String[] whereArgs) {
 		int count = 0;
 
+		String podcastId;
+		String activePodcastId = String.valueOf(PlayerService
+				.getActivePodcastId(getContext()));
 		switch (uriMatcher.match(uri)) {
 		case PODCAST_ID:
-			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
-			if (where != null)
-				where = extraWhere + " AND " + where;
-			else
-				where = extraWhere;
+			podcastId = uri.getLastPathSegment();
+			break;
+		case PODCAST_ACTIVE:
+			podcastId = activePodcastId;
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
-		String podcastId = uri.getLastPathSegment();
+		String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
+		if (where != null)
+			where = extraWhere + " AND " + where;
+		else
+			where = extraWhere;
 
 		// subscription title is not in the table
 		values.remove(COLUMN_SUBSCRIPTION_TITLE);
@@ -198,6 +212,9 @@ public class PodcastProvider extends ContentProvider {
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(
 					Uri.withAppendedPath(URI, "to_download"), null);
+		if (podcastId.equals(activePodcastId))
+			getContext().getContentResolver().notifyChange(
+					Uri.withAppendedPath(URI, "active"), null);
 		return count;
 	}
 
@@ -243,7 +260,9 @@ public class PodcastProvider extends ContentProvider {
 
 		// if new position is max_value, put the podcast at the end
 		if (newPosition != null && newPosition == Integer.MAX_VALUE) {
-			Cursor max = db.rawQuery("SELECT COALESCE(MAX(queuePosition) + 1, 0) FROM podcasts", null);
+			Cursor max = db.rawQuery(
+					"SELECT COALESCE(MAX(queuePosition) + 1, 0) FROM podcasts",
+					null);
 			max.moveToFirst();
 			newPosition = max.getInt(0);
 			max.close();

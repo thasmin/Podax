@@ -2,6 +2,9 @@ package com.axelby.podax;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -34,34 +37,50 @@ public class BottomBar extends LinearLayout {
 		setupHandler(context);
 	}
 
+	private Long _lastPodcastId = null;
+	private Handler _handler = new Handler();
+
 	private void setupHandler(final Context context) {
-		final Handler handler = new Handler();
-		handler.postDelayed(new Runnable() {
-			private Podcast _lastPodcast;
+		Cursor cursor = null;
+		try {
+			boolean isPlaying = PlayerService.isPlaying();
+			String[] projection = { 
+					PodcastProvider.COLUMN_ID,
+					PodcastProvider.COLUMN_TITLE,
+					PodcastProvider.COLUMN_DURATION,
+					PodcastProvider.COLUMN_LAST_POSITION,
+			};
+			Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
+			cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
+			PodcastCursor podcast = new PodcastCursor(context, cursor);
+			podcast.registerContentObserver(new ContentObserver(_handler) {
+				@Override
+				public void onChange(boolean selfChange) {
+					setupHandler(context);
+				}
+			});
 
-			public void run() {
-				boolean isPlaying = PlayerService.isPlaying();
-				Podcast podcast = PlayerService.getActivePodcast(context);
+			if (!podcast.isNull()) {
+				if (isPlaying || _positionstring.getText().length() == 0)
+					_positionstring.setText(PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
+				if (_lastPodcastId != podcast.getId()) {
+					_podcastTitle.setText(podcast.getTitle());
+					_pausebtn.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+					_showplayerbtn.setEnabled(true);
+				}
+			} else if (_lastPodcastId != null) {
+				_podcastTitle.setText("");
+				_positionstring.setText("");
+				_showplayerbtn.setEnabled(false);
+			} 
 
-				if (podcast != null) {
-					if (isPlaying || _positionstring.getText().length() == 0)
-						_positionstring.setText(PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
-					if (_lastPodcast != podcast) {
-						_podcastTitle.setText(podcast.getTitle());
-						_pausebtn.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-						_showplayerbtn.setEnabled(true);
-					}
-				} else if (_lastPodcast != null) {
-					_podcastTitle.setText("");
-					_positionstring.setText("");
-					_showplayerbtn.setEnabled(false);
-				} 
-
-				_lastPodcast = podcast;
-
-				handler.postDelayed(this, 250);
-			}
-		}, 250);
+			_lastPodcastId = podcast.getId();
+		} catch (MissingFieldException e) {
+			e.printStackTrace();
+		} finally {
+			if (cursor != null)
+				cursor.close();
+		}
 	}
 
 	private void loadViews(final Context context) {

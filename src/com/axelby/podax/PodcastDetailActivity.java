@@ -45,6 +45,7 @@ public class PodcastDetailActivity extends Activity {
 
 	String[] _projection = new String[] {
 			PodcastProvider.COLUMN_ID,
+			PodcastProvider.COLUMN_TITLE,
 			PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 			PodcastProvider.COLUMN_DESCRIPTION,
 			PodcastProvider.COLUMN_DURATION,
@@ -63,7 +64,7 @@ public class PodcastDetailActivity extends Activity {
 			Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1));
 			_cursor = managedQuery(uri, _projection, null, null, null);
 		} else {
-			Uri uri = Uri.withAppendedPath(PodcastProvider.URI, "firstinqueue");
+			Uri uri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 			_cursor = managedQuery(uri, _projection, null, null, null);
 			// if the queue is empty, don't show this
 			if (_cursor.isAfterLast()) {
