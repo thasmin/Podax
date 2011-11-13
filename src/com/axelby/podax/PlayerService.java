@@ -28,18 +28,19 @@ public class PlayerService extends Service {
 			return PlayerService.this;
 		}
 	}
-	
+
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
 			int _oldPosition = _lastPosition;
 			_lastPosition = _player.getCurrentPosition();
-			if (_oldPosition / 1000 != _lastPosition / 1000)
-			{
+			if (_oldPosition / 1000 != _lastPosition / 1000) {
 				_activePodcast.setLastPosition(_player.getCurrentPosition());
+
 				ContentValues values = new ContentValues();
 				values.put(PodcastProvider.COLUMN_LAST_POSITION, _player.getCurrentPosition());
 				Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _activePodcast.getId());
 				PlayerService.this.getContentResolver().update(podcastUri, values, null, null);
+
 				PodaxApp.updateWidgets(PlayerService.this);
 			}
 		}
@@ -55,7 +56,6 @@ public class PlayerService extends Service {
 	private TelephonyManager _telephony;
 	protected Timer _updateTimer;
 	
-	// static methods
 	protected static boolean _isPlaying = false;
 	public static boolean isPlaying() {
 		return _isPlaying;
@@ -112,8 +112,6 @@ public class PlayerService extends Service {
 
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		
-		_isPlaying = true;
-		
 		// may or may not be creating the service
 		if (_telephony == null) {
 			_telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -124,8 +122,7 @@ public class PlayerService extends Service {
 					if (_player.isPlaying() && _onPhone) {
 						_isPlaying = false;
 						_player.pause();
-						_dbAdapter.updatePodcastPosition(_activePodcast,
-										_player.getCurrentPosition());
+						_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 						PodaxApp.updateWidgets(PlayerService.this);
 						_pausedForPhone = true;
 					}
@@ -133,6 +130,7 @@ public class PlayerService extends Service {
 						_isPlaying = true;
 						_player.start();
 						_pausedForPhone = false;
+						_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 						PodaxApp.updateWidgets(PlayerService.this);
 					}
 				}
@@ -154,8 +152,6 @@ public class PlayerService extends Service {
 			}
 		});
 	}
-	
-	
 
 	@Override
 	public void onDestroy() {
@@ -176,6 +172,8 @@ public class PlayerService extends Service {
 	}
 
 	private void handleIntent(Intent intent) {
+		if (intent == null || intent.getExtras() == null)
+			return;
 		if (intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND)) {
 			switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
 			case -1:
@@ -233,12 +231,12 @@ public class PlayerService extends Service {
 
 	public void stop() {
 		Log.d("Podax", "PlayerService stopping");
-		_isPlaying = false;
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
 		if (_activePodcast != null)
 			_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
 		PodaxApp.updateWidgets(this);
+		_isPlaying = false;
 		_player.stop();
 		stopSelf();
 	}
@@ -278,7 +276,7 @@ public class PlayerService extends Service {
 
 		_pausedForPhone = false;
 		_player.start();
-
+		_isPlaying = true;
 		PodaxApp.updateWidgets(this);
 		
 		if (_updatePlayerPositionTimerTask != null)

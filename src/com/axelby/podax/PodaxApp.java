@@ -110,7 +110,6 @@ public class PodaxApp extends Application {
 
 	public static void updateWidgets(Context context) {
 		SmallWidgetProvider.updateWidget(context);
-		LargeWidgetProvider.updateWidget(context);
 	}
 
 	public static boolean ensureWifi(Context context) {
