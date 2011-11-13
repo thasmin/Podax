@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import android.app.ListActivity;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -27,7 +28,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
 
-	Uri queueURI = Uri.withAppendedPath(PodcastProvider.URI, "queue");
+	Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 	String[] projection = new String[] {
 		PodcastProvider.COLUMN_ID,
 		PodcastProvider.COLUMN_TITLE,
@@ -43,8 +44,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 
 		setContentView(R.layout.queue);
 
-		Cursor cursor = managedQuery(queueURI, projection, null, null, null);
-		cursor.setNotificationUri(getContentResolver(), queueURI);
+		Cursor cursor = managedQuery(queueUri, projection, null, null, null);
 		setListAdapter(new QueueListAdapter(this, cursor));
 
 		getListView().setOnItemClickListener(new OnItemClickListener() {
@@ -101,14 +101,13 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 	
 	public boolean onTouch(View v, MotionEvent event) {
 		QueueListAdapter adapter = (QueueListAdapter)getListAdapter();
-		if (adapter.getHeldPodcastIndex() == -1)
+		if (adapter.getHeldPodcastId() == null)
 			return false;
 		
 		ListView listView = getListView();
 		if (event.getAction() == MotionEvent.ACTION_UP)
 		{
-			ViewSwitcher switcher = (ViewSwitcher) listView.getChildAt(adapter.getHeldPodcastIndex());
-			switcher.showPrevious();
+			adapter.unholdPodcast();
 			return true;
 		}
 		if (event.getAction() == MotionEvent.ACTION_MOVE)
@@ -116,20 +115,24 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			try {
 				int position = listView.pointToPosition((int) event.getX(),
 						(int) event.getY());
-				View listItem = listView.getChildAt(position);
-
-				// don't change anything if we're hovering over this one
-				if (position == adapter.getHeldPodcastIndex())
+				if (position == -1)
 					return true;
 
+				View listItem = listView.getChildAt(position - listView.getFirstVisiblePosition());
 				// no listview means we're below the last one
 				if (listItem == null) {
-					adapter.setSeparatorAt(listView.getChildCount());
+					adapter.setQueuePosition(getListAdapter().getCount());
 					return true;
 				}
+				
+				Long podcastId = (Long)listItem.getTag();
+
+				// don't change anything if we're hovering over this one
+				if (podcastId == adapter.getHeldPodcastId())
+					return true;
 
 				// remove hidden podcast from ordering
-				if (position > adapter.getHeldPodcastIndex())
+				if (position > adapter.getHeldQueuePosition())
 					position -= 1;
 
 				// if pointer is in top half of item then put separator above,
@@ -138,11 +141,10 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 				listItem.getHitRect(bounds);
 				if (event.getY() > (bounds.top + bounds.bottom) / 2.0f)
 					position += 1;
-				adapter.setSeparatorAt(position);
+				adapter.setQueuePosition(position);
 				return true;
 			} catch (MissingFieldException e) {
 				e.printStackTrace();
-			} finally {
 			}
 		}
 		return false;
@@ -155,17 +157,19 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 				if (event.getAction() == MotionEvent.ACTION_DOWN)
 				{
 					int position = getListView().getPositionForView(view);
-					QueueListAdapter.this.holdPodcastAt(position);
 
+					position -= getListView().getFirstVisiblePosition();
 					ViewSwitcher switcher = (ViewSwitcher)getListView().getChildAt(position);
-					switcher.showNext();
+					QueueListAdapter.this.holdPodcast(switcher.getTag());
+					//switcher.showNext();
 					return true;
 				}
 				return false;
 			}
 		};
 
-		private int _heldPosition = -1;
+		private Long _heldPodcastId = null;
+		private int _heldQueuePosition;
 		
 		public QueueListAdapter(Context context, Cursor cursor) {
 			super(context, R.layout.queue_list_item, cursor);
@@ -182,44 +186,68 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			try {
 				PodcastCursor podcast = new PodcastCursor(QueueActivity.this,
 						cursor);
+				view.setTag(podcast.getId());
 				TextView queueText = (TextView) view.findViewById(R.id.title);
 				queueText.setText(podcast.getTitle());
 
 				TextView subscriptionText = (TextView) view
 						.findViewById(R.id.subscription);
 				subscriptionText.setText(podcast.getSubscriptionTitle());
+				
+				if (_heldPodcastId != null && 
+						(long)podcast.getId() == (long)_heldPodcastId && 
+						switcher.getDisplayedChild() == 0)
+					switcher.showNext();
+				if ((_heldPodcastId == null || (long)podcast.getId() != (long)_heldPodcastId) && 
+						switcher.getDisplayedChild() == 1)
+					switcher.showPrevious();
 			} catch (MissingFieldException e) {
 				e.printStackTrace();
 			}
 		}
 
-		public void holdPodcastAt(int position) {
-			_heldPosition = position;
+		public void holdPodcast(Object podcastId) {
+			String[] projection = {
+					PodcastProvider.COLUMN_ID,
+					PodcastProvider.COLUMN_QUEUE_POSITION,
+			};
+			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, (Long)podcastId);
+			Cursor held = getContentResolver().query(podcastUri, projection, null, null, null);
+			if (!held.moveToNext())
+				return;
+			_heldPodcastId = (Long)podcastId;
+			_heldQueuePosition = held.getInt(held.getColumnIndex(PodcastProvider.COLUMN_QUEUE_POSITION));
+			held.close();
+			notifyDataSetChanged();
 		}
 		
-		public int getHeldPodcastIndex() {
-			return _heldPosition;
+		public void unholdPodcast() {
+			_heldPodcastId = null;
+			notifyDataSetChanged();
+		}
+		
+		public Long getHeldPodcastId() {
+			return _heldPodcastId;
 		}
 
-		public void setSeparatorAt(int position) throws MissingFieldException {
-			if (_heldPosition == -1 || _heldPosition == position)
+		public int getHeldQueuePosition() {
+			return _heldQueuePosition;
+		}
+
+		public void setQueuePosition(int position) throws MissingFieldException {
+			if (_heldPodcastId == null || _heldQueuePosition == position)
 				return;
 
 			// update the held cursor to have the new queue position
 			// the queue will automatically reorder
-			Cursor held = (Cursor)getItem(_heldPosition);
-			PodcastCursor heldPodcast = new PodcastCursor(QueueActivity.this, held);
 			ContentValues heldValues = new ContentValues();
 			heldValues.put(PodcastProvider.COLUMN_QUEUE_POSITION, position);
-			getContentResolver().update(heldPodcast.getContentUri(), heldValues, null, null);
+			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _heldPodcastId);
+			getContentResolver().update(podcastUri, heldValues, null, null);
+			_heldQueuePosition = position;
 			
-			ViewSwitcher heldView = (ViewSwitcher)getListView().getChildAt(position);
-			heldView.showNext();
-			
-			ViewSwitcher switchedView = (ViewSwitcher)getListView().getChildAt(_heldPosition);
-			switchedView.showNext();
-
-			_heldPosition = position;
+			getCursor().close();
+			changeCursor(managedQuery(queueUri, projection, null, null, null));
 		}
 	}
 	
