@@ -6,42 +6,21 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Handler;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
-	private Handler _handler = new Handler();
-	Cursor _cursor = null;
-
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
-		setupWidget(context);
-
-		super.onUpdate(context, appWidgetManager, appWidgetIds);
-	}
-
-	@Override
-	public void onDeleted(Context context, int[] appWidgetIds) {
-		if (_cursor != null && !_cursor.isClosed())
-			_cursor.close();
-		super.onDeleted(context, appWidgetIds);
-	}
-
-	public void setupWidget(Context context) {
-		Log.d("Podax", "updating LargeWidgetProvider");
-		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 		int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(context, "com.axelby.podax.LargeWidgetProvider"));
 		if (ids.length == 0)
 			return;
 
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.largewidget);
 
-		updatePodcastDetails(context);
+		updatePodcastDetails(context, views);
 			
 		// set up pending intents
 		setClickIntent(context, views, R.id.restart_btn, Constants.PLAYER_COMMAND_RESTART);
@@ -55,10 +34,11 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
 		appWidgetManager.updateAppWidget(new ComponentName(context, "com.axelby.podax.LargeWidgetProvider"), views);
+
+		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}
 
-	public void updatePodcastDetails(final Context context) {
-		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.largewidget);
+	public void updatePodcastDetails(Context context, RemoteViews views) {
 		String[] projection = {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
@@ -67,40 +47,27 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 				PodcastProvider.COLUMN_LAST_POSITION,
 		};
 		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-		_cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
-		PodcastCursor podcast = new PodcastCursor(context, _cursor);
-		try {
-			podcast.registerContentObserver(new ContentObserver(_handler) {
-				@Override
-				public void onChange(boolean selfChange) {
-					_cursor.close();
-					updatePodcastDetails(context);
-				}
-			});
+		Cursor cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
+		PodcastCursor podcast = new PodcastCursor(context, cursor);
 
-			if (podcast.isNull()) {
-				views.setTextViewText(R.id.title, "Queue empty");
-				views.setTextViewText(R.id.podcast, "");
-				views.setTextViewText(R.id.positionstring, "");
-				views.setImageViewResource(R.id.play_btn, android.R.drawable.ic_media_play);
-			} else {
-				try {
-					views.setTextViewText(R.id.title, podcast.getTitle());
-					views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
-					String position = PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition());
-					views.setTextViewText(R.id.positionstring, position);
-				} catch (MissingFieldException e) {
-					e.printStackTrace();
-				}
-				int imageRes = PlayerService.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
-				views.setImageViewResource(R.id.play_btn, imageRes);
+		if (podcast.isNull()) {
+			views.setTextViewText(R.id.title, "Queue empty");
+			views.setTextViewText(R.id.podcast, "");
+			views.setTextViewText(R.id.positionstring, "");
+			views.setImageViewResource(R.id.play_btn, android.R.drawable.ic_media_play);
+		} else {
+			try {
+				views.setTextViewText(R.id.title, podcast.getTitle());
+				views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
+				String position = PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition());
+				views.setTextViewText(R.id.positionstring, position);
+			} catch (MissingFieldException e) {
+				e.printStackTrace();
 			}
-
-			AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-			appWidgetManager.updateAppWidget(new ComponentName(context, "com.axelby.podax.LargeWidgetProvider"), views);
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
+			int imageRes = PlayerService.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
+			views.setImageViewResource(R.id.play_btn, imageRes);
 		}
+		cursor.close();
 	}
 
 	public static void setClickIntent(Context context, RemoteViews views, int resourceId, int command) {

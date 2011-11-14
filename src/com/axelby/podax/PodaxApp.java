@@ -1,6 +1,11 @@
 package com.axelby.podax;
 
+import java.lang.reflect.InvocationTargetException;
+
 import android.app.Application;
+import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -109,7 +114,32 @@ public class PodaxApp extends Application {
 	}
 
 	public static void updateWidgets(Context context) {
-		SmallWidgetProvider.updateWidget(context);
+		AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
+		refreshWidgets(context, widgetManager, SmallWidgetProvider.class);
+		refreshWidgets(context, widgetManager, LargeWidgetProvider.class);
+	}
+
+	private static void refreshWidgets(Context context, AppWidgetManager widgetManager, Class<?> class1) {
+		try {
+			int[] gadgetIds = widgetManager.getAppWidgetIds(new ComponentName(context, class1));
+			if (gadgetIds.length > 0) {
+				AppWidgetProvider provider = (AppWidgetProvider) class1.getConstructor().newInstance();
+				provider.onUpdate(context, widgetManager, gadgetIds);
+			}
+
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static boolean ensureWifi(Context context) {

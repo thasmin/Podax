@@ -21,11 +21,14 @@ public class BottomBar extends LinearLayout {
 	private ImageButton _pausebtn;
 	private ImageButton _showplayerbtn;
 
+	private Cursor _cursor = null;
+	private PodcastCursor _podcast;
+
 	public BottomBar(Context context) {
 		super(context);
 		
 		loadViews(context);
-		setupHandler(context);
+		setupHandler();
 	}
 
 	public BottomBar(Context context, AttributeSet attrs) {
@@ -34,53 +37,67 @@ public class BottomBar extends LinearLayout {
 		LayoutInflater.from(context).inflate(R.layout.player, this);
 		
 		loadViews(context);
-		setupHandler(context);
+		setupHandler();
 	}
 
 	private Long _lastPodcastId = null;
 	private Handler _handler = new Handler();
+	
+	private class ActivePodcastObserver extends ContentObserver {
+		public ActivePodcastObserver(Handler handler) {
+			super(handler);
+		}
 
-	private void setupHandler(final Context context) {
-		Cursor cursor = null;
+		@Override
+		public void onChange(boolean selfChange) {
+			_podcast.unregisterContentObserver(_observer);
+			setupHandler();
+		}
+	}
+	private ActivePodcastObserver _observer = new ActivePodcastObserver(_handler);
+
+	private void setupHandler() {
 		try {
-			boolean isPlaying = PlayerService.isPlaying();
-			String[] projection = { 
-					PodcastProvider.COLUMN_ID,
-					PodcastProvider.COLUMN_TITLE,
-					PodcastProvider.COLUMN_DURATION,
-					PodcastProvider.COLUMN_LAST_POSITION,
-			};
-			Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-			cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
-			PodcastCursor podcast = new PodcastCursor(context, cursor);
-			podcast.registerContentObserver(new ContentObserver(_handler) {
-				@Override
-				public void onChange(boolean selfChange) {
-					setupHandler(context);
-				}
-			});
-
-			if (!podcast.isNull()) {
-				if (isPlaying || _positionstring.getText().length() == 0)
-					_positionstring.setText(PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
-				if (_lastPodcastId != podcast.getId()) {
-					_podcastTitle.setText(podcast.getTitle());
-					_pausebtn.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-					_showplayerbtn.setEnabled(true);
-				}
-			} else if (_lastPodcastId != null) {
-				_podcastTitle.setText("");
-				_positionstring.setText("");
-				_showplayerbtn.setEnabled(false);
-			} 
-
-			_lastPodcastId = podcast.getId();
+			retrievePocast();
+			updateUI();
 		} catch (MissingFieldException e) {
 			e.printStackTrace();
 		} finally {
-			if (cursor != null)
-				cursor.close();
+			if (_cursor != null)
+				_cursor.close();
 		}
+	}
+
+	public void updateUI() throws MissingFieldException {
+		boolean isPlaying = PlayerService.isPlaying();
+		if (!_podcast.isNull()) {
+			if (isPlaying || _positionstring.getText().length() == 0)
+				_positionstring.setText(PlayerService.getPositionString(_podcast.getDuration(), _podcast.getLastPosition()));
+			if (_lastPodcastId != _podcast.getId()) {
+				_podcastTitle.setText(_podcast.getTitle());
+				_pausebtn.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+				_showplayerbtn.setEnabled(true);
+			}
+		} else if (_lastPodcastId != null) {
+			_podcastTitle.setText("");
+			_positionstring.setText("");
+			_showplayerbtn.setEnabled(false);
+		}
+
+		_lastPodcastId = _podcast.getId();
+	}
+
+	public void retrievePocast() throws MissingFieldException {
+		String[] projection = {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_DURATION,
+				PodcastProvider.COLUMN_LAST_POSITION,
+		};
+		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
+		_cursor = getContext().getContentResolver().query(activeUri, projection, null, null, null);
+		_podcast = new PodcastCursor(getContext(), _cursor);
+		getContext().getContentResolver().registerContentObserver(activeUri, false, _observer);
 	}
 
 	private void loadViews(final Context context) {

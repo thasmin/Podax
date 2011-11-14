@@ -59,6 +59,10 @@ public class PodcastCursor {
 		_context.getContentResolver().registerContentObserver(getContentUri(), false, observer);
 	}
 
+	public void unregisterContentObserver(ContentObserver observer) {
+		_context.getContentResolver().unregisterContentObserver(observer);
+	}
+
 	public Long getId() throws MissingFieldException {
 		if (_idColumn == -1)
 			throw new MissingFieldException();

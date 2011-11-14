@@ -41,7 +41,8 @@ public class PlayerService extends Service {
 				Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _activePodcast.getId());
 				PlayerService.this.getContentResolver().update(podcastUri, values, null, null);
 
-				PodaxApp.updateWidgets(PlayerService.this);
+				// update widgets
+				updateWidgets();
 			}
 		}
 	}
@@ -119,19 +120,19 @@ public class PlayerService extends Service {
 				@Override
 				public void onCallStateChanged(int state, String incomingNumber) {
 					_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
-					if (_player.isPlaying() && _onPhone) {
+					if (_isPlaying && _onPhone) {
 						_isPlaying = false;
 						_player.pause();
 						_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-						PodaxApp.updateWidgets(PlayerService.this);
+						updateWidgets();
 						_pausedForPhone = true;
 					}
-					if (!_player.isPlaying() && !_onPhone && _pausedForPhone) {
+					if (!_isPlaying && !_onPhone && _pausedForPhone) {
 						_isPlaying = true;
 						_player.start();
-						_pausedForPhone = false;
 						_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-						PodaxApp.updateWidgets(PlayerService.this);
+						updateWidgets();
+						_pausedForPhone = false;
 					}
 				}
 			}, PhoneStateListener.LISTEN_CALL_STATE);
@@ -201,7 +202,7 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
 				Log.d("Podax", "PlayerService got a command: playpause");
-				if (_player.isPlaying()) {
+				if (_isPlaying) {
 					Log.d("Podax", "  stopping the player");
 					stop();
 				} else {
@@ -235,9 +236,9 @@ public class PlayerService extends Service {
 			_updatePlayerPositionTimerTask.cancel();
 		if (_activePodcast != null)
 			_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-		PodaxApp.updateWidgets(this);
 		_isPlaying = false;
 		_player.stop();
+		updateWidgets();
 		stopSelf();
 	}
 	
@@ -260,9 +261,6 @@ public class PlayerService extends Service {
 			_player.seekTo(p.getLastPosition());
 			p.setDuration(_player.getDuration());
 			_dbAdapter.savePodcast(p);
-
-			_updatePlayerPositionTimerTask = new UpdatePlayerPositionTimerTask();
-			_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 		}
 		catch (IOException ex) {
 			stop();
@@ -272,17 +270,17 @@ public class PlayerService extends Service {
 		if (_player.getCurrentPosition() >= _player.getDuration() - 1000) {
 			_dbAdapter.removePodcastFromQueue(_activePodcast);
 			playNextPodcast();
+			return;
 		}
 
 		_pausedForPhone = false;
 		_player.start();
 		_isPlaying = true;
-		PodaxApp.updateWidgets(this);
-		
-		if (_updatePlayerPositionTimerTask != null)
-			_updatePlayerPositionTimerTask.cancel();
+
 		_updatePlayerPositionTimerTask = new UpdatePlayerPositionTimerTask();
 		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
+
+		updateWidgets();
 	}
 
 	public void play(Podcast podcast) {
@@ -337,6 +335,9 @@ public class PlayerService extends Service {
 		if (_activePodcast.getDuration() > 0 && _activePodcast.getLastPosition() > _activePodcast.getDuration() - 1000)
 			_dbAdapter.updatePodcastPosition(_activePodcast, 0);
 
+		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
+		getContentResolver().update(activeUri, new ContentValues(), null, null);
+
 		resume();
 	}
 
@@ -345,5 +346,9 @@ public class PlayerService extends Service {
 			return "";
 		return PodaxApp.getTimeString(position) + " / "
 				+ PodaxApp.getTimeString(duration);
+	}
+
+	private void updateWidgets() {
+		PodaxApp.updateWidgets(this);
 	}
 }
