@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 
@@ -19,6 +20,13 @@ public class UpdateService extends Service {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_REFRESH_SUBSCRIPTION);
 		intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscription.getId());
+		context.startService(intent);
+	}
+
+	public static void updateSubscription(Context context, Uri subscriptionUri) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.setAction(Constants.ACTION_REFRESH_SUBSCRIPTION);
+		intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, Integer.valueOf(subscriptionUri.getLastPathSegment()));
 		context.startService(intent);
 	}
 

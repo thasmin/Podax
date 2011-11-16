@@ -32,11 +32,6 @@ public class PodcastCursor {
 		if (_cursor.isBeforeFirst())
 			_cursor.moveToFirst();
 
-		_idColumn = cursor.getColumnIndex(PodcastProvider.COLUMN_ID);
-		_subscriptionTitleColumn = cursor.getColumnIndex(PodcastProvider.COLUMN_SUBSCRIPTION_TITLE);
-		_queuePositionColumn = cursor.getColumnIndex(PodcastProvider.COLUMN_QUEUE_POSITION);
-		_mediaUrlColumn = cursor.getColumnIndex(PodcastProvider.COLUMN_MEDIA_URL);
-
 		// duplicated code to avoid a throws clause in the constructor
 		_idColumn = _cursor.getColumnIndex(PodcastProvider.COLUMN_ID);
 		if (!_cursor.isNull(_idColumn))

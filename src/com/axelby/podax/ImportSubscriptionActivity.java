@@ -18,20 +18,26 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.sax.Element;
 import android.sax.ElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
+import android.text.InputType;
 import android.util.Log;
 import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,12 +74,41 @@ public class ImportSubscriptionActivity extends ListActivity {
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
+    	if (position == 0)
+    	{
+    		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+    		alert.setTitle("Podcast URL");
+    		alert.setMessage("Type the URL of the podcast RSS");
+    		final EditText input = new EditText(this);
+    		//input.setText("http://blog.axelby.com/podcast.xml");
+    		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+    		alert.setView(input);
+    		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					String subscriptionUrl = input.getText().toString();
+					if (!subscriptionUrl.contains("://"))
+						subscriptionUrl = "http://" + subscriptionUrl;
+					ContentValues values = new ContentValues();
+					values.put(SubscriptionProvider.COLUMN_URL, subscriptionUrl);
+					Uri subscriptionUri = getContentResolver().insert(SubscriptionProvider.URI, values);
+					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscriptionUri);
+				}
+			});
+    		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					// do nothing
+				}
+			});
+    		alert.show();
+    		return;
+    	}
 		
-		if (position > 1) {
-			_chosenAccount = _googleAccounts[position - 1];
+		if (position > 2) {
+			_chosenAccount = _googleAccounts[position - 2];
 			getAuthToken();
 		}
+
+		super.onListItemClick(l, v, position, id);
 	}
 
 
@@ -85,13 +120,13 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 		
 		public int getCount() {
-			return _googleAccounts.length == 0 ? 1 : _googleAccounts.length + 1;
+			return _googleAccounts.length == 0 ? 2 : _googleAccounts.length + 2;
 		}
 
 		public Object getItem(int position) {
-			if (position < 1)
+			if (position == 1)
 				return null;
-			return _googleAccounts[position - 1];
+			return _googleAccounts[position - 2];
 		}
 
 		public long getItemId(int position) {
@@ -99,6 +134,12 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
+			if (position == 0) {
+				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
+				view.setText("Add RSS feed");
+				return view;
+			}
+
 			/*
 			if (position == 0) {
 				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
@@ -106,7 +147,8 @@ public class ImportSubscriptionActivity extends ListActivity {
 				return view;
 			}
 			*/
-			if (position == 0) {
+
+			if (position == 1) {
 				TextView view = new TextView(ImportSubscriptionActivity.this);
 				view.setTextAppearance(ImportSubscriptionActivity.this, android.R.style.TextAppearance_Medium);
 				view.setBackgroundDrawable(getResources().getDrawable(R.drawable.back));
@@ -115,7 +157,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 			}
 
 			TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
-			view.setText(_googleAccounts[position - 1].name);
+			view.setText(_googleAccounts[position - 2].name);
 			return view;
 		}
 
@@ -124,7 +166,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 
 		public boolean isEnabled(int position) {
-			return position != 0;
+			return position != 1;
 		}
 	}
 

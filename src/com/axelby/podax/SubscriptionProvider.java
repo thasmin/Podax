@@ -39,7 +39,8 @@ public class SubscriptionProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "subscriptions", SUBSCRIPTIONS);
 		_uriMatcher.addURI(AUTHORITY, "subscription/#", SUBSCRIPTION_ID);
 
-		_columnMap.put(COLUMN_ID, "id");
+		_columnMap = new HashMap<String, String>();
+		_columnMap.put(COLUMN_ID, "_id");
 		_columnMap.put(COLUMN_TITLE, "title");
 		_columnMap.put(COLUMN_URL, "url");
 		_columnMap.put(COLUMN_LAST_MODIFIED, "lastModified");
@@ -77,6 +78,8 @@ public class SubscriptionProvider extends ContentProvider {
 
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
+			if (sortOrder == null)
+				sortOrder = "title IS NULL, title";
 			break;
 		case SUBSCRIPTION_ID:
 			sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
@@ -107,9 +110,10 @@ public class SubscriptionProvider extends ContentProvider {
 		}
 
 		int count = 0;
-		count += _dbAdapter.getRawDB().update("podcasts", values, where,
+		count += _dbAdapter.getRawDB().update("subscriptions", values, where,
 				whereArgs);
 		getContext().getContentResolver().notifyChange(uri, null);
+		getContext().getContentResolver().notifyChange(URI, null);
 		return count;
 	}
 
@@ -124,6 +128,7 @@ public class SubscriptionProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI");
 		}
 		long id = _dbAdapter.getRawDB().insert("subscriptions", null, values);
+		getContext().getContentResolver().notifyChange(URI, null);
 		return ContentUris.withAppendedId(URI, id);
 	}
 
@@ -143,6 +148,7 @@ public class SubscriptionProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
+		getContext().getContentResolver().notifyChange(URI, null);
 		return _dbAdapter.getRawDB().delete("subscriptions", where, whereArgs);
 	}
 

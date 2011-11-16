@@ -31,8 +31,7 @@ public class PodcastListActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         
         Intent intent = this.getIntent();
-        Bundle bundle = intent.getExtras();
-        _subscriptionId = bundle.getInt("subscriptionId");
+        _subscriptionId = intent.getIntExtra("subscriptionId", -1);
         
         // set the title before loading the layout
         Subscription sub = DBAdapter.getInstance(this).loadSubscription(_subscriptionId);
