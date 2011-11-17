@@ -1,9 +1,10 @@
 package com.axelby.podax;
 
+import java.util.Vector;
+
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -11,29 +12,36 @@ import android.net.Uri;
 import android.widget.RemoteViews;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
+	Vector<Integer> _init = new Vector<Integer>();
+
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
-		int[] ids = appWidgetManager.getAppWidgetIds(new ComponentName(context, "com.axelby.podax.LargeWidgetProvider"));
-		if (ids.length == 0)
+		if (appWidgetIds.length == 0)
 			return;
 
-		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.largewidget);
-
-		updatePodcastDetails(context, views);
-			
-		// set up pending intents
-		setClickIntent(context, views, R.id.restart_btn, Constants.PLAYER_COMMAND_RESTART);
-		setClickIntent(context, views, R.id.rewind_btn, Constants.PLAYER_COMMAND_SKIPBACK);
-		setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYPAUSE);
-		setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
-		setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
-
-		Intent showIntent = new Intent(context, PodcastDetailActivity.class);
-		PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
-		views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
-
-		appWidgetManager.updateAppWidget(new ComponentName(context, "com.axelby.podax.LargeWidgetProvider"), views);
+		for (int widgetId : appWidgetIds) {
+			RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.largewidget);
+	
+			updatePodcastDetails(context, views);
+	
+			if (!_init.contains(appWidgetIds[0])) {
+				// set up pending intents
+				setClickIntent(context, views, R.id.restart_btn, Constants.PLAYER_COMMAND_RESTART);
+				setClickIntent(context, views, R.id.rewind_btn, Constants.PLAYER_COMMAND_SKIPBACK);
+				setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYPAUSE);
+				setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
+				setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
+		
+				Intent showIntent = new Intent(context, PodcastDetailActivity.class);
+				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
+				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+	
+				_init.add(appWidgetIds[0]);
+			}
+	
+			appWidgetManager.updateAppWidget(widgetId, views);
+		}
 
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}
