@@ -18,6 +18,8 @@ public class SubscriptionProvider extends ContentProvider {
 			+ "/vnd.axelby.subscription";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
 			+ "/vnd.axelby.subscription";
+	public static final String PODCAST_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
+			+ "/vnd.axelby.podcast";
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -29,6 +31,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 	static final int SUBSCRIPTIONS = 1;
 	static final int SUBSCRIPTION_ID = 2;
+	static final int PODCASTS = 3;
 
 	static UriMatcher _uriMatcher;
 	static HashMap<String, String> _columnMap;
@@ -36,7 +39,8 @@ public class SubscriptionProvider extends ContentProvider {
 	static {
 		_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions", SUBSCRIPTIONS);
-		_uriMatcher.addURI(AUTHORITY, "subscription/#", SUBSCRIPTION_ID);
+		_uriMatcher.addURI(AUTHORITY, "subscriptions/#", SUBSCRIPTION_ID);
+		_uriMatcher.addURI(AUTHORITY, "subscriptions/#/podcasts", PODCASTS);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "_id");
@@ -63,6 +67,8 @@ public class SubscriptionProvider extends ContentProvider {
 			return DIR_TYPE;
 		case SUBSCRIPTION_ID:
 			return ITEM_TYPE;
+		case PODCASTS:
+			return PODCAST_ITEM_TYPE;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
@@ -71,11 +77,20 @@ public class SubscriptionProvider extends ContentProvider {
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
+		int uriMatch = _uriMatcher.match(uri);
+
+		if (uriMatch == PODCASTS) {
+			return getContext().getContentResolver().query(PodcastProvider.URI,
+					projection, "subscriptionId = ?",
+					new String[] { uri.getPathSegments().get(1) },
+					PodcastProvider.COLUMN_PUB_DATE);
+		}
+
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(_columnMap);
 		sqlBuilder.setTables("subscriptions");
 
-		switch (_uriMatcher.match(uri)) {
+		switch (uriMatch) {
 		case SUBSCRIPTIONS:
 			if (sortOrder == null)
 				sortOrder = "title IS NULL, title";

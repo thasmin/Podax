@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -64,6 +65,10 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
 		_columnMap.put(COLUMN_DURATION, "duration");
 
+	}
+
+	public static Uri getContentUri(long id) {
+		return ContentUris.withAppendedId(URI, id);
 	}
 
 	DBAdapter _dbAdapter;

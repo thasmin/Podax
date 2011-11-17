@@ -247,7 +247,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 				}
 				public void end() {
 					Subscription subscription = adapter.addSubscription(id[0], title[0]);
-					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscription);
+					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscription.getId());
 				}
 			});
 

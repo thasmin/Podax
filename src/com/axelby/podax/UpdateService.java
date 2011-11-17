@@ -16,10 +16,10 @@ public class UpdateService extends Service {
 		context.startService(intent);
 	}
 
-	public static void updateSubscription(Context context, Subscription subscription) {
+	public static void updateSubscription(Context context, int subscriptionId) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_REFRESH_SUBSCRIPTION);
-		intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscription.getId());
+		intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
 		context.startService(intent);
 	}
 

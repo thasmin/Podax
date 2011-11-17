@@ -1,22 +1,21 @@
 package com.axelby.podax;
 
-import java.util.Vector;
-
 import android.app.ListActivity;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
+import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 public class PodcastListActivity extends ListActivity {
@@ -25,126 +24,129 @@ public class PodcastListActivity extends ListActivity {
 	static final int OPTION_PLAY = 2;
 
 	private int _subscriptionId;
-	
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-        Intent intent = this.getIntent();
-        _subscriptionId = intent.getIntExtra("subscriptionId", -1);
-        
-        // set the title before loading the layout
-        Subscription sub = DBAdapter.getInstance(this).loadSubscription(_subscriptionId);
-        setTitle(sub.getDisplayTitle() + " Podcasts");
 
-        setContentView(R.layout.podcast_list);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        getListView().setAdapter(new PodcastAdapter(this));
-        getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+		Intent intent = this.getIntent();
+		_subscriptionId = intent.getIntExtra("subscriptionId", -1);
+		if (_subscriptionId == -1) {
+			finish();
+			return;
+		}
+
+		// set the title before loading the layout
+		Subscription sub = DBAdapter.getInstance(this).loadSubscription(_subscriptionId);
+		setTitle(sub.getDisplayTitle() + " Podcasts");
+
+		setContentView(R.layout.podcast_list);
+
+		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
+		uri = Uri.withAppendedPath(uri, "podcasts");
+		String[] projection = {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_FILE_SIZE,
+				PodcastProvider.COLUMN_QUEUE_POSITION,
+		};
+		Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+		getListView().setAdapter(new PodcastAdapter(this, cursor));
+
+		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
 			public void onCreateContextMenu(ContextMenu menu, View v,
 					ContextMenuInfo menuInfo) {
-				AdapterView.AdapterContextMenuInfo mi = (AdapterView.AdapterContextMenuInfo) menuInfo;
-				Podcast p = (Podcast) getListView().getItemAtPosition(mi.position);
-				
-				if (p.getQueuePosition() == null)
-					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE,
-							ContextMenu.NONE, R.string.add_to_queue);
-				else
-					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
-							ContextMenu.NONE, R.string.remove_from_queue);
-				
-				if (p.isDownloaded())
-					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
-							R.string.play);
+				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+				Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
+				PodcastCursor podcast = new PodcastCursor(PodcastListActivity.this, cursor);
+
+				try {
+					if (podcast.getQueuePosition() == null)
+						menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE,
+								ContextMenu.NONE, R.string.add_to_queue);
+					else
+						menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
+								ContextMenu.NONE, R.string.remove_from_queue);
+
+					if (podcast.isDownloaded())
+						menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
+								R.string.play);
+				} catch (MissingFieldException e) {
+					e.printStackTrace();
+				}
 			}
 		});
-    }
-	
+	}
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		DBAdapter adapter = DBAdapter.getInstance(this);
-		
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		Podcast podcast = (Podcast)getListView().getAdapter().getItem(info.position);
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
+		Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
+		PodcastCursor podcast = new PodcastCursor(this, cursor);
 
-		switch (item.getItemId()) {
-		case OPTION_ADDTOQUEUE:
-			adapter.addPodcastToQueue(podcast.getId());
-			getListView().setAdapter(new PodcastAdapter(this));
-			break;
-		case OPTION_REMOVEFROMQUEUE:
-			adapter.removePodcastFromQueue(podcast);
-			getListView().setAdapter(new PodcastAdapter(this));
-			break;
-		case OPTION_PLAY:
-			PodaxApp.getApp().play(podcast);
+		try {
+			switch (item.getItemId()) {
+			case OPTION_ADDTOQUEUE:
+				podcast.addToQueue();
+				break;
+			case OPTION_REMOVEFROMQUEUE:
+				podcast.removeFromQueue();
+				break;
+			case OPTION_PLAY:
+				PodaxApp.getApp().play(podcast);
+			}
+		} catch (MissingFieldException e) {
+			e.printStackTrace();
 		}
 
 		return true;
 	}
-    
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-    	getMenuInflater().inflate(R.menu.podcast_list, menu);
-    	return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-        case R.id.refresh_subscription:
-        	Subscription subscription = DBAdapter.getInstance(this).loadSubscription(_subscriptionId);
-            UpdateService.updateSubscription(this, subscription);
-        default:
-            return super.onOptionsItemSelected(item);
-        }
-    }
-    
-    @Override
-    protected void onListItemClick(ListView list, View view, int position, long id) {
-    	Intent intent = new Intent();
-    	intent.setClassName("com.axelby.podax", "com.axelby.podax.PodcastDetailActivity");
-    	Podcast pod = (Podcast)list.getItemAtPosition(position);
-    	intent.putExtra("com.axelby.podax.podcastId", pod.getId());
-    	startActivity(intent);
-    }
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.podcast_list, menu);
+		return true;
+	}
 
-    private class PodcastAdapter extends BaseAdapter {
-    	private Context _context;
-    	private LayoutInflater _layoutInflater;
-    	private Vector<Podcast> _podcasts;
-    	
-    	public PodcastAdapter(Context context) {
-    		_context = context;
-    		_layoutInflater = LayoutInflater.from(_context);
-    		_podcasts = DBAdapter.getInstance(_context).getPodcastsForSubscription(PodcastListActivity.this._subscriptionId);
-    	}
-    	
-		public int getCount() {
-			return _podcasts.size();
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+		switch (item.getItemId()) {
+		case R.id.refresh_subscription:
+			UpdateService.updateSubscription(this, _subscriptionId);
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	@Override
+	protected void onListItemClick(ListView list, View view, int position, long id) {
+		Intent intent = new Intent(this, PodcastDetailActivity.class);
+		Cursor cursor = (Cursor) list.getItemAtPosition(position);
+		PodcastCursor podcast = new PodcastCursor(this, cursor);
+		try {
+			intent.putExtra("com.axelby.podax.podcastId", podcast.getId());
+			startActivity(intent);
+		} catch (MissingFieldException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private class PodcastAdapter extends ResourceCursorAdapter {
+		public PodcastAdapter(Context context, Cursor cursor) {
+			super(context, R.layout.list_item, cursor);
 		}
 
-		public Object getItem(int position) {
-			return _podcasts.get(position);
-		}
-
-		public long getItemId(int position) {
-			return position;
-		}
-
-		public View getView(int position, View convertView, ViewGroup parent) {
-			TextView view;
-			if (convertView == null) {
-				view = (TextView)_layoutInflater.inflate(R.layout.list_item, null);
+		@Override
+		public void bindView(View view, Context context, Cursor cursor) {
+			TextView textview = (TextView)view;
+			try {
+				String podcastTitle = new PodcastCursor(context, cursor).getTitle();
+				textview.setText(podcastTitle);
+			} catch (MissingFieldException e) {
+				e.printStackTrace();
 			}
-			else {
-				view = (TextView)convertView;
-			}
-			
-			view.setText(_podcasts.get(position).getTitle());
-			
-			return view;
 		}
-    }
+	}
 }

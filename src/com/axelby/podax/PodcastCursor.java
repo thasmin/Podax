@@ -42,6 +42,11 @@ public class PodcastCursor {
 		return _cursor.getCount() == 0;
 	}
 
+	public void closeCursor() {
+		if (!_cursor.isClosed())
+			_cursor.close();
+	}
+
 	public Uri getContentUri() throws MissingFieldException {
 		if (getId() == null)
 			return null;
@@ -170,6 +175,7 @@ public class PodcastCursor {
 	}
 
 	public void removeFromQueue() throws MissingFieldException {
+		new File(getFilename()).delete();
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
 		_context.getContentResolver().update(getContentUri(), values, null, null);
