@@ -36,10 +36,10 @@ public class PodcastListActivity extends ListActivity {
 			return;
 		}
 
-		// set the title before loading the layout
-		Subscription sub = DBAdapter.getInstance(this).loadSubscription(_subscriptionId);
-		setTitle(sub.getDisplayTitle() + " Podcasts");
-
+		if (!setTitle()) {
+			finish();
+			return;
+		}
 		setContentView(R.layout.podcast_list);
 
 		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
@@ -77,6 +77,29 @@ public class PodcastListActivity extends ListActivity {
 				}
 			}
 		});
+	}
+
+	public boolean setTitle() {
+		// set the title before loading the layout
+		Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
+		String[] subscriptionProjection = {
+				SubscriptionProvider.COLUMN_ID,
+				SubscriptionProvider.COLUMN_TITLE,
+		};
+		Cursor subscriptionCursor = getContentResolver().query(subscriptionUri, subscriptionProjection, null, null, null);
+		if (!subscriptionCursor.moveToNext()) {
+			return false;
+		}
+		SubscriptionCursor subscription = new SubscriptionCursor(this, subscriptionCursor);
+		try {
+			setTitle(subscription.getTitle() + " Podcasts");
+		} catch (MissingFieldException e1) {
+			e1.printStackTrace();
+			return false;
+		} finally {
+			subscriptionCursor.close();
+		}
+		return true;
 	}
 
 	@Override
