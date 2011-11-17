@@ -12,9 +12,8 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 public class SubscriptionProvider extends ContentProvider {
-	public static String AUTHORITY = "com.axelby.podax.SubscriptionProvider";
-	public static Uri URI = Uri.parse("content://"
-			+ SubscriptionProvider.AUTHORITY + "/subscriptions");
+	public static String AUTHORITY = "com.axelby.podax.subscriptionprovider";
+	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/subscriptions");
 	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
 			+ "/vnd.axelby.subscription";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE

@@ -109,11 +109,11 @@
 		</receiver>
 		
 		<provider android:name=".SearchSuggestionProvider"
-	              android:authorities="com.axelby.podax.SearchSuggestionProvider" />
+	              android:authorities="com.axelby.podax.searchsuggestionprovider" />
 		<provider android:name=".PodcastProvider"
-			      android:authorities="com.axelby.podax.PodcastProvider" />
+			      android:authorities="com.axelby.podax.podcastprovider" />
 		<provider android:name=".SubscriptionProvider"
-			      android:authorities="com.axelby.podax.SubscriptionProvider" />
+			      android:authorities="com.axelby.podax.subscriptionprovider" />
 	</application>
 
 	<uses-sdk android:minSdkVersion="7" />

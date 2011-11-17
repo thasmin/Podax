@@ -13,9 +13,8 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 public class PodcastProvider extends ContentProvider {
-	public static String AUTHORITY = "com.axelby.podax.PodcastProvider";
-	public static Uri URI = Uri.parse("content://" + PodcastProvider.AUTHORITY
-			+ "/podcasts");
+	public static String AUTHORITY = "com.axelby.podax.podcastprovider";
+	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/podcasts");
 	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
 			+ "/vnd.axelby.podcast";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
