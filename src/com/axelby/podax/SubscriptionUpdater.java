@@ -50,7 +50,8 @@ class SubscriptionUpdater {
 			new SimpleDateFormat("d MMM yy HH:mm:ss z"),
 			new SimpleDateFormat("d MMM yyyy HH:mm z"),
 			new SimpleDateFormat("d MMM yyyy HH:mm:ss z"), };
-	
+	public static SimpleDateFormat rssDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+
 	SubscriptionUpdater(Context context) {
 		_context = context;
 	}
@@ -99,14 +100,12 @@ class SubscriptionUpdater {
 					_toUpdate.remove(0);
 
 					HttpGet request = new HttpGet(subscription.getUrl());
-if (subscriptionId != 23) {
 					if (subscription.getETag() != null)
 						request.addHeader("If-None-Match", subscription.getETag());
 					if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
 						SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 						request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
 					}
-}
 					HttpClient client = new DefaultHttpClient();
 					HttpResponse response = client.execute(request);
 					
@@ -116,10 +115,8 @@ if (subscriptionId != 23) {
 						continue;
 					}
 					
-if (subscriptionId != 23) {
 					if (response.containsHeader("ETag") && response.getLastHeader("ETag").getValue().equals(subscription.getETag()))
 						continue;
-}
 
 					updateUpdateNotification(subscription, "Downloading Feed");
 					InputStream responseStream = response.getEntity().getContent();
@@ -146,11 +143,9 @@ if (subscriptionId != 23) {
 							if (name.equalsIgnoreCase("lastBuildDate")) {
 								for (SimpleDateFormat df : rfc822DateFormats) {
 									try {
-if (subscriptionId != 23) {
 										lastBuildDate = df.parse(parser.nextText());
 										if (lastBuildDate.getTime() == subscription.getLastModified().getTime())
 											done = true;
-}
 										break;
 									} catch (ParseException e) {
 									}
@@ -171,8 +166,10 @@ if (subscriptionId != 23) {
 								if (onItem)
 									podcastValues.put(PodcastProvider.COLUMN_DESCRIPTION, parser.nextText());
 							} else if (name.equalsIgnoreCase("pubDate")) {
-								if (onItem)
-									podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, parser.nextText());
+								if (onItem) {
+									Date pubDate = rssDateFormat.parse(parser.nextText());
+									podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, pubDate.getTime() / 1000);
+								}
 							} else if (name.equalsIgnoreCase("enclosure")) {
 								if (onItem)
 									podcastValues.put(PodcastProvider.COLUMN_MEDIA_URL, parser.getAttributeValue(null, "url"));
