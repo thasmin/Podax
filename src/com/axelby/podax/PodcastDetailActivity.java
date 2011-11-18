@@ -51,6 +51,7 @@ public class PodcastDetailActivity extends Activity {
 			PodcastProvider.COLUMN_DURATION,
 			PodcastProvider.COLUMN_LAST_POSITION,
 			PodcastProvider.COLUMN_QUEUE_POSITION,
+			PodcastProvider.COLUMN_MEDIA_URL,
 	};
 
 	@Override
