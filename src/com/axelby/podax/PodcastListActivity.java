@@ -149,7 +149,7 @@ public class PodcastListActivity extends ListActivity {
 		Cursor cursor = (Cursor) list.getItemAtPosition(position);
 		PodcastCursor podcast = new PodcastCursor(this, cursor);
 		try {
-			intent.putExtra("com.axelby.podax.podcastId", podcast.getId());
+			intent.putExtra(Constants.EXTRA_PODCAST_ID, (int)(long)podcast.getId());
 			startActivity(intent);
 		} catch (MissingFieldException e) {
 			e.printStackTrace();
