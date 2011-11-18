@@ -83,7 +83,7 @@ public class SubscriptionProvider extends ContentProvider {
 			return getContext().getContentResolver().query(PodcastProvider.URI,
 					projection, "subscriptionId = ?",
 					new String[] { uri.getPathSegments().get(1) },
-					PodcastProvider.COLUMN_PUB_DATE);
+					PodcastProvider.COLUMN_PUB_DATE + " DESC");
 		}
 
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
