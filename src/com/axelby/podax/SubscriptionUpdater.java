@@ -25,6 +25,7 @@ import org.xmlpull.v1.XmlPullParser;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ParseException;
@@ -82,7 +83,7 @@ class SubscriptionUpdater {
 				if (!PodaxApp.ensureWifi(_context))
 					return;
 				
-				final DBAdapter dbAdapter = DBAdapter.getInstance(_context);
+				DBAdapter dbAdapter = DBAdapter.getInstance(_context);
 				
 				// send subscriptions to the Podax server
 				// errors are acceptible
@@ -93,16 +94,19 @@ class SubscriptionUpdater {
 				}
 
 				while (_toUpdate.size() > 0) {
-					final Subscription subscription = dbAdapter.loadSubscription(_toUpdate.get(0));
+					Integer subscriptionId = _toUpdate.get(0);
+					Subscription subscription = dbAdapter.loadSubscription(subscriptionId);
 					_toUpdate.remove(0);
 
 					HttpGet request = new HttpGet(subscription.getUrl());
+if (subscriptionId != 23) {
 					if (subscription.getETag() != null)
 						request.addHeader("If-None-Match", subscription.getETag());
 					if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
 						SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 						request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
 					}
+}
 					HttpClient client = new DefaultHttpClient();
 					HttpResponse response = client.execute(request);
 					
@@ -112,8 +116,10 @@ class SubscriptionUpdater {
 						continue;
 					}
 					
+if (subscriptionId != 23) {
 					if (response.containsHeader("ETag") && response.getLastHeader("ETag").getValue().equals(subscription.getETag()))
 						continue;
+}
 
 					updateUpdateNotification(subscription, "Downloading Feed");
 					InputStream responseStream = response.getEntity().getContent();
@@ -122,12 +128,12 @@ class SubscriptionUpdater {
 						continue;
 					} 
 
-					Vector<RssPodcast> podcasts = new Vector<RssPodcast>();
-					RssPodcast podcast = null;
 					String name;
 					Date lastBuildDate = null;
 					boolean done = false;
 					
+					ContentValues podcastValues = new ContentValues();
+					boolean onItem = false;
 					XmlPullParser parser = Xml.newPullParser();
 					parser.setInput(responseStream, null);
 					int eventType = parser.getEventType();
@@ -140,32 +146,36 @@ class SubscriptionUpdater {
 							if (name.equalsIgnoreCase("lastBuildDate")) {
 								for (SimpleDateFormat df : rfc822DateFormats) {
 									try {
+if (subscriptionId != 23) {
 										lastBuildDate = df.parse(parser.nextText());
 										if (lastBuildDate.getTime() == subscription.getLastModified().getTime())
 											done = true;
+}
 										break;
 									} catch (ParseException e) {
 									}
 								}
 							} else if (name.equalsIgnoreCase("item")) {
-								podcast = new RssPodcast(subscription);
-							} else if (name.equalsIgnoreCase("title")) {
-								if (podcast != null)
-									podcast.setTitle(parser.nextText());
+								podcastValues = new ContentValues();
+								podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
+								onItem = true;
+							} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
+								if (onItem)
+									podcastValues.put(PodcastProvider.COLUMN_TITLE, parser.nextText());
 								else
 									dbAdapter.updateSubscriptionTitle(subscription.getUrl(), parser.nextText());
 							} else if (name.equalsIgnoreCase("link")) {
-								if (podcast != null)
-									podcast.setLink(parser.nextText());
+								if (onItem)
+									podcastValues.put(PodcastProvider.COLUMN_LINK, parser.nextText());
 							} else if (name.equalsIgnoreCase("description")) {
-								if (podcast != null)
-									podcast.setDescription(parser.nextText());
+								if (onItem)
+									podcastValues.put(PodcastProvider.COLUMN_DESCRIPTION, parser.nextText());
 							} else if (name.equalsIgnoreCase("pubDate")) {
-								if (podcast != null)
-									podcast.setPubDate(parser.nextText());
+								if (onItem)
+									podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, parser.nextText());
 							} else if (name.equalsIgnoreCase("enclosure")) {
-								if (podcast != null)
-									podcast.setMediaUrl(parser.getAttributeValue(null, "url"));
+								if (onItem)
+									podcastValues.put(PodcastProvider.COLUMN_MEDIA_URL, parser.getAttributeValue(null, "url"));
 							} else if (name.equalsIgnoreCase("thumbnail") &&
 									parser.getNamespace() == NAMESPACE_MEDIA) {
 								String thumbnail = parser.getAttributeValue(null, "url");
@@ -179,11 +189,10 @@ class SubscriptionUpdater {
 						case XmlPullParser.END_TAG:
 							name = parser.getName();
 							if (name.equalsIgnoreCase("item")) {
-								if (podcast.getMediaUrl() != null && podcast.getMediaUrl().length() > 0) {
-									//updateUpdateNotification(subscription, podcast.getTitle());
-									podcasts.add(podcast);
-								}
-								podcast = null;
+								String mediaUrl = podcastValues.getAsString(PodcastProvider.COLUMN_MEDIA_URL);
+								if (mediaUrl != null && mediaUrl.length() > 0)
+									_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
+								podcastValues = null;
 							} else if (name.equalsIgnoreCase("channel")) {
 								done = true;
 							}
@@ -193,8 +202,6 @@ class SubscriptionUpdater {
 					} while (!done && eventType != XmlPullParser.END_DOCUMENT);
 					
 					updateUpdateNotification(subscription, "Saving...");
-					if (podcasts.size() > 0)
-					dbAdapter.updatePodcastsFromFeed(podcasts);
 					if (lastBuildDate != null && lastBuildDate.getTime() != subscription.getLastModified().getTime())
 						dbAdapter.updateSubscriptionLastModified(subscription, lastBuildDate);
 					dbAdapter.updateSubscriptionETag(subscription, response.getLastHeader("ETag").getValue());

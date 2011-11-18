@@ -61,7 +61,12 @@ public class PodcastDetailActivity extends Activity {
 
 		Intent intent = this.getIntent();
 		if (intent.hasExtra(Constants.EXTRA_PODCAST_ID)) {
-			Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1));
+			int podcastId = intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1);
+			if (podcastId == -1) {
+				finish();
+				return;
+			}
+			Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
 			_cursor = managedQuery(uri, _projection, null, null, null);
 		} else {
 			Uri uri = Uri.withAppendedPath(PodcastProvider.URI, "active");

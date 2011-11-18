@@ -29,6 +29,7 @@ public class PodcastProvider extends ContentProvider {
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
+	public static final String COLUMN_SUBSCRIPTION_ID = "subscriptionId";
 	public static final String COLUMN_SUBSCRIPTION_TITLE = "subscriptionTitle";
 	public static final String COLUMN_QUEUE_POSITION = "queuePosition";
 	public static final String COLUMN_MEDIA_URL = "mediaUrl";
@@ -54,6 +55,7 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
 		_columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
+		_columnMap.put(COLUMN_SUBSCRIPTION_ID, "subscriptionId");
 		_columnMap.put(COLUMN_SUBSCRIPTION_TITLE,
 				"subscriptions.title AS subscriptionTitle");
 		_columnMap.put(COLUMN_QUEUE_POSITION, "queuePosition");
@@ -278,8 +280,26 @@ public class PodcastProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		// TODO Auto-generated method stub
-		return null;
+		if (!(uriMatcher.match(uri) == PODCASTS))
+			throw new IllegalArgumentException("Illegal URI for insert");
+		if (values.get(COLUMN_MEDIA_URL) == null)
+			throw new IllegalArgumentException("mediaUrl is required field for podcast");
+
+		Cursor mediaUrlCursor = _dbAdapter.getRawDB().rawQuery(
+				"SELECT _id FROM podcasts WHERE mediaUrl = ?",
+				new String[] { values.getAsString(COLUMN_MEDIA_URL) });
+		Long podcastId = null;
+		if (mediaUrlCursor.moveToNext())
+			podcastId = mediaUrlCursor.getLong(0);
+		mediaUrlCursor.close();
+
+		if (podcastId != null)
+			_dbAdapter.getRawDB().update("podcasts", values, COLUMN_ID + " = ?",
+					new String[] { String.valueOf(podcastId) });
+		else
+			podcastId = _dbAdapter.getRawDB().insert("podcasts", null, values);
+
+		return PodcastProvider.getContentUri(podcastId);
 	}
 
 	@Override

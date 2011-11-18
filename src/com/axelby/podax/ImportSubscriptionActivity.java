@@ -90,6 +90,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 						subscriptionUrl = "http://" + subscriptionUrl;
 					ContentValues values = new ContentValues();
 					values.put(SubscriptionProvider.COLUMN_URL, subscriptionUrl);
+					values.put(SubscriptionProvider.COLUMN_TITLE, subscriptionUrl);
 					Uri subscriptionUri = getContentResolver().insert(SubscriptionProvider.URI, values);
 					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscriptionUri);
 				}
