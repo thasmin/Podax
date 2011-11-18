@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import java.io.File;
+import java.util.Date;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -23,6 +24,7 @@ public class PodcastCursor {
 	private Integer _descriptionColumn = null;
 	private Integer _lastPositionColumn = null;
 	private Integer _durationColumn = null;
+	private Integer _pubDateColumn = null;
 
 	public PodcastCursor(Context context, Cursor cursor) {
 		_context = context;
@@ -155,6 +157,16 @@ public class PodcastCursor {
 		if (_cursor.isNull(_durationColumn))
 			return null;
 		return _cursor.getInt(_durationColumn);
+	}
+
+	public Date getPubDate() throws MissingFieldException {
+		if (_pubDateColumn == null)
+			_pubDateColumn = _cursor.getColumnIndex(PodcastProvider.COLUMN_PUB_DATE);
+		if (_pubDateColumn == -1)
+			throw new MissingFieldException();
+		if (_cursor.isNull(_pubDateColumn))
+			return null;
+		return new Date(_cursor.getLong(_durationColumn) * 1000);
 	}
 	
 	public void setDuration(long duration) throws MissingFieldException {
