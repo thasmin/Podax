@@ -1,18 +1,17 @@
 package com.axelby.podax;
 
-import java.util.Vector;
-
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ResourceCursorTreeAdapter;
 import android.widget.TextView;
 
 public class SearchActivity extends Activity {
@@ -26,6 +25,13 @@ public class SearchActivity extends Activity {
 
 	    epView = (ExpandableListView) findViewById(R.id.results);
 	    
+	    MatrixCursor groupCursor = new MatrixCursor(new String[] {
+	    		"_id", "title"
+	    }, 2);
+	    String[] groups = getResources().getStringArray(R.array.search_groups);
+	    for (int i = 0; i < groups.length; ++i)
+	    	groupCursor.addRow(new Object[] { i, groups[i] });
+	    
 	    // Get the intent, verify the action and get the query
 	    Intent intent = getIntent();
 	    if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -33,120 +39,66 @@ public class SearchActivity extends Activity {
 	      SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
 	    		  SearchSuggestionProvider.AUTHORITY, SearchSuggestionProvider.MODE);
 	      suggestions.saveRecentQuery(query, null);
-		  epView.setAdapter(new SearchResultsAdapter(this, query));
+		  epView.setAdapter(new SearchResultsAdapter(this, groupCursor, query));
 	    }
 	    else
-		    epView.setAdapter(new SearchResultsAdapter(this));
+		    epView.setAdapter(new SearchResultsAdapter(this, groupCursor, ""));
 	    epView.expandGroup(0);
 	    epView.expandGroup(1);
 	}	
 
-    public class SearchResultsAdapter extends BaseExpandableListAdapter {
-    	Context _context;
-    	LayoutInflater _layoutInflater;
-    	
-    	String[] _groups = getResources().getStringArray(R.array.search_groups);
-    	Vector<Subscription> _subscriptions = new Vector<Subscription>();
-    	Vector<Podcast> _podcasts = new Vector<Podcast>();
-    	String _query = "";
+    public class SearchResultsAdapter extends ResourceCursorTreeAdapter {
+    	private Context _context;
+    	private String _query;
 
-    	public SearchResultsAdapter(Context context)
+    	public SearchResultsAdapter(Context context, Cursor cursor, String query)
     	{
+    		super(context, cursor, R.layout.list_item, R.layout.list_item);
     		_context = context;
-    		_layoutInflater = LayoutInflater.from(_context);
-    	}
-
-    	public SearchResultsAdapter(Context context, String query)
-    	{
-    		_context = context;
-    		_layoutInflater = LayoutInflater.from(_context);
     		_query = query;
-    		_subscriptions = DBAdapter.getInstance(context).searchSubscriptions(query);
-    		_podcasts = DBAdapter.getInstance(context).searchPodcasts(query);
     	}
 
-		public Object getChild(int groupPosition, int childPosition) {
-			switch (groupPosition)
-			{
-			case 0: return _subscriptions.get(childPosition);
-			case 1: return _podcasts.get(childPosition);
-			}
-			return null;
+		@Override
+		protected void bindChildView(View view, Context context, Cursor cursor,
+				boolean isLastChild) {
+			TextView textView = (TextView) view;
+			// assumes podcast and subscription provider have the same column name for title
+			int titleColumn = cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE);
+			String title = cursor.getString(titleColumn);
+			textView.setText(title);
 		}
 
-		public long getChildId(int groupPosition, int childPosition) {
-			switch (groupPosition)
-			{
-			case 0: return _subscriptions.get(childPosition).getId();
-			case 1: return _podcasts.get(childPosition).getId();
-			}
-			return -1;
-		}
-
-		public View getChildView(int groupPosition, int childPosition,
-				boolean isLastChild, View convertView, ViewGroup parent) {
-			TextView view;
-			if (convertView == null) {
-				view = (TextView)_layoutInflater.inflate(R.layout.list_item, null);
-			}
-			else {
-				view = (TextView)convertView;
-			}
-
-			switch(groupPosition)
-			{
-			case 0:
-				view.setText(_subscriptions.get(childPosition).getDisplayTitle());
-				break;
-			case 1:
-				view.setText(_podcasts.get(childPosition).getTitle());
-				break;
-			}
-			return view;
-		}
-
-		public int getChildrenCount(int groupPosition) {
-			switch (groupPosition)
-			{
-			case 0: return _subscriptions.size();
-			case 1: return _podcasts.size();
-			}
-			return -1;
-		}
-
-		public Object getGroup(int groupPosition) {
-			return _groups[groupPosition];
-		}
-
-		public int getGroupCount() {
-			return _groups.length;
-		}
-
-		public long getGroupId(int groupPosition) {
-			return groupPosition;
-		}
-
-		public View getGroupView(int groupPosition, boolean isExpanded,
-				View convertView, ViewGroup parent) {
-			TextView view;
-			if (convertView == null) {
-				view = (TextView)_layoutInflater.inflate(R.layout.list_item, null);
-			}
-			else {
-				view = (TextView)convertView;
-			}
+		@Override
+		protected void bindGroupView(View view, Context context, Cursor cursor,
+				boolean isExpanded) {
+			TextView textView = (TextView) view;
 			view.setPadding(60, 0, 0, 0);
-			view.setText(_groups[groupPosition]);			
-			return view;
+			textView.setText(cursor.getString(1));
 		}
 
-		public boolean hasStableIds() {
-			return false;
+		@Override
+		protected Cursor getChildrenCursor(Cursor groupCursor) {
+			String groupTitle = groupCursor.getString(1);
+			if (groupTitle.equals("Subscriptions")) {
+				Uri searchUri = Uri.withAppendedPath(SubscriptionProvider.URI, "search");
+				String[] projection = {
+						SubscriptionProvider.COLUMN_ID,
+						SubscriptionProvider.COLUMN_TITLE,
+				};
+				return _context.getContentResolver().query(searchUri, projection,
+						null, new String[] { _query },
+						SubscriptionProvider.COLUMN_TITLE);
+			} else if (groupTitle.equals("Podcasts")) {
+				Uri searchUri = Uri.withAppendedPath(PodcastProvider.URI, "search");
+				String[] projection = {
+						PodcastProvider.COLUMN_ID,
+						PodcastProvider.COLUMN_TITLE,
+				};
+				return _context.getContentResolver().query(searchUri, projection,
+						null, new String[] { _query },
+						PodcastProvider.COLUMN_PUB_DATE + " DESC");
+			} else
+				throw new IllegalArgumentException("Invalid search group");
 		}
-
-		public boolean isChildSelectable(int groupPosition, int childPosition) {
-			return false;
-		}
-
 	}
 }

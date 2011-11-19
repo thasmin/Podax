@@ -29,9 +29,10 @@ public class SubscriptionProvider extends ContentProvider {
 	public static final String COLUMN_ETAG = "eTag";
 	public static final String COLUMN_THUMBNAIL = "thumbnail";
 
-	static final int SUBSCRIPTIONS = 1;
-	static final int SUBSCRIPTION_ID = 2;
-	static final int PODCASTS = 3;
+	private static final int SUBSCRIPTIONS = 1;
+	private static final int SUBSCRIPTION_ID = 2;
+	private static final int PODCASTS = 3;
+	private static final int SUBSCRIPTIONS_SEARCH = 4;
 
 	static UriMatcher _uriMatcher;
 	static HashMap<String, String> _columnMap;
@@ -41,6 +42,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "subscriptions", SUBSCRIPTIONS);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/#", SUBSCRIPTION_ID);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/#/podcasts", PODCASTS);
+		_uriMatcher.addURI(AUTHORITY, "subscriptions/search", SUBSCRIPTIONS_SEARCH);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "_id");
@@ -97,6 +99,13 @@ public class SubscriptionProvider extends ContentProvider {
 			break;
 		case SUBSCRIPTION_ID:
 			sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
+			break;
+		case SUBSCRIPTIONS_SEARCH:
+			sqlBuilder.appendWhere("LOWER(title) LIKE ?");
+			if (!selectionArgs[0].startsWith("%"))
+				selectionArgs[0] = "%" + selectionArgs[0] + "%";
+			if (sortOrder == null)
+				sortOrder = "title";
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");

@@ -21,11 +21,12 @@ public class PodcastProvider extends ContentProvider {
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
 			+ "/vnd.axelby.podcast";
 
-	final static int PODCASTS = 1;
-	final static int PODCASTS_QUEUE = 2;
-	final static int PODCAST_ID = 3;
-	final static int PODCASTS_TO_DOWNLOAD = 4;
-	final static int PODCAST_ACTIVE = 5;
+	private final static int PODCASTS = 1;
+	private final static int PODCASTS_QUEUE = 2;
+	private final static int PODCAST_ID = 3;
+	private final static int PODCASTS_TO_DOWNLOAD = 4;
+	private final static int PODCASTS_ACTIVE = 5;
+	private final static int PODCASTS_SEARCH = 6; 
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -50,7 +51,8 @@ public class PodcastProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "podcasts/#", PODCAST_ID);
 		uriMatcher.addURI(AUTHORITY, "podcasts/to_download",
 				PODCASTS_TO_DOWNLOAD);
-		uriMatcher.addURI(AUTHORITY, "podcasts/active", PODCAST_ACTIVE);
+		uriMatcher.addURI(AUTHORITY, "podcasts/active", PODCASTS_ACTIVE);
+		uriMatcher.addURI(AUTHORITY, "podcasts/search", PODCASTS_SEARCH);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
@@ -89,7 +91,7 @@ public class PodcastProvider extends ContentProvider {
 		case PODCASTS_TO_DOWNLOAD:
 			return DIR_TYPE;
 		case PODCAST_ID:
-		case PODCAST_ACTIVE:
+		case PODCASTS_ACTIVE:
 			return ITEM_TYPE;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -109,18 +111,18 @@ public class PodcastProvider extends ContentProvider {
 			sqlBuilder.setTables("podcasts");
 
 		switch (uriMatcher.match(uri)) {
-		case PodcastProvider.PODCASTS:
+		case PODCASTS:
 			break;
-		case PodcastProvider.PODCASTS_QUEUE:
+		case PODCASTS_QUEUE:
 			sqlBuilder.appendWhere("queuePosition IS NOT NULL");
 			if (sortOrder == null)
 				sortOrder = "queuePosition";
 			break;
-		case PodcastProvider.PODCAST_ID:
+		case PODCAST_ID:
 			sqlBuilder
 					.appendWhere("podcasts._id = " + uri.getLastPathSegment());
 			break;
-		case PodcastProvider.PODCASTS_TO_DOWNLOAD:
+		case PODCASTS_TO_DOWNLOAD:
 			try {
 				sqlBuilder.appendWhere("podcasts._id IN ("
 						+ getNeedsDownloadIds() + ")");
@@ -130,9 +132,17 @@ public class PodcastProvider extends ContentProvider {
 			if (sortOrder == null)
 				sortOrder = "queuePosition";
 			break;
-		case PodcastProvider.PODCAST_ACTIVE:
+		case PODCASTS_ACTIVE:
 			sqlBuilder.appendWhere("podcasts._id = "
 					+ PlayerService.getActivePodcastId(getContext()));
+			break;
+		case PODCASTS_SEARCH:
+			sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(description) LIKE ?");
+			if (!selectionArgs[0].startsWith("%"))
+				selectionArgs[0] = "%" + selectionArgs[0] + "%";
+			selectionArgs = new String[] { selectionArgs[0], selectionArgs[0] };
+			if (sortOrder == null)
+				sortOrder = "pubDate DESC";
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -177,7 +187,7 @@ public class PodcastProvider extends ContentProvider {
 		case PODCAST_ID:
 			podcastId = uri.getLastPathSegment();
 			break;
-		case PODCAST_ACTIVE:
+		case PODCASTS_ACTIVE:
 			podcastId = activePodcastId;
 			break;
 		default:
