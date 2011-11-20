@@ -3,13 +3,12 @@ package com.axelby.podax;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
 
 import android.app.Service;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -33,58 +32,23 @@ public class PlayerService extends Service {
 		public void run() {
 			int _oldPosition = _lastPosition;
 			_lastPosition = _player.getCurrentPosition();
-			if (_oldPosition / 1000 != _lastPosition / 1000) {
-				_activePodcast.setLastPosition(_player.getCurrentPosition());
-
-				ContentValues values = new ContentValues();
-				values.put(PodcastProvider.COLUMN_LAST_POSITION, _player.getCurrentPosition());
-				Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _activePodcast.getId());
-				PlayerService.this.getContentResolver().update(podcastUri, values, null, null);
-
-				// update widgets
-				updateWidgets();
-			}
+			if (_oldPosition / 1000 != _lastPosition / 1000)
+				updateActivePodcastPosition();
 		}
 	}
 	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
 
 	protected MediaPlayer _player;
 	protected PlayerBinder _binder;
-	protected DBAdapter _dbAdapter;
-	protected static Podcast _activePodcast;
 	protected boolean _onPhone;
 	protected boolean _pausedForPhone;
 	private TelephonyManager _telephony;
 	protected Timer _updateTimer;
+	private static final Uri _activePodcastUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 	
 	protected static boolean _isPlaying = false;
 	public static boolean isPlaying() {
 		return _isPlaying;
-	}
-
-	public static Podcast getActivePodcast(Context context) {
-		if (_activePodcast == null) {
-			DBAdapter dbAdapter = DBAdapter.getInstance(context);
-			_activePodcast = dbAdapter.loadLastPlayedPodcast();
-			if (_activePodcast == null)
-				_activePodcast = findFirstDownloadedInQueue(context);
-		}
-		return _activePodcast;
-	}
-	
-	public static Integer getActivePodcastId(Context context) {
-		Podcast podcast = getActivePodcast(context);
-		return podcast == null ? null : podcast.getId();
-	}
-
-	public static Podcast findFirstDownloadedInQueue(Context context) {
-		// make sure the active podcast has been downloaded
-		Vector<Podcast> queue = DBAdapter.getInstance(context).getQueue();
-		for (Podcast p : queue) {
-			if (p.isDownloaded())
-				return p;
-		}
-		return null;
 	}
 
 	protected static int _lastPosition = 0;
@@ -107,9 +71,8 @@ public class PlayerService extends Service {
 		_onPhone = false;
 		_pausedForPhone = false;
 		_updateTimer = new Timer();
-		_dbAdapter = DBAdapter.getInstance(this);
 
-		getActivePodcast(this);
+		verifyPodcastReady();
 
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		
@@ -123,15 +86,13 @@ public class PlayerService extends Service {
 					if (_isPlaying && _onPhone) {
 						_isPlaying = false;
 						_player.pause();
-						_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-						updateWidgets();
+						updateActivePodcastPosition();
 						_pausedForPhone = true;
 					}
 					if (!_isPlaying && !_onPhone && _pausedForPhone) {
 						_isPlaying = true;
 						_player.start();
-						_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
-						updateWidgets();
+						updateActivePodcastPosition();
 						_pausedForPhone = false;
 					}
 				}
@@ -148,7 +109,7 @@ public class PlayerService extends Service {
 
 		_player.setOnCompletionListener(new OnCompletionListener() {
 			public void onCompletion(MediaPlayer player) {
-				_dbAdapter.removePodcastFromQueue(_activePodcast);
+				removeActivePodcastFromQueue();
 				playNextPodcast();
 			}
 		});
@@ -185,7 +146,7 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_SKIPTOEND:
 				Log.d("Podax", "PlayerService got a command: skip to end");
-				_dbAdapter.removePodcastFromQueue(_activePodcast);
+				removeActivePodcastFromQueue();
 				playNextPodcast();
 				break;
 			case Constants.PLAYER_COMMAND_RESTART:
@@ -220,11 +181,8 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
 				Log.d("Podax", "PlayerService got a command: play specific podcast");
-				Podcast p = _dbAdapter.loadPodcast(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1));
-				if (p.isDownloaded())
-					play(p);
-				else
-					Toast.makeText(this, R.string.podcast_not_downloaded, Toast.LENGTH_SHORT);
+				int podcastId = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
+				play((long)podcastId);
 				break;
 			}
 		}
@@ -234,8 +192,7 @@ public class PlayerService extends Service {
 		Log.d("Podax", "PlayerService stopping");
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
-		if (_activePodcast != null)
-			_dbAdapter.updatePodcastPosition(_activePodcast, _player.getCurrentPosition());
+		updateActivePodcastPosition();
 		_isPlaying = false;
 		_player.stop();
 		updateWidgets();
@@ -245,12 +202,24 @@ public class PlayerService extends Service {
 	public void resume() {
 		if (_onPhone)
 			return;
-		Podcast p = _activePodcast;
-		if (p == null)
-			return;
-
-		// prep the MediaPlayer
+		
+		String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_LAST_POSITION,
+				PodcastProvider.COLUMN_DURATION,
+				PodcastProvider.COLUMN_FILE_SIZE,
+		};
+		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
 		try {
+			PodcastCursor p = new PodcastCursor(this, c);
+			if (p.isNull())
+				return;
+			if (!p.isDownloaded()) {
+				Toast.makeText(this, R.string.podcast_not_downloaded, Toast.LENGTH_SHORT).show();
+				return;
+			}
+
 			// don't update the podcast position while the player is reset
 			if (_updatePlayerPositionTimerTask != null)
 				_updatePlayerPositionTimerTask.cancel();
@@ -259,16 +228,21 @@ public class PlayerService extends Service {
 			_player.setDataSource(p.getFilename());
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
-			p.setDuration(_player.getDuration());
-			_dbAdapter.savePodcast(p);
+			
+			// set this podcast as active -- it may have been first in queue
+			changeActivePodcast(p.getId());
 		}
 		catch (IOException ex) {
 			stop();
+		} catch (MissingFieldException e) {
+			e.printStackTrace();
+		} finally {
+			c.close();
 		}
-				
+
 		// the user will probably try this if the podcast is over and the next one didn't start
 		if (_player.getCurrentPosition() >= _player.getDuration() - 1000) {
-			_dbAdapter.removePodcastFromQueue(_activePodcast);
+			removeActivePodcastFromQueue();
 			playNextPodcast();
 			return;
 		}
@@ -283,33 +257,28 @@ public class PlayerService extends Service {
 		updateWidgets();
 	}
 
-	public void play(Podcast podcast) {
-		_activePodcast = podcast;
-		if (_activePodcast == null)
-		{
+	public void play(Long podcastId) {
+		changeActivePodcast(podcastId);
+		if (podcastId == null) {
 			stop();
 			return;
 		}
-
 		resume();
 	}
 
 	public void skip(int secs) {
 		_player.seekTo(_player.getCurrentPosition() + secs * 1000);
-		_dbAdapter.updatePodcastPosition(getActivePodcast(this), _player.getCurrentPosition());
-		PodaxApp.updateWidgets(this);
+		updateActivePodcastPosition();
 	}
 
 	public void skipTo(int secs) {
 		_player.seekTo(secs * 1000);
-		_dbAdapter.updatePodcastPosition(getActivePodcast(this), _player.getCurrentPosition());
-		PodaxApp.updateWidgets(this);
+		updateActivePodcastPosition();
 	}
 
 	public void restart() {
 		_player.seekTo(0);
-		_dbAdapter.updatePodcastPosition(getActivePodcast(this), _player.getCurrentPosition());
-		PodaxApp.updateWidgets(this);
+		updateActivePodcastPosition();
 	}
 
 	public String getPositionString() {
@@ -322,23 +291,78 @@ public class PlayerService extends Service {
 	private void playNextPodcast() {
 		Log.d("Podax", "moving to next podcast");
 
-		_activePodcast = findFirstDownloadedInQueue(this);
+		Long activePodcastId = moveToNextInQueue();
 
-		if (_activePodcast == null) {
+		if (activePodcastId == null) {
 			Log.d("Podax", "PlayerService queue finished");
-			_dbAdapter.clearLastPlayedPodcast();
 			stop();
 			return;
 		}
 
 		// if the podcast has ended and it's back in the queue, restart it
-		if (_activePodcast.getDuration() > 0 && _activePodcast.getLastPosition() > _activePodcast.getDuration() - 1000)
-			_dbAdapter.updatePodcastPosition(_activePodcast, 0);
-
-		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-		getContentResolver().update(activeUri, new ContentValues(), null, null);
+		String[] projection = {
+				PodcastProvider.COLUMN_DURATION,
+				PodcastProvider.COLUMN_LAST_POSITION,
+		};
+		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
+		c.moveToNext();
+		PodcastCursor podcast = new PodcastCursor(this, c);
+		try {
+			if (podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000)
+				podcast.setLastPosition(0);
+		} catch (MissingFieldException e) {
+			e.printStackTrace();
+		}
 
 		resume();
+	}
+
+	public Long findFirstDownloadedInQueue() {
+		// make sure the active podcast has been downloaded
+		String[] projection = {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_FILE_SIZE,
+				PodcastProvider.COLUMN_MEDIA_URL,
+		};
+		Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
+		Cursor c = getContentResolver().query(queueUri, projection, null, null, null);
+		try {
+			while (c.moveToNext()) {
+				PodcastCursor podcast = new PodcastCursor(this, c);
+				if (podcast.isDownloaded())
+					return podcast.getId();
+			}
+			return null;
+		} catch (MissingFieldException e) {
+			return null;
+		} finally {
+			c.close();
+		}
+	}
+
+	public Long moveToNextInQueue() {
+		Long activePodcastId = findFirstDownloadedInQueue();
+		changeActivePodcast(activePodcastId);
+		return activePodcastId;
+	}
+
+	public void changeActivePodcast(Long activePodcastId) {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_ID, activePodcastId);
+		getContentResolver().update(_activePodcastUri, values, null, null);
+	}
+
+	public Long verifyPodcastReady() {
+		String[] projection = new String[] { PodcastProvider.COLUMN_ID };
+		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
+		try {
+			if (c.moveToNext())
+				return c.getLong(0);
+			else
+				return moveToNextInQueue();
+		} finally {
+			c.close();
+		}
 	}
 
 	public static String getPositionString(int duration, int position) {
@@ -350,5 +374,21 @@ public class PlayerService extends Service {
 
 	private void updateWidgets() {
 		PodaxApp.updateWidgets(this);
+	}
+
+	public void updateActivePodcastPosition() {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, _player.getCurrentPosition());
+		PlayerService.this.getContentResolver().update(_activePodcastUri, values, null, null);
+
+		// update widgets
+		updateWidgets();
+	}
+
+	public void removeActivePodcastFromQueue() {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, 0);
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
+		PlayerService.this.getContentResolver().update(_activePodcastUri, values, null, null);
 	}
 }

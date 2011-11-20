@@ -149,6 +149,12 @@ public class PodcastCursor {
 			return null;
 		return _cursor.getInt(_lastPositionColumn);
 	}
+	
+	public void setLastPosition(long lastPosition) throws MissingFieldException {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, lastPosition);
+		_context.getContentResolver().update(getContentUri(), values, null, null);
+	}
 
 	public Integer getDuration() throws MissingFieldException {
 		if (_durationColumn == null)
@@ -188,7 +194,6 @@ public class PodcastCursor {
 	}
 
 	public void removeFromQueue() throws MissingFieldException {
-		new File(getFilename()).delete();
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
 		_context.getContentResolver().update(getContentUri(), values, null, null);

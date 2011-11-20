@@ -1,5 +1,7 @@
 package com.axelby.podax;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -7,6 +9,9 @@ import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -26,7 +31,7 @@ public class PodcastProvider extends ContentProvider {
 	private final static int PODCAST_ID = 3;
 	private final static int PODCASTS_TO_DOWNLOAD = 4;
 	private final static int PODCASTS_ACTIVE = 5;
-	private final static int PODCASTS_SEARCH = 6; 
+	private final static int PODCASTS_SEARCH = 6;
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -40,6 +45,10 @@ public class PodcastProvider extends ContentProvider {
 	public static final String COLUMN_FILE_SIZE = "fileSize";
 	public static final String COLUMN_LAST_POSITION = "lastPosition";
 	public static final String COLUMN_DURATION = "duration";
+
+	private static final String PREF_ACTIVE = "active";
+
+	public static final Uri ACTIVE_PODCAST_URI = Uri.withAppendedPath(PodcastProvider.URI, "active");
 
 	static UriMatcher uriMatcher;
 	static HashMap<String, String> _columnMap;
@@ -133,8 +142,11 @@ public class PodcastProvider extends ContentProvider {
 				sortOrder = "queuePosition";
 			break;
 		case PODCASTS_ACTIVE:
-			sqlBuilder.appendWhere("podcasts._id = "
-					+ PlayerService.getActivePodcastId(getContext()));
+			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_WORLD_READABLE);
+			if (prefs.contains(PREF_ACTIVE))
+				sqlBuilder.appendWhere("podcasts._id = " + prefs.getLong(PREF_ACTIVE, -1));
+			else
+				sqlBuilder.appendWhere("podcasts.queuePosition = 0");
 			break;
 		case PODCASTS_SEARCH:
 			sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(description) LIKE ?");
@@ -181,20 +193,38 @@ public class PodcastProvider extends ContentProvider {
 		int count = 0;
 
 		String podcastId;
-		String activePodcastId = String.valueOf(PlayerService
-				.getActivePodcastId(getContext()));
+		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_WORLD_READABLE);
+		Long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
 		switch (uriMatcher.match(uri)) {
 		case PODCAST_ID:
 			podcastId = uri.getLastPathSegment();
 			break;
 		case PODCASTS_ACTIVE:
-			podcastId = activePodcastId;
+			if (values.containsKey(COLUMN_ID)) {
+				activePodcastId = values.getAsLong(COLUMN_ID);
+				Editor editor = prefs.edit();
+				if (activePodcastId != null)
+					editor.putLong(PREF_ACTIVE, values.getAsLong(COLUMN_ID));
+				else
+					editor.remove(PREF_ACTIVE);
+				editor.commit();
+
+				// if we're clearing the active podcast or updating just the ID, don't go to the DB
+				if (activePodcastId == null || values.size() == 1)
+					return 0;
+			}
+			
+			// if we don't have an active podcast, don't update it
+			if (activePodcastId == -1)
+				return 0;
+
+			podcastId = String.valueOf(activePodcastId);
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
-		String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
+		String extraWhere = COLUMN_ID + " = " + podcastId;
 		if (where != null)
 			where = extraWhere + " AND " + where;
 		else
@@ -253,11 +283,17 @@ public class PodcastProvider extends ContentProvider {
 			// new at 3: 1 2 3 4 5 do: 3++ 4++ 5++
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 "
 					+ "WHERE queuePosition >= ?", new Object[] { newPosition });
+
+			// download the newly added podcast
+			UpdateService.downloadPodcasts(getContext());
 		}
 		if (oldPosition != null && newPosition == null) {
 			// remove 3: 1 2 3 4 5 do: 4-- 5--
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 "
 					+ "WHERE queuePosition > ?", new Object[] { oldPosition });
+
+			// delete the podcast's file
+			deleteDownload(Long.valueOf(podcastId));
 		} else if (oldPosition != newPosition) {
 			// moving up: 1 2 3 4 5 2 -> 4: 3-- 4-- 2->4
 			if (oldPosition < newPosition)
@@ -329,10 +365,29 @@ public class PodcastProvider extends ContentProvider {
 			throw new IllegalArgumentException("Illegal URI for delete");
 		}
 		
+		// find out what we're deleting and delete downloaded files
+		String[] columns = new String[] { COLUMN_ID };
+		Cursor c = _dbAdapter.getRawDB().query("podcasts", columns, where, whereArgs, null, null, null);
+		while (c.moveToNext())
+			deleteDownload(c.getLong(0));
+		c.close();
+		
 		int count = _dbAdapter.getRawDB().delete("podcasts", where, whereArgs);
 		if (!uri.equals(URI))
 			getContext().getContentResolver().notifyChange(URI, null);
 		getContext().getContentResolver().notifyChange(uri, null);
 		return count;
+	}
+
+	public static void deleteDownload(final long podcastId) {
+		File storage = new File(PodcastCursor.getStoragePath());
+		File[] files = storage.listFiles(new FileFilter() {
+			public boolean accept(File pathname) {
+				return pathname.getName().startsWith(String.valueOf(podcastId)) &&
+						pathname.getPath().endsWith(".mp3");
+			}
+		});
+		for (File f : files)
+			f.delete();
 	}
 }

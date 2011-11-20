@@ -93,6 +93,11 @@ public class UpdateService extends Service {
 			_hourlyDownloadIntent = PendingIntent.getService(this, 0, downloadIntent, 0);
 			alarmManager.setInexactRepeating(AlarmManager.RTC,
 					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyDownloadIntent);
+			
+			_subscriptionUpdater.addAllSubscriptions();
+			_subscriptionUpdater.run();
+
+			_podcastDownloader.download();
 		}
 		else if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
 			_subscriptionUpdater.addAllSubscriptions();

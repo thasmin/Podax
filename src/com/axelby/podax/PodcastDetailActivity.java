@@ -152,8 +152,14 @@ public class PodcastDetailActivity extends Activity {
 			_playButton.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					try {
-						if (PlayerService.isPlaying() && 
-								PlayerService.getActivePodcast(PodcastDetailActivity.this).getId() == _podcast.getId())
+						Long activeId = null;
+						String[] projection = new String[] { PodcastProvider.COLUMN_ID };
+						Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
+						if (c.moveToNext())
+							activeId = c.getLong(0);
+						c.close();
+
+						if (PlayerService.isPlaying() && activeId != null && activeId == _podcast.getId())
 							_app.pause();
 						else
 							_app.play(_podcast);
@@ -210,7 +216,10 @@ public class PodcastDetailActivity extends Activity {
 
 	boolean _controlsEnabled = true;
 	private void updatePlayerControls(boolean force) throws MissingFieldException {
-		Podcast p = PlayerService.getActivePodcast(this);
+		String[] projection = new String[] { PodcastProvider.COLUMN_ID };
+		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
+		PodcastCursor p = new PodcastCursor(this, c);
+
 		if (PlayerService.isPlaying() && p != null && p.getId() == _podcast.getId()) {
 			if (!_seekbar_dragging) {
 				_position.setText(PodaxApp.getTimeString(PlayerService.getLastPosition()));
@@ -242,6 +251,8 @@ public class PodcastDetailActivity extends Activity {
 
 	    	_controlsEnabled = false;
 		}
+		
+		c.close();
 	}
 
 	private void updateQueueViews() throws MissingFieldException {
