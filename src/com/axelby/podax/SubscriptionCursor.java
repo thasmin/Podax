@@ -25,7 +25,7 @@ public class SubscriptionCursor {
 
 	public SubscriptionCursor(Context context, Cursor cursor) {
 		_context = context;
-		if (cursor.getCount() == 0)
+		if (cursor.isAfterLast())
 			return;
 		_cursor = cursor;
 
@@ -87,7 +87,7 @@ public class SubscriptionCursor {
 	public Date getLastModified() throws MissingFieldException {
 		if (_lastModifiedColumn == null)
 			_lastModifiedColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_LAST_MODIFIED);
-		if (_titleColumn == -1)
+		if (_lastModifiedColumn == -1)
 			throw new MissingFieldException();
 		if (_cursor.isNull(_lastModifiedColumn))
 			return null;
