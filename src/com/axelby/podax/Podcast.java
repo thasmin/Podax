@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import android.os.Environment;
 
 public class Podcast {
 	private int id = -1;
@@ -123,17 +122,8 @@ public class Podcast {
 		this.duration = duration;
 	}
 
-	public static String getStoragePath() {
-		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
-		File podaxFile = new File(podaxDir);
-		if (!podaxFile.exists())
-			podaxFile.mkdirs();
-		return podaxDir;
-	}
-
 	public String getFilename() {
-		return getStoragePath() + Integer.toString(this.id) + "." + getExtension(this.mediaUrl);
+		return PodcastCursor.getStoragePath() + Integer.toString(this.id) + "." + PodcastCursor.getExtension(this.mediaUrl);
 	}
 
 	public boolean isDownloaded() {
@@ -150,12 +140,5 @@ public class Podcast {
 		if (isDownloaded())
 			return false;
 		return true;
-	}
-	public static String getExtension(String filename) {
-		String extension = "";
-		int i = filename.lastIndexOf('.');
-		if (i > 0)
-		    extension = filename.substring(i+1);
-		return extension;
 	}
 }

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 
 public class PodcastCursor {
 
@@ -176,7 +177,7 @@ public class PodcastCursor {
 	}
 
 	public String getFilename() throws MissingFieldException {
-		return Podcast.getStoragePath() + String.valueOf(getId()) + "." + Podcast.getExtension(getMediaUrl());
+		return PodcastCursor.getStoragePath() + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
 	}
 
 	public boolean isDownloaded() throws MissingFieldException {
@@ -197,5 +198,22 @@ public class PodcastCursor {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
 		_context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	public static String getExtension(String filename) {
+		String extension = "";
+		int i = filename.lastIndexOf('.');
+		if (i > 0)
+		    extension = filename.substring(i+1);
+		return extension;
+	}
+
+	public static String getStoragePath() {
+		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
+		File podaxFile = new File(podaxDir);
+		if (!podaxFile.exists())
+			podaxFile.mkdirs();
+		return podaxDir;
 	}
 }
