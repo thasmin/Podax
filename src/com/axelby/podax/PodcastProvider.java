@@ -309,12 +309,30 @@ public class PodcastProvider extends ContentProvider {
 		else
 			podcastId = _dbAdapter.getRawDB().insert("podcasts", null, values);
 
+		getContext().getContentResolver().notifyChange(uri, null);
 		return PodcastProvider.getContentUri(podcastId);
 	}
 
 	@Override
-	public int delete(Uri arg0, String arg1, String[] arg2) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int delete(Uri uri, String where, String[] whereArgs) {
+		switch (uriMatcher.match(uri)) {
+		case PODCASTS:
+			break;
+		case PODCAST_ID:
+			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
+			if (where != null)
+				where = extraWhere + " AND " + where;
+			else
+				where = extraWhere;
+			break;
+		default:
+			throw new IllegalArgumentException("Illegal URI for delete");
+		}
+		
+		int count = _dbAdapter.getRawDB().delete("podcasts", where, whereArgs);
+		if (!uri.equals(URI))
+			getContext().getContentResolver().notifyChange(URI, null);
+		getContext().getContentResolver().notifyChange(uri, null);
+		return count;
 	}
 }

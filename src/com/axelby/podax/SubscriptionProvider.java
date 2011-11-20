@@ -166,13 +166,17 @@ public class SubscriptionProvider extends ContentProvider {
 				where = extraWhere + " AND " + where;
 			else
 				where = extraWhere;
+			getContext().getContentResolver().delete(PodcastProvider.URI,
+					"subscriptionId = ?",
+					new String[] { uri.getLastPathSegment() });
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
+		int count = _dbAdapter.getRawDB().delete("subscriptions", where, whereArgs);
 		getContext().getContentResolver().notifyChange(URI, null);
-		return _dbAdapter.getRawDB().delete("subscriptions", where, whereArgs);
+		return count;
 	}
 
 }
