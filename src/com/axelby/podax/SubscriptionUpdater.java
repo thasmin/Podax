@@ -228,8 +228,6 @@ class SubscriptionUpdater {
 			} finally {
 				removeUpdateNotification();
 				_runningThread = null;
-
-				_context.sendBroadcast(new Intent(Constants.ACTION_SUBSCRIPTION_UPDATE_BROADCAST));
 				UpdateService.downloadPodcasts(_context);
 			}
 		}
