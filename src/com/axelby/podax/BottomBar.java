@@ -84,7 +84,7 @@ public class BottomBar extends LinearLayout {
 			_showplayerbtn.setEnabled(false);
 		}
 
-		_lastPodcastId = _podcast.getId();
+		_lastPodcastId = _podcast.isNull() ? null : _podcast.getId();
 	}
 
 	public void retrievePocast() throws MissingFieldException {

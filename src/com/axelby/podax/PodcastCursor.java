@@ -41,7 +41,7 @@ public class PodcastCursor {
 	}
 
 	public boolean isNull() {
-		return _cursor.getCount() == 0;
+		return _cursor.isAfterLast();
 	}
 
 	public void closeCursor() {
