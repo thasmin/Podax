@@ -85,6 +85,7 @@ public class PodcastListActivity extends ListActivity {
 		String[] subscriptionProjection = {
 				SubscriptionProvider.COLUMN_ID,
 				SubscriptionProvider.COLUMN_TITLE,
+				SubscriptionProvider.COLUMN_URL,
 		};
 		Cursor subscriptionCursor = getContentResolver().query(subscriptionUri, subscriptionProjection, null, null, null);
 		if (!subscriptionCursor.moveToNext()) {
