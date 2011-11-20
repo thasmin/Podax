@@ -114,8 +114,7 @@ public class BottomBar extends LinearLayout {
 			public void onClick(View view) {
 				PodaxApp app = (PodaxApp) context.getApplicationContext();
 				app.playpause();
-				_pausebtn.setImageResource(PlayerService.isPlaying() ? android.R.drawable.ic_media_play
-						: android.R.drawable.ic_media_pause);
+				setupHandler();
 			}
 		});
 		
