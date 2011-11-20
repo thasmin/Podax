@@ -4,10 +4,12 @@ import java.io.File;
 
 import android.app.ListActivity;
 import android.app.NotificationManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -26,10 +28,12 @@ public class SubscriptionListActivity extends ListActivity {
 		setContentView(R.layout.subscription_list);
 
 		Intent intent = getIntent();
+		// check if this was opened by android to save an RSS feed
 		if (intent.getDataString() != null) {
-			DBAdapter adapter = DBAdapter.getInstance(this);
-			Subscription subscription = adapter.addSubscription(intent.getDataString());
-			UpdateService.updateSubscription(this, subscription.getId());
+			ContentValues values = new ContentValues();
+			values.put(SubscriptionProvider.COLUMN_URL, intent.getDataString());
+			Uri savedSubscription = getContentResolver().insert(SubscriptionProvider.URI, values);
+			UpdateService.updateSubscription(this, Integer.valueOf(savedSubscription.getLastPathSegment()));
 		}
 
 		String[] projection = {
@@ -66,9 +70,7 @@ public class SubscriptionListActivity extends ListActivity {
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
-		if (info.position != 0)
-			menu.add(0, 0, 0, "Delete");
+		menu.add(0, 0, 0, "Delete");
 	}
 
 	@Override

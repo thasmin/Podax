@@ -70,7 +70,7 @@ public class SubscriptionCursor {
 		if (_titleColumn == -1)
 			throw new MissingFieldException();
 		if (_cursor.isNull(_titleColumn))
-			return null;
+			return getUrl();
 		return _cursor.getString(_titleColumn);
 	}
 
