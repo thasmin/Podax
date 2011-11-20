@@ -64,9 +64,11 @@ class SubscriptionUpdater {
 	}
 	
 	public void addAllSubscriptions() {
-		final DBAdapter dbAdapter = DBAdapter.getInstance(_context);
-		for (Subscription s : dbAdapter.getSubscriptions())
-			_toUpdate.add(s.getId());
+		String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
+		Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
+		while (c.moveToNext())
+			_toUpdate.add((int)(long)c.getLong(0));
+		c.close();
 	}
 	
 	public void run() {
@@ -296,7 +298,7 @@ class SubscriptionUpdater {
 		}
 
 		private void downloadThumbnail(long subscriptionId, String thumbnailUrl) {
-			File thumbnailFile = new File(Subscription.getThumbnailFilename(subscriptionId));
+			File thumbnailFile = new File(SubscriptionProvider.getThumbnailFilename(subscriptionId));
 			if (thumbnailFile.exists())
 				return;
 

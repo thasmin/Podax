@@ -80,13 +80,4 @@ public class Subscription {
 			podaxFile.mkdirs();
 		return podaxDir + "/" + getId() + ".jpg";
 	}
-
-	public static String getThumbnailFilename(long id) {
-		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
-		File podaxFile = new File(podaxDir);
-		if (!podaxFile.exists())
-			podaxFile.mkdirs();
-		return podaxDir + "/" + id + ".jpg";
-	}
 }
