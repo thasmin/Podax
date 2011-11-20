@@ -104,7 +104,7 @@ public class ImportSubscriptionActivity extends ListActivity {
     		return;
     	}
 		
-		if (position > 2) {
+		if (position >= 2) {
 			_chosenAccount = _googleAccounts[position - 2];
 			getAuthToken();
 		}
@@ -236,19 +236,17 @@ public class ImportSubscriptionActivity extends ListActivity {
 			RootElement root = new RootElement("object");
 			Element object = root.getChild("list").getChild("object");
 			// put these in an array to we can use them in the inner class
-			final String[] id = { "" };
-			final String[] title = { "" };
+			final ContentValues values = new ContentValues();
 			final String[] stringType = { "" };
-			final DBAdapter adapter = DBAdapter.getInstance(this);
 
 			object.setElementListener(new ElementListener() {
 				public void start(Attributes attrs) {
-					id[0] = "";
-					title[0] = "";
+					values.clear();
 				}
 				public void end() {
-					Subscription subscription = adapter.addSubscription(id[0], title[0]);
-					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscription.getId());
+					Uri uri = ImportSubscriptionActivity.this.getContentResolver().insert(SubscriptionProvider.URI, values);
+					int subscriptionId = Integer.valueOf(uri.getLastPathSegment());
+					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscriptionId);
 				}
 			});
 
@@ -263,10 +261,10 @@ public class ImportSubscriptionActivity extends ListActivity {
 					if (stringType[0].equals("id")) {
 						if (text != null && text.startsWith("feed/"))
 							text = text.substring(5);
-						id[0] = text;
+						values.put(SubscriptionProvider.COLUMN_URL, text);
 					}
 					else if (stringType[0].equals("title"))
-						title[0] = text;
+						values.put(SubscriptionProvider.COLUMN_TITLE, text);
 				}
 			});
 
