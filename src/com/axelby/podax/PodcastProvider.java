@@ -160,17 +160,19 @@ public class PodcastProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
-		Cursor c = sqlBuilder.query(_dbAdapter.getRawDB(), projection,
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		Cursor c = sqlBuilder.query(db, projection,
 				selection, selectionArgs, null, null, sortOrder);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
 
 	private String getNeedsDownloadIds() throws MissingFieldException {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 		SQLiteQueryBuilder queueBuilder = new SQLiteQueryBuilder();
 		queueBuilder.setTables("podcasts");
 		queueBuilder.appendWhere("queuePosition IS NOT NULL");
-		Cursor queue = queueBuilder.query(_dbAdapter.getRawDB(),
+		Cursor queue = queueBuilder.query(db,
 				new String[] { "_id, mediaUrl, fileSize" }, null, null, null,
 				null, "queuePosition");
 
@@ -247,9 +249,9 @@ public class PodcastProvider extends ContentProvider {
 			updateQueuePosition(podcastId, newPosition);
 		}
 
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		if (values.size() > 0)
-			count += _dbAdapter.getRawDB().update("podcasts", values, where,
-					whereArgs);
+			count += db.update("podcasts", values, where, whereArgs);
 		getContext().getContentResolver().notifyChange(uri, null);
 		if (notifyQueue)
 			getContext().getContentResolver().notifyChange(
@@ -264,7 +266,7 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	public void updateQueuePosition(String podcastId, Integer newPosition) {
-		SQLiteDatabase db = _dbAdapter.getRawDB();
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// get the old position
 		Cursor c = db.query("podcasts", new String[] { "queuePosition" },
@@ -326,12 +328,14 @@ public class PodcastProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+
 		if (!(uriMatcher.match(uri) == PODCASTS))
 			throw new IllegalArgumentException("Illegal URI for insert");
 		if (values.get(COLUMN_MEDIA_URL) == null)
 			throw new IllegalArgumentException("mediaUrl is required field for podcast");
 
-		Cursor mediaUrlCursor = _dbAdapter.getRawDB().rawQuery(
+		Cursor mediaUrlCursor = db.rawQuery(
 				"SELECT _id FROM podcasts WHERE mediaUrl = ?",
 				new String[] { values.getAsString(COLUMN_MEDIA_URL) });
 		Long podcastId = null;
@@ -340,10 +344,10 @@ public class PodcastProvider extends ContentProvider {
 		mediaUrlCursor.close();
 
 		if (podcastId != null)
-			_dbAdapter.getRawDB().update("podcasts", values, COLUMN_ID + " = ?",
+			db.update("podcasts", values, COLUMN_ID + " = ?",
 					new String[] { String.valueOf(podcastId) });
 		else
-			podcastId = _dbAdapter.getRawDB().insert("podcasts", null, values);
+			podcastId = db.insert("podcasts", null, values);
 
 		getContext().getContentResolver().notifyChange(uri, null);
 		return PodcastProvider.getContentUri(podcastId);
@@ -366,13 +370,14 @@ public class PodcastProvider extends ContentProvider {
 		}
 		
 		// find out what we're deleting and delete downloaded files
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		String[] columns = new String[] { COLUMN_ID };
-		Cursor c = _dbAdapter.getRawDB().query("podcasts", columns, where, whereArgs, null, null, null);
+		Cursor c = db.query("podcasts", columns, where, whereArgs, null, null, null);
 		while (c.moveToNext())
 			deleteDownload(c.getLong(0));
 		c.close();
 		
-		int count = _dbAdapter.getRawDB().delete("podcasts", where, whereArgs);
+		int count = db.delete("podcasts", where, whereArgs);
 		if (!uri.equals(URI))
 			getContext().getContentResolver().notifyChange(URI, null);
 		getContext().getContentResolver().notifyChange(uri, null);

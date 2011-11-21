@@ -9,6 +9,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Environment;
@@ -113,8 +114,9 @@ public class SubscriptionProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
-		Cursor c = sqlBuilder.query(_dbAdapter.getRawDB(), projection,
-				selection, selectionArgs, null, null, sortOrder);
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs,
+				null, null, sortOrder);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
@@ -134,9 +136,8 @@ public class SubscriptionProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
-		int count = 0;
-		count += _dbAdapter.getRawDB().update("subscriptions", values, where,
-				whereArgs);
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+		int count = db.update("subscriptions", values, where, whereArgs);
 		getContext().getContentResolver().notifyChange(uri, null);
 		getContext().getContentResolver().notifyChange(URI, null);
 		return count;
@@ -152,7 +153,9 @@ public class SubscriptionProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
-		long id = _dbAdapter.getRawDB().insert("subscriptions", null, values);
+
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+		long id = db.insert("subscriptions", null, values);
 		getContext().getContentResolver().notifyChange(URI, null);
 		return ContentUris.withAppendedId(URI, id);
 	}
@@ -176,7 +179,8 @@ public class SubscriptionProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
-		int count = _dbAdapter.getRawDB().delete("subscriptions", where, whereArgs);
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+		int count = db.delete("subscriptions", where, whereArgs);
 		getContext().getContentResolver().notifyChange(URI, null);
 		return count;
 	}
