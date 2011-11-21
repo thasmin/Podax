@@ -312,6 +312,8 @@ public class PlayerService extends Service {
 				podcast.setLastPosition(0);
 		} catch (MissingFieldException e) {
 			e.printStackTrace();
+		} finally {
+			c.close();
 		}
 
 		resume();
