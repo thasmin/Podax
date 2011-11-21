@@ -38,7 +38,6 @@ class PodcastDownloader {
 			if (!PodaxApp.ensureWifi(_context))
 				return;
 
-			DBAdapter dbAdapter = DBAdapter.getInstance(_context);
 			Cursor cursor = null;
 			try {
 				_isRunning = true;
@@ -58,7 +57,6 @@ class PodcastDownloader {
 					try {
 						Log.d("Podax", "Downloading " + podcast.getTitle());
 						updateDownloadNotification(podcast, 0);
-						dbAdapter.updateActiveDownloadId(podcast.getId());
 	
 						URL u = new URL(podcast.getMediaUrl());
 						HttpURLConnection c = (HttpURLConnection)u.openConnection();
@@ -97,7 +95,6 @@ class PodcastDownloader {
 					} catch (Exception e) {
 						Log.d("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
 						removeDownloadNotification();
-						dbAdapter.updateActiveDownloadId(null);
 	
 						try {
 							if (instream != null)
@@ -115,7 +112,6 @@ class PodcastDownloader {
 				if (cursor != null)
 					cursor.close();
 				removeDownloadNotification();
-				dbAdapter.updateActiveDownloadId(null);
 
 				_isRunning = false;
 			}
