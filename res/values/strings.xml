@@ -44,4 +44,7 @@
 	    ]]>
 	</string>
 	<string name="about_podax">About Podax</string>
+	<string name="download_only_on_wifi">Podax is set to only download podcasts when on Wi-fi.</string>
+	<string name="download_anytime">Podax is set to download podcasts when connected to any network.</string>
+	<string name="no_downloads">There are no podcasts in the queue that were not downloaded.</string>
 </resources>

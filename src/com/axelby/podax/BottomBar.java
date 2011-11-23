@@ -27,6 +27,8 @@ public class BottomBar extends LinearLayout {
 	public BottomBar(Context context) {
 		super(context);
 		
+		if (isInEditMode())
+			return;
 		loadViews(context);
 		setupHandler();
 	}

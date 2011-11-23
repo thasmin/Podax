@@ -4,10 +4,12 @@ import java.io.File;
 
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +28,8 @@ public class ActiveDownloadListActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.downloads_list);
+
+		updateWifiNotice();
 		
 		Runnable refresher = new Runnable() {
 			public void run() {
@@ -46,6 +50,18 @@ public class ActiveDownloadListActivity extends ListActivity {
 			}
 		};
 		refresher.run();
+	}
+
+	@Override
+	protected void onResume() {
+		updateWifiNotice();
+		super.onResume();
+	}
+
+	public void updateWifiNotice() {
+		boolean wifiOnly = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("wifiPref", true);
+		TextView wifiNotice = (TextView) findViewById(R.id.wifinotice);
+		wifiNotice.setText(wifiOnly ? R.string.download_only_on_wifi : R.string.download_anytime);
 	}
 
 	public class ActiveDownloadAdapter extends ResourceCursorAdapter {
@@ -96,7 +112,8 @@ public class ActiveDownloadListActivity extends ListActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, 0, 0, "Restart Downloader");
+		menu.add(Menu.NONE, 0, Menu.NONE, "Restart Downloader");
+		menu.add(Menu.NONE, 1, Menu.NONE, R.string.preferences);
 		return true;
 	}
 
@@ -105,6 +122,9 @@ public class ActiveDownloadListActivity extends ListActivity {
 		switch (item.getItemId()) {
 		case 0:
 			UpdateService.downloadPodcasts(this);
+			break;
+		case 1:
+			startActivity(new Intent(this, Preferences.class));
 			break;
 		default:
 			return super.onContextItemSelected(item);

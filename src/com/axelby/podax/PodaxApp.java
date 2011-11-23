@@ -141,7 +141,7 @@ public class PodaxApp extends Application {
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		if (netInfo == null || !netInfo.isConnectedOrConnecting())
 			return false;
-		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("wifiPref", false) &&
+		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("wifiPref", true) &&
 				netInfo.getType() != ConnectivityManager.TYPE_WIFI)
 		{
 			Log.d("Podax", "Not downloading because Wifi is required and not connected");

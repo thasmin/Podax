@@ -3,7 +3,7 @@
   <PreferenceCategory android:title="Preferences">
     <CheckBoxPreference
             android:title="Wi-Fi Only"
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:summary="Only update subscriptions or download podcasts while connected to a Wi-Fi network"
             android:key="wifiPref" />
 
