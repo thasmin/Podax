@@ -220,7 +220,8 @@ class SubscriptionUpdater {
 					// finish grabbing subscription values and update
 					if (lastBuildDate != null)
 						subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_MODIFIED, lastBuildDate.getTime() / 1000);
-					subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, response.getLastHeader("ETag").getValue());
+					if (response.getLastHeader("ETag") != null)
+						subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, response.getLastHeader("ETag").getValue());
 					subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
 					_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
 				}
