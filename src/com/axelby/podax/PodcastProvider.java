@@ -3,6 +3,8 @@ package com.axelby.podax;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 import android.content.ContentProvider;
@@ -236,10 +238,7 @@ public class PodcastProvider extends ContentProvider {
 		values.remove(COLUMN_SUBSCRIPTION_TITLE);
 
 		// update queuePosition separately
-		boolean notifyQueue = false;
 		if (values.containsKey(COLUMN_QUEUE_POSITION)) {
-			notifyQueue = true;
-
 			// get the new position
 			Integer newPosition = values.getAsInteger(COLUMN_QUEUE_POSITION);
 			values.remove(COLUMN_QUEUE_POSITION);
@@ -253,9 +252,6 @@ public class PodcastProvider extends ContentProvider {
 		if (values.size() > 0)
 			count += db.update("podcasts", values, where, whereArgs);
 		getContext().getContentResolver().notifyChange(uri, null);
-		if (notifyQueue)
-			getContext().getContentResolver().notifyChange(
-					Uri.withAppendedPath(URI, "queue"), null);
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(
 					Uri.withAppendedPath(URI, "to_download"), null);
@@ -324,6 +320,8 @@ public class PodcastProvider extends ContentProvider {
 		// update specified podcast
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
 				new Object[] { newPosition, podcastId });
+		getContext().getContentResolver().notifyChange(
+				Uri.withAppendedPath(URI, "queue"), null);
 	}
 
 	@Override
@@ -346,8 +344,17 @@ public class PodcastProvider extends ContentProvider {
 		if (podcastId != null)
 			db.update("podcasts", values, COLUMN_ID + " = ?",
 					new String[] { String.valueOf(podcastId) });
-		else
+		else {
 			podcastId = db.insert("podcasts", null, values);
+			// if the new podcast is less than 5 days old, add it to the queue
+			if (values.containsKey(COLUMN_PUB_DATE)) {
+				Calendar c = Calendar.getInstance();
+				c.add(Calendar.DATE, -5);
+				if (new Date(values.getAsLong(COLUMN_PUB_DATE) / 1000).after(c.getTime())) {
+					updateQueuePosition(String.valueOf(podcastId), Integer.MAX_VALUE);
+				}
+			}
+		}
 
 		getContext().getContentResolver().notifyChange(uri, null);
 		return PodcastProvider.getContentUri(podcastId);
