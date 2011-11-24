@@ -111,7 +111,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		if (position == 1) {
 			FileFilter fileFilter = new FileFilter() {
 				public boolean accept(File pathname) {
-					return pathname.equals("podcasts.opml");
+					return pathname.getName().equals("podcasts.opml");
 				}
 			};
 			File externalStorageDir = Environment.getExternalStorageDirectory();
@@ -121,13 +121,27 @@ public class ImportSubscriptionActivity extends ListActivity {
 				Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 				return;
 			}
-			//new OPMLImporter(this).read(opmlFiles[0]);
+
+			try {
+				int newSubscriptions = OPMLImporter.read(this, opmlFiles[0]);
+				String message = "Found " + newSubscriptions + " subscriptions.";
+				Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+				finish();
+				startActivity(new Intent(this, SubscriptionListActivity.class));
+			} catch (IOException e) {
+				String message = "There was an error while reading the OPML file.";
+				Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+			} catch (SAXException e) {
+				String message = "The podcasts.opml file is not valid OPML.";
+				Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+			}
 			return;
 		}
 		
 		if (position >= GOOGLE_ACCOUNT_START) {
 			_chosenAccount = _googleAccounts[position - GOOGLE_ACCOUNT_START];
 			getAuthToken();
+			return;
 		}
 
 		super.onListItemClick(l, v, position, id);
