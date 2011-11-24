@@ -1,5 +1,7 @@
 package com.axelby.podax;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -25,6 +27,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.sax.Element;
 import android.sax.ElementListener;
 import android.sax.EndTextElementListener;
@@ -48,7 +51,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 	private Account[] _googleAccounts;
 	private Account _chosenAccount;
 
-	private final int GOOGLE_ACCOUNT_START = 2;
+	private final int GOOGLE_ACCOUNT_START = 3;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -76,8 +79,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-    	if (position == 0)
-    	{
+		if (position == 0) {
     		AlertDialog.Builder alert = new AlertDialog.Builder(this);
     		alert.setTitle("Podcast URL");
     		alert.setMessage("Type the URL of the podcast RSS");
@@ -105,6 +107,23 @@ public class ImportSubscriptionActivity extends ListActivity {
     		alert.show();
     		return;
     	}
+
+		if (position == 1) {
+			FileFilter fileFilter = new FileFilter() {
+				public boolean accept(File pathname) {
+					return pathname.equals("podcasts.opml");
+				}
+			};
+			File externalStorageDir = Environment.getExternalStorageDirectory();
+			File[] opmlFiles = externalStorageDir.listFiles(fileFilter);
+			if (opmlFiles.length == 0) {
+				String message = "The OPML file must be at " + externalStorageDir.getAbsolutePath() + "/podcasts.opml.";
+				Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+				return;
+			}
+			//new OPMLImporter(this).read(opmlFiles[0]);
+			return;
+		}
 		
 		if (position >= GOOGLE_ACCOUNT_START) {
 			_chosenAccount = _googleAccounts[position - GOOGLE_ACCOUNT_START];
@@ -129,7 +148,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 
 		public Object getItem(int position) {
-			if (position == 1)
+			if (position < GOOGLE_ACCOUNT_START)
 				return null;
 			return _googleAccounts[position - GOOGLE_ACCOUNT_START];
 		}
@@ -141,19 +160,17 @@ public class ImportSubscriptionActivity extends ListActivity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			if (position == 0) {
 				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
-				view.setText("Add RSS feed");
+				view.setText(R.string.add_rss_feed);
 				return view;
 			}
-
-			/*
-			if (position == 0) {
-				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
-				view.setText("Import from OPML file");
-				return view;
-			}
-			*/
 
 			if (position == 1) {
+				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
+				view.setText(R.string.add_from_opml_file);
+				return view;
+			}
+
+			if (position == GOOGLE_ACCOUNT_START - 1) {
 				TextView view = new TextView(ImportSubscriptionActivity.this);
 				view.setTextAppearance(ImportSubscriptionActivity.this, android.R.style.TextAppearance_Medium);
 				view.setBackgroundDrawable(getResources().getDrawable(R.drawable.back));
