@@ -28,7 +28,7 @@
 	<string name="refresh_subscriptions">Refresh Subscriptions</string>
 	<string name="active_downloads">Active Downloads</string>
 	<string name="podcast_not_downloaded">This podcast has not been downloaded.</string>
-	<string name="import_subscriptions">Import Subscriptions</string>
+	<string name="import_subscriptions">Add Subscriptions</string>
 	<string name="search">Search</string>
 	<string name="preferences">Preferences</string>
 	<string name="about_content">

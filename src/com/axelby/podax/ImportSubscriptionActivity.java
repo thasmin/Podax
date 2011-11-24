@@ -48,6 +48,8 @@ public class ImportSubscriptionActivity extends ListActivity {
 	private Account[] _googleAccounts;
 	private Account _chosenAccount;
 
+	private final int GOOGLE_ACCOUNT_START = 2;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -104,8 +106,8 @@ public class ImportSubscriptionActivity extends ListActivity {
     		return;
     	}
 		
-		if (position >= 2) {
-			_chosenAccount = _googleAccounts[position - 2];
+		if (position >= GOOGLE_ACCOUNT_START) {
+			_chosenAccount = _googleAccounts[position - GOOGLE_ACCOUNT_START];
 			getAuthToken();
 		}
 
@@ -121,13 +123,15 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 		
 		public int getCount() {
-			return _googleAccounts.length == 0 ? 2 : _googleAccounts.length + 2;
+			return _googleAccounts.length == 0 ?
+					GOOGLE_ACCOUNT_START :
+					_googleAccounts.length + GOOGLE_ACCOUNT_START;
 		}
 
 		public Object getItem(int position) {
 			if (position == 1)
 				return null;
-			return _googleAccounts[position - 2];
+			return _googleAccounts[position - GOOGLE_ACCOUNT_START];
 		}
 
 		public long getItemId(int position) {
@@ -158,7 +162,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 			}
 
 			TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
-			view.setText(_googleAccounts[position - 2].name);
+			view.setText(_googleAccounts[position - GOOGLE_ACCOUNT_START].name);
 			return view;
 		}
 
@@ -167,7 +171,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 
 		public boolean isEnabled(int position) {
-			return position != 1;
+			return position != GOOGLE_ACCOUNT_START - 1;
 		}
 	}
 

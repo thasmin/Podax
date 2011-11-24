@@ -350,7 +350,7 @@ public class PodcastProvider extends ContentProvider {
 			if (values.containsKey(COLUMN_PUB_DATE)) {
 				Calendar c = Calendar.getInstance();
 				c.add(Calendar.DATE, -5);
-				if (new Date(values.getAsLong(COLUMN_PUB_DATE) / 1000).after(c.getTime())) {
+				if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {
 					updateQueuePosition(String.valueOf(podcastId), Integer.MAX_VALUE);
 				}
 			}
