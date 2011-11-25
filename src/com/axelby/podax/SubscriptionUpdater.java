@@ -103,125 +103,126 @@ class SubscriptionUpdater {
 							SubscriptionProvider.COLUMN_ETAG,
 							SubscriptionProvider.COLUMN_LAST_MODIFIED,
 					};
-					Cursor c = _context.getContentResolver().query(subscriptionUri, projection, null, null, null);
-					if (c.isAfterLast())
-						continue;
-					c.moveToNext();
-					SubscriptionCursor subscription = new SubscriptionCursor(_context, c);
-
-					HttpGet request = new HttpGet(subscription.getUrl());
-					if (subscription.getETag() != null)
-						request.addHeader("If-None-Match", subscription.getETag());
-					if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
-						SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-						request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
-					}
-					HttpClient client = new DefaultHttpClient();
-					HttpResponse response = client.execute(request);
-					
-					int code = response.getStatusLine().getStatusCode();
-					if (code == 304) {
-						// content not modified
-						c.close();
-						continue;
-					}
-
-					if (response.containsHeader("ETag") && response.getLastHeader("ETag").getValue().equals(subscription.getETag())) {
-						c.close();
-						continue;
-					}
-
-					updateUpdateNotification(subscription, "Downloading Feed");
-					InputStream responseStream = response.getEntity().getContent();
-					if (responseStream == null) {
-						showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
-						c.close();
-						continue;
-					} 
 
 					Date lastBuildDate = null;
-					
 					ContentValues subscriptionValues = new ContentValues();
-					XmlPullParser parser = Xml.newPullParser();
-					parser.setInput(responseStream, null);
-					int eventType = parser.getEventType();
+					String eTag = null;
 
-					// look for subscription details, stop at item tag
-					for (; eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
-						if (eventType != XmlPullParser.START_TAG)
+					Cursor c = _context.getContentResolver().query(subscriptionUri, projection, null, null, null);
+					try {
+						if (c.isAfterLast())
+							continue;
+						c.moveToNext();
+						SubscriptionCursor subscription = new SubscriptionCursor(_context, c);
+
+						HttpGet request = new HttpGet(subscription.getUrl());
+						if (subscription.getETag() != null)
+							request.addHeader("If-None-Match", subscription.getETag());
+						if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
+							SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+							request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
+						}
+						HttpClient client = new DefaultHttpClient();
+						HttpResponse response = client.execute(request);
+
+						int code = response.getStatusLine().getStatusCode();
+						// check for content not modified
+						if (code == 304)
 							continue;
 
-						String name = parser.getName();
-						// if we're starting an item, move past the subscription details section
-						if (name.equals("item")) {
-							break;
-						} else if (name.equalsIgnoreCase("lastBuildDate")) {
-							String date = parser.nextText();
-							SimpleDateFormat format = findMatchingDateFormat(rfc822DateFormats, date);
-							if (format != null) {
-								lastBuildDate = format.parse(date);
-								if (subscription.getLastModified() != null &&
-										lastBuildDate.getTime() == subscription.getLastModified().getTime()) {
-									eventType = XmlPullParser.END_DOCUMENT;
-									break;
+						if (response.containsHeader("ETag"))
+							eTag = response.getLastHeader("ETag").getValue();
+						if (eTag != null && eTag.equals(subscription.getETag()))
+							continue;
+
+						updateUpdateNotification(subscription, "Downloading Feed");
+						InputStream responseStream = response.getEntity().getContent();
+						if (responseStream == null) {
+							showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
+							continue;
+						}
+
+						XmlPullParser parser = Xml.newPullParser();
+						parser.setInput(responseStream, null);
+						int eventType = parser.getEventType();
+
+						// look for subscription details, stop at item tag
+						for (; eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
+							if (eventType != XmlPullParser.START_TAG)
+								continue;
+
+							String name = parser.getName();
+							// if we're starting an item, move past the subscription details section
+							if (name.equals("item")) {
+								break;
+							} else if (name.equalsIgnoreCase("lastBuildDate")) {
+								String date = parser.nextText();
+								SimpleDateFormat format = findMatchingDateFormat(rfc822DateFormats, date);
+								if (format != null) {
+									lastBuildDate = format.parse(date);
+									if (subscription.getLastModified() != null &&
+											lastBuildDate.getTime() == subscription.getLastModified().getTime()) {
+										eventType = XmlPullParser.END_DOCUMENT;
+										break;
+									}
+								}
+							} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
+								subscriptionValues.put(SubscriptionProvider.COLUMN_TITLE, parser.nextText());
+							} else if (name.equalsIgnoreCase("thumbnail") &&
+									parser.getNamespace() == NAMESPACE_MEDIA) {
+								String thumbnail = parser.getAttributeValue(null, "url");
+								subscriptionValues.put(SubscriptionProvider.COLUMN_THUMBNAIL, thumbnail);
+								downloadThumbnail(subscriptionId, thumbnail);
+							} else if (name.equalsIgnoreCase("image") &&
+									parser.getNamespace() == NAMESPACE_ITUNES) {
+								String thumbnail = parser.getAttributeValue(null, "href");
+								subscriptionValues.put(SubscriptionProvider.COLUMN_THUMBNAIL, thumbnail);
+								downloadThumbnail(subscriptionId, thumbnail);
+							}
+						}
+
+						// grab podcasts from item tags
+						ContentValues podcastValues = null;
+						for (; eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
+							if (eventType == XmlPullParser.START_TAG) {
+								String name = parser.getName();
+								if (name.equalsIgnoreCase("item")) {
+									podcastValues = new ContentValues();
+									podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
+								} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
+									podcastValues.put(PodcastProvider.COLUMN_TITLE, parser.nextText());
+								} else if (name.equalsIgnoreCase("link")) {
+									podcastValues.put(PodcastProvider.COLUMN_LINK, parser.nextText());
+								} else if (name.equalsIgnoreCase("description")) {
+									podcastValues.put(PodcastProvider.COLUMN_DESCRIPTION, parser.nextText());
+								} else if (name.equalsIgnoreCase("pubDate")) {
+									Date pubDate = rssDateFormat.parse(parser.nextText());
+									podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, pubDate.getTime() / 1000);
+								} else if (name.equalsIgnoreCase("enclosure")) {
+									podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, Long.valueOf(parser.getAttributeValue(null, "length")));
+									podcastValues.put(PodcastProvider.COLUMN_MEDIA_URL, parser.getAttributeValue(null, "url"));
+								}
+							} else if (eventType == XmlPullParser.END_TAG) {
+								String name = parser.getName();
+								if (name.equalsIgnoreCase("item")) {
+									String mediaUrl = podcastValues.getAsString(PodcastProvider.COLUMN_MEDIA_URL);
+									if (mediaUrl != null && mediaUrl.length() > 0)
+										_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
+									podcastValues = null;
 								}
 							}
-						} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
-							subscriptionValues.put(SubscriptionProvider.COLUMN_TITLE, parser.nextText());
-						} else if (name.equalsIgnoreCase("thumbnail") &&
-								parser.getNamespace() == NAMESPACE_MEDIA) {
-							String thumbnail = parser.getAttributeValue(null, "url");
-							subscriptionValues.put(SubscriptionProvider.COLUMN_THUMBNAIL, thumbnail);
-							downloadThumbnail(subscriptionId, thumbnail);
-						} else if (name.equalsIgnoreCase("image") &&
-								parser.getNamespace() == NAMESPACE_ITUNES) {
-							String thumbnail = parser.getAttributeValue(null, "href");
-							subscriptionValues.put(SubscriptionProvider.COLUMN_THUMBNAIL, thumbnail);
-							downloadThumbnail(subscriptionId, thumbnail);
 						}
+
+						updateUpdateNotification(subscription, "Saving...");
+					} finally {
+						c.close();
 					}
-
-					// grab podcasts from item tags
-					ContentValues podcastValues = null;
-					for (; eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
-						if (eventType == XmlPullParser.START_TAG) {
-							String name = parser.getName();
-							if (name.equalsIgnoreCase("item")) {
-								podcastValues = new ContentValues();
-								podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
-							} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
-								podcastValues.put(PodcastProvider.COLUMN_TITLE, parser.nextText());
-							} else if (name.equalsIgnoreCase("link")) {
-								podcastValues.put(PodcastProvider.COLUMN_LINK, parser.nextText());
-							} else if (name.equalsIgnoreCase("description")) {
-								podcastValues.put(PodcastProvider.COLUMN_DESCRIPTION, parser.nextText());
-							} else if (name.equalsIgnoreCase("pubDate")) {
-								Date pubDate = rssDateFormat.parse(parser.nextText());
-								podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, pubDate.getTime() / 1000);
-							} else if (name.equalsIgnoreCase("enclosure")) {
-								podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, Long.valueOf(parser.getAttributeValue(null, "length")));
-								podcastValues.put(PodcastProvider.COLUMN_MEDIA_URL, parser.getAttributeValue(null, "url"));
-							}
-						} else if (eventType == XmlPullParser.END_TAG) {
-							String name = parser.getName();
-							if (name.equalsIgnoreCase("item")) {
-								String mediaUrl = podcastValues.getAsString(PodcastProvider.COLUMN_MEDIA_URL);
-								if (mediaUrl != null && mediaUrl.length() > 0)
-									_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
-								podcastValues = null;
-							}
-						}
-					}
-
-					updateUpdateNotification(subscription, "Saving...");
-
-					c.close();
 
 					// finish grabbing subscription values and update
 					if (lastBuildDate != null)
 						subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_MODIFIED, lastBuildDate.getTime() / 1000);
-					if (response.getLastHeader("ETag") != null)
-						subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, response.getLastHeader("ETag").getValue());
+					if (eTag != null)
+						subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
 					subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
 					_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
 				}
