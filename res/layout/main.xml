@@ -79,6 +79,23 @@
 					  android:layout_toRightOf="@id/readerimport_img" />
 		</RelativeLayout>
 
+		<RelativeLayout android:id="@+id/discover"
+						android:layout_width="fill_parent"
+						android:layout_height="wrap_content"
+						android:paddingTop="10dp"
+						android:paddingBottom="10dp" 
+						android:paddingLeft="20dp"
+						android:paddingRight="0dp">
+			<ImageView android:id="@+id/discover_img"
+					   android:layout_width="64px"
+					   android:layout_height="64px"
+					   android:src="@drawable/globe"/>
+			<TextView android:id="@+id/discover_text"
+			    	  style="@style/mainText"
+					  android:text="@string/discover_subscriptions"
+					  android:layout_toRightOf="@+id/discover_img" />
+		</RelativeLayout>
+
 		<RelativeLayout android:id="@+id/activedownloads"
 						android:layout_width="fill_parent"
 						android:layout_height="wrap_content"
@@ -113,7 +130,7 @@
 					  android:layout_toRightOf="@+id/about_img" />
 		</RelativeLayout>
 	</LinearLayout>
-	
+
 	<com.axelby.podax.BottomBar android:id="@+id/bottombar"
 	    						android:layout_width="fill_parent"
 	    						android:layout_height="wrap_content"
