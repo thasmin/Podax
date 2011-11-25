@@ -38,6 +38,8 @@ public class BottomBar extends LinearLayout {
 		
 		LayoutInflater.from(context).inflate(R.layout.player, this);
 		
+		if (isInEditMode())
+			return;
 		loadViews(context);
 		setupHandler();
 	}
