@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class DiscoverActivity extends ListActivity {
@@ -19,9 +20,41 @@ public class DiscoverActivity extends ListActivity {
 		setListAdapter(new DiscoverAdapter());
 	}
 
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		if (id == 0L) {
+			super.onListItemClick(l, v, position, id);
+			return;
+		}
+
+		/*
+		Intent intent = new Intent(this, ITunesRSSActivity.class);
+		intent.putExtra(Constants.EXTRA_CATEGORY, id);
+		startActivity(intent);
+		*/
+	}
 
 	public class DiscoverAdapter extends BaseAdapter {
 		private LayoutInflater _inflater;
+
+		private int[] categoryCodes = {
+				1301, // Arts
+				1321, // Business
+				1303, // Comedy
+				1304, // Education
+				1323, // Games & Hobbies
+				1325, // Government & Organizations
+				1307, // Health
+				1305, // Kids & Family
+				1310, // Music
+				1311, // News & Politics
+				1314, // Religion & Spirituality
+				1315, // Science & Medicine
+				1324, // Society & Culture
+				1316, // Sports & Recreation
+				1318, // Technology
+				1309, // TV & Film
+		};
 		private String[] options = { "Popular iTunes Feeds",
 				"Arts",
 				"Business",
@@ -56,7 +89,9 @@ public class DiscoverActivity extends ListActivity {
 		}
 
 		public long getItemId(int position) {
-			return position;
+			if (position == 0)
+				return 0L;
+			return categoryCodes[position - 1];
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {

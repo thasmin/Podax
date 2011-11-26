@@ -12,6 +12,7 @@ public class Constants {
 	
 	public static final String EXTRA_PODCAST_ID = "com.axelby.podax.podcastId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
+	public static final String EXTRA_CATEGORY = "com.axelby.podax.category";
 
 	public static final String EXTRA_PLAYER_COMMAND = "com.axelby.podax.player_command";
 	public static final String EXTRA_PLAYER_COMMAND_ARG = "com.axelby.podax.player_command_arg";
