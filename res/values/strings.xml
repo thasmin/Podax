@@ -50,4 +50,6 @@
 	<string name="add_rss_feed">Add RSS feed</string>
 	<string name="add_from_opml_file">Add from OPML file</string>
 	<string name="discover_subscriptions">Discover Subscriptions</string>
+	<string name="popular_subscription_title">Popular Subscription</string>
+	<string name="add_subscription">Add Subscription</string>
 </resources>

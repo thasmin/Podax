@@ -11,20 +11,19 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.sax.ElementListener;
 import android.sax.RootElement;
+import android.sax.StartElementListener;
 import android.util.Xml;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 public class PopularPodaxActivity extends ListActivity {
 
 	private class PodaxFeed {
-		// public int count;
 		public String title;
 		public String url;
 
@@ -47,15 +46,12 @@ public class PopularPodaxActivity extends ListActivity {
 			protected Vector<PodaxFeed> doInBackground(Void... params) {
 				final Vector<PodaxFeed> feeds = new Vector<PodaxFeed>();
 				RootElement root = new RootElement("feeds");
-				root.getChild("feed").setElementListener(new ElementListener() {
+				root.getChild("feed").setStartElementListener(new StartElementListener() {
 					public void start(Attributes attrs) {
 						PodaxFeed feed = new PodaxFeed();
-						// feed.count = Integer.valueOf(attrs.getValue("count"));
 						feed.title = attrs.getValue("title");
 						feed.url = attrs.getValue("url");
 						feeds.add(feed);
-					}
-					public void end() {
 					}
 				});
 
@@ -85,8 +81,11 @@ public class PopularPodaxActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		PodaxFeed feed = (PodaxFeed) l.getItemAtPosition(position);
-		Toast.makeText(this, feed.url, Toast.LENGTH_SHORT).show();
-		super.onListItemClick(l, v, position, id);
+
+		Intent intent = new Intent(this, PopularSubscriptionActivity.class);
+		intent.putExtra(Constants.EXTRA_TITLE, feed.title);
+		intent.putExtra(Constants.EXTRA_URL, feed.url);
+		startActivity(intent);
 	}
 
 }

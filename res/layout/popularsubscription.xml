@@ -1,0 +1,41 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent"
+				android:orientation="vertical">
+	<com.axelby.podax.TopBar android:id="@+id/topbar"
+							 android:layout_width="fill_parent"
+							 android:layout_height="50dp"
+							 android:layout_alignParentTop="true" />
+	<LinearLayout android:orientation="vertical"
+				  android:layout_width="fill_parent"
+				  android:layout_height="fill_parent"
+				  android:layout_below="@id/topbar"
+				  android:layout_above="@id/bottombar">
+
+		<TextView
+		    android:id="@+id/title"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_gravity="center_horizontal"
+		    android:text=""
+		    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+		<Button
+		    android:id="@+id/add_subscription"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_gravity="center_horizontal"
+		    android:text="@string/add_subscription" />
+
+		<TextView
+		    android:id="@+id/description"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:text="" />
+
+	</LinearLayout>
+	<com.axelby.podax.BottomBar android:id="@+id/bottombar"
+								android:layout_width="fill_parent"
+								android:layout_height="wrap_content"
+								android:layout_alignParentBottom="true" />
+</RelativeLayout>

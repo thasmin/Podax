@@ -93,7 +93,10 @@
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".ITunesActivity" />
 		<activity android:name=".PopularPodaxActivity" />
-						
+		<activity android:name=".PopularSubscriptionActivity"
+				  android:label="@string/popular_subscription_title"
+				  android:theme="@android:style/Theme.Black.NoTitleBar" />
+
 		<service android:name=".UpdateService" />
 		<service android:name=".PlayerService" />
 
