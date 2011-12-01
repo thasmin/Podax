@@ -26,7 +26,10 @@ public class DiscoverActivity extends TabActivity {
 		tabHost.addTab(spec);
 
 	    intent = new Intent().setClass(this, ITunesActivity.class);
-		spec = tabHost.newTabSpec("itunes").setIndicator("iTunes")
+		spec = tabHost
+				.newTabSpec("itunes")
+				.setIndicator("iTunes",
+						getResources().getDrawable(R.drawable.ic_tab_apple))
 				.setContent(intent);
 	    tabHost.addTab(spec);
 	}
