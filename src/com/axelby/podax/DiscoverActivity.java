@@ -18,7 +18,10 @@ public class DiscoverActivity extends TabActivity {
 	    Intent intent;
 
 	    intent = new Intent().setClass(this, PopularPodaxActivity.class);
-		spec = tabHost.newTabSpec("podax").setIndicator("Podax")
+		spec = tabHost
+				.newTabSpec("podax")
+				.setIndicator("Podax",
+						getResources().getDrawable(R.drawable.ic_tab_podax))
 				.setContent(intent);
 		tabHost.addTab(spec);
 
