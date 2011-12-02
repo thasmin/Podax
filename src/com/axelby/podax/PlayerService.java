@@ -28,11 +28,12 @@ public class PlayerService extends Service {
 		}
 	}
 
+	protected static int _lastPosition = 0;
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
-			int _oldPosition = _lastPosition;
+			int oldPosition = _lastPosition;
 			_lastPosition = _player.getCurrentPosition();
-			if (_oldPosition / 1000 != _lastPosition / 1000)
+			if (oldPosition / 1000 != _lastPosition / 1000)
 				updateActivePodcastPosition();
 		}
 	}
@@ -51,11 +52,6 @@ public class PlayerService extends Service {
 		return _isPlaying;
 	}
 
-	protected static int _lastPosition = 0;
-	public static int getLastPosition() {
-		return _lastPosition;
-	}
-	
 	@Override
 	public IBinder onBind(Intent intent) {
 		handleIntent(intent);
@@ -75,7 +71,7 @@ public class PlayerService extends Service {
 		verifyPodcastReady();
 
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-		
+
 		// may or may not be creating the service
 		if (_telephony == null) {
 			_telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -309,23 +305,6 @@ public class PlayerService extends Service {
 			return;
 		}
 
-		// if the podcast has ended and it's back in the queue, restart it
-		String[] projection = {
-				PodcastProvider.COLUMN_DURATION,
-				PodcastProvider.COLUMN_LAST_POSITION,
-		};
-		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
-		c.moveToNext();
-		PodcastCursor podcast = new PodcastCursor(this, c);
-		try {
-			if (podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000)
-				podcast.setLastPosition(0);
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
-		} finally {
-			c.close();
-		}
-
 		resume();
 	}
 
@@ -362,6 +341,24 @@ public class PlayerService extends Service {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_ID, activePodcastId);
 		getContentResolver().update(_activePodcastUri, values, null, null);
+
+		// if the podcast has ended and it's back in the queue, restart it
+		String[] projection = {
+				PodcastProvider.COLUMN_DURATION,
+				PodcastProvider.COLUMN_LAST_POSITION,
+		};
+		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
+		c.moveToNext();
+		PodcastCursor podcast = new PodcastCursor(this, c);
+		try {
+			if (podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000)
+				podcast.setLastPosition(0);
+		} catch (MissingFieldException e) {
+			e.printStackTrace();
+		} finally {
+			c.close();
+		}
+
 	}
 
 	public Long verifyPodcastReady() {
