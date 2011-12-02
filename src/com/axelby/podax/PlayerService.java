@@ -221,8 +221,10 @@ public class PlayerService extends Service {
 			}
 
 			// don't update the podcast position while the player is reset
-			if (_updatePlayerPositionTimerTask != null)
+			if (_updatePlayerPositionTimerTask != null) {
 				_updatePlayerPositionTimerTask.cancel();
+				_updatePlayerPositionTimerTask = null;
+			}
 
 			_player.reset();
 			_player.setDataSource(p.getFilename());
@@ -290,6 +292,14 @@ public class PlayerService extends Service {
 
 	private void playNextPodcast() {
 		Log.d("Podax", "moving to next podcast");
+
+		// stop the player and the updating while we do some administrative stuff
+		_player.pause();
+		if (_updatePlayerPositionTimerTask != null) {
+			_updatePlayerPositionTimerTask.cancel();
+			_updatePlayerPositionTimerTask = null;
+		}
+		updateActivePodcastPosition();
 
 		Long activePodcastId = moveToNextInQueue();
 
