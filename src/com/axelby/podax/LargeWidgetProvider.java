@@ -32,11 +32,15 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 				setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYPAUSE);
 				setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
 				setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
-		
+
 				Intent showIntent = new Intent(context, PodcastDetailActivity.class);
 				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
-	
+
+				Intent queueIntent = new Intent(context, QueueActivity.class);
+				PendingIntent queuePendingIntent = PendingIntent.getActivity(context, 0, queueIntent, 0);
+				views.setOnClickPendingIntent(R.id.queue_btn, queuePendingIntent);
+
 				_init.add(appWidgetIds[0]);
 			}
 	
