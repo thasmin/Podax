@@ -188,7 +188,7 @@ class SubscriptionUpdater {
 							for (; eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
 								if (eventType == XmlPullParser.START_TAG) {
 									String name = parser.getName();
-									String namespace = parser.getName();
+									String namespace = parser.getNamespace();
 									if (name.equalsIgnoreCase("item")) {
 										podcastValues = new ContentValues();
 										podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
