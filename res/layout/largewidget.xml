@@ -38,7 +38,12 @@
 		
 		<ImageButton android:id="@+id/show_btn" android:layout_alignParentRight="true"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_centerVertical="true" android:src="@drawable/ic_btn_round_more_normal"
+			android:layout_alignParentTop="true" android:src="@drawable/ic_widget_bouncearrow"
+			android:background="@android:color/transparent" />
+
+		<ImageButton android:id="@+id/queue_btn" android:layout_alignParentRight="true"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:layout_below="@+id/show_btn" android:src="@drawable/ic_widget_q"
 			android:background="@android:color/transparent" />
 			
 	</RelativeLayout>

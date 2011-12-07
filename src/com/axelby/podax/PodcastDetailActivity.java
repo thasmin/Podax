@@ -157,12 +157,13 @@ public class PodcastDetailActivity extends Activity {
 						Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 						if (c.moveToNext())
 							activeId = c.getLong(0);
-						c.close();
 
 						if (PlayerService.isPlaying() && activeId != null && activeId == _podcast.getId())
 							_app.pause();
 						else
 							_app.play(_podcast);
+
+						c.close();
 					} catch (MissingFieldException e) {
 						e.printStackTrace();
 					}
@@ -216,15 +217,19 @@ public class PodcastDetailActivity extends Activity {
 
 	boolean _controlsEnabled = true;
 	private void updatePlayerControls(boolean force) throws MissingFieldException {
-		String[] projection = new String[] { PodcastProvider.COLUMN_ID };
+		String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_LAST_POSITION,
+				PodcastProvider.COLUMN_DURATION,
+		};
 		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 		PodcastCursor p = new PodcastCursor(this, c);
 
-		if (PlayerService.isPlaying() && p != null && p.getId() == _podcast.getId()) {
+		if (!p.isNull() && p.getId().equals(_podcast.getId())) {
 			if (!_seekbar_dragging) {
-				_position.setText(PodaxApp.getTimeString(PlayerService.getLastPosition()));
+				_position.setText(PodaxApp.getTimeString(p.getLastPosition()));
 				_duration.setText(PodaxApp.getTimeString(p.getDuration()));
-				_seekbar.setProgress(PlayerService.getLastPosition());
+				_seekbar.setProgress(p.getLastPosition());
 			}
 
 			if (!force && _controlsEnabled == true)
