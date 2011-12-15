@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
@@ -91,10 +90,7 @@ public class PodcastDetailActivity extends Activity {
 				@Override
 				public void onChange(boolean selfChange) {
 					super.onChange(selfChange);
-					if (!_cursor.isClosed())
-						_cursor.close();
-					Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
-					_cursor = managedQuery(uri, _projection, null, null, null);
+
 					_podcast = new PodcastCursor(PodcastDetailActivity.this, _cursor);
 					try {
 						updateQueueViews();
@@ -105,13 +101,13 @@ public class PodcastDetailActivity extends Activity {
 				}
 			}
 			_podcast.registerContentObserver(new PodcastObserver(_handler));
-	
+
 	        setTitle(_podcast.getTitle());
 	        setContentView(R.layout.podcast_detail);
-	
+
 			_subscriptionTitleView = (TextView)findViewById(R.id.subscription_title);
 			_subscriptionTitleView.setText(_podcast.getSubscriptionTitle());
-			
+
 			_descriptionView = (WebView)findViewById(R.id.description);
 			String html = "<html><head><style type=\"text/css\">" +
 					"a { color: #E59F39 }" +
@@ -119,7 +115,7 @@ public class PodcastDetailActivity extends Activity {
 					"<body style=\"background:black;color:white\">" + _podcast.getDescription() + "</body></html>"; 
 			_descriptionView.loadData(html, "text/html", "utf-8");
 			_descriptionView.setBackgroundColor(Color.BLACK);
-	
+
 			_queuePosition = (TextView)findViewById(R.id.queue_position);
 			_queueButton = (Button)findViewById(R.id.queue_btn);
 			updateQueueViews();
@@ -135,21 +131,21 @@ public class PodcastDetailActivity extends Activity {
 					}
 				}
 			});
-	
+
 			_restartButton = (ImageButton)findViewById(R.id.restart_btn);
 			_restartButton.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					_app.restart();
 				}
 			});
-			
+
 			_rewindButton = (ImageButton)findViewById(R.id.rewind_btn);
 			_rewindButton.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					_app.skipBack();
 				}
 			});
-	
+
 			_playButton = (ImageButton)findViewById(R.id.play_btn);
 			_playButton.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
@@ -157,15 +153,17 @@ public class PodcastDetailActivity extends Activity {
 						Long activeId = null;
 						String[] projection = new String[] { PodcastProvider.COLUMN_ID };
 						Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
-						if (c.moveToNext())
-							activeId = c.getLong(0);
+						try {
+							if (c.moveToNext())
+								activeId = c.getLong(0);
 
-						if (PlayerService.isPlaying() && activeId != null && activeId == _podcast.getId())
-							_app.pause();
-						else
-							_app.play(_podcast);
-
-						c.close();
+							if (PlayerService.isPlaying() && activeId != null && activeId.equals(_podcast.getId()))
+								_app.pause();
+							else
+								_app.play(_podcast);
+						} finally {
+							c.close();
+						}
 					} catch (MissingFieldException e) {
 						e.printStackTrace();
 					}
@@ -225,41 +223,46 @@ public class PodcastDetailActivity extends Activity {
 				PodcastProvider.COLUMN_DURATION,
 		};
 		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
-		PodcastCursor p = new PodcastCursor(this, c);
+		try {
+			PodcastCursor p = new PodcastCursor(this, c);
 
-		if (!p.isNull() && p.getId().equals(_podcast.getId())) {
-			if (!_seekbar_dragging) {
-				_position.setText(PodaxApp.getTimeString(p.getLastPosition()));
-				_duration.setText(PodaxApp.getTimeString(p.getDuration()));
-				_seekbar.setProgress(p.getLastPosition());
+			if (!p.isNull() && p.getId().equals(_podcast.getId())) {
+				if (!_seekbar_dragging) {
+					_position.setText(PodaxApp.getTimeString(p.getLastPosition()));
+					_duration.setText(PodaxApp.getTimeString(p.getDuration()));
+					_seekbar.setProgress(p.getLastPosition());
+				}
+
+				int playResource = PlayerService.isPlaying() ? android.R.drawable.ic_media_pause
+						: android.R.drawable.ic_media_play;
+				_playButton.setImageResource(playResource);
+
+				if (!force && _controlsEnabled == true)
+					return;
+
+				_restartButton.setEnabled(true);
+				_rewindButton.setEnabled(true);
+				_forwardButton.setEnabled(true);
+				_skipToEndButton.setEnabled(true);
+				_seekbar.setEnabled(true);
+
+				_controlsEnabled = true;
+			} else {
+				if (!force && !_controlsEnabled)
+					return;
+
+				_playButton.setImageResource(android.R.drawable.ic_media_play);
+				_restartButton.setEnabled(false);
+				_rewindButton.setEnabled(false);
+				_forwardButton.setEnabled(false);
+				_skipToEndButton.setEnabled(false);
+				_seekbar.setEnabled(false);
+
+				_controlsEnabled = false;
 			}
-
-			if (!force && _controlsEnabled == true)
-				return;
-			
-	    	_playButton.setImageResource(android.R.drawable.ic_media_pause);
-	    	_restartButton.setEnabled(true);
-	    	_rewindButton.setEnabled(true);
-	    	_forwardButton.setEnabled(true);
-	    	_skipToEndButton.setEnabled(true);
-	    	_seekbar.setEnabled(true);
-
-			_controlsEnabled = true;
-		} else {
-			if (!force && !_controlsEnabled)
-				return;
-
-	    	_playButton.setImageResource(android.R.drawable.ic_media_play);
-	    	_restartButton.setEnabled(false);
-	    	_rewindButton.setEnabled(false);
-	    	_forwardButton.setEnabled(false);
-	    	_skipToEndButton.setEnabled(false);
-	    	_seekbar.setEnabled(false);
-
-	    	_controlsEnabled = false;
+		} finally {
+			c.close();
 		}
-		
-		c.close();
 	}
 
 	private void updateQueueViews() throws MissingFieldException {
