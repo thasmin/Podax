@@ -1,7 +1,5 @@
 package com.axelby.podax;
 
-import java.util.Vector;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -12,8 +10,6 @@ import android.net.Uri;
 import android.widget.RemoteViews;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
-	Vector<Integer> _init = new Vector<Integer>();
-
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
@@ -25,24 +21,20 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 	
 			updatePodcastDetails(context, views);
 	
-			if (!_init.contains(appWidgetIds[0])) {
-				// set up pending intents
-				setClickIntent(context, views, R.id.restart_btn, Constants.PLAYER_COMMAND_RESTART);
-				setClickIntent(context, views, R.id.rewind_btn, Constants.PLAYER_COMMAND_SKIPBACK);
-				setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYPAUSE);
-				setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
-				setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
+			// set up pending intents
+			setClickIntent(context, views, R.id.restart_btn, Constants.PLAYER_COMMAND_RESTART);
+			setClickIntent(context, views, R.id.rewind_btn, Constants.PLAYER_COMMAND_SKIPBACK);
+			setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYPAUSE);
+			setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
+			setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
 
-				Intent showIntent = new Intent(context, PodcastDetailActivity.class);
-				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
-				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+			Intent showIntent = new Intent(context, PodcastDetailActivity.class);
+			PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
+			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-				Intent queueIntent = new Intent(context, QueueActivity.class);
-				PendingIntent queuePendingIntent = PendingIntent.getActivity(context, 0, queueIntent, 0);
-				views.setOnClickPendingIntent(R.id.queue_btn, queuePendingIntent);
-
-				_init.add(appWidgetIds[0]);
-			}
+			Intent queueIntent = new Intent(context, QueueActivity.class);
+			PendingIntent queuePendingIntent = PendingIntent.getActivity(context, 0, queueIntent, 0);
+			views.setOnClickPendingIntent(R.id.queue_btn, queuePendingIntent);
 	
 			appWidgetManager.updateAppWidget(widgetId, views);
 		}
@@ -84,8 +76,10 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 
 	public static void setClickIntent(Context context, RemoteViews views, int resourceId, int command) {
 		Intent intent = new Intent(context, PlayerService.class);
+		// pendingintent will reuse intent if possible, does not look at extras so datauri makes this unique to command
+		intent.setData(Uri.parse("podax://playercommand/" + command));
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
-		PendingIntent pendingIntent = PendingIntent.getService(context, command, intent, 0);
+		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
 		views.setOnClickPendingIntent(resourceId, pendingIntent);
 	}
 }
