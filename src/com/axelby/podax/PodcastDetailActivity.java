@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
@@ -90,7 +91,8 @@ public class PodcastDetailActivity extends Activity {
 				@Override
 				public void onChange(boolean selfChange) {
 					super.onChange(selfChange);
-					_cursor.close();
+					if (!_cursor.isClosed())
+						_cursor.close();
 					Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
 					_cursor = managedQuery(uri, _projection, null, null, null);
 					_podcast = new PodcastCursor(PodcastDetailActivity.this, _cursor);
