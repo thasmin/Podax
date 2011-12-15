@@ -253,11 +253,9 @@ public class PodcastProvider extends ContentProvider {
 			count += db.update("podcasts", values, where, whereArgs);
 		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, podcastId), null);
 		if (values.containsKey(COLUMN_FILE_SIZE))
-			getContext().getContentResolver().notifyChange(
-					Uri.withAppendedPath(URI, "to_download"), null);
-		if (podcastId.equals(activePodcastId))
-			getContext().getContentResolver().notifyChange(
-					Uri.withAppendedPath(URI, "active"), null);
+			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
+		if (new Long(podcastId).equals(activePodcastId))
+			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "active"), null);
 		return count;
 	}
 
