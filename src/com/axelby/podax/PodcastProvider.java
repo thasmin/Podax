@@ -251,7 +251,7 @@ public class PodcastProvider extends ContentProvider {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		if (values.size() > 0)
 			count += db.update("podcasts", values, where, whereArgs);
-		getContext().getContentResolver().notifyChange(uri, null);
+		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, podcastId), null);
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(
 					Uri.withAppendedPath(URI, "to_download"), null);
