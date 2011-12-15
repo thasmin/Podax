@@ -32,12 +32,12 @@
 				  android:layout_height="wrap_content" />
 	</LinearLayout>
 	<ImageButton android:id="@+id/showplayer"
-			 	 android:layout_width="wrap_content"
-			 	 android:layout_height="wrap_content"
-			 	 android:layout_gravity="center"
-			 	 android:src="@drawable/play"
-			 	 android:background="@android:color/transparent"
+				 android:layout_width="wrap_content"
+				 android:layout_height="wrap_content"
+				 android:layout_gravity="center"
+				 android:src="@drawable/ic_widget_bouncearrow"
+				 android:background="@android:color/transparent"
 				 android:layout_below="@id/separator"
-			 	 android:layout_centerVertical="true"
-			 	 android:layout_alignParentRight="true" />
+				 android:layout_centerVertical="true"
+				 android:layout_alignParentRight="true" />
 </RelativeLayout>
