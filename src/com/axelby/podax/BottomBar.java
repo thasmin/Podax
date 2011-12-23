@@ -1,6 +1,5 @@
 package com.axelby.podax;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.ContentObserver;
@@ -23,7 +22,25 @@ public class BottomBar extends LinearLayout {
 	private ImageButton _showplayerbtn;
 
 	private Cursor _cursor = null;
-	private PodcastCursor _podcast;
+
+	private class ActivePodcastObserver extends ContentObserver {
+		public ActivePodcastObserver(Handler handler) {
+			super(handler);
+		}
+
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+
+			_cursor.requery();
+			try {
+				updateUI();
+			} catch (MissingFieldException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	private ActivePodcastObserver _observer = new ActivePodcastObserver(new Handler());
 
 	public BottomBar(Context context) {
 		super(context);
@@ -57,38 +74,27 @@ public class BottomBar extends LinearLayout {
 		}
 	}
 
-	private Long _lastPodcastId = null;
-	private Handler _handler = new Handler();
-	
-	private class ActivePodcastObserver extends ContentObserver {
-		public ActivePodcastObserver(Handler handler) {
-			super(handler);
-		}
+	@Override
+	protected void onDetachedFromWindow() {
+		super.onDetachedFromWindow();
 
-		@Override
-		public void onChange(boolean selfChange) {
-			super.onChange(selfChange);
-
-			_cursor.requery();
-			_podcast = new PodcastCursor(getContext(), _cursor);
-			try {
-				updateUI();
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
-			}
-		}
+		if (!_cursor.isClosed())
+			_cursor.close();
+		getContext().getContentResolver().unregisterContentObserver(_observer);
 	}
-	private ActivePodcastObserver _observer = new ActivePodcastObserver(_handler);
+
+	private Long _lastPodcastId = null;
 
 	public void updateUI() throws MissingFieldException {
 		boolean isPlaying = PlayerService.isPlaying();
 		_pausebtn.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
 
-		if (!_podcast.isNull()) {
+		PodcastCursor podcast = new PodcastCursor(getContext(), _cursor);
+		if (!podcast.isNull()) {
 			if (isPlaying || _positionstring.getText().length() == 0)
-				_positionstring.setText(PlayerService.getPositionString(_podcast.getDuration(), _podcast.getLastPosition()));
-			if (_lastPodcastId != _podcast.getId()) {
-				_podcastTitle.setText(_podcast.getTitle());
+				_positionstring.setText(PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
+			if (_lastPodcastId != podcast.getId()) {
+				_podcastTitle.setText(podcast.getTitle());
 				_showplayerbtn.setEnabled(true);
 			}
 		} else if (_lastPodcastId != null) {
@@ -97,7 +103,7 @@ public class BottomBar extends LinearLayout {
 			_showplayerbtn.setEnabled(false);
 		}
 
-		_lastPodcastId = _podcast.isNull() ? null : _podcast.getId();
+		_lastPodcastId = podcast.isNull() ? null : podcast.getId();
 	}
 
 	public void retrievePodcast() throws MissingFieldException {
@@ -108,8 +114,7 @@ public class BottomBar extends LinearLayout {
 				PodcastProvider.COLUMN_LAST_POSITION,
 		};
 		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-		_cursor = ((Activity)getContext()).managedQuery(activeUri, projection, null, null, null);
-		_podcast = new PodcastCursor(getContext(), _cursor);
+		_cursor = getContext().getContentResolver().query(activeUri, projection, null, null, null);
 		getContext().getContentResolver().registerContentObserver(activeUri, false, _observer);
 	}
 

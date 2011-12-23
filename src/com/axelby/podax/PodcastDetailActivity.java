@@ -43,6 +43,24 @@ public class PodcastDetailActivity extends Activity {
 	TextView _position;
 	TextView _duration;
 
+	class PodcastObserver extends ContentObserver {
+		public PodcastObserver(Handler handler) {
+			super(handler);
+		}
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+
+			_podcast = new PodcastCursor(PodcastDetailActivity.this, _cursor);
+			try {
+				updateQueueViews();
+				updatePlayerControls(false);
+			} catch (MissingFieldException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	String[] _projection = new String[] {
 			PodcastProvider.COLUMN_ID,
 			PodcastProvider.COLUMN_TITLE,
@@ -68,7 +86,7 @@ public class PodcastDetailActivity extends Activity {
 				return;
 			}
 			Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
-			_cursor = managedQuery(uri, _projection, null, null, null);
+			_cursor = getContentResolver().query(uri, _projection, null, null, null);
 		} else {
 			Uri uri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 			_cursor = managedQuery(uri, _projection, null, null, null);
@@ -83,24 +101,8 @@ public class PodcastDetailActivity extends Activity {
 		_podcast = new PodcastCursor(this, _cursor);
 		try {
 			_podcastId = _podcast.getId();
-			class PodcastObserver extends ContentObserver {
-				public PodcastObserver(Handler handler) {
-					super(handler);
-				}
-				@Override
-				public void onChange(boolean selfChange) {
-					super.onChange(selfChange);
-
-					_podcast = new PodcastCursor(PodcastDetailActivity.this, _cursor);
-					try {
-						updateQueueViews();
-						updatePlayerControls(false);
-					} catch (MissingFieldException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			_podcast.registerContentObserver(new PodcastObserver(_handler));
+			_observer = new PodcastObserver(_handler);
+			_podcast.registerContentObserver(_observer);
 
 	        setTitle(_podcast.getTitle());
 	        setContentView(R.layout.podcast_detail);
@@ -215,7 +217,24 @@ public class PodcastDetailActivity extends Activity {
 		}
 	}
 
+	@Override
+	protected void onPause() {
+		super.onPause();
+		_podcast.unregisterContentObserver(_observer);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		try {
+			_podcast.registerContentObserver(_observer);
+		} catch (MissingFieldException e) {
+			e.printStackTrace();
+		}
+	}
+
 	boolean _controlsEnabled = true;
+	private PodcastObserver _observer;
 	private void updatePlayerControls(boolean force) throws MissingFieldException {
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
