@@ -120,9 +120,11 @@ public class PopularSubscriptionActivity extends Activity {
 					DateTime lastBuildDate = new DateTime(result.lastBuildDate);
 					DateTime oldestPodcastDate = new DateTime(result.oldestPodcastDate);
 					Weeks weeks = Weeks.weeksBetween(oldestPodcastDate, lastBuildDate);
-					float podcastsPerWeek = (float)result.podcastCount / weeks.getWeeks();
-
-					result.description = result.description + "\n\nAverages " + podcastsPerWeek + " podcasts per week";
+					if (weeks.getWeeks() > 0) {
+						float podcastsPerWeek = (float)result.podcastCount / weeks.getWeeks();
+						podcastsPerWeek = Math.round(podcastsPerWeek * 10) / 10.0f;
+						result.description = result.description + "\n\nAverages " + podcastsPerWeek + " podcasts per week";
+					}
 				}
 
 				TextView description = (TextView) findViewById(R.id.description);
