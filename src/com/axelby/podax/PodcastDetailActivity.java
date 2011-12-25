@@ -51,6 +51,7 @@ public class PodcastDetailActivity extends Activity {
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
 
+			_cursor.requery();
 			_podcast = new PodcastCursor(PodcastDetailActivity.this, _cursor);
 			try {
 				updateQueueViews();
