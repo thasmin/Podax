@@ -21,7 +21,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-public class PopularPodaxActivity extends ListActivity {
+public class PopularSubscriptionListActivity extends ListActivity {
 
 	private class PodaxFeed {
 		public String title;
@@ -38,7 +38,8 @@ public class PopularPodaxActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.innerlist);
-		String[] strings = { "Loading from Podax server..." };
+		String sourceName = getIntent().getStringExtra(Constants.EXTRA_POPULAR_SOURCE_NAME);
+		String[] strings = { "Loading from " + sourceName };
 		setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, strings));
 
 		new AsyncTask<Void, Void, Vector<PodaxFeed>>() {
@@ -55,7 +56,8 @@ public class PopularPodaxActivity extends ListActivity {
 					}
 				});
 
-				HttpGet get = new HttpGet("http://podax.axelby.com/popular.php");
+				String sourceUrl = getIntent().getStringExtra(Constants.EXTRA_POPULAR_SOURCE_URL);
+				HttpGet get = new HttpGet(sourceUrl);
 				HttpClient client = new DefaultHttpClient();
 				try {
 					HttpResponse response = client.execute(get);
@@ -72,7 +74,7 @@ public class PopularPodaxActivity extends ListActivity {
 
 			@Override
 			protected void onPostExecute(Vector<PodaxFeed> result) {
-				setListAdapter(new ArrayAdapter<PodaxFeed>(PopularPodaxActivity.this, android.R.layout.simple_list_item_1, result));
+				setListAdapter(new ArrayAdapter<PodaxFeed>(PopularSubscriptionListActivity.this, android.R.layout.simple_list_item_1, result));
 				super.onPostExecute(result);
 			}
 		}.execute((Void)null);

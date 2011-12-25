@@ -17,7 +17,9 @@ public class DiscoverActivity extends TabActivity {
 	    TabHost.TabSpec spec;
 	    Intent intent;
 
-	    intent = new Intent().setClass(this, PopularPodaxActivity.class);
+	    intent = new Intent().setClass(this, PopularSubscriptionListActivity.class);
+	    intent.putExtra(Constants.EXTRA_POPULAR_SOURCE_NAME, "Podax server");
+	    intent.putExtra(Constants.EXTRA_POPULAR_SOURCE_URL, "http://podax.axelby.com/popular.php");
 		spec = tabHost
 				.newTabSpec("podax")
 				.setIndicator("Podax",
@@ -25,7 +27,9 @@ public class DiscoverActivity extends TabActivity {
 				.setContent(intent);
 		tabHost.addTab(spec);
 
-	    intent = new Intent().setClass(this, ITunesActivity.class);
+	    intent = new Intent().setClass(this, PopularSubscriptionListActivity.class);
+	    intent.putExtra(Constants.EXTRA_POPULAR_SOURCE_NAME, "iTunes");
+	    intent.putExtra(Constants.EXTRA_POPULAR_SOURCE_URL, "http://podax.axelby.com/popularitunes.php");
 		spec = tabHost
 				.newTabSpec("itunes")
 				.setIndicator("iTunes",

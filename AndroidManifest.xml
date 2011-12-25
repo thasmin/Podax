@@ -92,7 +92,7 @@
 				  android:label="@string/discover_subscriptions"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".ITunesActivity" />
-		<activity android:name=".PopularPodaxActivity" />
+		<activity android:name=".PopularSubscriptionListActivity" />
 		<activity android:name=".PopularSubscriptionActivity"
 				  android:label="@string/popular_subscription_title"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
