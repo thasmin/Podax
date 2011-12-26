@@ -80,11 +80,7 @@ public class SubscriptionListActivity extends ListActivity {
 			AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 			Cursor cursor = (Cursor) getListAdapter().getItem(menuInfo.position);
 			SubscriptionCursor subscription = new SubscriptionCursor(this, cursor);
-			try {
-				getContentResolver().delete(subscription.getContentUri(), null, null);
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
-			}
+			getContentResolver().delete(subscription.getContentUri(), null, null);
 			break;
 		default:
 			return super.onContextItemSelected(item);
@@ -94,15 +90,10 @@ public class SubscriptionListActivity extends ListActivity {
 
 	@Override
 	protected void onListItemClick(ListView list, View view, int position, long id) {
-		try {
-			Intent intent = new Intent(this, PodcastListActivity.class);
-			SubscriptionCursor sub = new SubscriptionCursor(this, (Cursor)list.getItemAtPosition(position));
-			intent.putExtra("subscriptionId", (int)(long)sub.getId());
-			startActivity(intent);
-		} catch (MissingFieldException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Intent intent = new Intent(this, PodcastListActivity.class);
+		SubscriptionCursor sub = new SubscriptionCursor(this, (Cursor)list.getItemAtPosition(position));
+		intent.putExtra("subscriptionId", (int)(long)sub.getId());
+		startActivity(intent);
 	}
 
 	private class SubscriptionAdapter extends ResourceCursorAdapter {
@@ -117,19 +108,15 @@ public class SubscriptionListActivity extends ListActivity {
 			TextView text = (TextView)view.findViewById(R.id.text);
 			ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
 
-			try {
-				text.setText(subscription.getTitle());
+			text.setText(subscription.getTitle());
 
-				File thumbnailFile = new File(subscription.getThumbnailFilename());
-				if (!thumbnailFile.exists())
-					thumbnail.setImageDrawable(null);
-				else
-				{
-					thumbnail.setImageBitmap(BitmapFactory.decodeFile(subscription.getThumbnailFilename()));
-					thumbnail.setVisibility(1);
-				}
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
+			File thumbnailFile = new File(subscription.getThumbnailFilename());
+			if (!thumbnailFile.exists())
+				thumbnail.setImageDrawable(null);
+			else
+			{
+				thumbnail.setImageBitmap(BitmapFactory.decodeFile(subscription.getThumbnailFilename()));
+				thumbnail.setVisibility(1);
 			}
 		}
 	}

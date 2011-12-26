@@ -234,8 +234,6 @@ class SubscriptionUpdater {
 					subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
 					_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
 				}
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
@@ -280,16 +278,11 @@ class SubscriptionUpdater {
 			wr.write(Installation.id(_context));
 			while (c.moveToNext()) {
 				SubscriptionCursor subscription = new SubscriptionCursor(_context, c);
-				String url;
-				try {
-					url = subscription.getUrl();
-					wr.write("&sub[");
-					wr.write(String.valueOf(c.getPosition()));
-					wr.write("]=");
-					wr.write(URLEncoder.encode(url));
-				} catch (MissingFieldException e) {
-					e.printStackTrace();
-				}
+				String url = subscription.getUrl();
+				wr.write("&sub[");
+				wr.write(String.valueOf(c.getPosition()));
+				wr.write("]=");
+				wr.write(URLEncoder.encode(url));
 			}
 			wr.flush();
 
@@ -330,7 +323,7 @@ class SubscriptionUpdater {
 		}
 	};
 
-	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) throws MissingFieldException {
+	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
 		int icon = R.drawable.icon;
 		CharSequence tickerText = "Error Updating Subscription";
 		long when = System.currentTimeMillis();			
@@ -348,7 +341,7 @@ class SubscriptionUpdater {
 	}
 	
 
-	private void updateUpdateNotification(SubscriptionCursor subscription, String status) throws MissingFieldException {
+	private void updateUpdateNotification(SubscriptionCursor subscription, String status) {
 		int icon = R.drawable.icon;
 		CharSequence tickerText = "Updating Subscriptions";
 		long when = System.currentTimeMillis();			

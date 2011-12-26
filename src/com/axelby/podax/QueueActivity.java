@@ -65,13 +65,9 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
 						ContextMenu.NONE, R.string.remove_from_queue);
 				
-				try {
-					if (podcast.isDownloaded())
-						menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
-								R.string.play);
-				} catch (MissingFieldException e) {
-					e.printStackTrace();
-				}
+				if (podcast.isDownloaded())
+					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
+							R.string.play);
 			}
 		});
 		
@@ -84,16 +80,12 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 		Cursor cursor = (Cursor)getListAdapter().getItem(info.position);
 		PodcastCursor podcast = new PodcastCursor(this, cursor);
 
-		try {
-			switch (item.getItemId()) {
-			case OPTION_REMOVEFROMQUEUE:
-				podcast.removeFromQueue();
-				break;
-			case OPTION_PLAY:
-				PodaxApp.getApp().play(podcast);
-			}
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
+		switch (item.getItemId()) {
+		case OPTION_REMOVEFROMQUEUE:
+			podcast.removeFromQueue();
+			break;
+		case OPTION_PLAY:
+			PodaxApp.getApp().play(podcast);
 		}
 
 		return true;
@@ -112,40 +104,36 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 		}
 		if (event.getAction() == MotionEvent.ACTION_MOVE)
 		{
-			try {
-				int position = listView.pointToPosition((int) event.getX(),
-						(int) event.getY());
-				if (position == -1)
-					return true;
-
-				View listItem = listView.getChildAt(position - listView.getFirstVisiblePosition());
-				// no listview means we're below the last one
-				if (listItem == null) {
-					adapter.setQueuePosition(getListAdapter().getCount());
-					return true;
-				}
-				
-				Long podcastId = (Long)listItem.getTag();
-
-				// don't change anything if we're hovering over this one
-				if (podcastId == adapter.getHeldPodcastId())
-					return true;
-
-				// remove hidden podcast from ordering
-				if (position > adapter.getHeldQueuePosition())
-					position -= 1;
-
-				// if pointer is in top half of item then put separator above,
-				// otherwise below
-				Rect bounds = new Rect();
-				listItem.getHitRect(bounds);
-				if (event.getY() > (bounds.top + bounds.bottom) / 2.0f)
-					position += 1;
-				adapter.setQueuePosition(position);
+			int position = listView.pointToPosition((int) event.getX(),
+					(int) event.getY());
+			if (position == -1)
 				return true;
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
+
+			View listItem = listView.getChildAt(position - listView.getFirstVisiblePosition());
+			// no listview means we're below the last one
+			if (listItem == null) {
+				adapter.setQueuePosition(getListAdapter().getCount());
+				return true;
 			}
+
+			Long podcastId = (Long)listItem.getTag();
+
+			// don't change anything if we're hovering over this one
+			if (podcastId == adapter.getHeldPodcastId())
+				return true;
+
+			// remove hidden podcast from ordering
+			if (position > adapter.getHeldQueuePosition())
+				position -= 1;
+
+			// if pointer is in top half of item then put separator above,
+			// otherwise below
+			Rect bounds = new Rect();
+			listItem.getHitRect(bounds);
+			if (event.getY() > (bounds.top + bounds.bottom) / 2.0f)
+				position += 1;
+			adapter.setQueuePosition(position);
+				return true;
 		}
 		return false;
 	}
@@ -170,7 +158,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 
 		private Long _heldPodcastId = null;
 		private int _heldQueuePosition;
-		
+
 		public QueueListAdapter(Context context, Cursor cursor) {
 			super(context, R.layout.queue_list_item, cursor);
 		}
@@ -183,27 +171,23 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			View btn = view.findViewById(R.id.dragable);
 			btn.setOnTouchListener(downListener);
 
-			try {
-				PodcastCursor podcast = new PodcastCursor(QueueActivity.this,
-						cursor);
-				view.setTag(podcast.getId());
-				TextView queueText = (TextView) view.findViewById(R.id.title);
-				queueText.setText(podcast.getTitle());
+			PodcastCursor podcast = new PodcastCursor(QueueActivity.this,
+					cursor);
+			view.setTag(podcast.getId());
+			TextView queueText = (TextView) view.findViewById(R.id.title);
+			queueText.setText(podcast.getTitle());
 
-				TextView subscriptionText = (TextView) view
-						.findViewById(R.id.subscription);
-				subscriptionText.setText(podcast.getSubscriptionTitle());
-				
-				if (_heldPodcastId != null && 
-						(long)podcast.getId() == (long)_heldPodcastId && 
-						switcher.getDisplayedChild() == 0)
-					switcher.showNext();
-				if ((_heldPodcastId == null || (long)podcast.getId() != (long)_heldPodcastId) && 
-						switcher.getDisplayedChild() == 1)
-					switcher.showPrevious();
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
-			}
+			TextView subscriptionText = (TextView) view
+					.findViewById(R.id.subscription);
+			subscriptionText.setText(podcast.getSubscriptionTitle());
+
+			if (_heldPodcastId != null &&
+					(long)podcast.getId() == (long)_heldPodcastId &&
+					switcher.getDisplayedChild() == 0)
+				switcher.showNext();
+			if ((_heldPodcastId == null || (long)podcast.getId() != (long)_heldPodcastId) &&
+					switcher.getDisplayedChild() == 1)
+				switcher.showPrevious();
 		}
 
 		public void holdPodcast(Object podcastId) {
@@ -234,7 +218,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			return _heldQueuePosition;
 		}
 
-		public void setQueuePosition(int position) throws MissingFieldException {
+		public void setQueuePosition(int position) {
 			if (_heldPodcastId == null || _heldQueuePosition == position)
 				return;
 

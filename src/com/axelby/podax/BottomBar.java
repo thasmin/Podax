@@ -33,11 +33,7 @@ public class BottomBar extends LinearLayout {
 			super.onChange(selfChange);
 
 			_cursor.requery();
-			try {
-				updateUI();
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
-			}
+			updateUI();
 		}
 	}
 	private ActivePodcastObserver _observer = new ActivePodcastObserver(new Handler());
@@ -49,12 +45,8 @@ public class BottomBar extends LinearLayout {
 			return;
 		loadViews(context);
 
-		try {
-			retrievePodcast();
-			updateUI();
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
-		}
+		retrievePodcast();
+		updateUI();
 	}
 
 	public BottomBar(Context context, AttributeSet attrs) {
@@ -66,12 +58,8 @@ public class BottomBar extends LinearLayout {
 			return;
 		loadViews(context);
 
-		try {
-			retrievePodcast();
-			updateUI();
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
-		}
+		retrievePodcast();
+		updateUI();
 	}
 
 	@Override
@@ -85,7 +73,7 @@ public class BottomBar extends LinearLayout {
 
 	private Long _lastPodcastId = null;
 
-	public void updateUI() throws MissingFieldException {
+	public void updateUI() {
 		boolean isPlaying = PlayerService.isPlaying();
 		_pausebtn.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
 
@@ -106,7 +94,7 @@ public class BottomBar extends LinearLayout {
 		_lastPodcastId = podcast.isNull() ? null : podcast.getId();
 	}
 
-	public void retrievePodcast() throws MissingFieldException {
+	public void retrievePodcast() {
 		String[] projection = {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,

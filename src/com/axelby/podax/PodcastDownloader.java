@@ -105,10 +105,7 @@ class PodcastDownloader {
 						break;
 					}
 				}
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
-			}
-			finally {
+			} finally {
 				if (cursor != null)
 					cursor.close();
 				removeDownloadNotification();
@@ -119,7 +116,7 @@ class PodcastDownloader {
 	};
 	
 
-	void updateDownloadNotification(PodcastCursor podcast, long downloaded) throws MissingFieldException {
+	void updateDownloadNotification(PodcastCursor podcast, long downloaded) {
 		int icon = drawable.icon;
 		CharSequence tickerText = "Downloading podcast: " + podcast.getTitle();
 		long when = System.currentTimeMillis();			

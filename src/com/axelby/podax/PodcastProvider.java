@@ -134,12 +134,8 @@ public class PodcastProvider extends ContentProvider {
 					.appendWhere("podcasts._id = " + uri.getLastPathSegment());
 			break;
 		case PODCASTS_TO_DOWNLOAD:
-			try {
-				sqlBuilder.appendWhere("podcasts._id IN ("
-						+ getNeedsDownloadIds() + ")");
-			} catch (MissingFieldException e) {
-				return null;
-			}
+			sqlBuilder.appendWhere("podcasts._id IN ("
+					+ getNeedsDownloadIds() + ")");
 			if (sortOrder == null)
 				sortOrder = "queuePosition";
 			break;
@@ -169,7 +165,7 @@ public class PodcastProvider extends ContentProvider {
 		return c;
 	}
 
-	private String getNeedsDownloadIds() throws MissingFieldException {
+	private String getNeedsDownloadIds() {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 		SQLiteQueryBuilder queueBuilder = new SQLiteQueryBuilder();
 		queueBuilder.setTables("podcasts");

@@ -53,12 +53,8 @@ public class PodcastDetailActivity extends Activity {
 
 			_cursor.requery();
 			_podcast = new PodcastCursor(PodcastDetailActivity.this, _cursor);
-			try {
-				updateQueueViews();
-				updatePlayerControls(false);
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
-			}
+			updateQueueViews();
+			updatePlayerControls(false);
 		}
 	}
 
@@ -100,122 +96,110 @@ public class PodcastDetailActivity extends Activity {
 		}
 
 		_podcast = new PodcastCursor(this, _cursor);
-		try {
-			_podcastId = _podcast.getId();
-			_observer = new PodcastObserver(_handler);
-			_podcast.registerContentObserver(_observer);
+		_podcastId = _podcast.getId();
+		_observer = new PodcastObserver(_handler);
+		_podcast.registerContentObserver(_observer);
 
-	        setTitle(_podcast.getTitle());
-	        setContentView(R.layout.podcast_detail);
+        setTitle(_podcast.getTitle());
+        setContentView(R.layout.podcast_detail);
 
-			_subscriptionTitleView = (TextView)findViewById(R.id.subscription_title);
-			_subscriptionTitleView.setText(_podcast.getSubscriptionTitle());
+		_subscriptionTitleView = (TextView)findViewById(R.id.subscription_title);
+		_subscriptionTitleView.setText(_podcast.getSubscriptionTitle());
 
-			_descriptionView = (WebView)findViewById(R.id.description);
-			String html = "<html><head><style type=\"text/css\">" +
-					"a { color: #E59F39 }" +
-					"</style></head>" +
-					"<body style=\"background:black;color:white\">" + _podcast.getDescription() + "</body></html>"; 
-			_descriptionView.loadData(html, "text/html", "utf-8");
-			_descriptionView.setBackgroundColor(Color.BLACK);
+		_descriptionView = (WebView)findViewById(R.id.description);
+		String html = "<html><head><style type=\"text/css\">" +
+				"a { color: #E59F39 }" +
+				"</style></head>" +
+				"<body style=\"background:black;color:white\">" + _podcast.getDescription() + "</body></html>"; 
+		_descriptionView.loadData(html, "text/html", "utf-8");
+		_descriptionView.setBackgroundColor(Color.BLACK);
 
-			_queuePosition = (TextView)findViewById(R.id.queue_position);
-			_queueButton = (Button)findViewById(R.id.queue_btn);
-			updateQueueViews();
-			_queueButton.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					try {
-						if (_podcast.getQueuePosition() == null)
-							_podcast.addToQueue();
-						else
-							_podcast.removeFromQueue();
-					} catch (MissingFieldException e) {
-						e.printStackTrace();
-					}
-				}
-			});
+		_queuePosition = (TextView)findViewById(R.id.queue_position);
+		_queueButton = (Button)findViewById(R.id.queue_btn);
+		updateQueueViews();
+		_queueButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				if (_podcast.getQueuePosition() == null)
+					_podcast.addToQueue();
+				else
+					_podcast.removeFromQueue();
+			}
+		});
 
-			_restartButton = (ImageButton)findViewById(R.id.restart_btn);
-			_restartButton.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					_app.restart();
-				}
-			});
+		_restartButton = (ImageButton)findViewById(R.id.restart_btn);
+		_restartButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				_app.restart();
+			}
+		});
 
-			_rewindButton = (ImageButton)findViewById(R.id.rewind_btn);
-			_rewindButton.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					_app.skipBack();
-				}
-			});
+		_rewindButton = (ImageButton)findViewById(R.id.rewind_btn);
+		_rewindButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				_app.skipBack();
+			}
+		});
 
-			_playButton = (ImageButton)findViewById(R.id.play_btn);
-			_playButton.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					try {
-						Long activeId = null;
-						String[] projection = new String[] { PodcastProvider.COLUMN_ID };
-						Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
-						try {
-							if (c.moveToNext())
-								activeId = c.getLong(0);
+		_playButton = (ImageButton)findViewById(R.id.play_btn);
+		_playButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Long activeId = null;
+				String[] projection = new String[] { PodcastProvider.COLUMN_ID };
+				Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
+				try {
+					if (c.moveToNext())
+						activeId = c.getLong(0);
 
-							if (PlayerService.isPlaying() && activeId != null && activeId.equals(_podcast.getId()))
-								_app.pause();
-							else
-								_app.play(_podcast);
-						} finally {
-							c.close();
-						}
-					} catch (MissingFieldException e) {
-						e.printStackTrace();
-					}
+					if (PlayerService.isPlaying() && activeId != null && activeId.equals(_podcast.getId()))
+						_app.pause();
+					else
+						_app.play(_podcast);
+				} finally {
+					c.close();
 				}
-			});
-			
-			_forwardButton = (ImageButton)findViewById(R.id.forward_btn);
-			_forwardButton.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					_app.skipForward();
-				}
-			});
-			
-			_skipToEndButton = (ImageButton)findViewById(R.id.skiptoend_btn);
-			_skipToEndButton.setOnClickListener(new OnClickListener() {
-				public void onClick(View v) {
-					_app.skipToEnd();
-				}
-			});
-			
-			_seekbar = (SeekBar)findViewById(R.id.seekbar);
-			_seekbar.setMax(_podcast.getDuration());
-			_seekbar.setProgress(_podcast.getLastPosition());
-			_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-				public void onProgressChanged(SeekBar seekBar, int progress,
-						boolean fromUser) {
-					_position.setText(PodaxApp.getTimeString(progress));
-				}
-	
-				public void onStartTrackingTouch(SeekBar seekBar) {
-					_seekbar_dragging = true;
-				}
-	
-				public void onStopTrackingTouch(SeekBar seekBar) {
-					_seekbar_dragging = false;
-					_app.skipTo(seekBar.getProgress() / 1000);
-				}
-			});
-			_seekbar_dragging = false;
-			
-			_position = (TextView)findViewById(R.id.position);
-			_position.setText(PodaxApp.getTimeString(_podcast.getLastPosition()));
-			_duration = (TextView)findViewById(R.id.duration);
-			_duration.setText(PodaxApp.getTimeString(_podcast.getDuration()));
-	
-			updatePlayerControls(true);
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
-		}
+			}
+		});
+
+		_forwardButton = (ImageButton)findViewById(R.id.forward_btn);
+		_forwardButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				_app.skipForward();
+			}
+		});
+
+		_skipToEndButton = (ImageButton)findViewById(R.id.skiptoend_btn);
+		_skipToEndButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				_app.skipToEnd();
+			}
+		});
+
+		_seekbar = (SeekBar)findViewById(R.id.seekbar);
+		_seekbar.setMax(_podcast.getDuration());
+		_seekbar.setProgress(_podcast.getLastPosition());
+		_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+				_position.setText(PodaxApp.getTimeString(progress));
+			}
+
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				_seekbar_dragging = true;
+			}
+
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				_seekbar_dragging = false;
+				_app.skipTo(seekBar.getProgress() / 1000);
+			}
+		});
+		_seekbar_dragging = false;
+
+		_position = (TextView)findViewById(R.id.position);
+		_position.setText(PodaxApp.getTimeString(_podcast.getLastPosition()));
+		_duration = (TextView)findViewById(R.id.duration);
+		_duration.setText(PodaxApp.getTimeString(_podcast.getDuration()));
+
+		updatePlayerControls(true);
 	}
 
 	@Override
@@ -227,16 +211,12 @@ public class PodcastDetailActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		try {
-			_podcast.registerContentObserver(_observer);
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
-		}
+		_podcast.registerContentObserver(_observer);
 	}
 
 	boolean _controlsEnabled = true;
 	private PodcastObserver _observer;
-	private void updatePlayerControls(boolean force) throws MissingFieldException {
+	private void updatePlayerControls(boolean force) {
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_LAST_POSITION,
@@ -285,7 +265,7 @@ public class PodcastDetailActivity extends Activity {
 		}
 	}
 
-	private void updateQueueViews() throws MissingFieldException {
+	private void updateQueueViews() {
 		if (_podcast.getQueuePosition() == null) {
 			_queueButton.setText(R.string.add_to_queue);
 			_queuePosition.setText("");

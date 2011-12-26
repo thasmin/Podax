@@ -60,14 +60,11 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 			views.setTextViewText(R.id.positionstring, "");
 			views.setImageViewResource(R.id.play_btn, android.R.drawable.ic_media_play);
 		} else {
-			try {
-				views.setTextViewText(R.id.title, podcast.getTitle());
-				views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
-				String position = PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition());
-				views.setTextViewText(R.id.positionstring, position);
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
-			}
+			views.setTextViewText(R.id.title, podcast.getTitle());
+			views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
+			String position = PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition());
+			views.setTextViewText(R.id.positionstring, position);
+
 			int imageRes = PlayerService.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		}

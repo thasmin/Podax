@@ -61,20 +61,16 @@ public class PodcastListActivity extends ListActivity {
 				Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
 				PodcastCursor podcast = new PodcastCursor(PodcastListActivity.this, cursor);
 
-				try {
-					if (podcast.getQueuePosition() == null)
-						menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE,
-								ContextMenu.NONE, R.string.add_to_queue);
-					else
-						menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
-								ContextMenu.NONE, R.string.remove_from_queue);
+				if (podcast.getQueuePosition() == null)
+					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE,
+							ContextMenu.NONE, R.string.add_to_queue);
+				else
+					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
+							ContextMenu.NONE, R.string.remove_from_queue);
 
-					if (podcast.isDownloaded())
-						menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
-								R.string.play);
-				} catch (MissingFieldException e) {
-					e.printStackTrace();
-				}
+				if (podcast.isDownloaded())
+					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
+							R.string.play);
 			}
 		});
 	}
@@ -94,9 +90,6 @@ public class PodcastListActivity extends ListActivity {
 		SubscriptionCursor subscription = new SubscriptionCursor(this, subscriptionCursor);
 		try {
 			setTitle(subscription.getTitle() + " Podcasts");
-		} catch (MissingFieldException e1) {
-			e1.printStackTrace();
-			return false;
 		} finally {
 			subscriptionCursor.close();
 		}
@@ -109,19 +102,15 @@ public class PodcastListActivity extends ListActivity {
 		Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
 		PodcastCursor podcast = new PodcastCursor(this, cursor);
 
-		try {
-			switch (item.getItemId()) {
-			case OPTION_ADDTOQUEUE:
-				podcast.addToQueue();
-				break;
-			case OPTION_REMOVEFROMQUEUE:
-				podcast.removeFromQueue();
-				break;
-			case OPTION_PLAY:
-				PodaxApp.getApp().play(podcast);
-			}
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
+		switch (item.getItemId()) {
+		case OPTION_ADDTOQUEUE:
+			podcast.addToQueue();
+			break;
+		case OPTION_REMOVEFROMQUEUE:
+			podcast.removeFromQueue();
+			break;
+		case OPTION_PLAY:
+			PodaxApp.getApp().play(podcast);
 		}
 
 		return true;
@@ -149,12 +138,8 @@ public class PodcastListActivity extends ListActivity {
 		Intent intent = new Intent(this, PodcastDetailActivity.class);
 		Cursor cursor = (Cursor) list.getItemAtPosition(position);
 		PodcastCursor podcast = new PodcastCursor(this, cursor);
-		try {
-			intent.putExtra(Constants.EXTRA_PODCAST_ID, (int)(long)podcast.getId());
-			startActivity(intent);
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
-		}
+		intent.putExtra(Constants.EXTRA_PODCAST_ID, (int)(long)podcast.getId());
+		startActivity(intent);
 	}
 
 	private class PodcastAdapter extends ResourceCursorAdapter {
@@ -165,12 +150,8 @@ public class PodcastListActivity extends ListActivity {
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			TextView textview = (TextView)view;
-			try {
-				String podcastTitle = new PodcastCursor(context, cursor).getTitle();
-				textview.setText(podcastTitle);
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
-			}
+			String podcastTitle = new PodcastCursor(context, cursor).getTitle();
+			textview.setText(podcastTitle);
 		}
 	}
 }

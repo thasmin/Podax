@@ -232,8 +232,6 @@ public class PlayerService extends Service {
 		}
 		catch (IOException ex) {
 			stop();
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
 		} finally {
 			c.close();
 		}
@@ -324,8 +322,6 @@ public class PlayerService extends Service {
 					return podcast.getId();
 			}
 			return null;
-		} catch (MissingFieldException e) {
-			return null;
 		} finally {
 			c.close();
 		}
@@ -353,8 +349,6 @@ public class PlayerService extends Service {
 		try {
 			if (podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000)
 				podcast.setLastPosition(0);
-		} catch (MissingFieldException e) {
-			e.printStackTrace();
 		} finally {
 			c.close();
 		}

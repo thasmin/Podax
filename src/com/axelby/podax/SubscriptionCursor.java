@@ -30,7 +30,7 @@ public class SubscriptionCursor {
 		_cursor = cursor;
 
 		// duplicated code to avoid a throws clause in the constructor
-		_idColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_ID);
+		_idColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_ID);
 		if (!_cursor.isNull(_idColumn))
 			cursor.setNotificationUri(_context.getContentResolver(), ContentUris.withAppendedId(SubscriptionProvider.URI, _cursor.getLong(_idColumn)));
 
@@ -40,13 +40,13 @@ public class SubscriptionCursor {
 		return _cursor == null;
 	}
 
-	public Uri getContentUri() throws MissingFieldException {
+	public Uri getContentUri() {
 		if (getId() == null)
 			return null;
 		return ContentUris.withAppendedId(SubscriptionProvider.URI, getId());
 	}
 
-	public void registerContentObserver(ContentObserver observer) throws MissingFieldException {
+	public void registerContentObserver(ContentObserver observer) {
 		if (getId() == null)
 			return;
 		_context.getContentResolver().registerContentObserver(getContentUri(), false, observer);
@@ -56,59 +56,47 @@ public class SubscriptionCursor {
 		_context.getContentResolver().unregisterContentObserver(observer);
 	}
 
-	public Long getId() throws MissingFieldException {
-		if (_idColumn == -1)
-			throw new MissingFieldException();
+	public Long getId() {
 		if (_cursor.isNull(_idColumn))
 			return null;
 		return _cursor.getLong(_idColumn);
 	}
 
-	public String getTitle() throws MissingFieldException {
+	public String getTitle() {
 		if (_titleColumn == null)
-			_titleColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_TITLE);
-		if (_titleColumn == -1)
-			throw new MissingFieldException();
+			_titleColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE);
 		if (_cursor.isNull(_titleColumn))
 			return getUrl();
 		return _cursor.getString(_titleColumn);
 	}
 
-	public String getUrl() throws MissingFieldException {
+	public String getUrl() {
 		if (_urlColumn == null)
-			_urlColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_URL);
-		if (_urlColumn == -1)
-			throw new MissingFieldException();
+			_urlColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_URL);
 		if (_cursor.isNull(_urlColumn))
 			return null;
 		return _cursor.getString(_urlColumn);
 	}
 
-	public Date getLastModified() throws MissingFieldException {
+	public Date getLastModified() {
 		if (_lastModifiedColumn == null)
-			_lastModifiedColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_LAST_MODIFIED);
-		if (_lastModifiedColumn == -1)
-			throw new MissingFieldException();
+			_lastModifiedColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_LAST_MODIFIED);
 		if (_cursor.isNull(_lastModifiedColumn))
 			return null;
 		return new Date(_cursor.getLong(_lastModifiedColumn) * 1000);
 	}
 
-	public Date getLastUpdate() throws MissingFieldException {
+	public Date getLastUpdate() {
 		if (_lastUpdateColumn == null)
-			_lastUpdateColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_LAST_UPDATE);
-		if (_lastUpdateColumn == -1)
-			throw new MissingFieldException();
+			_lastUpdateColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_LAST_UPDATE);
 		if (_cursor.isNull(_lastUpdateColumn))
 			return null;
 		return new Date(_cursor.getLong(_lastUpdateColumn) * 1000);
 	}
 
-	public String getETag() throws MissingFieldException {
+	public String getETag() {
 		if (_etagColumn == null)
-			_etagColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_ETAG);
-		if (_etagColumn == -1)
-			throw new MissingFieldException();
+			_etagColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_ETAG);
 		if (_cursor.isNull(_etagColumn))
 			return null;
 		return _cursor.getString(_etagColumn);
@@ -122,7 +110,7 @@ public class SubscriptionCursor {
 		return _cursor.getString(_thumbnailColumn);
 	}
 
-	public String getThumbnailFilename() throws MissingFieldException {
+	public String getThumbnailFilename() {
 		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
 		File podaxFile = new File(podaxDir);

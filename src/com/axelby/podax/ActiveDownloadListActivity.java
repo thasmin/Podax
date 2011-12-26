@@ -78,34 +78,30 @@ public class ActiveDownloadListActivity extends ListActivity {
 			LinearLayout layout = (LinearLayout)view;
 			PodcastCursor podcast = new PodcastCursor(context, cursor);
 			
-			try {
-				TextView title = (TextView)layout.findViewById(R.id.title); 
-				title.setText(podcast.getTitle());
-				TextView subscription = (TextView)layout.findViewById(R.id.subscription); 
-				subscription.setText(podcast.getSubscriptionTitle());
-				
-				View extras = layout.findViewById(R.id.active);
-				long downloaded = new File(podcast.getFilename()).length();
-				if (podcast.getFileSize() != null && downloaded > 0)
-				{
-					int max = podcast.getFileSize();
-					if (extras == null) {
-						extras = _layoutInflater.inflate(R.layout.downloads_list_active_item, null);
-						layout.addView(extras);
-					}
-					ProgressBar progressBar = (ProgressBar)extras.findViewById(R.id.progressBar);
-					progressBar.setMax(max);
-					progressBar.setProgress((int)downloaded);
-					TextView progressText = (TextView)extras.findViewById(R.id.progressText);
-					progressText.setText(Math.round(100.0f * downloaded / max) + "% done");
+			TextView title = (TextView)layout.findViewById(R.id.title);
+			title.setText(podcast.getTitle());
+			TextView subscription = (TextView)layout.findViewById(R.id.subscription);
+			subscription.setText(podcast.getSubscriptionTitle());
+
+			View extras = layout.findViewById(R.id.active);
+			long downloaded = new File(podcast.getFilename()).length();
+			if (podcast.getFileSize() != null && downloaded > 0)
+			{
+				int max = podcast.getFileSize();
+				if (extras == null) {
+					extras = _layoutInflater.inflate(R.layout.downloads_list_active_item, null);
+					layout.addView(extras);
 				}
-				else
-				{
-					if (extras != null)
-						layout.removeView(extras);
-				}
-			} catch (MissingFieldException e) {
-				e.printStackTrace();
+				ProgressBar progressBar = (ProgressBar)extras.findViewById(R.id.progressBar);
+				progressBar.setMax(max);
+				progressBar.setProgress((int)downloaded);
+				TextView progressText = (TextView)extras.findViewById(R.id.progressText);
+				progressText.setText(Math.round(100.0f * downloaded / max) + "% done");
+			}
+			else
+			{
+				if (extras != null)
+					layout.removeView(extras);
 			}
 		}
 	}
