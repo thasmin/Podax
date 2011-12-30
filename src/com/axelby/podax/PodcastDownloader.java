@@ -93,7 +93,7 @@ class PodcastDownloader {
 	
 						Log.d("Podax", "Done downloading " + podcast.getTitle());
 					} catch (Exception e) {
-						Log.d("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
+						Log.e("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
 						removeDownloadNotification();
 	
 						try {
