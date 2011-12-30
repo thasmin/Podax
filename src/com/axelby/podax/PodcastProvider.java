@@ -262,7 +262,7 @@ public class PodcastProvider extends ContentProvider {
 		Cursor c = db.query("podcasts", new String[] { "queuePosition" },
 				"_id = ?", new String[] { podcastId }, null, null, null);
 		c.moveToFirst();
-		Integer oldPosition = Integer.MAX_VALUE;
+		Integer oldPosition = null;
 		if (!c.isNull(0))
 			oldPosition = c.getInt(0);
 		c.close();
@@ -278,8 +278,7 @@ public class PodcastProvider extends ContentProvider {
 
 			// download the newly added podcast
 			UpdateService.downloadPodcasts(getContext());
-		}
-		if (oldPosition != null && newPosition == null) {
+		} else if (oldPosition != null && newPosition == null) {
 			// remove 3: 1 2 3 4 5 do: 4-- 5--
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 "
 					+ "WHERE queuePosition > ?", new Object[] { oldPosition });
