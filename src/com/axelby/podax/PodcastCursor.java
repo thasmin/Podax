@@ -34,11 +34,6 @@ public class PodcastCursor {
 			return;
 		if (_cursor.isBeforeFirst())
 			_cursor.moveToFirst();
-
-		// duplicated code to avoid a throws clause in the constructor
-		_idColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_ID);
-		if (!_cursor.isNull(_idColumn))
-			cursor.setNotificationUri(_context.getContentResolver(), ContentUris.withAppendedId(PodcastProvider.URI, _cursor.getLong(_idColumn)));
 	}
 
 	public boolean isNull() {
@@ -67,6 +62,8 @@ public class PodcastCursor {
 	}
 
 	public Long getId() {
+		if (_idColumn == null)
+			_idColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_ID);
 		if (_cursor.isNull(_idColumn))
 			return null;
 		return _cursor.getLong(_idColumn);
