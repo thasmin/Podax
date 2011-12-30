@@ -51,7 +51,7 @@ public class PodcastListActivity extends ListActivity {
 				PodcastProvider.COLUMN_FILE_SIZE,
 				PodcastProvider.COLUMN_QUEUE_POSITION,
 		};
-		Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+		Cursor cursor = managedQuery(uri, projection, null, null, null);
 		getListView().setAdapter(new PodcastAdapter(this, cursor));
 
 		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
