@@ -340,6 +340,7 @@ public class PlayerService extends Service {
 
 		// if the podcast has ended and it's back in the queue, restart it
 		String[] projection = {
+				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_DURATION,
 				PodcastProvider.COLUMN_LAST_POSITION,
 		};
