@@ -53,4 +53,6 @@
 	<string name="popular_subscription_title">Popular Subscription</string>
 	<string name="add_subscription">Add Subscription</string>
 	<string name="rss_not_valid">RSS not valid</string>
+	<string name="gpodder_authenticator_activity_title">GPodder Account Details</string>
+	<string name="gpodder">GPodder</string>
 </resources>

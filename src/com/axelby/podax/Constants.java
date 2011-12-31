@@ -9,6 +9,8 @@ public class Constants {
 	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";
 	public static final String ACTION_DOWNLOAD_PODCASTS = "com.axelby.podax.DOWNLOAD_PODCASTS";
 	public static final String ACTION_STARTUP = "com.axelby.podax.STARTUP";
+
+	public static final String GPODDER_ACCOUNT_TYPE = "com.axelby.podax.GPodderAccount";
 	
 	public static final String EXTRA_PODCAST_ID = "com.axelby.podax.podcastId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
