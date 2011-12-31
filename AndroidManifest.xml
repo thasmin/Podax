@@ -10,6 +10,10 @@
 	<uses-permission android:name="android.permission.USE_CREDENTIALS" />
 	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+	<uses-permission android:name="android.permission.READ_SYNC_STATS" />
+	<uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+	<uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
 
 	<supports-screens
 		android:smallScreens="true"
@@ -105,9 +109,27 @@
 		<activity android:name=".PopularSubscriptionActivity"
 				  android:label="@string/popular_subscription_title"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
+		<activity android:name=".GPodderAuthenticatorActivity"
+				  android:label="@string/gpodder_authenticator_activity_title"
+				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 
 		<service android:name=".UpdateService" />
 		<service android:name=".PlayerService" />
+
+		<service android:name=".GPodderAuthenticationService">
+			<intent-filter>
+				<action android:name="android.accounts.AccountAuthenticator" />
+			</intent-filter>
+			<meta-data android:name="android.accounts.AccountAuthenticator"
+					   android:resource="@xml/gpodder_authenticator" />  
+		</service>
+		<service android:name=".GPodderSyncService">
+		    <intent-filter>
+		        <action android:name="android.content.SyncAdapter" />
+		    </intent-filter>
+		    <meta-data android:name="android.content.SyncAdapter"
+					   android:resource="@xml/gpodder_syncadapter" />
+		</service>
 
 		<receiver android:name=".SmallWidgetProvider" android:label="Podax 4x1">
 			<intent-filter>
@@ -126,10 +148,13 @@
 		</receiver>
 		
 		<provider android:name=".SearchSuggestionProvider"
+				  android:label="Podax Search"
 	              android:authorities="com.axelby.podax.searchsuggestionprovider" />
 		<provider android:name=".PodcastProvider"
+				  android:label="Podcasts"
 			      android:authorities="com.axelby.podax.podcastprovider" />
 		<provider android:name=".SubscriptionProvider"
+				  android:label="Podcast Subscriptions"
 			      android:authorities="com.axelby.podax.subscriptionprovider" />
 	</application>
 </manifest> 

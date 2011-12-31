@@ -54,4 +54,6 @@
 	<string name="add_subscription">Add Subscription</string>
 	<string name="rss_not_valid">RSS not valid</string>
 	<string name="drag_to_rearrange_queue">drag to rearrange queue</string>
+	<string name="gpodder_authenticator_activity_title">GPodder Account Details</string>
+	<string name="gpodder">GPodder</string>
 </resources>
