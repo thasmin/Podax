@@ -1,19 +1,13 @@
 package com.axelby.podax;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
@@ -28,16 +22,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-
 import android.os.Handler;
-import android.webkit.CookieManager;
 
 import com.google.api.client.util.Base64;
 import com.google.gson.stream.JsonReader;
@@ -73,15 +58,12 @@ public class GPodderClient {
 	}
 
 	private static Config retrieveGPodderConfig() {
-		String url = "http://gpodder.net/clientconfig.json";
-		HttpGet get = new HttpGet(url);
-		HttpClient client = new DefaultHttpClient();
-
 		Config config = new Config();
 
 		try {
-			HttpResponse response = client.execute(get);
-			JsonReader reader = new JsonReader(new InputStreamReader(response.getEntity().getContent()));
+			URL url = new URL("http://gpodder.net/clientconfig.json");
+			HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
 			reader.beginObject();
 			
 			// get mygpo
@@ -104,8 +86,6 @@ public class GPodderClient {
 
 			reader.endObject();
 			reader.close();
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -115,6 +95,7 @@ public class GPodderClient {
 
 	private String _username;
 	private String _password;
+	private String _sessionId;
 
 	public GPodderClient(String username, String password) {
 		_username = username;
@@ -157,7 +138,7 @@ public class GPodderClient {
 		HttpsURLConnection conn;
 		try {
 			url = new URL(_config.mygpo + "api/2/auth/" + _username + "/login.json");
-			conn = createConnection(_username, _password, url);
+			conn = createConnection(url);
 		} catch (Exception e) {
 			return false;
 		}
@@ -175,10 +156,11 @@ public class GPodderClient {
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			conn.disconnect();
-			return code == 200;
+			if (code != 200) {
+				conn.disconnect();
+				return false;
+			}
 			
-			/*
 			for (Entry<String, List<String>> h : conn.getHeaderFields().entrySet())
 				System.out.println(h.getKey() + "(" + h.getValue().size() + "): " + h.getValue().get(0));
 
@@ -205,15 +187,15 @@ public class GPodderClient {
 			}
 
 			conn.disconnect();
-			*/
+
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return true;
 	}
 
-	public HttpsURLConnection createConnection(final String username,
-			final String password, URL url) throws IOException, Exception {
+	public HttpsURLConnection createConnection(URL url) throws IOException, Exception {
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
 				return new java.security.cert.X509Certificate[] {};
@@ -238,7 +220,7 @@ public class GPodderClient {
 		conn = (HttpsURLConnection)url.openConnection();
 
 		// basic authentication
-		String toBase64 = username + ":" + password;
+		String toBase64 = _username + ":" + _password;
 		conn.addRequestProperty("Authorization", "basic " + new String(Base64.encode(toBase64.getBytes())));
 
 		// gpodder cert does not resolve on android
