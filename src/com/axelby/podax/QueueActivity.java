@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
@@ -109,33 +110,66 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			if (position == -1)
 				return true;
 
+			for (int i = listView.getFirstVisiblePosition(); i <= listView.getLastVisiblePosition(); ++i)
+			{
+				Rect bounds = new Rect();
+				listView.getChildAt(i - listView.getFirstVisiblePosition()).getHitRect(bounds);
+				dragLog(String.format("position %d: top: %d, bottom: %d, height %d, centerY: %d", i, bounds.top, bounds.bottom, bounds.height(), bounds.centerY()));
+			}
+			dragLog(String.format("pointing to y %f, position %d", event.getY(), position));
 			View listItem = listView.getChildAt(position - listView.getFirstVisiblePosition());
 			// no listview means we're below the last one
 			if (listItem == null) {
+				dragLogEnd(String.format("moving to last position: %d", getListAdapter().getCount()));
 				adapter.setQueuePosition(getListAdapter().getCount());
 				return true;
 			}
 
-			Long podcastId = (Long)listItem.getTag();
-
 			// don't change anything if we're hovering over this one
-			if (podcastId == adapter.getHeldPodcastId())
+			if (position == adapter.getHeldQueuePosition()) {
+				dragLogEnd("hovering over held podcast");
 				return true;
+			}
 
 			// remove hidden podcast from ordering
-			if (position > adapter.getHeldQueuePosition())
+			dragLog(String.format("comparing position %d and geld position %d", position, adapter.getHeldQueuePosition()));
+			if (position >= adapter.getHeldQueuePosition()) {
+				dragLog("subtracting 1 because we're past held");
 				position -= 1;
+			}
 
-			// if pointer is in top half of item then put separator above,
-			// otherwise below
+			// move podcast to proper position
 			Rect bounds = new Rect();
 			listItem.getHitRect(bounds);
-			if (event.getY() > (bounds.top + bounds.bottom) / 2.0f)
-				position += 1;
-			adapter.setQueuePosition(position);
+			dragLog(String.format("height: %d, centerY: %d, eventY: %f", bounds.height(), bounds.centerY(), event.getY()));
+			// don't move podcast if it's in middle 20% to avoid jumping
+			if (event.getY() >= bounds.centerY() - bounds.height() * 0.1f &&
+				event.getY() <= bounds.centerY() + bounds.height() * 0.1f) {
+				dragLogEnd("middle 20%");
 				return true;
+			}
+			// if pointer is in top half of item then put separator above,
+			// otherwise below
+			if (event.getY() > bounds.centerY())
+				position += 1;
+			dragLogEnd(String.format("moving to position %d", position));
+			adapter.setQueuePosition(position);
+			return true;
 		}
 		return false;
+	}
+
+	private final boolean logDragMessages = false;
+	private void dragLog(String message) {
+		if (logDragMessages) {
+			Log.d("Podax", message);
+		}
+	}
+	private void dragLogEnd(String message) {
+		if (logDragMessages) {
+			Log.d("Podax", message);
+			Log.d("Podax", " ");
+		}
 	}
 
 	private class QueueListAdapter extends ResourceCursorAdapter {
@@ -147,9 +181,8 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 					int position = getListView().getPositionForView(view);
 
 					position -= getListView().getFirstVisiblePosition();
-					ViewSwitcher switcher = (ViewSwitcher)getListView().getChildAt(position);
-					QueueListAdapter.this.holdPodcast(switcher.getTag());
-					//switcher.showNext();
+					dragLog(String.format("holding podcast at position %d", position));
+					QueueListAdapter.this.holdPodcast(position);
 					return true;
 				}
 				return false;
@@ -190,18 +223,9 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 				switcher.showPrevious();
 		}
 
-		public void holdPodcast(Object podcastId) {
-			String[] projection = {
-					PodcastProvider.COLUMN_ID,
-					PodcastProvider.COLUMN_QUEUE_POSITION,
-			};
-			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, (Long)podcastId);
-			Cursor held = getContentResolver().query(podcastUri, projection, null, null, null);
-			if (!held.moveToNext())
-				return;
-			_heldPodcastId = (Long)podcastId;
-			_heldQueuePosition = held.getInt(held.getColumnIndex(PodcastProvider.COLUMN_QUEUE_POSITION));
-			held.close();
+		public void holdPodcast(int position) {
+			_heldQueuePosition = position;
+			_heldPodcastId = (Long)getListView().getChildAt(position).getTag();
 			notifyDataSetChanged();
 		}
 		
@@ -225,7 +249,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			// update the held cursor to have the new queue position
 			// the queue will automatically reorder
 			ContentValues heldValues = new ContentValues();
-			heldValues.put(PodcastProvider.COLUMN_QUEUE_POSITION, position);
+			heldValues.put(PodcastProvider.COLUMN_QUEUE_POSITION, position + 1);
 			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _heldPodcastId);
 			getContentResolver().update(podcastUri, heldValues, null, null);
 			_heldQueuePosition = position;
