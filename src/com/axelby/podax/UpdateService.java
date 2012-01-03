@@ -37,9 +37,7 @@ public class UpdateService extends Service {
 	}
 
 	private SubscriptionUpdateBinder _binder = new SubscriptionUpdateBinder();
-	private PendingIntent _hourlyRefreshIntent;
 	private SubscriptionUpdater _subscriptionUpdater;
-	private PendingIntent _hourlyDownloadIntent;
 	private PodcastDownloader _podcastDownloader;
 
 	public class SubscriptionUpdateBinder extends Binder {
@@ -84,15 +82,15 @@ public class UpdateService extends Service {
 			// refresh the feeds
 			Intent refreshIntent = new Intent(this, UpdateService.class);
 			refreshIntent.setAction(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS);
-			_hourlyRefreshIntent = PendingIntent.getService(this, 0, refreshIntent, 0);
+			PendingIntent pendingRefreshIntent = PendingIntent.getService(this, 0, refreshIntent, 0);
 			alarmManager.setInexactRepeating(AlarmManager.RTC,
-					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyRefreshIntent);
+					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, pendingRefreshIntent);
 
 			Intent downloadIntent = new Intent(this, UpdateService.class);
 			downloadIntent.setAction(Constants.ACTION_DOWNLOAD_PODCASTS);
-			_hourlyDownloadIntent = PendingIntent.getService(this, 0, downloadIntent, 0);
+			PendingIntent pendingDownloadIntent = PendingIntent.getService(this, 0, downloadIntent, 0);
 			alarmManager.setInexactRepeating(AlarmManager.RTC,
-					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, _hourlyDownloadIntent);
+					System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, pendingDownloadIntent);
 			
 			_subscriptionUpdater.addAllSubscriptions();
 			_subscriptionUpdater.run();
