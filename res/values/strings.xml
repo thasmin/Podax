@@ -53,4 +53,5 @@
 	<string name="popular_subscription_title">Popular Subscription</string>
 	<string name="add_subscription">Add Subscription</string>
 	<string name="rss_not_valid">RSS not valid</string>
+	<string name="drag_to_rearrange_queue">drag to rearrange queue</string>
 </resources>

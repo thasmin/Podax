@@ -5,7 +5,7 @@
 	<!-- the list item -->
 	<RelativeLayout android:id="@+id/listitem"
 	    			android:layout_width="fill_parent"
-					android:layout_height="?android:attr/listPreferredItemHeight"
+					android:layout_height="wrap_content"
 					android:padding="6dip"
 					android:gravity="center_vertical">
 		<LinearLayout
@@ -16,14 +16,14 @@
 			android:gravity="center_vertical">
 			<TextView
 			    android:id="@+id/title"
-			    android:text="podcast"
+			    android:text=""
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
-			    android:textAppearance="?android:attr/textAppearanceLarge"
+			    android:textAppearance="?android:attr/textAppearanceMedium"
 			    />
 			<TextView
 			    android:id="@+id/subscription"
-			    android:text="subscription"
+			    android:text=""
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
 			    android:textAppearance="?android:attr/textAppearanceSmall"
@@ -37,6 +37,7 @@
 			android:layout_height="wrap_content"
 			android:layout_centerVertical="true"
 			android:gravity="center"
+			android:contentDescription="@string/drag_to_rearrange_queue"
 			/>
 	</RelativeLayout>
 
