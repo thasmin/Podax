@@ -7,6 +7,7 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -41,10 +42,13 @@ public class GPodderSyncService extends Service {
 		@Override
 		public void onPerformSync(Account account, Bundle extras, String authority,
 				ContentProviderClient provider, SyncResult syncResult) {
-			//GPodderClient client = new GPodderClient();
+			SharedPreferences prefs = _context.getSharedPreferences("gpodder", MODE_PRIVATE);
+			int lastCheck = prefs.getInt("lastCheck", 0);
+
 			AccountManager accountManager = AccountManager.get(_context);
 			GPodderClient client = new GPodderClient(account.name, accountManager.getPassword(account));
 			client.authenticate();
+			Integer newTimestamp = client.getChanges(lastCheck);
 		}
 	
 	}

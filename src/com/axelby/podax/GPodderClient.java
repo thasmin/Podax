@@ -1,19 +1,15 @@
 package com.axelby.podax;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.CookieHandler;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map.Entry;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -131,68 +127,16 @@ public class GPodderClient {
 		return t;
 	}
 
-	protected boolean authenticate() {
-		verifyCurrentConfig();
-
-		URL url;
-		HttpsURLConnection conn;
+	private void writePost(HttpsURLConnection conn, String toPost)
+			throws IOException {
+		conn.setDoOutput(true);
+		OutputStream output = null;
 		try {
-			url = new URL(_config.mygpo + "api/2/auth/" + _username + "/login.json");
-			conn = createConnection(url);
-		} catch (Exception e) {
-			return false;
+		     output = conn.getOutputStream();
+		     output.write(toPost.getBytes());
+		} finally {
+		     if (output != null) try { output.close(); } catch (IOException logOrIgnore) {}
 		}
-		
-		try {
-			// do a post
-			conn.setDoOutput(true);
-			OutputStream output = null;
-			try {
-			     output = conn.getOutputStream();
-			     output.write(" ".getBytes());
-			} finally {
-			     if (output != null) try { output.close(); } catch (IOException logOrIgnore) {}
-			}
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200) {
-				conn.disconnect();
-				return false;
-			}
-			
-			for (Entry<String, List<String>> h : conn.getHeaderFields().entrySet())
-				System.out.println(h.getKey() + "(" + h.getValue().size() + "): " + h.getValue().get(0));
-
-			String contentType = conn.getHeaderField("Content-Type");
-			String charset = null;
-			for (String param : contentType.replace(" ", "").split(";")) {
-			    if (param.startsWith("charset=")) {
-			        charset = param.split("=", 2)[1];
-			        break;
-			    }
-			}
-			if (charset != null) {
-			    BufferedReader reader = null;
-			    try {
-			    	InputStream is = conn.getInputStream();
-			        InputStreamReader inputStreamReader = new InputStreamReader(is, charset);
-					reader = new BufferedReader(inputStreamReader);
-			        for (String line; (line = reader.readLine()) != null;) {
-			            System.out.println(line);
-			        }
-			    } finally {
-			        if (reader != null) try { reader.close(); } catch (IOException logOrIgnore) {}
-			    }
-			}
-
-			conn.disconnect();
-
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return true;
 	}
 
 	public HttpsURLConnection createConnection(URL url) throws IOException, Exception {
@@ -222,6 +166,8 @@ public class GPodderClient {
 		// basic authentication
 		String toBase64 = _username + ":" + _password;
 		conn.addRequestProperty("Authorization", "basic " + new String(Base64.encode(toBase64.getBytes())));
+		if (_sessionId != null)
+			conn.addRequestProperty("Cookie", "sessionid=" + _sessionId);
 
 		// gpodder cert does not resolve on android
 		conn.setHostnameVerifier(new HostnameVerifier() {
@@ -231,6 +177,100 @@ public class GPodderClient {
 		});
 
 		return conn;
+	}
+
+	protected boolean authenticate() {
+		verifyCurrentConfig();
+
+		URL url;
+		HttpsURLConnection conn = null;
+		try {
+			url = new URL(_config.mygpo + "api/2/auth/" + _username + "/login.json");
+			conn = createConnection(url);
+			writePost(conn, " ");
+
+			conn.connect();
+
+			int code = conn.getResponseCode();
+			if (code != 200)
+				return false;
+
+			for (String val : conn.getHeaderFields().get("Set-Cookie")) {
+				String[] data = val.split(";")[0].split("=");
+				if (data[0].equals("sessionid"))
+					_sessionId = data[1];
+			}
+
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null)
+				conn.disconnect();
+		}
+		return true;
+	}
+
+	public Integer getChanges(long lastCheck) {
+		verifyCurrentConfig();
+
+		Integer timestamp = null;
+
+		URL url;
+		HttpsURLConnection conn = null;
+		try {
+			url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/podax.json?since=" + String.valueOf(lastCheck));
+			conn = createConnection(url);
+
+			conn.connect();
+
+			int code = conn.getResponseCode();
+			if (code != 200)
+				return timestamp;
+
+			try {
+				InputStream stream = conn.getInputStream();
+				JsonReader reader = new JsonReader(new InputStreamReader(stream));
+				reader.beginObject();
+
+				// get add
+				for (int i = 0; i < 3; ++i) {
+					String key = reader.nextName();
+					if (key.equals("add")) {
+						reader.beginArray();
+						while (reader.hasNext()) {
+							String toAdd = reader.nextString();
+							toAdd.charAt(0);
+						}
+						reader.endArray();
+					} else if (key.equals("remove")) {
+						reader.beginArray();
+						while (reader.hasNext()) {
+							String toRemove = reader.nextString();
+							toRemove.charAt(0);
+						}
+						reader.endArray();
+					} else if (key.equals("timestamp")) {
+						timestamp = reader.nextInt();
+					}
+				}
+
+				reader.endObject();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null)
+				conn.disconnect();
+		}
+
+		return timestamp;
 	}
 
 }
