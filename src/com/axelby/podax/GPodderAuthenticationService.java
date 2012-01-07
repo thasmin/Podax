@@ -51,7 +51,7 @@ public class GPodderAuthenticationService extends Service {
 				Account account, Bundle options) throws NetworkErrorException {
 			if (options != null && options.containsKey(AccountManager.KEY_PASSWORD)) {
 				final String password = options.getString(AccountManager.KEY_PASSWORD);
-				GPodderClient client = new GPodderClient(account.name, password);
+				GPodderClient client = new GPodderClient(_context, account.name, password);
 				final boolean verified = client.authenticate();
 				final Bundle result = new Bundle();
 				result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, verified);
