@@ -31,6 +31,7 @@ public class SubscriptionProvider extends ContentProvider {
 	public static final String COLUMN_LAST_UPDATE = "lastUpdate";
 	public static final String COLUMN_ETAG = "eTag";
 	public static final String COLUMN_THUMBNAIL = "thumbnail";
+	public static final String COLUMN_GPODDER_SYNCTIME = "gpodder_synctime";
 
 	private static final int SUBSCRIPTIONS = 1;
 	private static final int SUBSCRIPTION_ID = 2;
@@ -55,6 +56,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_columnMap.put(COLUMN_LAST_UPDATE, "id");
 		_columnMap.put(COLUMN_ETAG, "eTag");
 		_columnMap.put(COLUMN_THUMBNAIL, "thumbnail");
+		_columnMap.put(COLUMN_GPODDER_SYNCTIME, "gpodder_synctime");
 	}
 
 	DBAdapter _dbAdapter;
@@ -125,6 +127,8 @@ public class SubscriptionProvider extends ContentProvider {
 	public int update(Uri uri, ContentValues values, String where,
 			String[] whereArgs) {
 		switch (_uriMatcher.match(uri)) {
+		case SUBSCRIPTIONS:
+			break;
 		case SUBSCRIPTION_ID:
 			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
 			if (where != null)
@@ -138,7 +142,8 @@ public class SubscriptionProvider extends ContentProvider {
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		int count = db.update("subscriptions", values, where, whereArgs);
-		getContext().getContentResolver().notifyChange(uri, null);
+		if (!URI.equals(uri))
+			getContext().getContentResolver().notifyChange(uri, null);
 		getContext().getContentResolver().notifyChange(URI, null);
 		return count;
 	}

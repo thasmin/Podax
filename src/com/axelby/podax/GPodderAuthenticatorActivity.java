@@ -99,7 +99,7 @@ public class GPodderAuthenticatorActivity extends AccountAuthenticatorActivity {
 			_messageText.setText(getMessage());
 		} else {
 			showProgress();
-			GPodderClient client = new GPodderClient(_username, _password);
+			GPodderClient client = new GPodderClient(this, _username, _password);
 			_authThread = client.authorizeInBackground(_handler,
 					GPodderAuthenticatorActivity.this);
 		}
