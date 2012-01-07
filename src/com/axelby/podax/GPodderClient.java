@@ -213,7 +213,7 @@ public class GPodderClient {
 		return true;
 	}
 
-	public Integer getChanges(long lastCheck) {
+	public Integer getSubscriptionChanges(long lastCheck) {
 		verifyCurrentConfig();
 
 		Integer timestamp = null;
