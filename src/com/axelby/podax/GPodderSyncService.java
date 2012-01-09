@@ -42,7 +42,12 @@ public class GPodderSyncService extends Service {
 		@Override
 		public void onPerformSync(Account account, Bundle extras, String authority,
 				ContentProviderClient provider, SyncResult syncResult) {
-			// find the last timestamp
+			AccountManager accountManager = AccountManager.get(_context);
+			GPodderClient client = new GPodderClient(_context, account.name, accountManager.getPassword(account));
+			if (!client.authenticate())
+				return;
+
+			// find the last time we updated
 			String[] projection = { SubscriptionProvider.COLUMN_GPODDER_SYNCTIME };
 			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, null, null, SubscriptionProvider.COLUMN_GPODDER_SYNCTIME + " DESC");
 			if (!c.moveToNext())
@@ -50,12 +55,10 @@ public class GPodderSyncService extends Service {
 			int lastTimestamp = c.getInt(0);
 			c.close();
 
-			AccountManager accountManager = AccountManager.get(_context);
-			GPodderClient client = new GPodderClient(_context, account.name, accountManager.getPassword(account));
-			if (client.authenticate()) {
-				client.getSubscriptionChanges(lastTimestamp);
-				client.sendSubscriptions();
-			}
+			// update gpodder with new subscriptions
+			client.sendSubscriptions();
+
+			client.getSubscriptionChanges(lastTimestamp);
 		}
 	
 	}
