@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 3;
+	private static final int DATABASE_VERSION = 2;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -90,11 +90,6 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"FROM subscriptions_old");
 			db.execSQL("DROP TABLE subscriptions_old");
 			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
-		}
-
-		if (oldVersion < 3) {
-			// add gpodder_synctime column to subscriptionstable
-			db.execSQL("ALTER TABLE subscriptions ADD gpodder_synctime INTEGER");
 		}
 	}
 }

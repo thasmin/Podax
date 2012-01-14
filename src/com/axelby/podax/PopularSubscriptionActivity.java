@@ -16,6 +16,7 @@ import org.xml.sax.SAXException;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.sax.Element;
@@ -23,6 +24,9 @@ import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Xml;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class PopularSubscriptionActivity extends Activity {
@@ -51,6 +55,16 @@ public class PopularSubscriptionActivity extends Activity {
 		String title = getIntent().getExtras().getString(Constants.EXTRA_TITLE);
 		TextView titleView = (TextView) findViewById(R.id.title);
 		titleView.setText(title);
+
+		Button add_subscription = (Button) findViewById(R.id.add_subscription);
+		add_subscription.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				ContentValues values = new ContentValues();
+				values.put(SubscriptionProvider.COLUMN_URL, getIntent().getExtras().getString(Constants.EXTRA_URL));
+				getContentResolver().insert(SubscriptionProvider.URI, values);
+				finish();
+			}			
+		});
 
 		_dialog = ProgressDialog.show(this, "", "Loading Subscription...", true, true);
 
