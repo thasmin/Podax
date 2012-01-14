@@ -5,25 +5,17 @@ import android.accounts.AccountManager;
 import android.app.Service;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-<<<<<<< HEAD
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-=======
-import android.content.Context;
-import android.content.Intent;
->>>>>>> 9f00096c1d2909dee5f7948a09b0b30fc132d6b1
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
 
-<<<<<<< HEAD
 import com.axelby.podax.GPodderClient.Changes;
 
-=======
->>>>>>> 9f00096c1d2909dee5f7948a09b0b30fc132d6b1
 public class GPodderSyncService extends Service {
     private static final Object _syncAdapterLock = new Object();
     private static GPodderSyncAdapter _syncAdapter = null;
@@ -59,7 +51,6 @@ public class GPodderSyncService extends Service {
 			if (!client.authenticate())
 				return;
 
-<<<<<<< HEAD
 			SharedPreferences gpodderPrefs = getContext().getSharedPreferences("gpodder", MODE_PRIVATE);
 			int lastTimestamp = gpodderPrefs.getInt("lastTimestamp", 0);
 
@@ -105,20 +96,6 @@ public class GPodderSyncService extends Service {
 			for (String oldUrl : changes.removed) {
 				_context.getContentResolver().delete(SubscriptionProvider.URI, "url = ?", new String[] { oldUrl });
 			}
-=======
-			// find the last time we updated
-			String[] projection = { SubscriptionProvider.COLUMN_GPODDER_SYNCTIME };
-			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, null, null, SubscriptionProvider.COLUMN_GPODDER_SYNCTIME + " DESC");
-			if (!c.moveToNext())
-				return;
-			int lastTimestamp = c.getInt(0);
-			c.close();
-
-			// update gpodder with new subscriptions
-			client.sendSubscriptions();
-
-			client.getSubscriptionChanges(lastTimestamp);
->>>>>>> 9f00096c1d2909dee5f7948a09b0b30fc132d6b1
 		}
 	
 	}
