@@ -23,7 +23,6 @@ import javax.net.ssl.X509TrustManager;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.os.Handler;
 
 import com.google.api.client.util.Base64;
@@ -224,14 +223,19 @@ public class GPodderClient {
 		return true;
 	}
 
-	public Integer getSubscriptionChanges(long lastCheck) {
+	public class Changes {
+		public Vector<String> added = new Vector<String>();
+		public Vector<String> removed = new Vector<String>();
+		public int timestamp = 0;
+		public boolean isValid() { return timestamp != 0; }
+	}
+
+	public Changes getSubscriptionChanges(int lastCheck) {
 		verifyCurrentConfig();
 
-		Integer timestamp = null;
-
-		boolean anyInserted = false;
 		URL url;
 		HttpsURLConnection conn = null;
+		Changes changes = new Changes();
 		try {
 			url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/podax.json?since=" + String.valueOf(lastCheck));
 			conn = createConnection(url);
@@ -240,7 +244,7 @@ public class GPodderClient {
 
 			int code = conn.getResponseCode();
 			if (code != 200)
-				return timestamp;
+				return changes;
 
 			InputStream stream = conn.getInputStream();
 			JsonReader reader = new JsonReader(new InputStreamReader(stream));
@@ -250,28 +254,16 @@ public class GPodderClient {
 			while (reader.hasNext()) {
 				String key = reader.nextName();
 				if (key.equals("timestamp")) {
-					timestamp = reader.nextInt();
+					changes.timestamp = reader.nextInt();
 				} else if (key.equals("add")) {
 					reader.beginArray();
-					while (reader.hasNext()) {
-						String newUrl = reader.nextString();
-
-						ContentValues values = new ContentValues();
-						values.put(SubscriptionProvider.COLUMN_GPODDER_SYNCTIME, timestamp);
-						// if we can update something then we already have it in the DB
-						if (_context.getContentResolver().update(SubscriptionProvider.URI, values, "url = ?", new String[] { newUrl }) == 0) {
-							// updated 0 records so do an insert
-							values.put(SubscriptionProvider.COLUMN_URL, newUrl);
-							_context.getContentResolver().insert(SubscriptionProvider.URI, values);
-							anyInserted = true;
-						}
-					}
+					while (reader.hasNext())
+						changes.added.add(reader.nextString());
 					reader.endArray();
 				} else if (key.equals("remove")) {
 					reader.beginArray();
-					while (reader.hasNext()) {
-						_context.getContentResolver().delete(SubscriptionProvider.URI, "url = ?", new String[] { reader.nextString() });
-					}
+					while (reader.hasNext())
+						changes.removed.add(reader.nextString());
 					reader.endArray();
 				}
 			}
@@ -286,26 +278,14 @@ public class GPodderClient {
 				conn.disconnect();
 		}
 
-		if (anyInserted)
-			UpdateService.updateSubscriptions(_context);
-
-		return timestamp;
+		return changes;
 	}
 
-	public Integer sendSubscriptions() {
+	public int syncDiffs(Changes diffs) {
 		verifyCurrentConfig();
 
-		Integer timestamp = null;
-
-		String[] projection = { SubscriptionProvider.COLUMN_URL };
-		Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, "gpodder_synctime IS NULL", null, null);
-		Vector<String> toAdd = new Vector<String>();
-		while (c.moveToNext())
-			toAdd.add(c.getString(0));
-		c.close();
-
-		if (toAdd.size() == 0)
-			return timestamp;
+		if (diffs.added.size() == 0 && diffs.removed.size() == 0)
+			return diffs.timestamp;
 
 		URL url;
 		HttpsURLConnection conn = null;
@@ -318,14 +298,18 @@ public class GPodderClient {
 			JsonWriter writer = new JsonWriter(streamWriter);
 			writer.beginObject();
 
+			// rectify removed urls by adding them
 			writer.name("add");
 			writer.beginArray();
-			for (String s : toAdd)
+			for (String s : diffs.removed)
 				writer.value(s);
 			writer.endArray();
 
+			// rectify added urls by removing them
 			writer.name("remove");
 			writer.beginArray();
+			for (String s : diffs.added)
+				writer.value(s);
 			writer.endArray();
 
 			writer.endObject();
@@ -335,11 +319,12 @@ public class GPodderClient {
 
 			int code = conn.getResponseCode();
 			if (code != 200)
-				return timestamp;
+				return diffs.timestamp;
 
 			InputStream stream = conn.getInputStream();
 			JsonReader reader = new JsonReader(new InputStreamReader(stream));
 
+			int timestamp = 0;
 			reader.beginObject();
 			while (reader.hasNext()) {
 				String key = reader.nextName();
@@ -354,31 +339,22 @@ public class GPodderClient {
 						String newUrl = reader.nextString();
 
 						ContentValues values = new ContentValues();
-						values.put(SubscriptionProvider.COLUMN_GPODDER_SYNCTIME, timestamp);
 						values.put(SubscriptionProvider.COLUMN_URL, newUrl);
 						_context.getContentResolver().update(SubscriptionProvider.URI, values, "url = ?", new String[] { oldUrl });
-						toAdd.remove(oldUrl);
 					}
 				}
 			}
-
-			// update the gpodder synctime
-			for (String s : toAdd) {
-				ContentValues values = new ContentValues();
-				values.put(SubscriptionProvider.COLUMN_GPODDER_SYNCTIME, timestamp);
-				_context.getContentResolver().update(SubscriptionProvider.URI, values, "url = ?", new String[] { s });
-			}
+			
+			return timestamp;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			c.close();
 		}
 
-		return timestamp;
+		// only here when errored
+		return diffs.timestamp;
 	}
-
 }
