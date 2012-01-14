@@ -30,7 +30,7 @@ public class SubscriptionCursor {
 		_cursor = cursor;
 
 		// duplicated code to avoid a throws clause in the constructor
-		_idColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_ID);
+		_idColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_ID);
 		if (!_cursor.isNull(_idColumn))
 			cursor.setNotificationUri(_context.getContentResolver(), ContentUris.withAppendedId(SubscriptionProvider.URI, _cursor.getLong(_idColumn)));
 
@@ -57,6 +57,8 @@ public class SubscriptionCursor {
 	}
 
 	public Long getId() {
+		if (_idColumn == null)
+			_idColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_ID);
 		if (_cursor.isNull(_idColumn))
 			return null;
 		return _cursor.getLong(_idColumn);
