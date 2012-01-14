@@ -3,6 +3,7 @@ package com.axelby.podax;
 import java.io.File;
 import java.util.HashMap;
 
+import android.accounts.AccountManager;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -37,6 +38,7 @@ public class SubscriptionProvider extends ContentProvider {
 	private static final int SUBSCRIPTION_ID = 2;
 	private static final int PODCASTS = 3;
 	private static final int SUBSCRIPTIONS_SEARCH = 4;
+	private static final int SUBSCRIPTIONS_TO_UNSYNC = 5;
 
 	static UriMatcher _uriMatcher;
 	static HashMap<String, String> _columnMap;
@@ -47,6 +49,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/#", SUBSCRIPTION_ID);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/#/podcasts", PODCASTS);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/search", SUBSCRIPTIONS_SEARCH);
+		_uriMatcher.addURI(AUTHORITY, "subscriptions/to_unsync", SUBSCRIPTIONS_TO_UNSYNC);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "_id");
@@ -96,6 +99,10 @@ public class SubscriptionProvider extends ContentProvider {
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(_columnMap);
 		sqlBuilder.setTables("subscriptions");
+
+		// gpodder_synctime == -1 means it needs to be removed from gpodder
+		if (uriMatch != SUBSCRIPTIONS_TO_UNSYNC)
+			sqlBuilder.appendWhere("gpodder_synctime != -1");
 
 		switch (uriMatch) {
 		case SUBSCRIPTIONS:
@@ -183,6 +190,9 @@ public class SubscriptionProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
+
+		AccountManager am = AccountManager.get(getContext());
+		boolean hasGpodderSync = am.getAccountsByType("com.axelby.podax.GPodderAccount").length > 0;
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		int count = db.delete("subscriptions", where, whereArgs);
