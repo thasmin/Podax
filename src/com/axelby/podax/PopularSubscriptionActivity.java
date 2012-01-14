@@ -62,6 +62,7 @@ public class PopularSubscriptionActivity extends Activity {
 				ContentValues values = new ContentValues();
 				values.put(SubscriptionProvider.COLUMN_URL, getIntent().getExtras().getString(Constants.EXTRA_URL));
 				getContentResolver().insert(SubscriptionProvider.URI, values);
+				UpdateService.updateSubscriptions(PopularSubscriptionActivity.this);
 				finish();
 			}			
 		});
@@ -144,7 +145,7 @@ public class PopularSubscriptionActivity extends Activity {
 				TextView description = (TextView) findViewById(R.id.description);
 				description.setText(result.description);
 
-				_dialog.hide();
+				_dialog.dismiss();
 			}
 
 		}.execute(url);
