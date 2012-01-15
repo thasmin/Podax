@@ -23,7 +23,6 @@ import javax.net.ssl.X509TrustManager;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.os.Handler;
 
 import com.google.api.client.util.Base64;
 import com.google.gson.stream.JsonReader;
@@ -104,35 +103,6 @@ public class GPodderClient {
 		_context = context;
 		_username = username;
 		_password = password;
-	}
-
-	public Thread authorizeInBackground(final Handler handler,
-			final GPodderAuthenticatorActivity activity) {
-		final Runnable runnable = new Runnable() {
-			public void run() {
-				final boolean isValid = authenticate();
-				if (handler == null || activity == null) {
-					return;
-				}
-				handler.post(new Runnable() {
-					public void run() {
-						activity.onAuthenticationResult(isValid);
-					}
-				});
-			}
-		};
-		final Thread t = new Thread() {
-			@Override
-			public void run() {
-				try {
-					runnable.run();
-				} finally {
-
-				}
-			}
-		};
-		t.start();
-		return t;
 	}
 
 	private void writePost(HttpsURLConnection conn, String toPost)

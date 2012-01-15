@@ -99,9 +99,27 @@ public class GPodderAuthenticatorActivity extends AccountAuthenticatorActivity {
 			_messageText.setText(getMessage());
 		} else {
 			showProgress();
-			GPodderClient client = new GPodderClient(this, _username, _password);
-			_authThread = client.authorizeInBackground(_handler,
-					GPodderAuthenticatorActivity.this);
+			final GPodderClient client = new GPodderClient(this, _username, _password);
+
+			_authThread = new Thread() {
+				@Override
+				public void run() {
+					try {
+						new Runnable() {
+							public void run() {
+								final boolean isValid = client.authenticate();
+								_handler.post(new Runnable() {
+									public void run() {
+										onAuthenticationResult(isValid);
+									}
+								});
+							}
+						}.run();
+					} finally {
+					}
+				}
+			};
+			_authThread.start();
 		}
 	}
 
