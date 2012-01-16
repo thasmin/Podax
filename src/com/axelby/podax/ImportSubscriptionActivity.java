@@ -48,7 +48,7 @@ import android.widget.Toast;
 public class ImportSubscriptionActivity extends ListActivity {
 
 	private AccountManager _accountManager;
-	private Account[] _googleAccounts;
+	private Account[] _googleAccounts = { };
 	private Account _chosenAccount;
 
 	private final int GOOGLE_ACCOUNT_START = 3;
@@ -64,14 +64,15 @@ public class ImportSubscriptionActivity extends ListActivity {
 					public void run(AccountManagerFuture<Account[]> future) {
 						try {
 							_googleAccounts = future.getResult();
-							ImportSubscriptionActivity.this
-									.setListAdapter(new ImportSubscriptionAdapter());
 						} catch (OperationCanceledException e) {
 							Log.e("Podax", "Operation Canceled", e);
 						} catch (IOException e) {
 							Log.e("Podax", "IOException", e);
 						} catch (AuthenticatorException e) {
-							Log.e("Podax", "Authentication Failed", e);
+							// no authenticator registered
+						} finally {
+							ImportSubscriptionActivity.this
+									.setListAdapter(new ImportSubscriptionAdapter());
 						}
 					}
 			}, null);
@@ -156,9 +157,9 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 		
 		public int getCount() {
-			return _googleAccounts.length == 0 ?
-					GOOGLE_ACCOUNT_START :
-					_googleAccounts.length + GOOGLE_ACCOUNT_START;
+			return _googleAccounts.length == 0 ? 
+						GOOGLE_ACCOUNT_START - 1 :
+						_googleAccounts.length + GOOGLE_ACCOUNT_START;
 		}
 
 		public Object getItem(int position) {
