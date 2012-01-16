@@ -142,12 +142,6 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			Rect bounds = new Rect();
 			listItem.getHitRect(bounds);
 			dragLog(String.format("height: %d, centerY: %d, eventY: %f", bounds.height(), bounds.centerY(), event.getY()));
-			// don't move podcast if it's in middle 20% to avoid jumping
-			if (event.getY() >= bounds.centerY() - bounds.height() * 0.1f &&
-				event.getY() <= bounds.centerY() + bounds.height() * 0.1f) {
-				dragLogEnd("middle 20%");
-				return true;
-			}
 			// if pointer is in top half of item then put separator above,
 			// otherwise below
 			if (event.getY() > bounds.centerY())
