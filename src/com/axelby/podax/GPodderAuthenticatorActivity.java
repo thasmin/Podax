@@ -10,7 +10,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -148,7 +147,7 @@ public class GPodderAuthenticatorActivity extends AccountAuthenticatorActivity {
             accountManager.addAccountExplicitly(account, _password, null);
             // Set contacts sync for this account.
             ContentResolver.setSyncAutomatically(account,
-                ContactsContract.AUTHORITY, true);
+                PodcastProvider.AUTHORITY, true);
         } else {
             accountManager.setPassword(account, _password);
         }       
