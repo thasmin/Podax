@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.os.Bundle;
 import android.os.IBinder;
 
@@ -88,9 +89,13 @@ public class GPodderSyncService extends Service {
 
 		private void updateSubscriptions(Changes changes) {
 			for (String newUrl : changes.added) {
-				ContentValues values = new ContentValues();
-				values.put(SubscriptionProvider.COLUMN_URL, newUrl);
-				_context.getContentResolver().insert(SubscriptionProvider.URI, values);
+				try {
+					ContentValues values = new ContentValues();
+					values.put(SubscriptionProvider.COLUMN_URL, newUrl);
+					_context.getContentResolver().insert(SubscriptionProvider.URI, values);
+				} catch (SQLiteConstraintException ex) {
+					// don't care if the url didn't get inserted because it's already there
+				}
 			}
 
 			for (String oldUrl : changes.removed) {
