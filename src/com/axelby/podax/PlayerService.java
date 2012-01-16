@@ -329,6 +329,8 @@ public class PlayerService extends Service {
 
 	public Long moveToNextInQueue() {
 		Long activePodcastId = findFirstDownloadedInQueue();
+		if (activePodcastId == null)
+			stop();
 		changeActivePodcast(activePodcastId);
 		return activePodcastId;
 	}
@@ -345,15 +347,15 @@ public class PlayerService extends Service {
 				PodcastProvider.COLUMN_LAST_POSITION,
 		};
 		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
-		c.moveToNext();
-		PodcastCursor podcast = new PodcastCursor(this, c);
 		try {
-			if (podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000)
-				podcast.setLastPosition(0);
+			if (c.moveToNext()) {
+				PodcastCursor podcast = new PodcastCursor(this, c);
+				if (podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000)
+					podcast.setLastPosition(0);
+			}
 		} finally {
 			c.close();
 		}
-
 	}
 
 	public Long verifyPodcastReady() {
