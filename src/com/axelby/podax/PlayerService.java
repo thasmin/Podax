@@ -10,11 +10,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.media.AudioManager;
+import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -48,6 +50,18 @@ public class PlayerService extends Service {
 	private static final Uri _activePodcastUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 	
 	protected static boolean _isPlaying = false;
+
+	private OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
+		public void onAudioFocusChange(int focusChange) {
+			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
+			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
+			if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+				doResume();
+			} else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+				doStop();
+			}
+		}
+	};
 	public static boolean isPlaying() {
 		return _isPlaying;
 	}
@@ -185,6 +199,15 @@ public class PlayerService extends Service {
 	}
 
 	public void stop() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+			am.abandonAudioFocus(_afChangeListener);
+		}
+
+		doStop();
+	}
+
+	private void doStop() {
 		Log.d("Podax", "PlayerService stopping");
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
@@ -198,7 +221,20 @@ public class PlayerService extends Service {
 	public void resume() {
 		if (_onPhone)
 			return;
-		
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+			int result = am.requestAudioFocus(_afChangeListener,
+	                AudioManager.STREAM_MUSIC,
+	                AudioManager.AUDIOFOCUS_GAIN);
+			if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED)
+				stop();
+		}
+
+		doResume();
+	}
+
+	private void doResume() {
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_MEDIA_URL,
