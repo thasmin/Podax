@@ -182,6 +182,12 @@ public class PodcastCursor {
 		_context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
+	public void moveToFirstInQueue() {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, 1);
+		_context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
 	public static String getExtension(String filename) {
 		String extension = "";
 		int i = filename.lastIndexOf('.');

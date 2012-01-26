@@ -56,4 +56,5 @@
 	<string name="drag_to_rearrange_queue">drag to rearrange queue</string>
 	<string name="gpodder_authenticator_activity_title">GPodder Account Details</string>
 	<string name="gpodder">GPodder</string>
+	<string name="move_to_first_in_queue">Move to First in Queue</string>
 </resources>

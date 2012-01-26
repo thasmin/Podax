@@ -28,6 +28,7 @@ import android.widget.ViewSwitcher;
 public class QueueActivity extends ListActivity implements OnTouchListener {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
+	static final int OPTION_MOVETOFIRSTINQUEUE = 3;
 
 	Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 	String[] projection = new String[] {
@@ -63,6 +64,8 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 				Cursor c = (Cursor) getListAdapter().getItem(mi.position);
 				PodcastCursor podcast = new PodcastCursor(QueueActivity.this, c); 
 				
+				menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINQUEUE,
+						ContextMenu.NONE, R.string.move_to_first_in_queue);
 				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
 						ContextMenu.NONE, R.string.remove_from_queue);
 				
@@ -82,6 +85,9 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 		PodcastCursor podcast = new PodcastCursor(this, cursor);
 
 		switch (item.getItemId()) {
+		case OPTION_MOVETOFIRSTINQUEUE:
+			podcast.moveToFirstInQueue();
+			break;
 		case OPTION_REMOVEFROMQUEUE:
 			podcast.removeFromQueue();
 			break;
