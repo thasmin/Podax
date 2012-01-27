@@ -8,18 +8,11 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -118,28 +111,7 @@ public class GPodderClient {
 	}
 
 	public HttpsURLConnection createConnection(URL url) throws IOException, Exception {
-		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-				return new java.security.cert.X509Certificate[] {};
-			}
-
-			public void checkClientTrusted(X509Certificate[] chain,
-					String authType) throws CertificateException {
-			}
-
-			public void checkServerTrusted(X509Certificate[] chain,
-					String authType) throws CertificateException {
-			}
-		} };
-
-		HttpsURLConnection conn;
-
-		// Install the all-trusting trust manager
-		SSLContext sc = SSLContext.getInstance("TLS");
-		sc.init(null, trustAllCerts, new java.security.SecureRandom());
-		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		
-		conn = (HttpsURLConnection)url.openConnection();
+		HttpsURLConnection conn = (HttpsURLConnection)url.openConnection();
 
 		if (_sessionId == null) {
 			// basic authentication
@@ -148,13 +120,6 @@ public class GPodderClient {
 		} else {
 			conn.addRequestProperty("Cookie", "sessionid=" + _sessionId);
 		}
-
-		// gpodder cert does not resolve on android
-		conn.setHostnameVerifier(new HostnameVerifier() {
-			public boolean verify(String hostname, SSLSession session) {
-				return true;
-			}
-		});
 
 		return conn;
 	}
