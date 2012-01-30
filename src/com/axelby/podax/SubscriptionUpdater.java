@@ -111,9 +111,8 @@ class SubscriptionUpdater {
 
 					Cursor c = _context.getContentResolver().query(subscriptionUri, projection, null, null, null);
 					try {
-						if (c.isAfterLast())
+						if (!c.moveToNext())
 							continue;
-						c.moveToNext();
 						SubscriptionCursor subscription = new SubscriptionCursor(_context, c);
 
 						HttpGet request = new HttpGet(subscription.getUrl());
@@ -199,7 +198,9 @@ class SubscriptionUpdater {
 									} else if (namespace.equals("") && name.equalsIgnoreCase("description")) {
 										podcastValues.put(PodcastProvider.COLUMN_DESCRIPTION, parser.nextText());
 									} else if (name.equalsIgnoreCase("pubDate")) {
-										Date pubDate = rssDateFormat.parse(parser.nextText());
+										String dateText = parser.nextText();
+										SimpleDateFormat format = findMatchingDateFormat(rfc822DateFormats, dateText);
+										Date pubDate = format.parse(dateText);
 										podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, pubDate.getTime() / 1000);
 									} else if (name.equalsIgnoreCase("enclosure")) {
 										podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, Long.valueOf(parser.getAttributeValue(null, "length")));
