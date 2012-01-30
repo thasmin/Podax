@@ -28,12 +28,6 @@ public class SubscriptionCursor {
 		if (cursor.isAfterLast())
 			return;
 		_cursor = cursor;
-
-		// duplicated code to avoid a throws clause in the constructor
-		_idColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_ID);
-		if (!_cursor.isNull(_idColumn))
-			cursor.setNotificationUri(_context.getContentResolver(), ContentUris.withAppendedId(SubscriptionProvider.URI, _cursor.getLong(_idColumn)));
-
 	}
 	
 	public boolean isNull() {
