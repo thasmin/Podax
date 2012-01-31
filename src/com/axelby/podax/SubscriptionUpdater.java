@@ -203,8 +203,13 @@ class SubscriptionUpdater {
 										Date pubDate = format.parse(dateText);
 										podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, pubDate.getTime() / 1000);
 									} else if (name.equalsIgnoreCase("enclosure")) {
-										podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, Long.valueOf(parser.getAttributeValue(null, "length")));
 										podcastValues.put(PodcastProvider.COLUMN_MEDIA_URL, parser.getAttributeValue(null, "url"));
+										String length = parser.getAttributeValue(null, "length");
+										try {
+											podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, Long.valueOf(length));
+										} catch (Exception e) {
+											podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, 0L);
+										}
 									}
 								} else if (eventType == XmlPullParser.END_TAG) {
 									String name = parser.getName();
