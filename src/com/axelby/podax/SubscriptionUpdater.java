@@ -15,6 +15,7 @@ import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Vector;
 
 import org.apache.http.HttpResponse;
@@ -254,6 +255,16 @@ class SubscriptionUpdater {
 				try {
 					format.parse(date);
 					return format;
+				} catch (ParseException e) {
+				}
+			}
+
+			// try it again in english
+			for (SimpleDateFormat format : choices) {
+				try {
+					SimpleDateFormat enUSFormat = new SimpleDateFormat(format.toPattern(), Locale.US);
+					enUSFormat.parse(date);
+					return enUSFormat;
 				} catch (ParseException e) {
 				}
 			}
