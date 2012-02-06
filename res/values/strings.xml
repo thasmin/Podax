@@ -57,4 +57,10 @@
 	<string name="gpodder_authenticator_activity_title">GPodder Account Details</string>
 	<string name="gpodder">GPodder</string>
 	<string name="move_to_first_in_queue">Move to First in Queue</string>
+	<string name="go_to_details">Go To Details</string>
+	<string name="go_to_queue">Go To Queue</string>
+	<string name="restart">Restart</string>
+	<string name="rewind">Rewind</string>
+	<string name="fast_forward">Fast Forward</string>
+	<string name="skip_to_end">Skip To End</string>
 </resources>
