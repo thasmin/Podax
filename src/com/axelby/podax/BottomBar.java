@@ -117,7 +117,7 @@ public class BottomBar extends LinearLayout {
 	private Long _lastPodcastId = null;
 	public void updateUI() {
 		boolean isPlaying = PlayerService.isPlaying();
-		_pausebtn.setImageResource(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
 
 		PodcastCursor podcast = new PodcastCursor(getContext(), _cursor);
 		if (!podcast.isNull()) {

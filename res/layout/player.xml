@@ -8,9 +8,10 @@
 	      android:background="#FFE59F39"
 	      android:layout_alignParentTop="true" />
 	<ImageButton android:id="@+id/pausebtn"
-				 android:layout_width="wrap_content"
-				 android:layout_height="wrap_content" 
-				 android:src="@drawable/android:ic_media_play"
+				 android:layout_width="40dp"
+				 android:layout_height="40dp"
+				 android:src="@drawable/ic_media_play"
+				 android:background="@android:color/transparent"
 				 android:layout_below="@id/separator"
 				 android:layout_centerVertical="true"
 				 android:layout_alignParentLeft="true" />

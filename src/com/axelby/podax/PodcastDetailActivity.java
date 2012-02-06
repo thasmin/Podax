@@ -233,8 +233,8 @@ public class PodcastDetailActivity extends Activity {
 					_seekbar.setProgress(p.getLastPosition());
 				}
 
-				int playResource = PlayerService.isPlaying() ? android.R.drawable.ic_media_pause
-						: android.R.drawable.ic_media_play;
+				int playResource = PlayerService.isPlaying() ? R.drawable.ic_media_pause
+						: R.drawable.ic_media_play;
 				_playButton.setImageResource(playResource);
 
 				if (!force && _controlsEnabled == true)
@@ -251,7 +251,7 @@ public class PodcastDetailActivity extends Activity {
 				if (!force && !_controlsEnabled)
 					return;
 
-				_playButton.setImageResource(android.R.drawable.ic_media_play);
+				_playButton.setImageResource(R.drawable.ic_media_play);
 				_restartButton.setEnabled(false);
 				_rewindButton.setEnabled(false);
 				_forwardButton.setEnabled(false);

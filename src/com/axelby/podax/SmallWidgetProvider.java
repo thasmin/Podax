@@ -53,7 +53,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			views.setTextViewText(R.id.title, "Queue empty");
 			views.setTextViewText(R.id.podcast, "");
 			views.setTextViewText(R.id.positionstring, "");
-			views.setImageViewResource(R.id.play_btn, android.R.drawable.ic_media_play);
+			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		} else {
 			views.setTextViewText(R.id.title, podcast.getTitle());
 			views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
@@ -62,7 +62,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 
 		cursor.close();
 
-		int imageRes = PlayerService.isPlaying() ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
+		int imageRes = PlayerService.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 		views.setImageViewResource(R.id.play_btn, imageRes);
 	}
 }
