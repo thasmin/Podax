@@ -38,37 +38,50 @@
 					android:text="2:00:00" />
 			</LinearLayout>
 
-			<RelativeLayout android:id="@+id/play_layout"
-				android:orientation="horizontal" android:layout_width="wrap_content"
+			<LinearLayout android:id="@+id/play_layout"
+				android:orientation="horizontal"
+				android:weightSum="8"
+				android:layout_width="fill_parent"
 				android:layout_height="wrap_content">
 				
 				<ImageButton android:id="@+id/restart_btn"
+				    android:layout_weight="1"
+				    android:padding="10dp"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_alignParentLeft="true"
-					android:src="@drawable/android:ic_media_previous" />
+					android:background="@android:color/transparent"
+					android:src="@drawable/ic_media_previous" />
 				<ImageButton android:id="@+id/rewind_btn"
+				    android:layout_weight="1"
+				    android:padding="10dp"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_toRightOf="@+id/restart_btn"
-					android:src="@drawable/android:ic_media_rew" />
+					android:background="@android:color/transparent"
+					android:src="@drawable/ic_media_rew" />
 				<ImageButton android:id="@+id/play_btn"
+				    android:layout_weight="3"
+				    android:padding="10dp"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:layout_centerHorizontal="true"
-					android:src="@drawable/android:ic_media_play" />
+					android:background="@android:color/transparent"
+					android:src="@drawable/ic_media_play" />
 				<ImageButton android:id="@+id/forward_btn"
+				    android:layout_weight="1"
+				    android:padding="10dp"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_toLeftOf="@+id/skiptoend_btn"
-					android:src="@drawable/android:ic_media_ff" />
+					android:background="@android:color/transparent"
+					android:src="@drawable/ic_media_ff" />
 				<ImageButton android:id="@+id/skiptoend_btn"
+				    android:layout_weight="1"
+				    android:padding="10dp"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_alignParentRight="true"
-					android:src="@drawable/android:ic_media_next" />
+					android:background="@android:color/transparent"
+					android:src="@drawable/ic_media_next" />
 
-			</RelativeLayout>
+			</LinearLayout>
 
 			<LinearLayout android:id="@+id/queue_layout"
 				android:orientation="horizontal" android:layout_width="wrap_content"
