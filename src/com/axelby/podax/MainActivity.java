@@ -49,14 +49,6 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		View discover = this.findViewById(R.id.discover);
-		discover.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, DiscoverActivity.class);
-				startActivity(intent);
-			}
-		});
-
 		View about = this.findViewById(R.id.about);
 		about.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {

@@ -36,8 +36,9 @@
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/queue_img"
-					   android:layout_width="64px"
-					   android:layout_height="64px"
+					   android:layout_width="wrap_content"
+					   android:layout_height="wrap_content"
+					   android:contentDescription="@string/queue"
 					   android:src="@drawable/queue"/>
 			<TextView android:id="@+id/queue_text"
 			    	  style="@style/mainText"
@@ -53,8 +54,9 @@
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/subscriptions_img"
-					   android:layout_width="64px"
-					   android:layout_height="64px"
+					   android:layout_width="wrap_content"
+					   android:layout_height="wrap_content"
+					   android:contentDescription="@string/subscriptions"
 					   android:src="@drawable/book_bookmark"/>
 			<TextView android:id="@+id/subscriptions_text"
 			    	  style="@style/mainText"
@@ -70,30 +72,14 @@
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/readerimport_img"
-					   android:layout_width="64px"
-					   android:layout_height="64px"
+					   android:layout_width="wrap_content"
+					   android:layout_height="wrap_content"
+					   android:contentDescription="@string/import_subscriptions"
 					   android:src="@drawable/bookmark_add"/>
 			<TextView android:id="@+id/readerimport_text"
 			    	  style="@style/mainText"
 					  android:text="@string/import_subscriptions"
 					  android:layout_toRightOf="@id/readerimport_img" />
-		</RelativeLayout>
-
-		<RelativeLayout android:id="@+id/discover"
-						android:layout_width="fill_parent"
-						android:layout_height="wrap_content"
-						android:paddingTop="10dp"
-						android:paddingBottom="10dp" 
-						android:paddingLeft="20dp"
-						android:paddingRight="0dp">
-			<ImageView android:id="@+id/discover_img"
-					   android:layout_width="64px"
-					   android:layout_height="64px"
-					   android:src="@drawable/globe"/>
-			<TextView android:id="@+id/discover_text"
-			    	  style="@style/mainText"
-					  android:text="@string/discover_subscriptions"
-					  android:layout_toRightOf="@+id/discover_img" />
 		</RelativeLayout>
 
 		<RelativeLayout android:id="@+id/activedownloads"
@@ -104,8 +90,9 @@
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/activedownloads_img"
-					   android:layout_width="64px"
-					   android:layout_height="64px"
+					   android:layout_width="wrap_content"
+					   android:layout_height="wrap_content"
+					   android:contentDescription="@string/active_downloads"
 					   android:src="@drawable/inbox"/>
 			<TextView android:id="@+id/activedownloads_text"
 			    	  style="@style/mainText"
@@ -121,8 +108,9 @@
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/about_img"
-					   android:layout_width="64px"
-					   android:layout_height="64px"
+					   android:layout_width="wrap_content"
+					   android:layout_height="wrap_content"
+					   android:contentDescription="@string/about_podax"
 					   android:src="@drawable/info"/>
 			<TextView android:id="@+id/about_text"
 			    	  style="@style/mainText"

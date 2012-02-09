@@ -51,7 +51,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 	private Account[] _googleAccounts = { };
 	private Account _chosenAccount;
 
-	private final int GOOGLE_ACCOUNT_START = 3;
+	private final int GOOGLE_ACCOUNT_START = 4;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -138,6 +138,11 @@ public class ImportSubscriptionActivity extends ListActivity {
 			}
 			return;
 		}
+
+		if (position == 2) {
+			startActivity(new Intent(this, DiscoverActivity.class));
+			return;
+		}
 		
 		if (position >= GOOGLE_ACCOUNT_START) {
 			_chosenAccount = _googleAccounts[position - GOOGLE_ACCOUNT_START];
@@ -182,6 +187,12 @@ public class ImportSubscriptionActivity extends ListActivity {
 			if (position == 1) {
 				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
 				view.setText(R.string.add_from_opml_file);
+				return view;
+			}
+
+			if (position == 2) {
+				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
+				view.setText(R.string.discover_subscriptions);
 				return view;
 			}
 
