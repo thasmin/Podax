@@ -184,7 +184,7 @@ public class PodcastCursor {
 
 	public void moveToFirstInQueue() {
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, 1);
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, 0);
 		_context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
