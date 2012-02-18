@@ -13,29 +13,27 @@
 				android:layout_above="@id/bottombar">
 
 		<LinearLayout android:id="@+id/mainlayout"
-			android:layout_width="fill_parent" android:layout_height="fill_parent"
+			android:layout_width="fill_parent" android:layout_height="wrap_content"
 			android:orientation="vertical">
 
-			<TextView android:id="@+id/subscription_title" android:text="subscription_title"
+			<TextView android:id="@+id/subscription_title"
 				android:layout_width="fill_parent" android:layout_height="wrap_content"
 				android:textSize="16dp" android:gravity="center_horizontal" />
 
 			<LinearLayout android:id="@+id/seekLayout"
 				android:layout_width="fill_parent" android:layout_height="wrap_content"
-				orientation="horizontal">
+				android:orientation="horizontal">
 				<TextView android:id="@+id/position"
 					android:layout_width="wrap_content" android:layout_height="wrap_content"
 					android:layout_gravity="center_vertical" android:layout_weight="0" 
-					android:layout_marginRight="10dp" android:layout_marginLeft="10dp"  
-					android:text="1:59:59" />
+					android:layout_marginRight="10dp" android:layout_marginLeft="10dp" />
 				<SeekBar android:id="@+id/seekbar"
 					android:layout_width="fill_parent" android:layout_height="wrap_content"
 					android:layout_weight="1" />
 				<TextView android:id="@+id/duration"
 					android:layout_width="wrap_content" android:layout_height="wrap_content"
 					android:layout_gravity="center_vertical" android:layout_weight="0" 
-					android:layout_marginRight="10dp" android:layout_marginLeft="10dp"
-					android:text="2:00:00" />
+					android:layout_marginRight="10dp" android:layout_marginLeft="10dp" />
 			</LinearLayout>
 
 			<LinearLayout android:id="@+id/play_layout"
@@ -50,6 +48,7 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:background="@android:color/transparent"
+					android:contentDescription="@string/restart"
 					android:src="@drawable/ic_media_previous" />
 				<ImageButton android:id="@+id/rewind_btn"
 				    android:layout_weight="1"
@@ -57,14 +56,15 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:background="@android:color/transparent"
+					android:contentDescription="@string/rewind"
 					android:src="@drawable/ic_media_rew" />
 				<ImageButton android:id="@+id/play_btn"
 				    android:layout_weight="3"
 				    android:padding="10dp"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_centerHorizontal="true"
 					android:background="@android:color/transparent"
+					android:contentDescription="@string/pause"
 					android:src="@drawable/ic_media_play" />
 				<ImageButton android:id="@+id/forward_btn"
 				    android:layout_weight="1"
@@ -72,6 +72,7 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:background="@android:color/transparent"
+					android:contentDescription="@string/fast_forward"
 					android:src="@drawable/ic_media_ff" />
 				<ImageButton android:id="@+id/skiptoend_btn"
 				    android:layout_weight="1"
@@ -79,6 +80,7 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:background="@android:color/transparent"
+					android:contentDescription="@string/skip_to_end"
 					android:src="@drawable/ic_media_next" />
 
 			</LinearLayout>
@@ -89,7 +91,7 @@
 				<Button android:id="@+id/queue_btn" android:layout_width="wrap_content"
 					android:layout_height="wrap_content" android:text="@string/add_to_queue" />
 				<TextView android:id="@+id/queue_position" android:layout_width="wrap_content"
-					android:layout_height="fill_parent" android:text="asdf"
+					android:layout_height="fill_parent"
 					android:gravity="center_vertical" />
 			</LinearLayout>
 
