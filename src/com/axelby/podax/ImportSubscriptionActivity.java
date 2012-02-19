@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -22,9 +23,11 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ProviderInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -41,6 +44,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,7 +55,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 	private Account[] _googleAccounts = { };
 	private Account _chosenAccount;
 
-	private final int GOOGLE_ACCOUNT_START = 4;
+	private final int GOOGLE_ACCOUNT_START = 5;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -143,7 +147,19 @@ public class ImportSubscriptionActivity extends ListActivity {
 			startActivity(new Intent(this, DiscoverActivity.class));
 			return;
 		}
-		
+
+		if (position == 3) {
+			if (!isGPodderInstalled()) {
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				intent.setData(Uri.parse("market://details?id=com.axeby.gpodder"));
+				startActivity(intent);
+			} else {
+				Intent intent = new Intent();
+				intent.setClassName("com.axelby.gpodder", "com.axelby.gpodder.AuthenticatorActivity");
+				startActivity(intent);
+			}
+		}
+
 		if (position >= GOOGLE_ACCOUNT_START) {
 			_chosenAccount = _googleAccounts[position - GOOGLE_ACCOUNT_START];
 			getAuthToken();
@@ -193,6 +209,17 @@ public class ImportSubscriptionActivity extends ListActivity {
 			if (position == 2) {
 				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
 				view.setText(R.string.discover_subscriptions);
+				return view;
+			}
+
+			if (position == 3) {
+				View view = _inflater.inflate(R.layout.subscription_list_item, null);
+
+				TextView text = (TextView)view.findViewById(R.id.text);
+				text.setText("Link a GPodder account");
+
+				ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
+				thumbnail.setImageResource(R.drawable.mygpo);
 				return view;
 			}
 
@@ -255,6 +282,15 @@ public class ImportSubscriptionActivity extends ListActivity {
 			}
 		}, 
 		null);
+	}
+
+	public boolean isGPodderInstalled() {
+		List<ProviderInfo> providerList = getPackageManager().queryContentProviders(null, 0, 0);
+		for (ProviderInfo provider : providerList) {
+			if (provider.authority.equals("com.axelby.gpodder.podcasts"))
+				return true;
+		}
+		return providerList != null;
 	}
 
 	@Override
