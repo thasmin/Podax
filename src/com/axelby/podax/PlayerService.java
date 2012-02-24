@@ -211,10 +211,11 @@ public class PlayerService extends Service {
 		Log.d("Podax", "PlayerService stopping");
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
-		updateActivePodcastPosition();
+		_player.pause();
 		_isPlaying = false;
-		_player.stop();
 		updateWidgets();
+		updateActivePodcastPosition();
+		_player.stop();
 		stopSelf();
 	}
 	
