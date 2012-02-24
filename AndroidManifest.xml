@@ -124,6 +124,13 @@
 			<meta-data android:resource="@xml/largewidget"
 				android:name="android.appwidget.provider" />
 		</receiver>
+
+		<receiver android:name=".GPodderReceiver">
+			<intent-filter>
+				<action android:name="com.axelby.gpodder.INITIALIZE" />
+				<action android:name="com.axelby.gpodder.SUBSCRIPTION_UPDATE" />
+			</intent-filter>
+		</receiver>
 		
 		<provider android:name=".SearchSuggestionProvider"
 				  android:label="Podax Search"
