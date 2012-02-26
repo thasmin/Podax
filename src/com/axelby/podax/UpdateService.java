@@ -77,6 +77,7 @@ public class UpdateService extends Service {
 			return;
 
 		if (action.equals(Constants.ACTION_STARTUP)) {
+			PodaxLog.log(this, "UpdateService responding to startup");
 			AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
 
 			// refresh the feeds
@@ -98,10 +99,12 @@ public class UpdateService extends Service {
 			_podcastDownloader.download();
 		}
 		else if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
+			PodaxLog.log(this, "UpdateService responding to refresh all");
 			_subscriptionUpdater.addAllSubscriptions();
 			_subscriptionUpdater.run();
 		}
 		else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
+			PodaxLog.log(this, "UpdateService responding to refresh one subscription");
 			int subscriptionId = intent.getIntExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 			if (subscriptionId != -1) {
 				_subscriptionUpdater.addSubscriptionId(subscriptionId);
@@ -109,6 +112,7 @@ public class UpdateService extends Service {
 			}
 		}
 		else if (action.equals(Constants.ACTION_DOWNLOAD_PODCASTS)) {
+			PodaxLog.log(this, "UpdateService responding to download request");
 			_podcastDownloader.download();
 		}
 	}

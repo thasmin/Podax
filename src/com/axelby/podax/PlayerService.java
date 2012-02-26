@@ -151,27 +151,33 @@ public class PlayerService extends Service {
 			case -1:
 				return;
 			case Constants.PLAYER_COMMAND_SKIPTO:
+				PodaxLog.log(this, "PlayerService got a command: skip to");
 				Log.d("Podax", "PlayerService got a command: skip to");
 				skipTo(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, 0));
 				break;
 			case Constants.PLAYER_COMMAND_SKIPTOEND:
+				PodaxLog.log(this, "PlayerService got a command: skip to end");
 				Log.d("Podax", "PlayerService got a command: skip to end");
 				removeActivePodcastFromQueue();
 				playNextPodcast();
 				break;
 			case Constants.PLAYER_COMMAND_RESTART:
+				PodaxLog.log(this, "PlayerService got a command: restart");
 				Log.d("Podax", "PlayerService got a command: restart");
 				restart();
 				break;
 			case Constants.PLAYER_COMMAND_SKIPBACK:
+				PodaxLog.log(this, "PlayerService got a command: skip back");
 				Log.d("Podax", "PlayerService got a command: skip back");
 				skip(-15);
 				break;
 			case Constants.PLAYER_COMMAND_SKIPFORWARD:
+				PodaxLog.log(this, "PlayerService got a command: skip forward");
 				Log.d("Podax", "PlayerService got a command: skip forward");
 				skip(30);
 				break;
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
+				PodaxLog.log(this, "PlayerService got a command: playpause");
 				Log.d("Podax", "PlayerService got a command: playpause");
 				if (_isPlaying) {
 					Log.d("Podax", "  stopping the player");
@@ -182,14 +188,17 @@ public class PlayerService extends Service {
 				}
 				break;
 			case Constants.PLAYER_COMMAND_PLAY:
+				PodaxLog.log(this, "PlayerService got a command: play");
 				Log.d("Podax", "PlayerService got a command: play");
 				resume();
 				break;
 			case Constants.PLAYER_COMMAND_PAUSE:
+				PodaxLog.log(this, "PlayerService got a command: pause");
 				Log.d("Podax", "PlayerService got a command: pause");
 				stop();
 				break;
 			case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
+				PodaxLog.log(this, "PlayerService got a command: play specific podcast");
 				Log.d("Podax", "PlayerService got a command: play specific podcast");
 				int podcastId = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
 				play((long)podcastId);
@@ -208,6 +217,7 @@ public class PlayerService extends Service {
 	}
 
 	private void doStop() {
+		PodaxLog.log(this, "PlayerService stopping");
 		Log.d("Podax", "PlayerService stopping");
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
