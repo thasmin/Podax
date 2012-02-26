@@ -143,10 +143,18 @@ public class PodaxApp extends Application {
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		if (netInfo == null || !netInfo.isConnectedOrConnecting())
 			return false;
-		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("wifiPref", true) &&
-				netInfo.getType() != ConnectivityManager.TYPE_WIFI)
+		// always OK if we're on wifi
+		if (netInfo.getType() == ConnectivityManager.TYPE_WIFI)
+			return true;
+		// check for wifi only pref
+		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("wifiPref", true))
 		{
 			Log.d("Podax", "Not downloading because Wifi is required and not connected");
+			return false;
+		}
+		// check for 3g data turned off
+		if (cm.getBackgroundDataSetting() == false) {
+			Log.d("Podax", "Not downloading because background data is turned off");
 			return false;
 		}
 		
