@@ -75,6 +75,8 @@ public class PlayerService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		PodaxLog.log(this, "PlayerService onCreate");
 		
 		_player = new MediaPlayer();
 		_binder = new PlayerBinder();
@@ -129,6 +131,7 @@ public class PlayerService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		
+		PodaxLog.log(this, "PlayerService onDestroy");
 		Log.d("Podax", "destroying PlayerService");
 	}
 
@@ -144,6 +147,7 @@ public class PlayerService extends Service {
 	}
 
 	private void handleIntent(Intent intent) {
+		PodaxLog.log(this, "PlayerService handling an intent");
 		if (intent == null || intent.getExtras() == null)
 			return;
 		if (intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND)) {

@@ -22,10 +22,10 @@ public class PodaxApp extends Application {
 
 		_instance = this;
 
-		PodaxLog.log(this, "PodaxApp creating");
+		PodaxLog.log(this, "PodaxApp onCreate");
+		Log.d("Podax", "PodaxApp onCreate");
 
 		Intent intent = new Intent(this, UpdateService.class);
-		intent.setAction(Constants.ACTION_STARTUP);
 		startService(intent);
 		
 		PodaxApp.updateWidgets(this);
