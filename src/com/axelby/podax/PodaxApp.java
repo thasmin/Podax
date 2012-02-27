@@ -24,9 +24,6 @@ public class PodaxApp extends Application {
 
 		PodaxLog.log(this, "PodaxApp onCreate");
 		Log.d("Podax", "PodaxApp onCreate");
-
-		Intent intent = new Intent(this, UpdateService.class);
-		startService(intent);
 		
 		PodaxApp.updateWidgets(this);
 	}
