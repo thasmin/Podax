@@ -14,73 +14,63 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class PodaxApp extends Application {
-	static private PodaxApp _instance;
-
 	@Override
 	public void onCreate() {
 		super.onCreate();
 
-		_instance = this;
-
 		PodaxLog.log(this, "PodaxApp onCreate");
 		Log.d("Podax", "PodaxApp onCreate");
-		
-		PodaxApp.updateWidgets(this);
 	}
 
-	public static PodaxApp getApp() {
-		return _instance;
+	public static void play(Context context) {
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_PLAY);
 	}
 
-	public void play() {
-		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY);
+	public static void pause(Context context) {
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_PAUSE);
 	}
 
-	public void pause() {
-		sendPlayerCommand(Constants.PLAYER_COMMAND_PAUSE);
+	public static void playpause(Context context) {
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_PLAYPAUSE);
 	}
 
-	public void playpause() {
-		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAYPAUSE);
+	public static void skipForward(Context context) {
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_SKIPFORWARD);
 	}
 
-	public void skipForward() {
-		sendPlayerCommand(Constants.PLAYER_COMMAND_SKIPFORWARD);
+	public static void skipBack(Context context) {
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_SKIPBACK);
 	}
 
-	public void skipBack() {
-		sendPlayerCommand(Constants.PLAYER_COMMAND_SKIPBACK);
-	}
-
-	public void restart() {
-		sendPlayerCommand(Constants.PLAYER_COMMAND_RESTART);
+	public static void restart(Context context) {
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_RESTART);
 	}
 	
-	public void skipToEnd() {
-		sendPlayerCommand(Constants.PLAYER_COMMAND_SKIPTOEND);
+	public static void skipToEnd(Context context) {
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_SKIPTOEND);
 	}
 	
-	public void skipTo(int secs) {
-		sendPlayerCommand(Constants.PLAYER_COMMAND_SKIPTO, secs);
+	public static void skipTo(Context context, int secs) {
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_SKIPTO, secs);
 	}
 
-	private void sendPlayerCommand(int command, int arg) {
-		Intent intent = new Intent(this, PlayerService.class);
+	private static void sendPlayerCommand(Context context, int command, int arg) {
+		Intent intent = new Intent(context, PlayerService.class);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, arg);
-		startService(intent);
+		context.startService(intent);
 	}
 
-	private void sendPlayerCommand(int command) {
-		Intent intent = new Intent(this, PlayerService.class);
+	private static void sendPlayerCommand(Context context, int command) {
+		Intent intent = new Intent(context, PlayerService.class);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
-		startService(intent);
+		context.startService(intent);
 	}
 
-	public void play(PodcastCursor podcast) {
+	public static void play(Context context, PodcastCursor podcast) {
 		if (podcast == null)
 			return;
-		sendPlayerCommand(Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, (int)(long)podcast.getId());
+		sendPlayerCommand(context, Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, (int)(long)podcast.getId());
 	}
 
 	static String getTimeString(int milliseconds) {

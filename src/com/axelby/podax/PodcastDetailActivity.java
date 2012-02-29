@@ -73,8 +73,6 @@ public class PodcastDetailActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		_app = PodaxApp.getApp();
-
 		Intent intent = this.getIntent();
 		if (intent.hasExtra(Constants.EXTRA_PODCAST_ID)) {
 			int podcastId = intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1);
@@ -129,14 +127,14 @@ public class PodcastDetailActivity extends Activity {
 		_restartButton = (ImageButton)findViewById(R.id.restart_btn);
 		_restartButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				_app.restart();
+				PodaxApp.restart(PodcastDetailActivity.this);
 			}
 		});
 
 		_rewindButton = (ImageButton)findViewById(R.id.rewind_btn);
 		_rewindButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				_app.skipBack();
+				PodaxApp.skipBack(PodcastDetailActivity.this);
 			}
 		});
 
@@ -151,9 +149,9 @@ public class PodcastDetailActivity extends Activity {
 						activeId = c.getLong(0);
 
 					if (PlayerService.isPlaying() && activeId != null && activeId.equals(_podcast.getId()))
-						_app.pause();
+						PodaxApp.pause(PodcastDetailActivity.this);
 					else
-						_app.play(_podcast);
+						PodaxApp.play(PodcastDetailActivity.this, _podcast);
 				} finally {
 					c.close();
 				}
@@ -163,14 +161,14 @@ public class PodcastDetailActivity extends Activity {
 		_forwardButton = (ImageButton)findViewById(R.id.forward_btn);
 		_forwardButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				_app.skipForward();
+				PodaxApp.skipForward(PodcastDetailActivity.this);
 			}
 		});
 
 		_skipToEndButton = (ImageButton)findViewById(R.id.skiptoend_btn);
 		_skipToEndButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				_app.skipToEnd();
+				PodaxApp.skipToEnd(PodcastDetailActivity.this);
 			}
 		});
 
@@ -189,7 +187,7 @@ public class PodcastDetailActivity extends Activity {
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				_seekbar_dragging = false;
-				_app.skipTo(seekBar.getProgress() / 1000);
+				PodaxApp.skipTo(PodcastDetailActivity.this, seekBar.getProgress() / 1000);
 			}
 		});
 		_seekbar_dragging = false;

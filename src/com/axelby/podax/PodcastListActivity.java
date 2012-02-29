@@ -110,7 +110,7 @@ public class PodcastListActivity extends ListActivity {
 			podcast.removeFromQueue();
 			break;
 		case OPTION_PLAY:
-			PodaxApp.getApp().play(podcast);
+			PodaxApp.play(this, podcast);
 		}
 
 		return true;

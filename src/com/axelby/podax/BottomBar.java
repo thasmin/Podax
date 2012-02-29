@@ -102,7 +102,7 @@ public class BottomBar extends LinearLayout {
 		
 		_pausebtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
-				PodaxApp.getApp().playpause();
+				PodaxApp.playpause(BottomBar.this.getContext());
 			}
 		});
 
