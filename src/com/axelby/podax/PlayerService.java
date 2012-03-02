@@ -68,6 +68,7 @@ public class PlayerService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
+		PodaxLog.log(this, "PlayerService onBind: " + intent.getAction());
 		handleIntent(intent);
 		return _binder;
 	}
@@ -97,12 +98,14 @@ public class PlayerService extends Service {
 					_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
 					if (_isPlaying && _onPhone) {
 						_isPlaying = false;
+						setForeground(false);
 						_player.pause();
 						updateActivePodcastPosition();
 						_pausedForPhone = true;
 					}
 					if (!_isPlaying && !_onPhone && _pausedForPhone) {
 						_isPlaying = true;
+						setForeground(true);
 						_player.start();
 						updateActivePodcastPosition();
 						_pausedForPhone = false;
@@ -250,6 +253,8 @@ public class PlayerService extends Service {
 	}
 
 	private void doResume() {
+		PodaxLog.log(this, "PlayerService doResume");
+
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_MEDIA_URL,
@@ -293,6 +298,9 @@ public class PlayerService extends Service {
 			playNextPodcast();
 			return;
 		}
+
+		// the user is actively aware of this service
+		setForeground(true);
 
 		_pausedForPhone = false;
 		_player.start();
