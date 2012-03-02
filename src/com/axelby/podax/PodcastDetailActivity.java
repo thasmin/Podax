@@ -204,11 +204,15 @@ public class PodcastDetailActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		_podcast.unregisterContentObserver(_observer);
+		_cursor.close();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+		Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
+		_cursor = getContentResolver().query(uri, _projection, null, null, null);
+		_podcast = new PodcastCursor(this, _cursor);
 		_podcast.registerContentObserver(_observer);
 	}
 
