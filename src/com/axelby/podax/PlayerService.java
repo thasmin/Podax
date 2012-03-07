@@ -118,6 +118,7 @@ public class PlayerService extends Service {
 		// handle errors so the onCompletionListener doens't get called
 		_player.setOnErrorListener(new OnErrorListener() {
 			public boolean onError(MediaPlayer mp, int what, int extra) {
+				PodaxLog.log(PlayerService.this, "what: %d, extra: %d", what, extra);
 				return true;
 			}
 		});
