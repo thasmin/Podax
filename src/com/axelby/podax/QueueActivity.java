@@ -1,11 +1,14 @@
 package com.axelby.podax;
 
+import java.io.File;
+
 import android.app.ListActivity;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +23,7 @@ import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
@@ -38,6 +42,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 		PodcastProvider.COLUMN_QUEUE_POSITION,
 		PodcastProvider.COLUMN_MEDIA_URL,
 		PodcastProvider.COLUMN_FILE_SIZE,
+		PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 	};
 
 	@Override
@@ -213,6 +218,17 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			TextView subscriptionText = (TextView) view
 					.findViewById(R.id.subscription);
 			subscriptionText.setText(podcast.getSubscriptionTitle());
+
+			ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
+
+			File thumbnailFile = new File(podcast.getThumbnailFilename());
+			if (!thumbnailFile.exists())
+				thumbnail.setImageDrawable(null);
+			else
+			{
+				thumbnail.setImageBitmap(BitmapFactory.decodeFile(podcast.getThumbnailFilename()));
+				thumbnail.setVisibility(1);
+			}
 
 			if (_heldPodcastId != null &&
 					(long)podcast.getId() == (long)_heldPodcastId &&

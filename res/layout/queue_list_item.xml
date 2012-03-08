@@ -8,27 +8,39 @@
 					android:layout_height="wrap_content"
 					android:padding="6dip"
 					android:gravity="center_vertical">
+
+		<ImageView
+		   android:id="@+id/thumbnail"
+		   android:layout_alignParentLeft="true"
+		   android:layout_width="50dip"
+		   android:layout_height="50dip"
+		   android:layout_centerVertical="true"
+		   android:layout_gravity="center"
+		   android:paddingRight="5dip"
+		   android:contentDescription="@string/thumbnail"
+		   />
+
 		<LinearLayout
-			android:layout_toLeftOf="@+id/dragable"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"
-			android:orientation="vertical"
-			android:gravity="center_vertical">
-			<TextView
+			android:layout_toLeftOf="@+id/dragable"
+			android:layout_toRightOf="@+id/thumbnail"
+			android:gravity="center_vertical"
+			android:orientation="vertical" >
+		    <TextView
 			    android:id="@+id/title"
 			    android:text=""
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
-			    android:textAppearance="?android:attr/textAppearanceMedium"
-			    />
+			    android:textAppearance="?android:attr/textAppearanceMedium" />
 			<TextView
 			    android:id="@+id/subscription"
 			    android:text=""
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
-			    android:textAppearance="?android:attr/textAppearanceSmall"
-			    />
+			    android:textAppearance="?android:attr/textAppearanceSmall" />
 		</LinearLayout>
+
 		<ImageView
 			android:id="@+id/dragable"
 			android:src="@drawable/gripper"
