@@ -97,7 +97,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			podcast.removeFromQueue();
 			break;
 		case OPTION_PLAY:
-			PodaxApp.play(this, podcast);
+			PlayerService.play(this, podcast);
 		}
 
 		return true;

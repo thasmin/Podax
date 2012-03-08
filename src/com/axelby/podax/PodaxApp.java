@@ -7,7 +7,6 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -20,57 +19,6 @@ public class PodaxApp extends Application {
 
 		PodaxLog.log(this, "PodaxApp onCreate");
 		Log.d("Podax", "PodaxApp onCreate");
-	}
-
-	public static void play(Context context) {
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_PLAY);
-	}
-
-	public static void pause(Context context) {
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_PAUSE);
-	}
-
-	public static void playpause(Context context) {
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_PLAYPAUSE);
-	}
-
-	public static void skipForward(Context context) {
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_SKIPFORWARD);
-	}
-
-	public static void skipBack(Context context) {
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_SKIPBACK);
-	}
-
-	public static void restart(Context context) {
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_RESTART);
-	}
-	
-	public static void skipToEnd(Context context) {
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_SKIPTOEND);
-	}
-	
-	public static void skipTo(Context context, int secs) {
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_SKIPTO, secs);
-	}
-
-	private static void sendPlayerCommand(Context context, int command, int arg) {
-		Intent intent = new Intent(context, PlayerService.class);
-		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
-		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, arg);
-		context.startService(intent);
-	}
-
-	private static void sendPlayerCommand(Context context, int command) {
-		Intent intent = new Intent(context, PlayerService.class);
-		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
-		context.startService(intent);
-	}
-
-	public static void play(Context context, PodcastCursor podcast) {
-		if (podcast == null)
-			return;
-		sendPlayerCommand(context, Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, (int)(long)podcast.getId());
 	}
 
 	static String getTimeString(int milliseconds) {
