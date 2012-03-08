@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Vector;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -47,6 +49,8 @@ class PodcastDownloader {
 		public void run() {
 			if (!PodaxApp.ensureWifi(_context))
 				return;
+
+			verifyDownloadedFiles();
 
 			Log.d("Podax", "starting podcast downloader on thread " + Thread.currentThread().getId());
 			Cursor cursor = null;
@@ -123,6 +127,32 @@ class PodcastDownloader {
 			}
 		}
 	};
+
+	private void verifyDownloadedFiles() {
+		Vector<String> validMediaFilenames = new Vector<String>();
+		String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_MEDIA_URL,
+		};
+		Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
+		Cursor c = _context.getContentResolver().query(queueUri, projection, null, null, null);
+		while (c.moveToNext())
+			validMediaFilenames.add(new PodcastCursor(_context, c).getFilename());
+		c.close();
+
+		File dir = new File(PodcastCursor.getStoragePath());
+		for (File f : dir.listFiles()) {
+			// make sure the file is a media file
+			String extension = PodcastCursor.getExtension(f.getName());
+			String[] mediaExtensions = new String[] { "mp3", "ogg", "wma", };
+			if (Arrays.binarySearch(mediaExtensions, extension) == -1)
+				continue;
+			if (!validMediaFilenames.contains(f.getAbsolutePath())) {
+				Log.w("Podax", "deleting file " + f.getName());
+				f.delete();
+			}
+		}
+	}
 
 	void updateDownloadNotification(PodcastCursor podcast, long downloaded) {
 		int icon = drawable.icon;
