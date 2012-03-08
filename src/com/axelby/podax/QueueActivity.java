@@ -265,7 +265,7 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			// update the held cursor to have the new queue position
 			// the queue will automatically reorder
 			ContentValues heldValues = new ContentValues();
-			heldValues.put(PodcastProvider.COLUMN_QUEUE_POSITION, position + 1);
+			heldValues.put(PodcastProvider.COLUMN_QUEUE_POSITION, position);
 			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _heldPodcastId);
 			getContentResolver().update(podcastUri, heldValues, null, null);
 			_heldQueuePosition = position;
