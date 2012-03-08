@@ -8,4 +8,4 @@ Features include:
 - a widget for easy pausing and resuming
 - open source development at [Github](https://www.github.com/thasmin/Podax)
 
-The current version of Podax is 0.8 alpha with one bug remaining before 0.9 beta. Then the focus will be on stability before releasing 1.0.
+To get started developing Podax, you may need to rebuild the project files. You can do this by running *android sdk path*/tools/android update project -p *Podax path*.
