@@ -24,13 +24,6 @@ public class BootReceiver extends BroadcastReceiver {
 		alarmManager.cancel(pendingRefreshIntent);
 		alarmManager.setInexactRepeating(AlarmManager.RTC,
 				System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, pendingRefreshIntent);
-
-		Intent downloadIntent = new Intent(context, UpdateService.class);
-		downloadIntent.setAction(Constants.ACTION_DOWNLOAD_PODCASTS);
-		PendingIntent pendingDownloadIntent = PendingIntent.getService(context, 0, downloadIntent, 0);
-		alarmManager.cancel(pendingDownloadIntent);
-		alarmManager.setInexactRepeating(AlarmManager.RTC,
-				System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, pendingDownloadIntent);
 	}
 
 }

@@ -21,27 +21,36 @@ import com.axelby.podax.R.drawable;
 
 class PodcastDownloader {
 	private Context _context;
-	private boolean _isRunning = false;
+	private Thread _thread;
+	// how many times we couldn't run the downloader because it was already running
+	private int _interruptCount = 2;
 
 	PodcastDownloader(Context context) {
 		_context = context;
 	}
 	
 	public void download() {
-		new Thread(_worker).start();
+		// if we've needed to interrupt 4 times, something may be wrong
+		--_interruptCount;
+		if (_thread != null && _interruptCount > 0)
+			return;
+		// reset the interrupt counter
+		_interruptCount = 2;
+
+		if (_thread != null && _thread.isAlive())
+			_thread.interrupt();
+		_thread = new Thread(_worker);
+		_thread.start();
 	}
 	
 	public Runnable _worker = new Runnable() {
 		public void run() {
-			if (_isRunning)
-				return;
 			if (!PodaxApp.ensureWifi(_context))
 				return;
 
+			Log.d("Podax", "starting podcast downloader on thread " + Thread.currentThread().getId());
 			Cursor cursor = null;
 			try {
-				_isRunning = true;
-	
 				Uri uri = Uri.withAppendedPath(PodcastProvider.URI, "to_download");
 				String[] projection = {
 						PodcastProvider.COLUMN_ID,
@@ -80,8 +89,9 @@ class PodcastDownloader {
 						instream = c.getInputStream();
 						int read;
 						byte[] b = new byte[1024*64];
-						while ((read = instream.read(b, 0, b.length)) != -1)
+						while (!Thread.currentThread().isInterrupted() && (read = instream.read(b, 0, b.length)) != -1) {
 							outstream.write(b, 0, read);
+						}
 						instream.close();
 						outstream.close();
 
@@ -109,12 +119,10 @@ class PodcastDownloader {
 				if (cursor != null)
 					cursor.close();
 				removeDownloadNotification();
-
-				_isRunning = false;
+				_thread = null;
 			}
 		}
 	};
-	
 
 	void updateDownloadNotification(PodcastCursor podcast, long downloaded) {
 		int icon = drawable.icon;
