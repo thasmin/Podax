@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="libs/google-api-client-1.2.2-alpha.jar"/>
 	<classpathentry kind="lib" path="libs/joda-time-2.0.jar"/>
 	<classpathentry kind="lib" path="libs/google-gson-stream-2.0.jar"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
