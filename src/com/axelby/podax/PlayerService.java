@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -281,7 +282,9 @@ public class PlayerService extends Service {
 			}
 
 			_player.reset();
-			_player.setDataSource(p.getFilename());
+			// work around for mediaplayer bug: http://code.google.com/p/android/issues/detail?id=10197
+			FileInputStream fi = new FileInputStream(p.getFilename());
+			_player.setDataSource(fi.getFD());
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
 			
