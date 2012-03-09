@@ -101,14 +101,12 @@ public class PlayerService extends Service {
 					_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
 					if (_isPlaying && _onPhone) {
 						_isPlaying = false;
-						setForeground(false);
 						_player.pause();
 						updateActivePodcastPosition();
 						_pausedForPhone = true;
 					}
 					if (!_isPlaying && !_onPhone && _pausedForPhone) {
 						_isPlaying = true;
-						setForeground(true);
 						_player.start();
 						updateActivePodcastPosition();
 						_pausedForPhone = false;
@@ -303,9 +301,6 @@ public class PlayerService extends Service {
 			return;
 		}
 
-		// the user is actively aware of this service
-		setForeground(true);
-
 		_pausedForPhone = false;
 		_player.start();
 		_isPlaying = true;
@@ -445,7 +440,7 @@ public class PlayerService extends Service {
 		AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
 
 		int[] widgetIds;
-		
+
 		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(this, LargeWidgetProvider.class));
 		if (widgetIds.length > 0) {
 			AppWidgetProvider provider = (AppWidgetProvider) new LargeWidgetProvider();
