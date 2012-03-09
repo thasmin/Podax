@@ -19,7 +19,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 public class PodcastDetailActivity extends Activity {
-	PodaxApp _app;
 	Cursor _cursor;
 	PodcastCursor _podcast;
 	long _podcastId;
@@ -178,7 +177,7 @@ public class PodcastDetailActivity extends Activity {
 		_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
-				_position.setText(PodaxApp.getTimeString(progress));
+				_position.setText(Helper.getTimeString(progress));
 			}
 
 			public void onStartTrackingTouch(SeekBar seekBar) {
@@ -193,9 +192,9 @@ public class PodcastDetailActivity extends Activity {
 		_seekbar_dragging = false;
 
 		_position = (TextView)findViewById(R.id.position);
-		_position.setText(PodaxApp.getTimeString(_podcast.getLastPosition()));
+		_position.setText(Helper.getTimeString(_podcast.getLastPosition()));
 		_duration = (TextView)findViewById(R.id.duration);
-		_duration.setText(PodaxApp.getTimeString(_podcast.getDuration()));
+		_duration.setText(Helper.getTimeString(_podcast.getDuration()));
 
 		updatePlayerControls(true);
 	}
@@ -230,8 +229,8 @@ public class PodcastDetailActivity extends Activity {
 
 			if (!p.isNull() && p.getId().equals(_podcast.getId())) {
 				if (!_seekbar_dragging) {
-					_position.setText(PodaxApp.getTimeString(p.getLastPosition()));
-					_duration.setText(PodaxApp.getTimeString(p.getDuration()));
+					_position.setText(Helper.getTimeString(p.getLastPosition()));
+					_duration.setText(Helper.getTimeString(p.getDuration()));
 					_seekbar.setProgress(p.getLastPosition());
 				}
 

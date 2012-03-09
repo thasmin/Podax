@@ -5,6 +5,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -340,8 +343,8 @@ public class PlayerService extends Service {
 	public String getPositionString() {
 		if (_player.getDuration() == 0)
 			return "";
-		return PodaxApp.getTimeString(_player.getCurrentPosition())
-				+ " / " + PodaxApp.getTimeString(_player.getDuration());
+		return Helper.getTimeString(_player.getCurrentPosition())
+				+ " / " + Helper.getTimeString(_player.getDuration());
 	}
 
 	private void playNextPodcast() {
@@ -434,12 +437,26 @@ public class PlayerService extends Service {
 	public static String getPositionString(int duration, int position) {
 		if (duration == 0)
 			return "";
-		return PodaxApp.getTimeString(position) + " / "
-				+ PodaxApp.getTimeString(duration);
+		return Helper.getTimeString(position) + " / "
+				+ Helper.getTimeString(duration);
 	}
 
 	private void updateWidgets() {
-		PodaxApp.updateWidgets(this);
+		AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
+
+		int[] widgetIds;
+		
+		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(this, LargeWidgetProvider.class));
+		if (widgetIds.length > 0) {
+			AppWidgetProvider provider = (AppWidgetProvider) new LargeWidgetProvider();
+			provider.onUpdate(this, widgetManager, widgetIds);
+		}
+
+		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(this, SmallWidgetProvider.class));
+		if (widgetIds.length > 0) {
+			AppWidgetProvider provider = (AppWidgetProvider) new SmallWidgetProvider();
+			provider.onUpdate(this, widgetManager, widgetIds);
+		}
 	}
 
 	public void updateActivePodcastPosition() {

@@ -83,7 +83,7 @@ class SubscriptionUpdater {
 	private Runnable _worker = new Runnable() {
 		public void run() {
 			try {
-				if (!PodaxApp.ensureWifi(_context))
+				if (!Helper.ensureWifi(_context))
 					return;
 
 				// send subscriptions to the Podax server

@@ -47,7 +47,7 @@ class PodcastDownloader {
 	
 	public Runnable _worker = new Runnable() {
 		public void run() {
-			if (!PodaxApp.ensureWifi(_context))
+			if (!Helper.ensureWifi(_context))
 				return;
 
 			verifyDownloadedFiles();
