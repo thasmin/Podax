@@ -32,6 +32,7 @@ public class ActiveDownloadListActivity extends ListActivity {
 		updateWifiNotice();
 		
 		Runnable refresher = new Runnable() {
+			Cursor _cursor = null;
 			public void run() {
 
 				final Uri toDownloadURI = Uri.withAppendedPath(PodcastProvider.URI, "to_download");
@@ -43,9 +44,10 @@ public class ActiveDownloadListActivity extends ListActivity {
 						PodcastProvider.COLUMN_FILE_SIZE,
 				};
 
-				Cursor cursor = managedQuery(toDownloadURI, projection, null, null, null);
-				cursor.setNotificationUri(getContentResolver(), toDownloadURI);
-				setListAdapter(new ActiveDownloadAdapter(ActiveDownloadListActivity.this, cursor));
+				if (_cursor != null)
+					_cursor.close();
+				_cursor = ActiveDownloadListActivity.this.getContentResolver().query(toDownloadURI, projection, null, null, null);
+				setListAdapter(new ActiveDownloadAdapter(ActiveDownloadListActivity.this, _cursor));
 				handler.postDelayed(this, 1000);
 			}
 		};
