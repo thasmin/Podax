@@ -1,22 +1,25 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/tworow"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent" android:layout_height="wrap_content"
-	android:orientation="vertical"
 	android:background="@drawable/widget_frame"
+	android:layout_marginTop="5dp" android:layout_marginBottom="5dp"
 	android:layout_marginLeft="5dp" android:layout_marginRight="5dp"
 	android:paddingLeft="5dp" android:paddingRight="0dp" 
 	android:paddingTop="10dp" android:paddingBottom="0dp">
 
 	<RelativeLayout android:id="@+id/toplayout"
-		android:layout_width="fill_parent" android:layout_height="wrap_content"
-		android:layout_marginLeft="10dp">
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="10dp"
+		android:layout_alignParentTop="true"
+		android:layout_above="@+id/bottomrow">
 		
 		<LinearLayout android:id="@+id/innerLayout"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:orientation="vertical"
 			android:layout_alignParentLeft="true"
 			android:layout_toLeftOf="@+id/show_btn"
-			android:layout_centerVertical="true"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:orientation="vertical">
+			android:layout_centerVertical="true">
 			
 			<TextView android:id="@+id/title"
 				android:text=""
@@ -36,26 +39,36 @@
 			
 		</LinearLayout>
 		
-		<ImageButton android:id="@+id/show_btn" android:layout_alignParentRight="true"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_alignParentTop="true" android:src="@drawable/ic_widget_bouncearrow"
+		<ImageButton android:id="@+id/show_btn"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/ic_widget_bouncearrow"
+		    android:layout_alignParentRight="true"
+			android:layout_alignParentTop="true"
 			android:background="@android:color/transparent"
 			android:contentDescription="@string/go_to_details" />
 
-		<ImageButton android:id="@+id/queue_btn" android:layout_alignParentRight="true"
-			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:layout_below="@+id/show_btn" android:src="@drawable/ic_widget_q"
+		<ImageButton android:id="@+id/queue_btn"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/ic_widget_q"
+		    android:layout_alignParentRight="true"
+			android:layout_below="@+id/show_btn"
 			android:background="@android:color/transparent"
 			android:contentDescription="@string/go_to_queue" />
 			
 	</RelativeLayout>
 	
 	<LinearLayout android:id="@+id/bottomrow"
-		android:layout_width="fill_parent" android:layout_height="wrap_content"
-		android:layout_marginTop="5dp" android:layout_marginRight="40dp"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="5dp"
+		android:layout_marginRight="40dp"
 		android:layout_marginBottom="5dp"
 		android:gravity="center_horizontal"
-		android:weightSum="5">
+		android:weightSum="5"
+		android:layout_alignParentBottom="true"
+		android:layout_below="@+id/toprow">
 
 		<ImageButton android:id="@+id/restart_btn"
 			android:layout_width="48dp" android:layout_height="48dp"
@@ -99,4 +112,4 @@
 
 	</LinearLayout>
 		
-</LinearLayout>
+</RelativeLayout>
