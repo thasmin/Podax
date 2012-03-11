@@ -108,7 +108,7 @@
 
 		<service android:name=".UpdateService" />
 		<service android:name=".PlayerService"
-				 android:process=":com.axelby.podax.service" />
+				 android:process="com.axelby.podax.playerservice" />
 
 		<receiver android:name=".SmallWidgetProvider" android:label="Podax 4x1">
 			<intent-filter>
