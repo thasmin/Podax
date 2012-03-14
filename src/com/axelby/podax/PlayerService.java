@@ -229,11 +229,17 @@ public class PlayerService extends Service {
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
 		_player.pause();
+
+		updateActivePodcastPosition();
+
 		_isPlaying = false;
 		_player.stop();
 		stopSelf();
 
-		updateActivePodcastPosition();
+		// tell anything listening to the active podcast to refresh now that we're stopped
+		ContentValues values = new ContentValues();
+		getContentResolver().update(_activePodcastUri, values, null, null);
+
 		updateWidgets();
 	}
 	
