@@ -70,7 +70,7 @@ public class SubscriptionListActivity extends ListActivity {
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-		menu.add(0, 0, 0, "Delete");
+		menu.add(0, 0, 0, R.string.unsubscribe);
 	}
 
 	@Override
