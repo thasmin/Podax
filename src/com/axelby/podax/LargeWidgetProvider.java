@@ -65,7 +65,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 			String position = PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition());
 			views.setTextViewText(R.id.positionstring, position);
 
-			int imageRes = PlayerService.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+			int imageRes = Helper.isPlaying(context) ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		}
 		cursor.close();

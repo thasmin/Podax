@@ -1,5 +1,7 @@
 package com.axelby.podax;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -54,4 +56,12 @@ public class Helper {
 		return builder.toString();
 	}
 
+
+	public static boolean isPlaying(Context context) {
+	    ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
+	        if ("com.axelby.podax.PlayerService".equals(service.service.getClassName()))
+	            return true;
+	    return false;
+	}
 }

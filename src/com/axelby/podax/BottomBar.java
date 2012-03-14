@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -116,11 +117,12 @@ public class BottomBar extends LinearLayout {
 
 	private Long _lastPodcastId = null;
 	public void updateUI() {
-		boolean isPlaying = PlayerService.isPlaying();
+		boolean isPlaying = Helper.isPlaying(getContext());
 		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
 
 		PodcastCursor podcast = new PodcastCursor(getContext(), _cursor);
 		if (!podcast.isNull()) {
+			Log.d("Podax", "position " + podcast.getLastPosition());
 			if (isPlaying || _positionstring.getText().length() == 0)
 				_positionstring.setText(PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
 			if (_lastPodcastId != podcast.getId()) {

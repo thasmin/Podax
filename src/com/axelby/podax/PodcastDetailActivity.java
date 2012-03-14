@@ -147,7 +147,8 @@ public class PodcastDetailActivity extends Activity {
 					if (c.moveToNext())
 						activeId = c.getLong(0);
 
-					if (PlayerService.isPlaying() && activeId != null && activeId.equals(_podcast.getId()))
+					if (Helper.isPlaying(PodcastDetailActivity.this) && 
+							activeId != null && activeId.equals(_podcast.getId()))
 						PlayerService.pause(PodcastDetailActivity.this);
 					else
 						PlayerService.play(PodcastDetailActivity.this, _podcast);
@@ -234,7 +235,7 @@ public class PodcastDetailActivity extends Activity {
 					_seekbar.setProgress(p.getLastPosition());
 				}
 
-				int playResource = PlayerService.isPlaying() ? R.drawable.ic_media_pause
+				int playResource = Helper.isPlaying(this) ? R.drawable.ic_media_pause
 						: R.drawable.ic_media_play;
 				_playButton.setImageResource(playResource);
 

@@ -34,7 +34,7 @@ public class PlayerService extends Service {
 		}
 	}
 
-	protected static int _lastPosition = 0;
+	protected int _lastPosition = 0;
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
 			int oldPosition = _lastPosition;
@@ -53,7 +53,7 @@ public class PlayerService extends Service {
 	protected Timer _updateTimer;
 	private static final Uri _activePodcastUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 	
-	protected static boolean _isPlaying = false;
+	protected boolean _isPlaying = false;
 
 	private OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
@@ -66,9 +66,6 @@ public class PlayerService extends Service {
 			}
 		}
 	};
-	public static boolean isPlaying() {
-		return _isPlaying;
-	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -233,10 +230,11 @@ public class PlayerService extends Service {
 			_updatePlayerPositionTimerTask.cancel();
 		_player.pause();
 		_isPlaying = false;
-		updateWidgets();
-		updateActivePodcastPosition();
 		_player.stop();
 		stopSelf();
+
+		updateActivePodcastPosition();
+		updateWidgets();
 	}
 	
 	public void resume() {

@@ -148,8 +148,6 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 
 		if (position == 3) {
-			Toast.makeText(this, "GPodder support coming soon!", Toast.LENGTH_LONG).show();
-			/*
 			if (!isGPodderInstalled()) {
 				Intent intent = new Intent(Intent.ACTION_VIEW);
 				intent.setData(Uri.parse("market://details?id=com.axeby.gpodder"));
@@ -159,7 +157,6 @@ public class ImportSubscriptionActivity extends ListActivity {
 				intent.setClassName("com.axelby.gpodder", "com.axelby.gpodder.AuthenticatorActivity");
 				startActivity(intent);
 			}
-			*/
 		}
 
 		if (position >= GOOGLE_ACCOUNT_START) {

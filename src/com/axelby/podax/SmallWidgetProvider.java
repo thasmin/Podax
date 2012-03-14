@@ -62,7 +62,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 
 		cursor.close();
 
-		int imageRes = PlayerService.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+		int imageRes = Helper.isPlaying(context) ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 		views.setImageViewResource(R.id.play_btn, imageRes);
 	}
 }
