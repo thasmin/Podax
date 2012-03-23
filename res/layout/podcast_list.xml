@@ -18,7 +18,7 @@
 	        android:layout_width="fill_parent" 
 	        android:layout_height="wrap_content" 
 	        android:textSize="20dp"
-	        android:text="Update the subscription to find the podcasts."/> 
+	        android:text="Refresh the subscription to find the podcasts."/> 
 		<ListView android:id="@android:id/list"
 				  android:layout_width="fill_parent"
 				  android:layout_height="fill_parent"
