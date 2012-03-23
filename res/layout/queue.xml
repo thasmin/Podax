@@ -7,10 +7,10 @@
 							 android:layout_height="50dp"
 							 android:layout_alignParentTop="true" />
 	<LinearLayout android:layout_width="fill_parent"
-	    		  android:layout_height="fill_parent"
-	    		  android:orientation="vertical"
-	    		  android:layout_below="@id/topbar"
-	    		  android:layout_above="@id/bottombar">
+				  android:layout_height="fill_parent"
+				  android:orientation="vertical"
+				  android:layout_below="@id/topbar"
+				  android:layout_above="@id/bottombar">
 		<ListView android:id="@+id/android:list"
 				  android:layout_width="fill_parent"
 				  android:layout_height="fill_parent" />
@@ -22,7 +22,7 @@
 				 layout="@layout/queue_list_item" />
 	</LinearLayout>
 	<com.axelby.podax.BottomBar android:id="@+id/bottombar"
-	    						android:layout_width="fill_parent"
-	    						android:layout_height="wrap_content"
-	    						android:layout_alignParentBottom="true" />
+								android:layout_width="fill_parent"
+								android:layout_height="wrap_content"
+								android:layout_alignParentBottom="true" />
 </RelativeLayout>

@@ -5,7 +5,7 @@
 			   android:topOffset="380dp"
 			   android:handle="@+id/handle"
 			   android:content="@+id/content">
-	<ImageView android:id="@+id/handle" 
+	<ImageView android:id="@+id/handle"
 			   android:layout_height="wrap_content"
 			   android:layout_width="wrap_content"
 			   android:src="@drawable/tray_handle_normal" />
@@ -13,7 +13,7 @@
 				  android:layout_width="fill_parent"
 				  android:layout_height="wrap_content">
 		<Button android:id="@+id/pausebtn"
-				android:text="@string/pause" 
+				android:text="@string/pause"
 				android:layout_height="wrap_content"
 				android:layout_width="wrap_content"
 				android:layout_alignParentLeft="true" />
