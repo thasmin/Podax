@@ -7,7 +7,7 @@
 			   android:layout_height="50dip"
 			   android:layout_gravity="center_vertical"
 			   android:paddingRight="5dip">
-	</ImageView> 
+	</ImageView>
 	<TextView android:id="@+id/text"
 			  android:layout_width="fill_parent"
 			  android:layout_height="wrap_content"
