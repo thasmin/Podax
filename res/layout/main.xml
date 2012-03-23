@@ -1,6 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    			android:layout_width="fill_parent"
-    			android:layout_height="fill_parent">
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent">
 
 	<LinearLayout android:id="@+id/layout"
 				  android:layout_width="fill_parent"
@@ -8,10 +8,10 @@
 				  android:orientation="vertical"
 				  android:layout_alignParentTop="true"
 				  android:layout_above="@+id/bottombar">
-	    <RelativeLayout android:id="@+id/relativeLayout1"
-	    	android:layout_height="wrap_content"
-	    	android:layout_width="fill_parent"
-	    	android:gravity="center_horizontal">
+		<RelativeLayout android:id="@+id/relativeLayout1"
+			android:layout_height="wrap_content"
+			android:layout_width="fill_parent"
+			android:gravity="center_horizontal">
 			<TextView android:id="@+id/header"
 					  android:layout_width="wrap_content"
 					  android:layout_height="wrap_content"
@@ -26,13 +26,13 @@
 					  android:textAppearance="?android:attr/textAppearanceSmall"
 					  android:layout_below="@id/header"
 					  android:layout_alignRight="@id/header" />
-	    </RelativeLayout>
-	
+		</RelativeLayout>
+
 		<RelativeLayout android:id="@+id/queue"
 						android:layout_width="fill_parent"
 						android:layout_height="wrap_content"
 						android:paddingTop="10dp"
-						android:paddingBottom="10dp" 
+						android:paddingBottom="10dp"
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/queue_img"
@@ -41,16 +41,16 @@
 					   android:contentDescription="@string/queue"
 					   android:src="@drawable/queue"/>
 			<TextView android:id="@+id/queue_text"
-			    	  style="@style/mainText"
+					  style="@style/mainText"
 					  android:text="@string/queue"
 					  android:layout_toRightOf="@id/queue_img" />
 		</RelativeLayout>
-	
+
 		<RelativeLayout android:id="@+id/subscriptions"
 						android:layout_width="fill_parent"
 						android:layout_height="wrap_content"
 						android:paddingTop="10dp"
-						android:paddingBottom="10dp" 
+						android:paddingBottom="10dp"
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/subscriptions_img"
@@ -59,16 +59,16 @@
 					   android:contentDescription="@string/subscriptions"
 					   android:src="@drawable/book_bookmark"/>
 			<TextView android:id="@+id/subscriptions_text"
-			    	  style="@style/mainText"
+					  style="@style/mainText"
 					  android:text="@string/subscriptions"
 					  android:layout_toRightOf="@id/subscriptions_img" />
 		</RelativeLayout>
-	
+
 		<RelativeLayout android:id="@+id/importsubs"
 						android:layout_width="fill_parent"
 						android:layout_height="wrap_content"
 						android:paddingTop="10dp"
-						android:paddingBottom="10dp" 
+						android:paddingBottom="10dp"
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/readerimport_img"
@@ -77,7 +77,7 @@
 					   android:contentDescription="@string/import_subscriptions"
 					   android:src="@drawable/bookmark_add"/>
 			<TextView android:id="@+id/readerimport_text"
-			    	  style="@style/mainText"
+					  style="@style/mainText"
 					  android:text="@string/import_subscriptions"
 					  android:layout_toRightOf="@id/readerimport_img" />
 		</RelativeLayout>
@@ -86,7 +86,7 @@
 						android:layout_width="fill_parent"
 						android:layout_height="wrap_content"
 						android:paddingTop="10dp"
-						android:paddingBottom="10dp" 
+						android:paddingBottom="10dp"
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/activedownloads_img"
@@ -95,7 +95,7 @@
 					   android:contentDescription="@string/active_downloads"
 					   android:src="@drawable/inbox"/>
 			<TextView android:id="@+id/activedownloads_text"
-			    	  style="@style/mainText"
+					  style="@style/mainText"
 					  android:text="@string/active_downloads"
 					  android:layout_toRightOf="@id/activedownloads_img" />
 		</RelativeLayout>
@@ -104,7 +104,7 @@
 						android:layout_width="fill_parent"
 						android:layout_height="wrap_content"
 						android:paddingTop="10dp"
-						android:paddingBottom="10dp" 
+						android:paddingBottom="10dp"
 						android:paddingLeft="20dp"
 						android:paddingRight="0dp">
 			<ImageView android:id="@+id/about_img"
@@ -113,15 +113,15 @@
 					   android:contentDescription="@string/about_podax"
 					   android:src="@drawable/info"/>
 			<TextView android:id="@+id/about_text"
-			    	  style="@style/mainText"
+					  style="@style/mainText"
 					  android:text="@string/about_podax"
 					  android:layout_toRightOf="@+id/about_img" />
 		</RelativeLayout>
 	</LinearLayout>
 
 	<com.axelby.podax.BottomBar android:id="@+id/bottombar"
-	    						android:layout_width="fill_parent"
-	    						android:layout_height="wrap_content"
-	    						android:layout_alignParentBottom="true" />
+								android:layout_width="fill_parent"
+								android:layout_height="wrap_content"
+								android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

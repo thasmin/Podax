@@ -1,17 +1,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    		  android:id="@+id/ab"
+			  android:id="@+id/ab"
 			  android:layout_width="fill_parent"
 			  android:layout_height="50dp"
 			  android:layout_alignParentTop="true"
 			  android:background="#FFE59F39">
 	<FrameLayout android:layout_width="50dp" android:layout_height="fill_parent">
-		<ImageButton android:id="@+id/ab_home" 
+		<ImageButton android:id="@+id/ab_home"
 					 android:layout_width="24dp"
 					 android:layout_height="24dp"
 					 android:layout_gravity="center"
 					 android:scaleType="fitXY"
 					 android:src="@drawable/home"
-					 android:background="@android:color/transparent" />	    
+					 android:background="@android:color/transparent" />
 	</FrameLayout>
 	<View android:id="@+id/ab_separator"
 		  android:layout_height="fill_parent"

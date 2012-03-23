@@ -1,10 +1,10 @@
 <ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
-	    	  android:layout_width="fill_parent"
-	    	  android:layout_height="wrap_content">
+			  android:layout_width="fill_parent"
+			  android:layout_height="wrap_content">
 
 	<!-- the list item -->
 	<RelativeLayout android:id="@+id/listitem"
-	    			android:layout_width="fill_parent"
+					android:layout_width="fill_parent"
 					android:layout_height="wrap_content"
 					android:padding="6dip"
 					android:gravity="center_vertical">
@@ -27,18 +27,18 @@
 			android:layout_toRightOf="@+id/thumbnail"
 			android:gravity="center_vertical"
 			android:orientation="vertical" >
-		    <TextView
-			    android:id="@+id/title"
-			    android:text=""
-			    android:layout_width="fill_parent"
-			    android:layout_height="wrap_content"
-			    android:textAppearance="?android:attr/textAppearanceMedium" />
 			<TextView
-			    android:id="@+id/subscription"
-			    android:text=""
-			    android:layout_width="fill_parent"
-			    android:layout_height="wrap_content"
-			    android:textAppearance="?android:attr/textAppearanceSmall" />
+				android:id="@+id/title"
+				android:text=""
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:textAppearance="?android:attr/textAppearanceMedium" />
+			<TextView
+				android:id="@+id/subscription"
+				android:text=""
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:textAppearance="?android:attr/textAppearanceSmall" />
 		</LinearLayout>
 
 		<ImageView

@@ -4,20 +4,20 @@
 	android:gravity="center_vertical"
 	android:orientation="vertical"
 	android:paddingLeft="6dip"
-    android:minHeight="?android:attr/listPreferredItemHeight"
+	android:minHeight="?android:attr/listPreferredItemHeight"
 	>
 	<TextView
-	    android:id="@+id/title"
-	    android:text="podcast"
-	    android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-	    android:textAppearance="?android:attr/textAppearanceLarge"
-	    />
+		android:id="@+id/title"
+		android:text="podcast"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceLarge"
+		/>
 	<TextView
-	    android:id="@+id/subscription"
-	    android:text="subscription"
-	    android:layout_width="fill_parent"
-	    android:layout_height="wrap_content"
-	    android:textAppearance="?android:attr/textAppearanceSmall"
-	    />
+		android:id="@+id/subscription"
+		android:text="subscription"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		/>
 </LinearLayout>

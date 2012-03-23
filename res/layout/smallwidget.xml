@@ -3,20 +3,20 @@
 	android:layout_width="fill_parent" android:layout_height="wrap_content"
 	android:background="@drawable/widget_frame"
 	android:layout_marginLeft="5dp" android:layout_marginRight="5dp"
-	android:paddingLeft="5dp" android:paddingRight="0dp" 
+	android:paddingLeft="5dp" android:paddingRight="0dp"
 	android:paddingTop="5dp" android:paddingBottom="0dp">
-	
+
 	<ImageButton android:id="@+id/play_btn"
 		android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:layout_centerVertical="true" android:src="@drawable/android:ic_media_play"
 		android:background="@android:color/transparent" />
-	
+
 	<LinearLayout android:id="@+id/innerLayout"
 		android:layout_toRightOf="@+id/play_btn" android:layout_toLeftOf="@+id/show_btn"
 		android:layout_centerVertical="true"
 		android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:orientation="vertical">
-		
+
 		<TextView android:id="@+id/title"
 			android:text="title"
 			android:layout_width="wrap_content"
@@ -32,12 +32,12 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:textColor="#cccccc" />
-		
+
 	</LinearLayout>
-	
+
 	<ImageButton android:id="@+id/show_btn" android:layout_alignParentRight="true"
 		android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:layout_centerVertical="true" android:src="@drawable/ic_btn_round_more_normal"
 		android:background="@android:color/transparent" />
-	
+
 </RelativeLayout>

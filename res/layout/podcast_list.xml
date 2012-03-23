@@ -8,24 +8,24 @@
 							 android:layout_height="50dp"
 							 android:layout_alignParentTop="true" />
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	    		  android:orientation="vertical"
-	    		  android:layout_width="fill_parent"
-	    		  android:layout_height="fill_parent"
-	    		  android:layout_below="@id/topbar"
-	    		  android:layout_above="@id/bottombar">
-		<TextView 
-	        android:id="@android:id/empty" 
-	        android:layout_width="fill_parent" 
-	        android:layout_height="wrap_content" 
-	        android:textSize="20dp"
-	        android:text="Update the subscription to find the podcasts."/> 
+				  android:orientation="vertical"
+				  android:layout_width="fill_parent"
+				  android:layout_height="fill_parent"
+				  android:layout_below="@id/topbar"
+				  android:layout_above="@id/bottombar">
+		<TextView
+			android:id="@android:id/empty"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:textSize="20dp"
+			android:text="Refresh the subscription to find the podcasts."/>
 		<ListView android:id="@android:id/list"
 				  android:layout_width="fill_parent"
 				  android:layout_height="fill_parent"
 				  android:layout_weight="1" />
 	</LinearLayout>
 	<com.axelby.podax.BottomBar android:id="@+id/bottombar"
-	    						android:layout_width="fill_parent"
-	    						android:layout_height="wrap_content"
-	    						android:layout_alignParentBottom="true" />
+								android:layout_width="fill_parent"
+								android:layout_height="wrap_content"
+								android:layout_alignParentBottom="true" />
 </RelativeLayout>

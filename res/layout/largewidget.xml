@@ -3,7 +3,7 @@
 	android:background="@drawable/widget_frame"
 	android:layout_marginTop="5dp" android:layout_marginBottom="5dp"
 	android:layout_marginLeft="5dp" android:layout_marginRight="5dp"
-	android:paddingLeft="5dp" android:paddingRight="0dp" 
+	android:paddingLeft="5dp" android:paddingRight="0dp"
 	android:paddingTop="10dp" android:paddingBottom="0dp">
 
 	<RelativeLayout android:id="@+id/toplayout"
@@ -12,7 +12,7 @@
 		android:layout_marginLeft="10dp"
 		android:layout_alignParentTop="true"
 		android:layout_above="@+id/bottomrow">
-		
+
 		<LinearLayout android:id="@+id/innerLayout"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
 			android:layout_alignParentLeft="true"
 			android:layout_toLeftOf="@+id/show_btn"
 			android:layout_centerVertical="true">
-			
+
 			<TextView android:id="@+id/title"
 				android:text=""
 				android:layout_width="wrap_content"
@@ -36,14 +36,14 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:textColor="#cccccc" />
-			
+
 		</LinearLayout>
-		
+
 		<ImageButton android:id="@+id/show_btn"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:src="@drawable/ic_widget_bouncearrow"
-		    android:layout_alignParentRight="true"
+			android:layout_alignParentRight="true"
 			android:layout_alignParentTop="true"
 			android:background="@android:color/transparent"
 			android:contentDescription="@string/go_to_details" />
@@ -52,13 +52,13 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:src="@drawable/ic_widget_q"
-		    android:layout_alignParentRight="true"
+			android:layout_alignParentRight="true"
 			android:layout_below="@+id/show_btn"
 			android:background="@android:color/transparent"
 			android:contentDescription="@string/go_to_queue" />
-			
+
 	</RelativeLayout>
-	
+
 	<LinearLayout android:id="@+id/bottomrow"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
@@ -85,7 +85,7 @@
 			android:layout_weight="1"
 			android:background="@android:color/transparent"
 			android:contentDescription="@string/rewind" />
-						
+
 		<ImageButton android:id="@+id/play_btn"
 			android:layout_width="48dp" android:layout_height="48dp"
 			android:paddingTop="8dp"
@@ -93,7 +93,7 @@
 			android:layout_weight="1"
 			android:background="@android:color/transparent"
 			android:contentDescription="@string/play" />
-	
+
 		<ImageButton android:id="@+id/skip_btn"
 			android:layout_width="48dp" android:layout_height="48dp"
 			android:paddingTop="8dp"
@@ -111,5 +111,5 @@
 			android:contentDescription="@string/skip_to_end" />
 
 	</LinearLayout>
-		
+
 </RelativeLayout>
