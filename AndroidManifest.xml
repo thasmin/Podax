@@ -107,8 +107,7 @@
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 
 		<service android:name=".UpdateService" />
-		<service android:name=".PlayerService"
-				 android:process="com.axelby.podax.playerservice" />
+		<service android:name=".PlayerService" />
 
 		<receiver android:name=".SmallWidgetProvider" android:label="Podax 4x1">
 			<intent-filter>

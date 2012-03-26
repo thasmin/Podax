@@ -49,7 +49,7 @@ public class PlayerService extends Service {
 	}
 	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
 
-	protected MediaPlayer _player;
+	protected static MediaPlayer _player;
 	protected PlayerBinder _binder;
 	protected boolean _onPhone;
 	protected boolean _pausedForPhone;
@@ -75,6 +75,10 @@ public class PlayerService extends Service {
 		return _binder;
 	}
 
+	public static boolean isPlaying() {
+		return _player != null && _player.isPlaying();
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -92,12 +96,12 @@ public class PlayerService extends Service {
 			@Override
 			public void onCallStateChanged(int state, String incomingNumber) {
 				_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
-				if (_player != null && _player.isPlaying() && _onPhone) {
+				if (_player != null && _onPhone) {
 					_player.pause();
 					updateActivePodcastPosition();
 					_pausedForPhone = true;
 				}
-				if (_player != null && _player.isPlaying() && !_onPhone && _pausedForPhone) {
+				if (_player != null && !_onPhone && _pausedForPhone) {
 					_player.start();
 					updateActivePodcastPosition();
 					_pausedForPhone = false;
@@ -105,30 +109,30 @@ public class PlayerService extends Service {
 			}
 		}, PhoneStateListener.LISTEN_CALL_STATE);
 		_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
-
 	}
 
 	private void setupMediaPlayer() {
-		_player = new MediaPlayer();
-		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		if (_player == null) {
+			_player = new MediaPlayer();
+			_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-		_onPhone = false;
-		_pausedForPhone = false;
+			_pausedForPhone = false;
 
-		// handle errors so the onCompletionListener doens't get called
-		_player.setOnErrorListener(new OnErrorListener() {
-			public boolean onError(MediaPlayer mp, int what, int extra) {
-				PodaxLog.log(PlayerService.this, "what: %d, extra: %d", what, extra);
-				return true;
-			}
-		});
+			// handle errors so the onCompletionListener doens't get called
+			_player.setOnErrorListener(new OnErrorListener() {
+				public boolean onError(MediaPlayer mp, int what, int extra) {
+					PodaxLog.log(PlayerService.this, "what: %d, extra: %d", what, extra);
+					return true;
+				}
+			});
 
-		_player.setOnCompletionListener(new OnCompletionListener() {
-			public void onCompletion(MediaPlayer player) {
-				removeActivePodcastFromQueue();
-				playNextPodcast();
-			}
-		});
+			_player.setOnCompletionListener(new OnCompletionListener() {
+				public void onCompletion(MediaPlayer player) {
+					removeActivePodcastFromQueue();
+					playNextPodcast();
+				}
+			});
+		}
 	}
 
 	@Override
@@ -187,7 +191,7 @@ public class PlayerService extends Service {
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
 				PodaxLog.log(this, "PlayerService got a command: playpause");
 				Log.d("Podax", "PlayerService got a command: playpause");
-				if (_player != null && _player.isPlaying()) {
+				if (_player != null) {
 					Log.d("Podax", "  stopping the player");
 					stop();
 				} else {
@@ -237,6 +241,7 @@ public class PlayerService extends Service {
 		updateActivePodcastPosition();
 
 		_player.stop();
+		_player = null;
 		stopSelf();
 
 		// tell anything listening to the active podcast to refresh now that we're stopped
@@ -333,18 +338,38 @@ public class PlayerService extends Service {
 	}
 
 	public void skip(int secs) {
-		_player.seekTo(_player.getCurrentPosition() + secs * 1000);
-		updateActivePodcastPosition();
+		if (_player != null) {
+			_player.seekTo(_player.getCurrentPosition() + secs * 1000);
+			updateActivePodcastPosition();
+		} else {
+			String[] projection = { PodcastProvider.COLUMN_LAST_POSITION };
+			Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
+			try {
+				if (c.moveToNext()) {
+					updateActivePodcastPosition(c.getInt(0) + secs * 1000);
+				}
+			} finally {
+				c.close();
+			}
+		}
 	}
 
 	public void skipTo(int secs) {
-		_player.seekTo(secs * 1000);
-		updateActivePodcastPosition();
+		if (_player != null) {
+			_player.seekTo(secs * 1000);
+			updateActivePodcastPosition();
+		} else {
+			updateActivePodcastPosition(secs * 1000);
+		}
 	}
 
 	public void restart() {
-		_player.seekTo(0);
-		updateActivePodcastPosition();
+		if (_player != null) {
+			_player.seekTo(0);
+			updateActivePodcastPosition();
+		} else {
+			updateActivePodcastPosition(0);
+		}
 	}
 
 	public String getPositionString() {
@@ -505,6 +530,15 @@ public class PlayerService extends Service {
 	public void updateActivePodcastPosition() {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, _player.getCurrentPosition());
+		PlayerService.this.getContentResolver().update(_activePodcastUri, values, null, null);
+
+		// update widgets
+		updateWidgets();
+	}
+
+	public void updateActivePodcastPosition(int position) {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		PlayerService.this.getContentResolver().update(_activePodcastUri, values, null, null);
 
 		// update widgets
