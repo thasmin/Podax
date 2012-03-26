@@ -1,10 +1,12 @@
 package com.axelby.podax;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -26,6 +28,8 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.axelby.podax.R.drawable;
 
 public class PlayerService extends Service {
 	public class PlayerBinder extends Binder {
@@ -49,12 +53,9 @@ public class PlayerService extends Service {
 	protected PlayerBinder _binder;
 	protected boolean _onPhone;
 	protected boolean _pausedForPhone;
-	private TelephonyManager _telephony;
 	protected Timer _updateTimer;
 	private static final Uri _activePodcastUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 	
-	protected boolean _isPlaying = false;
-
 	private OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
@@ -80,39 +81,39 @@ public class PlayerService extends Service {
 
 		PodaxLog.log(this, "PlayerService onCreate");
 		
-		_player = new MediaPlayer();
-		_binder = new PlayerBinder();
-		_onPhone = false;
-		_pausedForPhone = false;
 		_updateTimer = new Timer();
+		_binder = new PlayerBinder();
 
 		verifyPodcastReady();
 
+		// may or may not be creating the service
+		TelephonyManager _telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		_telephony.listen(new PhoneStateListener() {
+			@Override
+			public void onCallStateChanged(int state, String incomingNumber) {
+				_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
+				if (_player != null && _player.isPlaying() && _onPhone) {
+					_player.pause();
+					updateActivePodcastPosition();
+					_pausedForPhone = true;
+				}
+				if (_player != null && _player.isPlaying() && !_onPhone && _pausedForPhone) {
+					_player.start();
+					updateActivePodcastPosition();
+					_pausedForPhone = false;
+				}
+			}
+		}, PhoneStateListener.LISTEN_CALL_STATE);
+		_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
+
+	}
+
+	private void setupMediaPlayer() {
+		_player = new MediaPlayer();
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-		// may or may not be creating the service
-		if (_telephony == null) {
-			_telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-			_telephony.listen(new PhoneStateListener() {
-				@Override
-				public void onCallStateChanged(int state, String incomingNumber) {
-					_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
-					if (_isPlaying && _onPhone) {
-						_isPlaying = false;
-						_player.pause();
-						updateActivePodcastPosition();
-						_pausedForPhone = true;
-					}
-					if (!_isPlaying && !_onPhone && _pausedForPhone) {
-						_isPlaying = true;
-						_player.start();
-						updateActivePodcastPosition();
-						_pausedForPhone = false;
-					}
-				}
-			}, PhoneStateListener.LISTEN_CALL_STATE);
-			_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
-		}
+		_onPhone = false;
+		_pausedForPhone = false;
 
 		// handle errors so the onCompletionListener doens't get called
 		_player.setOnErrorListener(new OnErrorListener() {
@@ -186,7 +187,7 @@ public class PlayerService extends Service {
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
 				PodaxLog.log(this, "PlayerService got a command: playpause");
 				Log.d("Podax", "PlayerService got a command: playpause");
-				if (_isPlaying) {
+				if (_player != null && _player.isPlaying()) {
 					Log.d("Podax", "  stopping the player");
 					stop();
 				} else {
@@ -228,11 +229,13 @@ public class PlayerService extends Service {
 		Log.d("Podax", "PlayerService stopping");
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
+		if (_updateTimer != null)
+			_updateTimer.cancel();
+		removeNotification();
 		_player.pause();
 
 		updateActivePodcastPosition();
 
-		_isPlaying = false;
 		_player.stop();
 		stopSelf();
 
@@ -244,6 +247,9 @@ public class PlayerService extends Service {
 	}
 	
 	public void resume() {
+		if (_player == null)
+			setupMediaPlayer();
+
 		if (_onPhone)
 			return;
 
@@ -286,9 +292,7 @@ public class PlayerService extends Service {
 			}
 
 			_player.reset();
-			// work around for mediaplayer bug: http://code.google.com/p/android/issues/detail?id=10197
-			FileInputStream fi = new FileInputStream(p.getFilename());
-			_player.setDataSource(fi.getFD());
+			_player.setDataSource(p.getFilename());
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
 			
@@ -310,7 +314,8 @@ public class PlayerService extends Service {
 
 		_pausedForPhone = false;
 		_player.start();
-		_isPlaying = true;
+
+		showNotification();
 
 		_updatePlayerPositionTimerTask = new UpdatePlayerPositionTimerTask();
 		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
@@ -441,6 +446,42 @@ public class PlayerService extends Service {
 			return "";
 		return Helper.getTimeString(position) + " / "
 				+ Helper.getTimeString(duration);
+	}
+
+	private void showNotification() {
+		String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+		};
+		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
+		if (c.isAfterLast())
+			return;
+		PodcastCursor podcast = new PodcastCursor(this, c);
+
+		int icon = drawable.icon;
+		CharSequence tickerText = podcast.getTitle();
+		long when = System.currentTimeMillis();
+		Notification notification = new Notification(icon, tickerText, when);
+
+		CharSequence contentTitle = podcast.getTitle();
+		CharSequence contentText = podcast.getSubscriptionTitle();
+		Intent notificationIntent = new Intent(this, PodcastDetailActivity.class);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+		notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+		String ns = Context.NOTIFICATION_SERVICE;
+		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
+		notificationManager.notify(Constants.NOTIFICATION_PLAYING, notification);
+
+		c.close();
+	}
+
+	private void removeNotification() {
+		String ns = Context.NOTIFICATION_SERVICE;
+		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
+		notificationManager.cancel(Constants.NOTIFICATION_PLAYING);
 	}
 
 	private void updateWidgets() {

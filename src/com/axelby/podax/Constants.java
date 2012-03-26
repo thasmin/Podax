@@ -4,6 +4,7 @@ public class Constants {
 	public static final int SUBSCRIPTION_UPDATE_ONGOING = 1;
 	public static final int SUBSCRIPTION_UPDATE_ERROR = 2;
 	public static final int PODCAST_DOWNLOAD_ONGOING = 3;
+	public static final int NOTIFICATION_PLAYING = 4;
 	
 	public static final String ACTION_REFRESH_ALL_SUBSCRIPTIONS = "com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS";
 	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";
