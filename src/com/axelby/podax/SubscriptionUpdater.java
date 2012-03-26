@@ -24,6 +24,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlSerializer;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -174,6 +175,8 @@ class SubscriptionUpdater {
 					subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
 					_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
 				}
+
+				writeSubscriptionOPML();
 			} catch (Exception e) {
 				Log.w("Podax", "error in outer loop: " + e.getMessage());
 			} finally {
@@ -248,6 +251,50 @@ class SubscriptionUpdater {
 		notificationManager.notify(Constants.SUBSCRIPTION_UPDATE_ERROR, notification);
 	}
 	
+
+	protected void writeSubscriptionOPML() {
+		try {
+			FileOutputStream file = _context.openFileOutput("podax.opml", Context.MODE_WORLD_READABLE);
+			XmlSerializer xml = Xml.newSerializer();
+
+			xml.setOutput(file, "UTF-8");
+			xml.startDocument("UTF-8", true);
+			xml.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
+
+			xml.startTag(null, "opml");
+			xml.attribute(null, "version", "1.0");
+
+			xml.startTag(null, "head");
+			xml.startTag(null, "title");
+			xml.text("Podax Subscriptions");
+			xml.endTag(null, "title");
+			xml.endTag(null, "head");
+
+			xml.startTag(null, "body");
+
+			String[] projection = {
+					SubscriptionProvider.COLUMN_TITLE,
+					SubscriptionProvider.COLUMN_URL,
+			};
+			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection , null, null, SubscriptionProvider.COLUMN_TITLE);
+			while (c.moveToNext()) {
+				SubscriptionCursor sub = new SubscriptionCursor(_context, c);
+
+				xml.startTag(null, "outline");
+				xml.attribute(null, "title", sub.getTitle());
+				xml.attribute(null, "xmlUrl", sub.getUrl());
+				xml.endTag(null, "outline");
+			}
+
+			xml.endTag(null, "body");
+			xml.endTag(null, "opml");
+
+			xml.endDocument();
+			file.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void updateUpdateNotification(SubscriptionCursor subscription, String status) {
 		int icon = R.drawable.icon;
