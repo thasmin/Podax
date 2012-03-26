@@ -122,7 +122,6 @@ public class BottomBar extends LinearLayout {
 
 		PodcastCursor podcast = new PodcastCursor(getContext(), _cursor);
 		if (!podcast.isNull()) {
-			Log.d("Podax", "position " + podcast.getLastPosition());
 			if (isPlaying || _positionstring.getText().length() == 0)
 				_positionstring.setText(PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
 			if (_lastPodcastId != podcast.getId()) {
