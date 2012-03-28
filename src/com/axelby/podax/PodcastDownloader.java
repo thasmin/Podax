@@ -34,8 +34,13 @@ class PodcastDownloader {
 	public void download() {
 		// if we've needed to interrupt 4 times, something may be wrong
 		--_interruptCount;
-		if (_thread != null && _interruptCount > 0)
+		if (_thread != null && _interruptCount > 0) {
+			Log.w("Podax", "Downloader is currently running");
 			return;
+		}
+		if (_interruptCount == 0)
+			Log.w("Podax", "Interrupted downloader");
+
 		// reset the interrupt counter
 		_interruptCount = 2;
 
@@ -107,7 +112,7 @@ class PodcastDownloader {
 	
 						Log.d("Podax", "Done downloading " + podcast.getTitle());
 					} catch (Exception e) {
-						Log.e("Podax", "Exception while downloading " + podcast.getTitle() + ": " + e.getMessage());
+						Log.e("Podax", "Exception while downloading " + podcast.getTitle(), e);
 						removeDownloadNotification();
 	
 						try {
