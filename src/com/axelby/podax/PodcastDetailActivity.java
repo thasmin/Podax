@@ -50,7 +50,9 @@ public class PodcastDetailActivity extends Activity {
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
 
-			_cursor.requery();
+			_cursor.close();
+			Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
+			_cursor = getContentResolver().query(uri, _projection, null, null, null);
 			_podcast = new PodcastCursor(PodcastDetailActivity.this, _cursor);
 			updateQueueViews();
 			updatePlayerControls(false);
