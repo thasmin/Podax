@@ -58,8 +58,8 @@ public class QueueActivity extends ListActivity implements OnTouchListener {
 			public void onItemClick(AdapterView<?> parent, View view, int position,
 					long id) {
 				Intent intent = new Intent(QueueActivity.this, PodcastDetailActivity.class);
-		    	intent.putExtra("com.axelby.podax.podcastId", (int)id);
-		    	startActivity(intent);
+				intent.putExtra(Constants.EXTRA_PODCAST_ID, (int)id);
+				startActivity(intent);
 			}
 		});
 		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
