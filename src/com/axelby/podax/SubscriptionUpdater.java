@@ -114,7 +114,6 @@ class SubscriptionUpdater {
 						if (!c.moveToNext())
 							continue;
 						SubscriptionCursor subscription = new SubscriptionCursor(_context, c);
-						Log.d("Podax", subscription.getTitle() + ": starting");
 
 						HttpGet request = new HttpGet(subscription.getUrl());
 						if (subscription.getETag() != null)
@@ -129,7 +128,6 @@ class SubscriptionUpdater {
 						int code = response.getStatusLine().getStatusCode();
 						// check for content not modified
 						if (code == 304) {
-							Log.d("Podax", subscription.getTitle() + ": not modified");
 							continue;
 						}
 
@@ -138,7 +136,6 @@ class SubscriptionUpdater {
 							eTag = response.getLastHeader("ETag").getValue();
 							subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
 							if (eTag.equals(subscription.getETag())) {
-								Log.d("Podax", subscription.getTitle() + ": same etag");
 								continue;
 							}
 						}
@@ -146,7 +143,6 @@ class SubscriptionUpdater {
 						updateUpdateNotification(subscription, "Downloading Feed");
 						InputStream responseStream = response.getEntity().getContent();
 						if (responseStream == null) {
-							Log.d("Podax", subscription.getTitle() + ": feed not available");
 							showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
 							continue;
 						}
@@ -164,7 +160,6 @@ class SubscriptionUpdater {
 						}
 
 						updateUpdateNotification(subscription, "Saving...");
-						Log.d("Podax", subscription.getTitle() + ": done");
 					} catch (Exception e) {
 						Log.w("Podax", "error while updating: " + e.getMessage());
 					} finally {
@@ -190,8 +185,6 @@ class SubscriptionUpdater {
 				throws MalformedURLException, IOException, ProtocolException {
 			if (PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("usageDataPref", true) == false)
 				return;
-
-			Log.d("Podax", "Sending usage data - subscription list");
 
 			URL podaxServer = new URL("http://www.axelby.com/podax.php");
 			HttpURLConnection podaxConn = (HttpURLConnection)podaxServer.openConnection();
@@ -254,23 +247,24 @@ class SubscriptionUpdater {
 
 	protected void writeSubscriptionOPML() {
 		try {
-			FileOutputStream file = _context.openFileOutput("podax.opml", Context.MODE_WORLD_READABLE);
-			XmlSerializer xml = Xml.newSerializer();
+			File file = new File(_context.getExternalFilesDir(null), "podax.opml");
+			FileOutputStream output = new FileOutputStream(file);
+			XmlSerializer serializer = Xml.newSerializer();
 
-			xml.setOutput(file, "UTF-8");
-			xml.startDocument("UTF-8", true);
-			xml.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
+			serializer.setOutput(output, "UTF-8");
+			serializer.startDocument("UTF-8", true);
+			serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
 
-			xml.startTag(null, "opml");
-			xml.attribute(null, "version", "1.0");
+			serializer.startTag(null, "opml");
+			serializer.attribute(null, "version", "1.0");
 
-			xml.startTag(null, "head");
-			xml.startTag(null, "title");
-			xml.text("Podax Subscriptions");
-			xml.endTag(null, "title");
-			xml.endTag(null, "head");
+			serializer.startTag(null, "head");
+			serializer.startTag(null, "title");
+			serializer.text("Podax Subscriptions");
+			serializer.endTag(null, "title");
+			serializer.endTag(null, "head");
 
-			xml.startTag(null, "body");
+			serializer.startTag(null, "body");
 
 			String[] projection = {
 					SubscriptionProvider.COLUMN_TITLE,
@@ -280,17 +274,17 @@ class SubscriptionUpdater {
 			while (c.moveToNext()) {
 				SubscriptionCursor sub = new SubscriptionCursor(_context, c);
 
-				xml.startTag(null, "outline");
-				xml.attribute(null, "title", sub.getTitle());
-				xml.attribute(null, "xmlUrl", sub.getUrl());
-				xml.endTag(null, "outline");
+				serializer.startTag(null, "outline");
+				serializer.attribute(null, "title", sub.getTitle());
+				serializer.attribute(null, "xmlUrl", sub.getUrl());
+				serializer.endTag(null, "outline");
 			}
 
-			xml.endTag(null, "body");
-			xml.endTag(null, "opml");
+			serializer.endTag(null, "body");
+			serializer.endTag(null, "opml");
 
-			xml.endDocument();
-			file.close();
+			serializer.endDocument();
+			output.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -354,7 +348,6 @@ class SubscriptionUpdater {
 					podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
 				} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
 					String text = parser.nextText();
-					Log.d("Podax", subscription.getTitle() + " title " + text);
 					podcastValues.put(PodcastProvider.COLUMN_TITLE, text);
 				} else if (name.equalsIgnoreCase("link")) {
 					podcastValues.put(PodcastProvider.COLUMN_LINK, parser.nextText());
