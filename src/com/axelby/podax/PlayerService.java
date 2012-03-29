@@ -69,6 +69,8 @@ public class PlayerService extends Service {
 		}
 	};
 
+	private final HeadsetConnectionReceiver _headsetConnectionReceiver = new HeadsetConnectionReceiver();
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		PodaxLog.log(this, "PlayerService onBind: " + intent.getAction());
@@ -110,8 +112,9 @@ public class PlayerService extends Service {
 			}
 		}, PhoneStateListener.LISTEN_CALL_STATE);
 		_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
+
 		// hook our headset connection and disconnection
-		this.registerReceiver(new HeadsetConnectionReceiver(), new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+		this.registerReceiver(_headsetConnectionReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
 	}
 
 	private void setupMediaPlayer() {
@@ -142,6 +145,8 @@ public class PlayerService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		
+		this.unregisterReceiver(_headsetConnectionReceiver);
+
 		PodaxLog.log(this, "PlayerService onDestroy");
 		Log.d("Podax", "destroying PlayerService");
 	}
