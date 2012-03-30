@@ -41,6 +41,13 @@
 	    <p>Icons are made by The Working Group and are licensed under a Creative Commons Attribution-Share Alike license.
 	    	You can see their website at <a href="http://twg.ca">http://twg.ca</a> and find the icons at 
 	    	<a href="http://blog.twg.ca/2010/11/retina-display-icon-set/">http://blog.twg.ca/2010/11/retina-display-icon-set/</a>.</p>
+	    <p>Special thanks to everyone who\'s helped on Github:</p>
+	    <ul>
+	    <li><a href="https://github.com/mcepl">mcepl</a></li>
+	    <li><a href="https://github.com/yamatt">yamatt</a></li>
+	    <li><a href="https://github.com/brimstone">brimstone</a></li>
+	    <li><a href="https://github.com/yarikoptic">yarikoptic</a></li>
+	    </ul>
 	    ]]>
 	</string>
 	<string name="about_podax">About Podax</string>
