@@ -31,10 +31,9 @@ public class ActiveDownloadListActivity extends ListActivity {
 
 		updateWifiNotice();
 		
-		Runnable refresher = new Runnable() {
+		refresher = new Runnable() {
 			Cursor _cursor = null;
 			public void run() {
-
 				final Uri toDownloadURI = Uri.withAppendedPath(PodcastProvider.URI, "to_download");
 				final String[] projection = new String[] {
 						PodcastProvider.COLUMN_ID,
@@ -51,13 +50,19 @@ public class ActiveDownloadListActivity extends ListActivity {
 				handler.postDelayed(this, 1000);
 			}
 		};
-		refresher.run();
 	}
 
 	@Override
 	protected void onResume() {
 		updateWifiNotice();
+		refresher.run();
 		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		handler.removeCallbacks(refresher);
+		super.onPause();
 	}
 
 	public void updateWifiNotice() {
