@@ -3,10 +3,8 @@ package com.axelby.podax;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import android.accounts.Account;
@@ -15,23 +13,19 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ProviderInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.sax.Element;
-import android.sax.ElementListener;
-import android.sax.EndTextElementListener;
-import android.sax.RootElement;
-import android.sax.StartElementListener;
 import android.text.InputType;
 import android.util.Log;
-import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,12 +35,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.api.client.googleapis.GoogleHeaders;
-import com.google.api.client.googleapis.GoogleTransport;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpTransport;
 
 public class ImportSubscriptionActivity extends ListActivity {
 
@@ -273,7 +261,9 @@ public class ImportSubscriptionActivity extends ListActivity {
 						return;
 					}
 
-					doImport(authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN));
+					Activity activity = ImportSubscriptionActivity.this;
+					String authToken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
+					GoogleReaderImporter.doImport(activity, authToken);
 				} catch (OperationCanceledException e) {
 					Log.e("Podax", "Operation Canceled", e);
 				} catch (IOException e) {
@@ -302,67 +292,6 @@ public class ImportSubscriptionActivity extends ListActivity {
 			if (resultCode == RESULT_OK && data == null)
 				getAuthToken();
 		}
-	}
-
-	private void doImport(String authToken) {
-		HttpTransport transport = GoogleTransport.create();
-
-		GoogleHeaders headers = (GoogleHeaders) transport.defaultHeaders;
-		headers.setApplicationName("Podax");
-		headers.gdataVersion = "2";
-		headers.setGoogleLogin(authToken);
-
-		HttpRequest request = transport.buildGetRequest();
-		request.url = new GenericUrl("http://www.google.com/reader/api/0/subscription/list");
-		try {
-			InputStream response = request.execute().getContent();
-
-			// set up the sax parser
-			RootElement root = new RootElement("object");
-			Element object = root.getChild("list").getChild("object");
-			// put these in an array to we can use them in the inner class
-			final ContentValues values = new ContentValues();
-			final String[] stringType = { "" };
-
-			object.setElementListener(new ElementListener() {
-				public void start(Attributes attrs) {
-					values.clear();
-				}
-				public void end() {
-					Uri uri = ImportSubscriptionActivity.this.getContentResolver().insert(SubscriptionProvider.URI, values);
-					int subscriptionId = Integer.valueOf(uri.getLastPathSegment());
-					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscriptionId);
-				}
-			});
-
-			object.getChild("string").setStartElementListener(new StartElementListener() {
-				public void start(Attributes attributes) {
-					stringType[0] = attributes.getValue("name");
-				}
-			});
-
-			object.getChild("string").setEndTextElementListener(new EndTextElementListener() {
-				public void end(String text) {
-					if (stringType[0].equals("id")) {
-						if (text != null && text.startsWith("feed/"))
-							text = text.substring(5);
-						values.put(SubscriptionProvider.COLUMN_URL, text);
-					}
-					else if (stringType[0].equals("title"))
-						values.put(SubscriptionProvider.COLUMN_TITLE, text);
-				}
-			});
-
-			Xml.parse(response, Xml.Encoding.UTF_8, root.getContentHandler());
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (SAXException e) {
-			e.printStackTrace();
-		}
-
-		Toast.makeText(this, "Google Reader subscriptions imported", Toast.LENGTH_LONG);
-		finish();
-		startActivity(new Intent(this, SubscriptionListActivity.class));
 	}
 
 }
