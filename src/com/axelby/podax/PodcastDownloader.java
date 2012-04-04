@@ -150,7 +150,7 @@ class PodcastDownloader {
 			// make sure the file is a media file
 			String extension = PodcastCursor.getExtension(f.getName());
 			String[] mediaExtensions = new String[] { "mp3", "ogg", "wma", };
-			if (Arrays.binarySearch(mediaExtensions, extension) == -1)
+			if (Arrays.binarySearch(mediaExtensions, extension) < 0)
 				continue;
 			if (!validMediaFilenames.contains(f.getAbsolutePath())) {
 				Log.w("Podax", "deleting file " + f.getName());
