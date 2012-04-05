@@ -233,7 +233,8 @@ public class PodcastDetailActivity extends Activity {
 			if (!p.isNull() && p.getId().equals(_podcast.getId())) {
 				if (!_seekbar_dragging) {
 					_position.setText(Helper.getTimeString(p.getLastPosition()));
-					_duration.setText(Helper.getTimeString(p.getDuration()));
+					_duration.setText(Helper.getTimeString(p.getDuration() - p.getLastPosition()));
+					//_duration.setText(Helper.getTimeString(p.getDuration()));
 					_seekbar.setProgress(p.getLastPosition());
 				}
 
