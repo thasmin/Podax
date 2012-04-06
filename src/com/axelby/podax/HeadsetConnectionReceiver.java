@@ -3,6 +3,7 @@ package com.axelby.podax;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 // catch all of our Headset events
@@ -19,7 +20,12 @@ public class HeadsetConnectionReceiver extends BroadcastReceiver {
 		if (headsetConnected && !justConnected) {
 			// if we're playing, pause
 			if (PlayerService.isPlaying())
+				
+				if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("dontStopOnHeadphone", true)){
+					// do nothing here
+				} else {
 					PlayerService.pause(context);
+				}
 		}
 
 		headsetConnected = justConnected;

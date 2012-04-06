@@ -12,5 +12,6 @@
             android:defaultValue="true"
             android:summary="Send anonymous usage data improve Podax"
             android:key="usageDataPref" />
+    <CheckBoxPreference android:key="dontStopOnHeadphone" android:title="Don't Stop on Headphones" android:summary="When checked playback won't stop when headphones are disconnected."/>
   </PreferenceCategory>
 </PreferenceScreen>
