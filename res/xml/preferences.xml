@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-  <PreferenceCategory android:title="Preferences">
-    <CheckBoxPreference
-            android:title="Wi-Fi Only"
-            android:defaultValue="true"
-            android:summary="Only update subscriptions or download podcasts while connected to a Wi-Fi network"
-            android:key="wifiPref" />
+	<PreferenceCategory android:title="Preferences">
+		<CheckBoxPreference
+			android:title="Wi-Fi Only"
+			android:defaultValue="true"
+			android:summary="Only update subscriptions or download podcasts while connected to a Wi-Fi network"
+			android:key="wifiPref" />
 
-    <CheckBoxPreference
-            android:title="Send Usage Data to Podax Server"
-            android:defaultValue="true"
-            android:summary="Send anonymous usage data improve Podax"
-            android:key="usageDataPref" />
-  </PreferenceCategory>
+		<CheckBoxPreference
+			android:title="Stop When Headphones Are Unplugged"
+			android:defaultValue="true"
+			android:summary="When checked playback won't stop when headphones are disconnected."
+			android:key="stopOnHeadphonePref" />
+
+		<CheckBoxPreference
+			android:title="Send Usage Data to Podax Server"
+			android:defaultValue="true"
+			android:summary="Send anonymous usage data improve Podax"
+			android:key="usageDataPref" />
+
+	</PreferenceCategory>
 </PreferenceScreen>
