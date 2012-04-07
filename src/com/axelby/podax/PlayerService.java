@@ -504,17 +504,13 @@ public class PlayerService extends Service {
 		notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
 		notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
-		String ns = Context.NOTIFICATION_SERVICE;
-		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
-		notificationManager.notify(Constants.NOTIFICATION_PLAYING, notification);
+		startForeground(Constants.NOTIFICATION_PLAYING, notification);
 
 		c.close();
 	}
 
 	private void removeNotification() {
-		String ns = Context.NOTIFICATION_SERVICE;
-		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
-		notificationManager.cancel(Constants.NOTIFICATION_PLAYING);
+		stopForeground(true);
 	}
 
 	private void updateWidgets() {
