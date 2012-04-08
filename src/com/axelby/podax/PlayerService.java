@@ -384,6 +384,8 @@ public class PlayerService extends Service {
 		if (_player.getDuration() == 0)
 			return "";
 		return Helper.getTimeString(_player.getCurrentPosition())
+				// changing this to show time remaining in the podcast rather than total 
+				// podcast duration --KL
 				+ " / " + Helper.getTimeString(_player.getDuration());
 	}
 
@@ -478,7 +480,9 @@ public class PlayerService extends Service {
 		if (duration == 0)
 			return "";
 		return Helper.getTimeString(position) + " / "
-				+ Helper.getTimeString(duration);
+				// changing this to show time remaining in the podcast rather than total 
+				// podcast duration --KL
+				+ Helper.getTimeString((duration - position));
 	}
 
 	private void showNotification() {

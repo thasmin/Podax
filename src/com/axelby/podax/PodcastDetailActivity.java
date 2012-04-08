@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.CheckBox;
+//import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -29,7 +29,7 @@ public class PodcastDetailActivity extends Activity {
 	TextView _subscriptionTitleView;
 	WebView _descriptionView;
 
-	CheckBox _showRemaining;
+	//CheckBox _showRemaining;
 	
 	Button _queueButton;
 	TextView _queuePosition;
@@ -117,7 +117,7 @@ public class PodcastDetailActivity extends Activity {
 		_descriptionView.setBackgroundColor(Color.BLACK);
 
 		
-		_showRemaining = (CheckBox)findViewById(R.id.showRemaining);
+		//_showRemaining = (CheckBox)findViewById(R.id.showRemaining);
 		
 		_queuePosition = (TextView)findViewById(R.id.queue_position);
 		_queueButton = (Button)findViewById(R.id.queue_btn);
@@ -239,15 +239,9 @@ public class PodcastDetailActivity extends Activity {
 			if (!p.isNull() && p.getId().equals(_podcast.getId())) {
 				if (!_seekbar_dragging) {
 					_position.setText(Helper.getTimeString(p.getLastPosition()));
-					// adding an if statement here depending on if the button
-					// is pressed to show duration or time remaining --KL
-					if (_showRemaining.isChecked()){
-						_duration.setText(Helper.getTimeString(p.getDuration() - p.getLastPosition()));
-					} else {
-						_duration.setText(Helper.getTimeString(p.getDuration()));
-					}
-					
-					//_duration.setText(Helper.getTimeString(p.getDuration()));
+					// changing this to show time remaining in the podcast rather than total 
+					// podcast duration --KL
+					_duration.setText(Helper.getTimeString(p.getDuration() - p.getLastPosition()));
 					_seekbar.setProgress(p.getLastPosition());
 				}
 

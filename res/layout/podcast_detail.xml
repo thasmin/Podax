@@ -85,13 +85,6 @@
 
 			</LinearLayout>
 
-			<CheckBox
-			    android:id="@+id/showRemaining"
-			    android:layout_width="wrap_content"
-			    android:layout_height="wrap_content"
-			    android:layout_gravity="right"
-			    android:text="@string/showRemaining" />
-
 			<LinearLayout android:id="@+id/queue_layout"
 				android:orientation="horizontal" android:layout_width="wrap_content"
 				android:layout_height="wrap_content">
