@@ -383,7 +383,7 @@ public class PlayerService extends Service {
 		if (_player.getDuration() == 0)
 			return "";
 		return Helper.getTimeString(_player.getCurrentPosition())
-				+ " / " + Helper.getTimeString(_player.getDuration());
+				+ " / " + Helper.getTimeString(_player.getDuration() - _player.getCurrentPosition());
 	}
 
 	private void playNextPodcast() {
@@ -476,8 +476,10 @@ public class PlayerService extends Service {
 	public static String getPositionString(int duration, int position) {
 		if (duration == 0)
 			return "";
-		return Helper.getTimeString(position) + " / "
-				+ Helper.getTimeString(duration);
+		return Helper.getTimeString(position) 
+				+ "  /  -"
+				+ Helper.getTimeString(duration - position)
+				+ ")";
 	}
 
 	private void showNotification() {

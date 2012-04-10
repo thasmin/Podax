@@ -197,7 +197,7 @@ public class PodcastDetailActivity extends Activity {
 		_position = (TextView)findViewById(R.id.position);
 		_position.setText(Helper.getTimeString(_podcast.getLastPosition()));
 		_duration = (TextView)findViewById(R.id.duration);
-		_duration.setText(Helper.getTimeString(_podcast.getDuration()));
+		_duration.setText("-" + Helper.getTimeString(_podcast.getDuration() - _podcast.getLastPosition()));
 
 		updatePlayerControls(true);
 	}
@@ -233,7 +233,7 @@ public class PodcastDetailActivity extends Activity {
 			if (!p.isNull() && p.getId().equals(_podcast.getId())) {
 				if (!_seekbar_dragging) {
 					_position.setText(Helper.getTimeString(p.getLastPosition()));
-					_duration.setText(Helper.getTimeString(p.getDuration()));
+					_duration.setText("-" + Helper.getTimeString(p.getDuration() - p.getLastPosition()));
 					_seekbar.setProgress(p.getLastPosition());
 				}
 
