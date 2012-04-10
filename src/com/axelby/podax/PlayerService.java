@@ -473,15 +473,6 @@ public class PlayerService extends Service {
 		}
 	}
 
-	public static String getPositionString(int duration, int position) {
-		if (duration == 0)
-			return "";
-		return Helper.getTimeString(position) 
-				+ "  /  -"
-				+ Helper.getTimeString(duration - position)
-				+ ")";
-	}
-
 	private void showNotification() {
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
