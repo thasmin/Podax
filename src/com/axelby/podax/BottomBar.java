@@ -11,16 +11,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
 public class BottomBar extends LinearLayout {
 
 	private TextView _podcastTitle;
-	private TextView _positionstring;
-	private ProgressBar _podcastprogressbar;
-	private TextView _remainingstring;
+	private PodcastProgress _podcastProgress;
 	private ImageButton _pausebtn;
 	private ImageButton _showplayerbtn;
 
@@ -97,14 +94,11 @@ public class BottomBar extends LinearLayout {
 
 	private void loadViews(final Context context) {
 		_podcastTitle = (TextView) findViewById(R.id.podcasttitle);
-		_positionstring = (TextView) findViewById(R.id.positionstring);
-		_podcastprogressbar = (ProgressBar) findViewById(R.id.progress);
-		_remainingstring = (TextView) findViewById(R.id.remainingstring);
+		_podcastProgress = (PodcastProgress) findViewById(R.id.podcastprogress);
 		_pausebtn = (ImageButton) findViewById(R.id.pausebtn);
 		_showplayerbtn = (ImageButton) findViewById(R.id.showplayer);
 		
 		_podcastTitle.setText("");
-		_positionstring.setText("");
 		_showplayerbtn.setEnabled(false);
 		
 		_pausebtn.setOnClickListener(new OnClickListener() {
@@ -128,22 +122,15 @@ public class BottomBar extends LinearLayout {
 
 		PodcastCursor podcast = new PodcastCursor(getContext(), _cursor);
 		if (!podcast.isNull()) {
-			if (isPlaying || _positionstring.getText().length() == 0) {
-				_positionstring.setText(Helper.getTimeString(podcast.getLastPosition()));
-				_podcastprogressbar.setVisibility(VISIBLE);
-				_podcastprogressbar.setMax(podcast.getDuration());
-				_podcastprogressbar.setProgress(podcast.getLastPosition());
-				_remainingstring.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
-			}
+			if (isPlaying || _podcastProgress.isEmpty())
+				_podcastProgress.set(podcast);
 			if (_lastPodcastId != podcast.getId()) {
 				_podcastTitle.setText(podcast.getTitle());
 				_showplayerbtn.setEnabled(true);
 			}
 		} else if (_lastPodcastId != null) {
 			_podcastTitle.setText("");
-			_positionstring.setText("");
-			_podcastprogressbar.setVisibility(INVISIBLE);
-			_remainingstring.setText("");
+			_podcastProgress.clear();
 			_showplayerbtn.setEnabled(false);
 		}
 

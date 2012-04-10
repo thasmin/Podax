@@ -57,13 +57,12 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		if (podcast.isNull()) {
 			views.setTextViewText(R.id.title, "Queue empty");
 			views.setTextViewText(R.id.podcast, "");
-			views.setTextViewText(R.id.positionstring, "");
+			PodcastProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		} else {
 			views.setTextViewText(R.id.title, podcast.getTitle());
 			views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
-			String position = PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition());
-			views.setTextViewText(R.id.positionstring, position);
+			PodcastProgress.remoteSet(views, podcast);
 
 			int imageRes = Helper.isPlaying(context) ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);

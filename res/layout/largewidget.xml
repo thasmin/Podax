@@ -6,12 +6,11 @@
 	android:paddingLeft="5dp" android:paddingRight="0dp"
 	android:paddingTop="10dp" android:paddingBottom="0dp">
 
-	<RelativeLayout android:id="@+id/toplayout"
+	<RelativeLayout android:id="@+id/toprow"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:layout_marginLeft="10dp"
-		android:layout_alignParentTop="true"
-		android:layout_above="@+id/bottomrow">
+		android:layout_alignParentTop="true">
 
 		<LinearLayout android:id="@+id/innerLayout"
 			android:layout_width="wrap_content"
@@ -31,11 +30,8 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:textColor="#cccccc" />
-			<TextView android:id="@+id/positionstring"
-				android:text=""
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:textColor="#cccccc" />
+			<include android:id="@+id/positionstring"
+				layout="@layout/podcast_progress" />
 
 		</LinearLayout>
 
