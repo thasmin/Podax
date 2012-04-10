@@ -13,6 +13,7 @@
 	    		 android:minHeight="12dp"
 	    		 android:maxHeight="12dp" 
 	    		 style="?android:attr/progressBarStyleHorizontal"
+	    		 android:progressDrawable="@drawable/progress"
 	    		 android:layout_marginLeft="5dp"
 	    		 android:layout_marginRight="5dp"
 	    		 android:layout_centerVertical="true"
