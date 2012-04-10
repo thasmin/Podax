@@ -27,11 +27,8 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:textColor="#cccccc" />
-		<TextView android:id="@+id/positionstring"
-			android:text="position"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:textColor="#cccccc" />
+		<include android:id="@+id/positionstring"
+			layout="@layout/podcast_progress" />
 
 	</LinearLayout>
 

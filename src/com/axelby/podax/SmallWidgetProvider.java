@@ -52,12 +52,12 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		if (podcast.isNull()) {
 			views.setTextViewText(R.id.title, "Queue empty");
 			views.setTextViewText(R.id.podcast, "");
-			views.setTextViewText(R.id.positionstring, "");
+			PodcastProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		} else {
 			views.setTextViewText(R.id.title, podcast.getTitle());
 			views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
-			views.setTextViewText(R.id.positionstring, PlayerService.getPositionString(podcast.getDuration(), podcast.getLastPosition()));
+			PodcastProgress.remoteSet(views, podcast);
 		}
 
 		cursor.close();
