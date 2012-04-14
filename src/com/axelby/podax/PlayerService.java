@@ -243,11 +243,13 @@ public class PlayerService extends Service {
 		if (_updateTimer != null)
 			_updateTimer.cancel();
 		removeNotification();
-		_player.pause();
+		if (_player != null)
+			_player.pause();
 
 		updateActivePodcastPosition();
 
-		_player.stop();
+		if (_player != null)
+			_player.stop();
 		_player = null;
 		stopSelf();
 
@@ -390,7 +392,8 @@ public class PlayerService extends Service {
 		Log.d("Podax", "moving to next podcast");
 
 		// stop the player and the updating while we do some administrative stuff
-		_player.pause();
+		if (_player != null)
+			_player.pause();
 		if (_updatePlayerPositionTimerTask != null) {
 			_updatePlayerPositionTimerTask.cancel();
 			_updatePlayerPositionTimerTask = null;
