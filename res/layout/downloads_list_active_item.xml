@@ -5,6 +5,7 @@
 	android:orientation="vertical"
 	>
 	<ProgressBar
+	    android:progressDrawable="@drawable/progress"
 		android:id="@+id/progressBar"
 		android:layout_height="wrap_content"
 		android:layout_width="fill_parent"

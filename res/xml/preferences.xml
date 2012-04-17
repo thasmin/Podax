@@ -10,7 +10,7 @@
 		<CheckBoxPreference
 			android:title="Stop When Headphones Are Unplugged"
 			android:defaultValue="true"
-			android:summary="When checked playback won't stop when headphones are disconnected."
+			android:summary="When un-checked playback won't stop when headphones are disconnected."
 			android:key="stopOnHeadphonePref" />
 
 		<CheckBoxPreference
