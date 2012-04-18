@@ -19,7 +19,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.util.Log;
 
 public class PodcastProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.podcastprovider";
@@ -271,6 +270,8 @@ public class PodcastProvider extends ContentProvider {
 		// no need to remove from queue if it's not in queue
 		if (oldPosition == null && newPosition == null)
 			return;
+
+		PodaxLog.log(getContext(), "podcast id " + podcastId + " moving from queue position " + oldPosition + " to " + newPosition);
 
 		if (oldPosition == null && newPosition != null) {
 			// new at 3: 1 2 3 4 5 do: 3++ 4++ 5++
