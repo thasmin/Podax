@@ -8,13 +8,13 @@
 		android:id="@+id/progressBar"
 		android:layout_height="wrap_content"
 		android:layout_width="fill_parent"
+		android:progressDrawable="@drawable/progress"
 		style="?android:attr/progressBarStyleHorizontal"
 		/>
 	<TextView
 		android:id="@+id/progressText"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="TextView"
 		android:textAppearance="?android:attr/textAppearanceSmall"
 		/>
 </LinearLayout>
