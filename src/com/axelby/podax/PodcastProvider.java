@@ -334,10 +334,20 @@ public class PodcastProvider extends ContentProvider {
 			podcastId = mediaUrlCursor.getLong(0);
 		mediaUrlCursor.close();
 
-		if (podcastId != null)
+		if (podcastId != null) {
+			if (values.containsKey(COLUMN_MEDIA_URL) && values.containsKey(COLUMN_FILE_SIZE)) {
+				String file = PodcastCursor.getStoragePath() +
+						String.valueOf(podcastId) + "." +
+						PodcastCursor.getExtension(values.getAsString(COLUMN_MEDIA_URL));
+				// possible bug: file size shrinks for some reason -- don't use new one
+				if (new File(file).length() > values.getAsInteger(COLUMN_FILE_SIZE)) {
+					PodaxLog.log(getContext(), "file size is less than existing file");
+					values.remove(COLUMN_FILE_SIZE);
+				}
+			}
 			db.update("podcasts", values, COLUMN_ID + " = ?",
 					new String[] { String.valueOf(podcastId) });
-		else {
+		} else {
 			podcastId = db.insert("podcasts", null, values);
 			// if the new podcast is less than 5 days old, add it to the queue
 			if (values.containsKey(COLUMN_PUB_DATE)) {
