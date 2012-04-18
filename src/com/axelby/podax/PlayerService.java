@@ -72,7 +72,6 @@ public class PlayerService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		PodaxLog.log(this, "PlayerService onBind: " + intent.getAction());
 		handleIntent(intent);
 		return _binder;
 	}
@@ -84,8 +83,6 @@ public class PlayerService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-
-		PodaxLog.log(this, "PlayerService onCreate");
 		
 		_updateTimer = new Timer();
 		_binder = new PlayerBinder();
@@ -126,7 +123,7 @@ public class PlayerService extends Service {
 			// handle errors so the onCompletionListener doens't get called
 			_player.setOnErrorListener(new OnErrorListener() {
 				public boolean onError(MediaPlayer mp, int what, int extra) {
-					PodaxLog.log(PlayerService.this, "what: %d, extra: %d", what, extra);
+					PodaxLog.log(PlayerService.this, "mediaplayer error - what: %d, extra: %d", what, extra);
 					return true;
 				}
 			});
@@ -143,10 +140,9 @@ public class PlayerService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		
+
 		this.unregisterReceiver(_headsetConnectionReceiver);
 
-		PodaxLog.log(this, "PlayerService onDestroy");
 		Log.d("Podax", "destroying PlayerService");
 	}
 
@@ -162,7 +158,6 @@ public class PlayerService extends Service {
 	}
 
 	private void handleIntent(Intent intent) {
-		PodaxLog.log(this, "PlayerService handling an intent");
 		if (intent == null || intent.getExtras() == null)
 			return;
 		if (intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND)) {
@@ -170,33 +165,27 @@ public class PlayerService extends Service {
 			case -1:
 				return;
 			case Constants.PLAYER_COMMAND_SKIPTO:
-				PodaxLog.log(this, "PlayerService got a command: skip to");
 				Log.d("Podax", "PlayerService got a command: skip to");
 				skipTo(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, 0));
 				break;
 			case Constants.PLAYER_COMMAND_SKIPTOEND:
-				PodaxLog.log(this, "PlayerService got a command: skip to end");
 				Log.d("Podax", "PlayerService got a command: skip to end");
 				removeActivePodcastFromQueue();
 				playNextPodcast();
 				break;
 			case Constants.PLAYER_COMMAND_RESTART:
-				PodaxLog.log(this, "PlayerService got a command: restart");
 				Log.d("Podax", "PlayerService got a command: restart");
 				restart();
 				break;
 			case Constants.PLAYER_COMMAND_SKIPBACK:
-				PodaxLog.log(this, "PlayerService got a command: skip back");
 				Log.d("Podax", "PlayerService got a command: skip back");
 				skip(-15);
 				break;
 			case Constants.PLAYER_COMMAND_SKIPFORWARD:
-				PodaxLog.log(this, "PlayerService got a command: skip forward");
 				Log.d("Podax", "PlayerService got a command: skip forward");
 				skip(30);
 				break;
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
-				PodaxLog.log(this, "PlayerService got a command: playpause");
 				Log.d("Podax", "PlayerService got a command: playpause");
 				if (_player != null) {
 					Log.d("Podax", "  stopping the player");
@@ -207,17 +196,14 @@ public class PlayerService extends Service {
 				}
 				break;
 			case Constants.PLAYER_COMMAND_PLAY:
-				PodaxLog.log(this, "PlayerService got a command: play");
 				Log.d("Podax", "PlayerService got a command: play");
 				resume();
 				break;
 			case Constants.PLAYER_COMMAND_PAUSE:
-				PodaxLog.log(this, "PlayerService got a command: pause");
 				Log.d("Podax", "PlayerService got a command: pause");
 				stop();
 				break;
 			case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
-				PodaxLog.log(this, "PlayerService got a command: play specific podcast");
 				Log.d("Podax", "PlayerService got a command: play specific podcast");
 				int podcastId = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
 				play((long)podcastId);
@@ -236,7 +222,6 @@ public class PlayerService extends Service {
 	}
 
 	private void doStop() {
-		PodaxLog.log(this, "PlayerService stopping");
 		Log.d("Podax", "PlayerService stopping");
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();

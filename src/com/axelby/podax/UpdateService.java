@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 
 public class UpdateService extends Service {
 	public static void updateSubscriptions(Context context) {
@@ -51,9 +50,6 @@ public class UpdateService extends Service {
 
 	@Override
 	public void onCreate() {
-		PodaxLog.log(this, "UpdateService onCreate");
-		Log.d("Podax", "UpdateService onCreate");
-
 		_subscriptionUpdater = new SubscriptionUpdater(this);
 		_podcastDownloader = new PodcastDownloader(this);
 	}
@@ -79,14 +75,10 @@ public class UpdateService extends Service {
 			return;
 
 		if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
-			PodaxLog.log(this, "UpdateService responding to refresh all");
-			Log.d("Podax", "UpdateService responding to refresh all");
 			_subscriptionUpdater.addAllSubscriptions();
 			_subscriptionUpdater.run();
 		}
 		else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
-			PodaxLog.log(this, "UpdateService responding to refresh one subscription");
-			Log.d("Podax", "UpdateService responding to refresh one subscription");
 			int subscriptionId = intent.getIntExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 			if (subscriptionId != -1) {
 				_subscriptionUpdater.addSubscriptionId(subscriptionId);
@@ -94,8 +86,6 @@ public class UpdateService extends Service {
 			}
 		}
 		else if (action.equals(Constants.ACTION_DOWNLOAD_PODCASTS)) {
-			PodaxLog.log(this, "UpdateService responding to download request");
-			Log.d("Podax", "UpdateService responding to download request");
 			_podcastDownloader.download();
 		}
 	}
