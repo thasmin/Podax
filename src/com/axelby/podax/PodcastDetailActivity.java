@@ -171,6 +171,8 @@ public class PodcastDetailActivity extends Activity {
 		_skipToEndButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				PlayerService.skipToEnd(PodcastDetailActivity.this);
+				finish();
+				startActivity(new Intent(PodcastDetailActivity.this, PodcastDetailActivity.class));
 			}
 		});
 
