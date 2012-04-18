@@ -29,6 +29,8 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import android.bluetooth.BluetoothDevice;
+
 import com.axelby.podax.R.drawable;
 
 public class PlayerService extends Service {
@@ -69,6 +71,7 @@ public class PlayerService extends Service {
 	};
 
 	private final HeadsetConnectionReceiver _headsetConnectionReceiver = new HeadsetConnectionReceiver();
+	private final BluetoothConnectionReceiver _bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -111,6 +114,9 @@ public class PlayerService extends Service {
 
 		// hook our headset connection and disconnection
 		this.registerReceiver(_headsetConnectionReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+		// hook our bluetooth headset connection and disconnection
+		//this.registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED));
+		this.registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
 	}
 
 	private void setupMediaPlayer() {
@@ -142,6 +148,7 @@ public class PlayerService extends Service {
 		super.onDestroy();
 
 		this.unregisterReceiver(_headsetConnectionReceiver);
+		this.unregisterReceiver(_bluetoothConnectionReceiver);
 
 		Log.d("Podax", "destroying PlayerService");
 	}
