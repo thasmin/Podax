@@ -19,6 +19,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 public class PodcastProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.podcastprovider";
@@ -341,7 +342,7 @@ public class PodcastProvider extends ContentProvider {
 						PodcastCursor.getExtension(values.getAsString(COLUMN_MEDIA_URL));
 				// possible bug: file size shrinks for some reason -- don't use new one
 				if (new File(file).length() > values.getAsInteger(COLUMN_FILE_SIZE)) {
-					PodaxLog.log(getContext(), "file size is less than existing file");
+					PodaxLog.log(getContext(), "podcast id " + podcastId + ": new file size (" + values.getAsInteger(COLUMN_FILE_SIZE) + " is less than existing file" + new File(file).length());
 					values.remove(COLUMN_FILE_SIZE);
 				}
 			}
