@@ -8,10 +8,16 @@
 			android:key="wifiPref" />
 
 		<CheckBoxPreference
-			android:title="Stop When Headphones Are Unplugged"
+			android:title="Stop When Wired Headphones Are Unplugged"
 			android:defaultValue="true"
 			android:summary="When checked, playback will stop when headphones are disconnected."
 			android:key="stopOnHeadphonePref" />
+
+		<CheckBoxPreference
+			android:title="Stop When Bluetooth Headphones Are Unplugged"
+			android:defaultValue="true"
+			android:summary="When checked, playback will stop when blueooth headphones are disconnected."
+			android:key="stopOnBluetoothPref" />
 
 		<CheckBoxPreference
 			android:title="Send Usage Data to Podax Server"
