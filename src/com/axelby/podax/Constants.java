@@ -19,6 +19,7 @@ public class Constants {
 	public static final String EXTRA_URL = "com.axelby.podax.url";
 	public static final String EXTRA_POPULAR_SOURCE_URL = "com.axelby.podax.popular_source_url";
 	public static final String EXTRA_POPULAR_SOURCE_NAME = "com.axelby.popular_source_name";
+	public static final String EXTRA_MANUAL_REFRESH = "com.axelby.podax.manual_refresh";
 
 	public static final String EXTRA_PLAYER_COMMAND = "com.axelby.podax.player_command";
 	public static final String EXTRA_PLAYER_COMMAND_ARG = "com.axelby.podax.player_command_arg";
