@@ -51,6 +51,7 @@ public class PodcastProvider extends ContentProvider {
 	private static final String PREF_ACTIVE = "active";
 
 	public static final Uri ACTIVE_PODCAST_URI = Uri.withAppendedPath(PodcastProvider.URI, "active");
+	public static final Uri QUEUE_URI = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 
 	static UriMatcher uriMatcher;
 	static HashMap<String, String> _columnMap;

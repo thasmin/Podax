@@ -59,6 +59,19 @@ public class PodcastDetailActivity extends Activity {
 		}
 	}
 
+	class QueueObserver extends ContentObserver {
+		public QueueObserver(Handler handler) {
+			super(handler);
+		}
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+
+			if (_controlsEnabled)
+				changeToActivePodcast();
+		}
+	}
+
 	String[] _projection = new String[] {
 			PodcastProvider.COLUMN_ID,
 			PodcastProvider.COLUMN_TITLE,
@@ -88,6 +101,7 @@ public class PodcastDetailActivity extends Activity {
 			_cursor = managedQuery(uri, _projection, null, null, null);
 			// if the queue is empty, don't show this
 			if (_cursor.isAfterLast()) {
+				_cursor.close();
 				finish();
 				startActivity(new Intent(this, QueueActivity.class));
 				return;
@@ -98,6 +112,10 @@ public class PodcastDetailActivity extends Activity {
 		_podcastId = _podcast.getId();
 		_observer = new PodcastObserver(_handler);
 		_podcast.registerContentObserver(_observer);
+
+		_queueObserver = new QueueObserver(_handler);
+		// watch to see if the active podcast changes
+		getContentResolver().registerContentObserver(PodcastProvider.QUEUE_URI, false, _queueObserver);
 
         setTitle(_podcast.getTitle());
         setContentView(R.layout.podcast_detail);
@@ -171,8 +189,7 @@ public class PodcastDetailActivity extends Activity {
 		_skipToEndButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				PlayerService.skipToEnd(PodcastDetailActivity.this);
-				finish();
-				startActivity(new Intent(PodcastDetailActivity.this, PodcastDetailActivity.class));
+				changeToActivePodcast();
 			}
 		});
 
@@ -209,6 +226,9 @@ public class PodcastDetailActivity extends Activity {
 		super.onPause();
 		_podcast.unregisterContentObserver(_observer);
 		_cursor.close();
+
+		// stop listening for queue changes
+		getContentResolver().unregisterContentObserver(_queueObserver);
 	}
 
 	@Override
@@ -218,10 +238,34 @@ public class PodcastDetailActivity extends Activity {
 		_cursor = getContentResolver().query(uri, _projection, null, null, null);
 		_podcast = new PodcastCursor(this, _cursor);
 		_podcast.registerContentObserver(_observer);
+
+		// continue listening for queue changes
+		getContentResolver().registerContentObserver(PodcastProvider.QUEUE_URI, false, _queueObserver);
+		if (_controlsEnabled)
+			changeToActivePodcast();
+	}
+
+	private void changeToActivePodcast() {
+		// see if the podcast changed while we were paused
+		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, new String[] { PodcastProvider.COLUMN_ID }, null, null, null);
+		if (c.isAfterLast()) {
+			c.close();
+			finish();
+			startActivity(new Intent(this, QueueActivity.class));
+		}
+		c.moveToNext();
+		if (c.getLong(0) != _podcastId) {
+			c.close();
+			finish();
+			startActivity(new Intent(this, PodcastDetailActivity.class));
+		}
+		c.close();
 	}
 
 	boolean _controlsEnabled = true;
 	private PodcastObserver _observer;
+	private QueueObserver _queueObserver;
+
 	private void updatePlayerControls(boolean force) {
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
