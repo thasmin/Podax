@@ -519,6 +519,9 @@ public class PlayerService extends Service {
 	}
 
 	public void updateActivePodcastPosition() {
+		if (_player == null)
+			return;
+
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, _player.getCurrentPosition());
 		PlayerService.this.getContentResolver().update(_activePodcastUri, values, null, null);
