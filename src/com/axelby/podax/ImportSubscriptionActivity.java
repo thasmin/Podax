@@ -38,6 +38,7 @@ import android.widget.Toast;
 public class ImportSubscriptionActivity extends ListActivity {
 
 	private AccountManager _accountManager;
+	private Account[] _gpodderAccounts;
 	private Account[] _googleAccounts = { };
 	private Account _chosenAccount;
 
@@ -49,6 +50,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		setContentView(R.layout.subscription_list);
 
 		_accountManager = AccountManager.get(getApplicationContext());
+		_gpodderAccounts = _accountManager.getAccountsByType("com.axelby.gpodder.account");
 		_accountManager.getAccountsByTypeAndFeatures("com.google", new String[] { "service_reader" },
 				new AccountManagerCallback<Account[]>() {
 					public void run(AccountManagerFuture<Account[]> future) {
@@ -135,18 +137,17 @@ public class ImportSubscriptionActivity extends ListActivity {
 		}
 
 		if (position == 3) {
-			Toast.makeText(this, "GPodder integration is currently disabled.", Toast.LENGTH_LONG).show();
-			/*
-			if (!isGPodderInstalled()) {
-				Intent intent = new Intent(Intent.ACTION_VIEW);
-				intent.setData(Uri.parse("market://details?id=com.axeby.gpodder"));
+			if (_gpodderAccounts.length > 0) {
+				return;
+			} else if (!isGPodderInstalled()) {
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.axelby.gpodder"));
+				intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 				startActivity(intent);
 			} else {
 				Intent intent = new Intent();
 				intent.setClassName("com.axelby.gpodder", "com.axelby.gpodder.AuthenticatorActivity");
 				startActivity(intent);
 			}
-			*/
 		}
 
 		if (position >= GOOGLE_ACCOUNT_START) {
@@ -205,10 +206,13 @@ public class ImportSubscriptionActivity extends ListActivity {
 				View view = _inflater.inflate(R.layout.subscription_list_item, null);
 
 				TextView text = (TextView)view.findViewById(R.id.text);
-				text.setText("Link a GPodder account");
-
 				ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
 				thumbnail.setImageResource(R.drawable.mygpo);
+
+				if (_gpodderAccounts.length == 0)
+					text.setText("Link a GPodder account");
+				else
+					text.setText("Linked to " + _gpodderAccounts[0].name);
 				return view;
 			}
 
@@ -277,11 +281,10 @@ public class ImportSubscriptionActivity extends ListActivity {
 
 	public boolean isGPodderInstalled() {
 		List<ProviderInfo> providerList = getPackageManager().queryContentProviders(null, 0, 0);
-		for (ProviderInfo provider : providerList) {
+		for (ProviderInfo provider : providerList)
 			if (provider.authority.equals("com.axelby.gpodder.podcasts"))
 				return true;
-		}
-		return providerList != null;
+		return false;
 	}
 
 	@Override

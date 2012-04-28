@@ -159,6 +159,10 @@ public class SubscriptionProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
+		ContentValues gpodderValues = new ContentValues();
+		gpodderValues.put("url", values.getAsString(COLUMN_URL));
+		getContext().getContentResolver().insert(Constants.GPODDER_URI, gpodderValues);
+
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		long id = db.insert("subscriptions", null, values);
 		getContext().getContentResolver().notifyChange(URI, null);
@@ -185,8 +189,18 @@ public class SubscriptionProvider extends ContentProvider {
 		}
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+
+		// delete from gpodder
+		Cursor c = db.query("subscriptions", new String[] { "url" }, where, whereArgs, null, null, null);
+		while (c.moveToNext())
+			getContext().getContentResolver().delete(Constants.GPODDER_URI, "url = ?", new String[] { c.getString(0) });
+		c.close();
+
 		int count = db.delete("subscriptions", where, whereArgs);
 		getContext().getContentResolver().notifyChange(URI, null);
+
+		db.close();
+
 		return count;
 	}
 

@@ -1,5 +1,7 @@
 package com.axelby.podax;
 
+import java.util.Vector;
+
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -14,26 +16,43 @@ public class GPodderReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		ContentResolver contentResolver = context.getContentResolver();
 		if (intent.getAction().equals("com.axelby.gpodder.INITIALIZE")) {
-			Cursor c = contentResolver.query(SubscriptionProvider.URI,
-					new String[] { "url" }, null, null, null);
-			Uri uri = Uri.parse("content://com.axelby.gpodder.podcasts");
-			while (c.moveToNext())
-				contentResolver.insert(uri, makeUrlValues(c.getString(0)));
+			// update the gpodder db with all of our subscriptions
+			Vector<String> in_podax = getPodaxUrls(contentResolver);
+			for (String url : in_podax)
+				contentResolver.insert(Constants.GPODDER_URI, makeUrlValues(url));
 		} else if (intent.getAction().equals(
 				"com.axelby.gpodder.SUBSCRIPTION_UPDATE")) {
-			String[] added = intent
-					.getStringArrayExtra("com.axelby.gpodder.SUBSCRIPTION_ADDED");
-			String[] removed = intent
-					.getStringArrayExtra("com.axelby.gpodder.SUBSCRIPTION_REMOVED");
+			Vector<String> at_gpodder = getGPodderUrls(contentResolver);
+			Vector<String> in_podax = getPodaxUrls(contentResolver);
 
-			for (String url : added)
-				contentResolver.insert(SubscriptionProvider.URI,
-						makeUrlValues(url));
-			for (String url : removed)
-				contentResolver.delete(SubscriptionProvider.URI,
-						SubscriptionProvider.COLUMN_URL + "=?",
-						new String[] { url });
+			for (String url : at_gpodder)
+				if (!in_podax.contains(url))
+					contentResolver.insert(SubscriptionProvider.URI, makeUrlValues(url));
+
+			for (String url : in_podax)
+				if (!at_gpodder.contains(url))
+					contentResolver.delete(SubscriptionProvider.URI,
+							SubscriptionProvider.COLUMN_URL + "=?",
+							new String[] { url });
 		}
+	}
+
+	private Vector<String> getPodaxUrls(ContentResolver contentResolver) {
+		return retrieveUrls(contentResolver, SubscriptionProvider.URI);
+	}
+
+	private Vector<String> getGPodderUrls(ContentResolver contentResolver) {
+		return retrieveUrls(contentResolver, Constants.GPODDER_URI);
+	}
+
+	private Vector<String> retrieveUrls(ContentResolver contentResolver, Uri uri) {
+		Vector<String> urls = new Vector<String>();
+		Cursor c = contentResolver.query(uri,
+				new String[] { "url" }, null, null, null);
+		while (c.moveToNext())
+			urls.add(c.getString(0));
+		c.close();
+		return urls;
 	}
 
 	private ContentValues makeUrlValues(String url) {
