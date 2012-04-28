@@ -46,13 +46,12 @@ public class GPodderReceiver extends BroadcastReceiver {
 	}
 
 	private Vector<String> retrieveUrls(ContentResolver contentResolver, Uri uri) {
-		Vector<String> urls = new Vector<String>();
-		Cursor c = contentResolver.query(uri,
-				new String[] { "url" }, null, null, null);
+		Vector<String> in_podax = new Vector<String>();
+		Cursor c = contentResolver.query(uri, new String[] { "url" }, null, null, null);
 		while (c.moveToNext())
-			urls.add(c.getString(0));
+			in_podax.add(c.getString(0));
 		c.close();
-		return urls;
+		return in_podax;
 	}
 
 	private ContentValues makeUrlValues(String url) {
