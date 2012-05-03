@@ -3,7 +3,6 @@ package com.axelby.podax;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.List;
 
 import org.xml.sax.SAXException;
 
@@ -19,7 +18,6 @@ import android.app.ListActivity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ProviderInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -139,7 +137,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		if (position == 3) {
 			if (_gpodderAccounts.length > 0) {
 				return;
-			} else if (!isGPodderInstalled()) {
+			} else if (!Helper.isGPodderInstalled(this)) {
 				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.axelby.gpodder"));
 				intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 				startActivity(intent);
@@ -277,14 +275,6 @@ public class ImportSubscriptionActivity extends ListActivity {
 			}
 		}, 
 		null);
-	}
-
-	public boolean isGPodderInstalled() {
-		List<ProviderInfo> providerList = getPackageManager().queryContentProviders(null, 0, 0);
-		for (ProviderInfo provider : providerList)
-			if (provider.authority.equals("com.axelby.gpodder.podcasts"))
-				return true;
-		return false;
 	}
 
 	@Override

@@ -1,6 +1,9 @@
 package com.axelby.podax;
 
+import java.util.List;
+
 import android.content.Context;
+import android.content.pm.ProviderInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -57,5 +60,13 @@ public class Helper {
 
 	public static boolean isPlaying(Context context) {
 		return PlayerService.isPlaying();
+	}
+
+	public static boolean isGPodderInstalled(Context context) {
+		List<ProviderInfo> providerList = context.getPackageManager().queryContentProviders(null, 0, 0);
+		for (ProviderInfo provider : providerList)
+			if (provider.authority.equals("com.axelby.gpodder.podcasts"))
+				return true;
+		return false;
 	}
 }
