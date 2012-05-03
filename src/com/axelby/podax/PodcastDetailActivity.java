@@ -103,7 +103,7 @@ public class PodcastDetailActivity extends Activity {
 			if (_cursor.isAfterLast()) {
 				_cursor.close();
 				finish();
-				startActivity(new Intent(this, QueueActivity.class));
+				startActivity(new Intent(this, QueueFragment.class));
 				return;
 			}
 		}
@@ -251,7 +251,7 @@ public class PodcastDetailActivity extends Activity {
 		if (c.isAfterLast()) {
 			c.close();
 			finish();
-			startActivity(new Intent(this, QueueActivity.class));
+			startActivity(new Intent(this, QueueFragment.class));
 		}
 		c.moveToNext();
 		if (c.getLong(0) != _podcastId) {

@@ -32,7 +32,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 			PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-			Intent queueIntent = new Intent(context, QueueActivity.class);
+			Intent queueIntent = new Intent(context, QueueFragment.class);
 			PendingIntent queuePendingIntent = PendingIntent.getActivity(context, 0, queueIntent, 0);
 			views.setOnClickPendingIntent(R.id.queue_btn, queuePendingIntent);
 	
