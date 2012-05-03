@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.axelby.podax" android:versionCode="18" android:versionName="3.5">
 
-	<uses-sdk android:minSdkVersion="7" android:targetSdkVersion="14" />
+	<uses-sdk android:minSdkVersion="7" android:targetSdkVersion="15" />
 
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -28,6 +28,7 @@
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="android.intent.category.DEFAULT" />
 			</intent-filter>
 			<meta-data android:name="android.app.default_searchable" android:value=".SearchActivity" />
 		</activity>
@@ -84,7 +85,7 @@
 		    	  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".QueueActivity"
 		    	  android:label="@string/queue"
-		    	  android:theme="@android:style/Theme.Black.NoTitleBar" />
+				  android:theme="@style/Theme.Sherlock" />
 		<activity android:name=".PodcastDetailActivity"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".ActiveDownloadListActivity"

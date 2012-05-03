@@ -2,14 +2,10 @@
 				android:layout_width="fill_parent"
 				android:layout_height="fill_parent"
 				android:orientation="vertical">
-	<com.axelby.podax.TopBar android:id="@+id/topbar"
-							 android:layout_width="fill_parent"
-							 android:layout_height="50dp"
-							 android:layout_alignParentTop="true" />
 	<LinearLayout android:layout_width="fill_parent"
 				  android:layout_height="fill_parent"
 				  android:orientation="vertical"
-				  android:layout_below="@id/topbar"
+				  android:layout_alignParentTop="true"
 				  android:layout_above="@id/bottombar">
 		<ListView android:id="@+id/android:list"
 				  android:layout_width="fill_parent"
@@ -17,7 +13,7 @@
 		<TextView android:id="@+id/android:empty"
 				   android:layout_width="fill_parent"
 				   android:layout_height="fill_parent"
-				   android:text="There are no podcasts in the queue." />
+				   android:text="@string/no_podcasts_in_queue" />
 		<include android:id="@+id/floater"
 				 layout="@layout/queue_list_item" />
 	</LinearLayout>

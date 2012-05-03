@@ -11,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -34,7 +33,9 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
-public class QueueFragment extends ListFragment implements OnTouchListener, LoaderManager.LoaderCallbacks<Cursor> {
+import com.actionbarsherlock.app.SherlockListFragment;
+
+public class QueueFragment extends SherlockListFragment implements OnTouchListener, LoaderManager.LoaderCallbacks<Cursor> {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
 	static final int OPTION_MOVETOFIRSTINQUEUE = 3;
