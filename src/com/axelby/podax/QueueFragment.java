@@ -52,18 +52,6 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 		PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 	};
 
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		return new CursorLoader(getActivity(), queueUri, projection, null, null, null);
-	}
-
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		_adapter.changeCursor(cursor);
-	}
-
-	public void onLoaderReset(Loader<Cursor> loader) {
-		_adapter.changeCursor(null);
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -131,6 +119,18 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 		}
 
 		return true;
+	}
+
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		return new CursorLoader(getActivity(), queueUri, projection, null, null, null);
+	}
+
+	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+		_adapter.changeCursor(cursor);
+	}
+
+	public void onLoaderReset(Loader<Cursor> loader) {
+		_adapter.changeCursor(null);
 	}
 
 	public boolean onTouch(View v, MotionEvent event) {
