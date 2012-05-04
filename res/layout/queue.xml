@@ -1,24 +1,22 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent"
-				android:orientation="vertical">
-	<LinearLayout android:layout_width="fill_parent"
-				  android:layout_height="fill_parent"
-				  android:orientation="vertical"
-				  android:layout_alignParentTop="true"
-				  android:layout_above="@id/bottombar">
-		<ListView android:id="@+id/android:list"
-				  android:layout_width="fill_parent"
-				  android:layout_height="fill_parent" />
-		<TextView android:id="@+id/android:empty"
-				   android:layout_width="fill_parent"
-				   android:layout_height="fill_parent"
-				   android:text="@string/no_podcasts_in_queue" />
-		<include android:id="@+id/floater"
-				 layout="@layout/queue_list_item" />
-	</LinearLayout>
-	<com.axelby.podax.BottomBar android:id="@+id/bottombar"
-								android:layout_width="fill_parent"
-								android:layout_height="wrap_content"
-								android:layout_alignParentBottom="true" />
-</RelativeLayout>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_alignParentTop="true"
+    android:orientation="vertical" >
+
+    <ListView
+        android:id="@+id/android:list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+    <TextView
+        android:id="@+id/android:empty"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:text="@string/no_podcasts_in_queue" />
+
+    <include
+        android:id="@+id/floater"
+        layout="@layout/queue_list_item" />
+
+</LinearLayout>

@@ -47,7 +47,7 @@
 
 		<activity android:name=".SubscriptionListActivity"
 		    	  android:label="@string/subscriptions"
-		    	  android:theme="@android:style/Theme.Black.NoTitleBar">
+		    	  android:theme="@style/Theme.Sherlock">
 			<intent-filter>
 			    <action android:name="android.intent.action.VIEW" />
 			    <category android:name="android.intent.category.DEFAULT" />

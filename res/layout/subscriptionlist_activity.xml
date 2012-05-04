@@ -5,11 +5,11 @@
     android:orientation="vertical" >
 
     <fragment
-        android:id="@+id/queue_fragment"
-        android:name="com.axelby.podax.QueueFragment"
+        android:id="@+id/subscriptionlist_fragment"
+        android:name="com.axelby.podax.SubscriptionListFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-    </fragment>
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottombar" />
 
     <com.axelby.podax.BottomBar
         android:id="@+id/bottombar"

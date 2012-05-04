@@ -57,8 +57,8 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 		super.onCreate(savedInstanceState);
 
 		getLoaderManager().initLoader(0, null, this);
-		_adapter = new QueueListAdapter(getActivity(), null);
 
+		_adapter = new QueueListAdapter(getActivity(), null);
 		setListAdapter(_adapter);
 	}
 
