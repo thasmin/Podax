@@ -30,18 +30,22 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
 
-	private PodcastAdapter _adapter;
-	private int _subscriptionId = -1;
+	private PodcastAdapter _adapter = null;
+	private int _subscriptionId = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		_subscriptionId = getActivity().getIntent().getIntExtra("subscriptionId", -1);
-
+		_subscriptionId = getActivity().getIntent().getIntExtra("subscriptionId", 0);
 		getLoaderManager().initLoader(0, null, this);
 		_adapter = new PodcastAdapter(getActivity(), null);
 		setListAdapter(_adapter);
+	}
+
+	public void setSubscriptionId(int id) {
+		_subscriptionId = id;
+		getLoaderManager().restartLoader(0, null, this);
 	}
 
 	@Override
@@ -53,16 +57,6 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		if (_subscriptionId == -1) {
-			getActivity().finish();
-			return;
-		}
-
-		if (!setTitle()) {
-			getActivity().finish();
-			return;
-		}
 
 		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
 			public void onCreateContextMenu(ContextMenu menu, View v,
@@ -85,7 +79,16 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 		});
 	}
 
+	CharSequence _originalTitle = null;
 	public boolean setTitle() {
+		if (_originalTitle == null)
+			_originalTitle = getActivity().getTitle();
+
+		if (_subscriptionId == 0) {
+			getActivity().setTitle(_originalTitle);
+			return true;
+		}
+
 		// set the title before loading the layout
 		Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
 		String[] subscriptionProjection = {
@@ -168,11 +171,13 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		_adapter.changeCursor(cursor);
+		setTitle();
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
 		_adapter.changeCursor(null);
+		setTitle();
 	}
 
 	private class PodcastAdapter extends ResourceCursorAdapter {

@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -104,10 +105,17 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
-		Intent intent = new Intent(getActivity(), PodcastListActivity.class);
+		Fragment podcastList = getFragmentManager().findFragmentById(R.id.podcastlist_fragment);
 		SubscriptionCursor sub = new SubscriptionCursor(getActivity(), (Cursor)list.getItemAtPosition(position));
-		intent.putExtra("subscriptionId", (int)(long)sub.getId());
-		startActivity(intent);
+		int subscriptionId = (int)(long)sub.getId();
+		if (podcastList == null || !podcastList.isInLayout()) {
+			Intent intent = new Intent(getActivity(), PodcastListActivity.class);
+			intent.putExtra("subscriptionId", subscriptionId);
+			startActivity(intent);
+		} else {
+			PodcastListFragment podcastListFragment = (PodcastListFragment) podcastList;
+			podcastListFragment.setSubscriptionId(subscriptionId);
+		}
 	}
 
 	@Override

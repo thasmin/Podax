@@ -7,10 +7,22 @@
     <fragment
         android:id="@+id/subscriptionlist_fragment"
         android:name="com.axelby.podax.SubscriptionListFragment"
-        android:layout_width="match_parent"
+        android:layout_width="360dp"
         android:layout_height="match_parent"
         android:layout_above="@+id/bottombar" >
+
         <!-- Preview: layout=@layout/subscription_list -->
+    </fragment>
+
+    <fragment
+        android:id="@+id/podcastlist_fragment"
+        android:name="com.axelby.podax.PodcastListFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottombar"
+        android:layout_toRightOf="@+id/subscriptionlist_fragment" >
+
+        <!-- Preview: layout=@layout/podcastlist_fragment -->
     </fragment>
 
     <com.axelby.podax.BottomBar
