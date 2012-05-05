@@ -29,5 +29,4 @@ public class SubscriptionListActivity extends SherlockFragmentActivity {
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
-
 }

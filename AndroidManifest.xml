@@ -82,7 +82,7 @@
 		</activity>
 
 		<activity android:name=".PodcastListActivity"
-		    	  android:theme="@android:style/Theme.Black.NoTitleBar" />
+				  android:theme="@style/Theme.Sherlock" />
 		<activity android:name=".QueueActivity"
 		    	  android:label="@string/queue"
 				  android:theme="@style/Theme.Sherlock" />
