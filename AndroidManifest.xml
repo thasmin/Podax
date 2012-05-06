@@ -1,152 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.axelby.podax" android:versionCode="18" android:versionName="3.5">
+    package="com.axelby.podax"
+    android:versionCode="18"
+    android:versionName="3.5" >
 
-	<uses-sdk android:minSdkVersion="7" android:targetSdkVersion="15" />
+    <uses-sdk
+        android:minSdkVersion="7"
+        android:targetSdkVersion="15" />
 
-	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
-	<uses-permission android:name="android.permission.USE_CREDENTIALS" />
-	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-	<uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
-	<supports-screens
-		android:smallScreens="true"
-		android:normalScreens="true"
-		android:largeScreens="true"
-		android:anyDensity="true"
-	/>
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true" />
 
-	<application android:icon="@drawable/icon" android:label="@string/app_name">
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name" >
+        <activity
+            android:name=".ui.MainActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-		<activity android:name=".ui.MainActivity"
-				  android:label="@string/app_name"
-				  android:theme="@android:style/Theme.Black.NoTitleBar">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-				<category android:name="android.intent.category.DEFAULT" />
-			</intent-filter>
-			<meta-data android:name="android.app.default_searchable" android:value=".SearchActivity" />
-		</activity>
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
 
-	    <activity android:name=".ui.SearchActivity"
-				  android:label="@string/search"
-				  android:theme="@android:style/Theme.Black.NoTitleBar"
-	    		  android:launchMode="singleTop">
-	        <intent-filter>
-	            <action android:name="android.intent.action.SEARCH" />
-	            <category android:name="android.intent.category.DEFAULT" />
-	        </intent-filter>
-	        <meta-data android:name="android.app.searchable"
-	                   android:resource="@xml/searchable" />
-	    </activity>
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchActivity" />
+        </activity>
+        <activity
+            android:name=".ui.SearchActivity"
+            android:label="@string/search"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
 
-		<activity android:name=".ui.SubscriptionListActivity"
-		    	  android:label="@string/subscriptions"
-		    	  android:theme="@style/Theme.Sherlock">
-			<intent-filter>
-			    <action android:name="android.intent.action.VIEW" />
-			    <category android:name="android.intent.category.DEFAULT" />
-			    <category android:name="android.intent.category.BROWSABLE" />
-			    <data android:scheme="http" />
-			    <data android:host="*" />
-			    <data android:pathPattern=".*\\.xml" />
-			    <data android:pathPattern=".*\\.rss" />
-			</intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
 
-			<intent-filter>
-			    <action android:name="android.intent.action.VIEW" />
-			    <category android:name="android.intent.category.DEFAULT" />
-			    <category android:name="android.intent.category.BROWSABLE" />
-			    <data android:scheme="http" />
-			    <data android:host="feeds.feedburner.com" />
-			    <data android:host="feedproxy.google.com" />
-			    <data android:host="feeds2.feedburner.com" />
-			    <data android:host="feedsproxy.google.com" />
-			</intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+        <activity
+            android:name=".ui.SubscriptionListActivity"
+            android:label="@string/subscriptions"
+            android:theme="@style/Theme.Sherlock" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
-			<intent-filter>
-			    <action android:name="android.intent.action.VIEW" />
-			    <category android:name="android.intent.category.DEFAULT" />
-			    <category android:name="android.intent.category.BROWSABLE" />
-			    <data android:scheme="http" />
-			    <data android:mimeType="text/xml" />
-			    <data android:mimeType="application/rss+xml" />
-			    <data android:mimeType="application/atom+xml" />
-			    <data android:mimeType="application/xml" />
-			</intent-filter>
-		</activity>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-		<activity android:name=".ui.PodcastListActivity"
-				  android:theme="@style/Theme.Sherlock" />
-		<activity android:name=".ui.QueueActivity"
-		    	  android:label="@string/queue"
-				  android:theme="@style/Theme.Sherlock" />
-		<activity android:name=".ui.PodcastDetailActivity"
-				  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		<activity android:name=".ui.ActiveDownloadActivity"
-				  android:label="@string/active_downloads"
-				  android:theme="@style/Theme.Sherlock" />
-		<activity android:name=".ui.Preferences"
-				  android:label="@string/preferences" />
-		<activity android:name=".ui.AddSubscriptionActivity"
-				  android:label="@string/import_subscriptions"
-				  android:theme="@style/Theme.Sherlock" />
-		<activity android:name=".ui.AboutActivity"
-				  android:label="@string/about"
-				  android:theme="@style/Theme.Sherlock" />
-		<activity android:name=".ui.DiscoverActivity"
-				  android:label="@string/discover_subscriptions"
-				  android:theme="@style/Theme.Sherlock" />
-		<activity android:name=".ui.PopularSubscriptionListActivity" />
-		<activity android:name=".ui.PopularSubscriptionActivity"
-				  android:label="@string/popular_subscription_title"
-				  android:theme="@android:style/Theme.Black.NoTitleBar" />
+                <data android:scheme="http" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.xml" />
+                <data android:pathPattern=".*\\.rss" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
-		<service android:name=".UpdateService" />
-		<service android:name=".PlayerService" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-		<receiver android:name=".SmallWidgetProvider" android:label="Podax 4x1">
-			<intent-filter>
-				<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-			</intent-filter>
-			<meta-data android:resource="@xml/smallwidget"
-				android:name="android.appwidget.provider" />
-		</receiver>
+                <data android:scheme="http" />
+                <data android:host="feeds.feedburner.com" />
+                <data android:host="feedproxy.google.com" />
+                <data android:host="feeds2.feedburner.com" />
+                <data android:host="feedsproxy.google.com" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
-		<receiver android:name=".LargeWidgetProvider" android:label="Podax 4x2">
-			<intent-filter>
-				<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-			</intent-filter>
-			<meta-data android:resource="@xml/largewidget"
-				android:name="android.appwidget.provider" />
-		</receiver>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-		<receiver android:name=".GPodderReceiver">
-			<intent-filter>
-				<action android:name="com.axelby.gpodder.INITIALIZE" />
-				<action android:name="com.axelby.gpodder.SUBSCRIPTION_UPDATE" />
-			</intent-filter>
-		</receiver>
+                <data android:scheme="http" />
+                <data android:mimeType="text/xml" />
+                <data android:mimeType="application/rss+xml" />
+                <data android:mimeType="application/atom+xml" />
+                <data android:mimeType="application/xml" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.PodcastListActivity"
+            android:theme="@style/Theme.Sherlock" />
+        <activity
+            android:name=".ui.QueueActivity"
+            android:label="@string/queue"
+            android:theme="@style/Theme.Sherlock" />
+        <activity
+            android:name=".ui.PodcastDetailActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar" />
+        <activity
+            android:name=".ui.ActiveDownloadActivity"
+            android:label="@string/active_downloads"
+            android:theme="@style/Theme.Sherlock" />
+        <activity
+            android:name=".ui.Preferences"
+            android:label="@string/preferences" />
+        <activity
+            android:name=".ui.AddSubscriptionActivity"
+            android:label="@string/import_subscriptions"
+            android:theme="@style/Theme.Sherlock" />
+        <activity
+            android:name=".ui.AboutActivity"
+            android:label="@string/about"
+            android:theme="@style/Theme.Sherlock" />
+        <activity
+            android:name=".ui.DiscoverActivity"
+            android:label="@string/discover_subscriptions"
+            android:theme="@style/Theme.Sherlock" />
+        <activity android:name=".ui.PopularSubscriptionListActivity" />
+        <activity
+            android:name=".ui.PopularSubscriptionActivity"
+            android:label="@string/popular_subscription_title"
+            android:theme="@android:style/Theme.Black.NoTitleBar" />
 
-		<receiver android:name=".BootReceiver">
-			<intent-filter>
-				<action android:name="android.intent.action.BOOT_COMPLETED" />
-			</intent-filter>
-		</receiver>
-		
-		<provider android:name=".SearchSuggestionProvider"
-				  android:label="Podax Search"
-	              android:authorities="com.axelby.podax.searchsuggestionprovider" />
-		<provider android:name=".PodcastProvider"
-				  android:label="Podcasts"
-			      android:authorities="com.axelby.podax.podcastprovider" />
-		<provider android:name=".SubscriptionProvider"
-				  android:label="Podcast Subscriptions"
-			      android:authorities="com.axelby.podax.subscriptionprovider" />
-	</application>
-</manifest> 
+        <service android:name=".UpdateService" />
+        <service android:name=".PlayerService" />
+
+        <receiver
+            android:name=".SmallWidgetProvider"
+            android:label="Podax 4x1" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/smallwidget" />
+        </receiver>
+        <receiver
+            android:name=".LargeWidgetProvider"
+            android:label="Podax 4x2" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/largewidget" />
+        </receiver>
+        <receiver android:name=".GPodderReceiver" >
+            <intent-filter>
+                <action android:name="com.axelby.gpodder.INITIALIZE" />
+                <action android:name="com.axelby.gpodder.SUBSCRIPTION_UPDATE" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".BootReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name=".SearchSuggestionProvider"
+            android:authorities="com.axelby.podax.searchsuggestionprovider"
+            android:label="Podax Search" />
+        <provider
+            android:name=".PodcastProvider"
+            android:authorities="com.axelby.podax.podcastprovider"
+            android:label="Podcasts" />
+        <provider
+            android:name=".SubscriptionProvider"
+            android:authorities="com.axelby.podax.subscriptionprovider"
+            android:label="Podcast Subscriptions" />
+    </application>
+
+</manifest>
