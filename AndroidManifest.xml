@@ -101,7 +101,7 @@
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".ui.DiscoverActivity"
 				  android:label="@string/discover_subscriptions"
-				  android:theme="@android:style/Theme.Black.NoTitleBar" />
+				  android:theme="@style/Theme.Sherlock" />
 		<activity android:name=".ui.PopularSubscriptionListActivity" />
 		<activity android:name=".ui.PopularSubscriptionActivity"
 				  android:label="@string/popular_subscription_title"

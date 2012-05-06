@@ -10,21 +10,23 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Xml;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 
-public class PopularSubscriptionListActivity extends ListActivity {
+public class PopularSubscriptionListFragment extends SherlockListFragment {
 
 	private class PodaxFeed {
 		public String title;
@@ -36,14 +38,34 @@ public class PopularSubscriptionListActivity extends ListActivity {
 		}
 	}
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	private String _source;
+	private String _url;
 
-		setContentView(R.layout.innerlist);
-		String sourceName = getIntent().getStringExtra(Constants.EXTRA_POPULAR_SOURCE_NAME);
-		String[] strings = { "Loading from " + sourceName };
-		setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, strings));
+	public PopularSubscriptionListFragment() {
+	}
+
+	public PopularSubscriptionListFragment(String source, String url) {
+		_source = source;
+		_url = url;
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	        Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.innerlist, container, false);
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		String[] strings = { "Loading from " + _source };
+		setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings));
 
 		new AsyncTask<Void, Void, Vector<PodaxFeed>>() {
 			@Override
@@ -59,8 +81,7 @@ public class PopularSubscriptionListActivity extends ListActivity {
 					}
 				});
 
-				String sourceUrl = getIntent().getStringExtra(Constants.EXTRA_POPULAR_SOURCE_URL);
-				HttpGet get = new HttpGet(sourceUrl);
+				HttpGet get = new HttpGet(_url);
 				HttpClient client = new DefaultHttpClient();
 				try {
 					HttpResponse response = client.execute(get);
@@ -77,17 +98,17 @@ public class PopularSubscriptionListActivity extends ListActivity {
 
 			@Override
 			protected void onPostExecute(Vector<PodaxFeed> result) {
-				setListAdapter(new ArrayAdapter<PodaxFeed>(PopularSubscriptionListActivity.this, android.R.layout.simple_list_item_1, result));
+				setListAdapter(new ArrayAdapter<PodaxFeed>(getActivity(), android.R.layout.simple_list_item_1, result));
 				super.onPostExecute(result);
 			}
 		}.execute((Void)null);
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
+	public void onListItemClick(ListView l, View v, int position, long id) {
 		PodaxFeed feed = (PodaxFeed) l.getItemAtPosition(position);
 
-		Intent intent = new Intent(this, PopularSubscriptionActivity.class);
+		Intent intent = new Intent(getActivity(), PopularSubscriptionActivity.class);
 		intent.putExtra(Constants.EXTRA_TITLE, feed.title);
 		intent.putExtra(Constants.EXTRA_URL, feed.url);
 		startActivity(intent);
