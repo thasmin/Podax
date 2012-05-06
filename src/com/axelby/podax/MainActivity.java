@@ -33,14 +33,6 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		View importsubs = this.findViewById(R.id.importsubs);
-		importsubs.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, ImportSubscriptionActivity.class);
-				startActivity(intent);
-			}
-		});
-
 		View activedownloads = this.findViewById(R.id.activedownloads);
 		activedownloads.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
