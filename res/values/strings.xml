@@ -75,4 +75,5 @@
 	<string name="add">Add</string>
 	<string name="discover">Discover</string>
 	<string name="restart">Restart</string>
+	<string name="about">About</string>
 </resources>
