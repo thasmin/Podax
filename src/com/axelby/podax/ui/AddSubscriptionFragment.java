@@ -47,7 +47,11 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 	private Account[] _googleAccounts = { };
 	private Account _chosenAccount;
 
-	private final int GOOGLE_ACCOUNT_START = 5;
+	private final int ADD_RSS = 0;
+	private final int ADD_OPML = 1;
+	private final int ADD_GPODDER = 2;
+	private final int GOOGLE_ACCOUNT_HEADER = 3;
+	private final int GOOGLE_ACCOUNT_START = 4;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -86,7 +90,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		if (position == 0) {
+		if (position == ADD_RSS) {
 			AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 			alert.setTitle("Podcast URL");
 			alert.setMessage("Type the URL of the podcast RSS");
@@ -115,7 +119,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 			return;
 		}
 
-		if (position == 1) {
+		if (position == ADD_OPML) {
 			FileFilter fileFilter = new FileFilter() {
 				public boolean accept(File pathname) {
 					return pathname.getName().equals("podcasts.opml");
@@ -145,12 +149,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 			return;
 		}
 
-		if (position == 2) {
-			startActivity(new Intent(getActivity(), DiscoverActivity.class));
-			return;
-		}
-
-		if (position == 3) {
+		if (position == ADD_GPODDER) {
 			if (_gpodderAccounts.length > 0) {
 				return;
 			} else if (!Helper.isGPodderInstalled(getActivity())) {
@@ -183,7 +182,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 
 		public int getCount() {
 			return _googleAccounts.length == 0 ?
-						GOOGLE_ACCOUNT_START - 1 :
+						GOOGLE_ACCOUNT_START - 1:
 						_googleAccounts.length + GOOGLE_ACCOUNT_START;
 		}
 
@@ -198,25 +197,19 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 		}
 
 		public View getView(int position, View convertView, ViewGroup parent) {
-			if (position == 0) {
+			if (position == ADD_RSS) {
 				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
 				view.setText(R.string.add_rss_feed);
 				return view;
 			}
 
-			if (position == 1) {
+			if (position == ADD_OPML) {
 				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
 				view.setText(R.string.add_from_opml_file);
 				return view;
 			}
 
-			if (position == 2) {
-				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
-				view.setText(R.string.discover_subscriptions);
-				return view;
-			}
-
-			if (position == 3) {
+			if (position == ADD_GPODDER) {
 				View view = _inflater.inflate(R.layout.subscription_list_item, null);
 
 				TextView text = (TextView)view.findViewById(R.id.text);
@@ -230,7 +223,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 				return view;
 			}
 
-			if (position == GOOGLE_ACCOUNT_START - 1) {
+			if (position == GOOGLE_ACCOUNT_HEADER) {
 				TextView view = new TextView(getActivity());
 				view.setTextAppearance(getActivity(), android.R.style.TextAppearance_Medium);
 				view.setBackgroundDrawable(getResources().getDrawable(R.drawable.back));
@@ -248,7 +241,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 		}
 
 		public boolean isEnabled(int position) {
-			return position != GOOGLE_ACCOUNT_START - 1;
+			return position != GOOGLE_ACCOUNT_HEADER;
 		}
 	}
 

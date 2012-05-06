@@ -7,4 +7,9 @@
         android:showAsAction="ifRoom|withText"
         android:title="@string/add"/>
 
+    <item
+        android:id="@+id/discover"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/discover"/>
+
 </menu>

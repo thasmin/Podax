@@ -43,8 +43,10 @@ public class SubscriptionListActivity extends SherlockFragmentActivity {
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		if (item.getItemId() == R.id.add_subscription) {
-			Intent intent = new Intent(this, AddSubscriptionActivity.class);
-			startActivity(intent);
+			startActivity(new Intent(this, AddSubscriptionActivity.class));
+			return true;
+		} else if (item.getItemId() == R.id.discover) {
+			startActivity(new Intent(this, DiscoverActivity.class));
 			return true;
 		} else {
 			return super.onMenuItemSelected(featureId, item);

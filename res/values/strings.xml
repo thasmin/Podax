@@ -73,4 +73,5 @@
 	<string name="update_request_no_wifi">Podax will not update because there is no Wi-Fi connection. This can be changed in the preferences.</string>
 	<string name="no_podcasts_in_queue">There are no podcasts in the queue.</string>
 	<string name="add">Add</string>
+	<string name="discover">Discover</string>
 </resources>
