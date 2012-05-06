@@ -1,9 +1,12 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import android.app.TabActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TabHost;
+
+import com.axelby.podax.Constants;
+import com.axelby.podax.R;
 
 public class DiscoverActivity extends TabActivity {
 

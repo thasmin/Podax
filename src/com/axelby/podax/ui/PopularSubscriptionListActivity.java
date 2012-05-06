@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import java.io.IOException;
 import java.util.Vector;
@@ -20,6 +20,9 @@ import android.util.Xml;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.axelby.podax.Constants;
+import com.axelby.podax.R;
 
 public class PopularSubscriptionListActivity extends ListActivity {
 

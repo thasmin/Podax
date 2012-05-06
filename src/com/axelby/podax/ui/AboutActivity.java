@@ -1,9 +1,11 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.webkit.WebView;
+
+import com.axelby.podax.R;
 
 public class AboutActivity extends Activity {
 

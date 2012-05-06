@@ -1,5 +1,7 @@
 package com.axelby.podax;
 
+import com.axelby.podax.ui.PodcastDetailActivity;
+
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;

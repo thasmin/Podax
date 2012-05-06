@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.content.ContentUris;
@@ -17,6 +17,13 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+
+import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
+import com.axelby.podax.PlayerService;
+import com.axelby.podax.PodcastCursor;
+import com.axelby.podax.PodcastProvider;
+import com.axelby.podax.R;
 
 public class PodcastDetailActivity extends Activity {
 	Cursor _cursor;

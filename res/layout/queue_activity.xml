@@ -6,12 +6,12 @@
 
     <fragment
         android:id="@+id/queue_fragment"
-        android:name="com.axelby.podax.QueueFragment"
+        android:name="com.axelby.podax.ui.QueueFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
     </fragment>
 
-    <com.axelby.podax.BottomBar
+    <com.axelby.podax.ui.BottomBar
         android:id="@+id/bottombar"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

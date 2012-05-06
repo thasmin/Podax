@@ -6,14 +6,14 @@
 
     <fragment
         android:id="@+id/subscriptionlist_fragment"
-        android:name="com.axelby.podax.SubscriptionListFragment"
+        android:name="com.axelby.podax.ui.SubscriptionListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/bottombar" >
         <!-- Preview: layout=@layout/subscription_list -->
     </fragment>
 
-    <com.axelby.podax.BottomBar
+    <com.axelby.podax.ui.BottomBar
         android:id="@+id/bottombar"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

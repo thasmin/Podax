@@ -1,10 +1,11 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.axelby.podax.R;
 
 public class PodcastListActivity extends SherlockFragmentActivity {
 	@Override

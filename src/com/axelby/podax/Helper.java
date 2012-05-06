@@ -34,7 +34,7 @@ public class Helper {
 		return true;
 	}
 
-	static String getTimeString(int milliseconds) {
+	public static String getTimeString(int milliseconds) {
 		int seconds = milliseconds / 1000;
 		final int SECONDSPERHOUR = 60 * 60;
 		final int SECONDSPERMINUTE = 60;

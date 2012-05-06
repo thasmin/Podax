@@ -6,12 +6,12 @@
 
     <fragment
         android:id="@+id/subscriptionlist_fragment"
-        android:name="com.axelby.podax.PodcastListFragment"
+        android:name="com.axelby.podax.ui.PodcastListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/bottombar" />
 
-    <com.axelby.podax.BottomBar
+    <com.axelby.podax.ui.BottomBar
         android:id="@+id/bottombar"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import java.io.File;
 
@@ -18,6 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
+
+import com.axelby.podax.PodcastCursor;
+import com.axelby.podax.PodcastProvider;
+import com.axelby.podax.R;
+import com.axelby.podax.UpdateService;
 
 public class ActiveDownloadListActivity extends ListActivity {
 	Runnable refresher;

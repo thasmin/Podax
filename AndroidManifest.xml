@@ -22,7 +22,7 @@
 
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
 
-		<activity android:name=".MainActivity"
+		<activity android:name=".ui.MainActivity"
 				  android:label="@string/app_name"
 				  android:theme="@android:style/Theme.Black.NoTitleBar">
 			<intent-filter>
@@ -33,7 +33,7 @@
 			<meta-data android:name="android.app.default_searchable" android:value=".SearchActivity" />
 		</activity>
 
-	    <activity android:name=".SearchActivity"
+	    <activity android:name=".ui.SearchActivity"
 				  android:label="@string/search"
 				  android:theme="@android:style/Theme.Black.NoTitleBar"
 	    		  android:launchMode="singleTop">
@@ -45,7 +45,7 @@
 	                   android:resource="@xml/searchable" />
 	    </activity>
 
-		<activity android:name=".SubscriptionListActivity"
+		<activity android:name=".ui.SubscriptionListActivity"
 		    	  android:label="@string/subscriptions"
 		    	  android:theme="@style/Theme.Sherlock">
 			<intent-filter>
@@ -81,30 +81,29 @@
 			</intent-filter>
 		</activity>
 
-		<activity android:name=".PodcastListActivity"
+		<activity android:name=".ui.PodcastListActivity"
 				  android:theme="@style/Theme.Sherlock" />
-		<activity android:name=".QueueActivity"
+		<activity android:name=".ui.QueueActivity"
 		    	  android:label="@string/queue"
 				  android:theme="@style/Theme.Sherlock" />
-		<activity android:name=".PodcastDetailActivity"
+		<activity android:name=".ui.PodcastDetailActivity"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		<activity android:name=".ActiveDownloadListActivity"
+		<activity android:name=".ui.ActiveDownloadListActivity"
 				  android:label="@string/active_downloads"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		<activity android:name=".Preferences"
+		<activity android:name=".ui.Preferences"
 				  android:label="@string/preferences" />
-		<activity android:name=".ImportSubscriptionActivity"
+		<activity android:name=".ui.ImportSubscriptionActivity"
 				  android:label="@string/import_subscriptions"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		<activity android:name=".AboutActivity"
+		<activity android:name=".ui.AboutActivity"
 				  android:label="@string/about_podax"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		<activity android:name=".DiscoverActivity"
+		<activity android:name=".ui.DiscoverActivity"
 				  android:label="@string/discover_subscriptions"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
-		<activity android:name=".ITunesActivity" />
-		<activity android:name=".PopularSubscriptionListActivity" />
-		<activity android:name=".PopularSubscriptionActivity"
+		<activity android:name=".ui.PopularSubscriptionListActivity" />
+		<activity android:name=".ui.PopularSubscriptionActivity"
 				  android:label="@string/popular_subscription_title"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 

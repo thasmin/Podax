@@ -14,7 +14,7 @@ public class BootReceiver extends BroadcastReceiver {
 		setupAlarms(context);
 	}
 
-	static void setupAlarms(Context context) {
+	public static void setupAlarms(Context context) {
 		// intent will always be BOOT_COMPLETED
 		AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 

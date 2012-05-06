@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.axelby.podax.R.drawable;
+import com.axelby.podax.ui.ActiveDownloadListActivity;
 
 class PodcastDownloader {
 	private Context _context;

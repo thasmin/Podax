@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -13,6 +13,11 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ResourceCursorTreeAdapter;
 import android.widget.TextView;
+
+import com.axelby.podax.PodcastProvider;
+import com.axelby.podax.R;
+import com.axelby.podax.SearchSuggestionProvider;
+import com.axelby.podax.SubscriptionProvider;
 
 public class SearchActivity extends Activity {
 	ExpandableListView epView;

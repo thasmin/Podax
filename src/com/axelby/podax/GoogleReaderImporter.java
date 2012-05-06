@@ -22,6 +22,7 @@ import android.sax.TextElementListener;
 import android.util.Xml;
 import android.widget.Toast;
 
+import com.axelby.podax.ui.SubscriptionListActivity;
 import com.google.api.client.googleapis.GoogleHeaders;
 import com.google.api.client.googleapis.GoogleTransport;
 import com.google.api.client.http.GenericUrl;

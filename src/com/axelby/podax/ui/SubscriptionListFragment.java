@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import java.io.File;
 
@@ -27,6 +27,12 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
+
+import com.axelby.podax.Constants;
+import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionCursor;
+import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 public class SubscriptionListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;

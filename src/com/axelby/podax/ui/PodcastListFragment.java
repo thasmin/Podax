@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import android.content.ContentUris;
 import android.content.Context;
@@ -24,6 +24,14 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
+import com.axelby.podax.Constants;
+import com.axelby.podax.PlayerService;
+import com.axelby.podax.PodcastCursor;
+import com.axelby.podax.PodcastProvider;
+import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionCursor;
+import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 public class PodcastListFragment extends SherlockListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	static final int OPTION_ADDTOQUEUE = 3;

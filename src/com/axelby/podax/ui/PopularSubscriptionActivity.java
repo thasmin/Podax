@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -28,6 +28,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.axelby.podax.Constants;
+import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.SubscriptionUpdater;
+import com.axelby.podax.UpdateService;
 
 public class PopularSubscriptionActivity extends Activity {
 

@@ -32,6 +32,7 @@ import android.widget.Toast;
 import android.bluetooth.BluetoothDevice;
 
 import com.axelby.podax.R.drawable;
+import com.axelby.podax.ui.PodcastDetailActivity;
 
 public class PlayerService extends Service {
 	public class PlayerBinder extends Binder {

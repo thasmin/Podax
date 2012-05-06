@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.ui;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -32,6 +32,13 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.axelby.podax.GoogleReaderImporter;
+import com.axelby.podax.Helper;
+import com.axelby.podax.OPMLImporter;
+import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 public class ImportSubscriptionActivity extends ListActivity {
 

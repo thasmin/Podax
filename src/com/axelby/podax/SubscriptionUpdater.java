@@ -26,6 +26,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
 
+import com.axelby.podax.ui.SubscriptionListActivity;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -39,7 +41,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Xml;
 
-class SubscriptionUpdater {
+public class SubscriptionUpdater {
 	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
 	private static final String NAMESPACE_MEDIA = "http://search.yahoo.com/mrss/";
 
