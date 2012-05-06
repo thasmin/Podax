@@ -34,7 +34,6 @@ public class ActiveDownloadActivity extends SherlockFragmentActivity {
 	    }
 	}
 
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getSupportMenuInflater();
