@@ -14,7 +14,6 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,6 +32,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.axelby.podax.GoogleReaderImporter;
 import com.axelby.podax.Helper;
 import com.axelby.podax.OPMLImporter;
@@ -40,7 +40,7 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
-public class ImportSubscriptionActivity extends ListActivity {
+public class AddSubscriptionFragment extends SherlockListFragment {
 
 	private AccountManager _accountManager;
 	private Account[] _gpodderAccounts;
@@ -52,9 +52,19 @@ public class ImportSubscriptionActivity extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.subscription_list);
+	}
 
-		_accountManager = AccountManager.get(getApplicationContext());
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	        Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.subscription_list, container, false);
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		_accountManager = AccountManager.get(getActivity());
 		_gpodderAccounts = _accountManager.getAccountsByType("com.axelby.gpodder.account");
 		_accountManager.getAccountsByTypeAndFeatures("com.google", new String[] { "service_reader" },
 				new AccountManagerCallback<Account[]>() {
@@ -68,24 +78,23 @@ public class ImportSubscriptionActivity extends ListActivity {
 						} catch (AuthenticatorException e) {
 							// no authenticator registered
 						} finally {
-							ImportSubscriptionActivity.this
-									.setListAdapter(new ImportSubscriptionAdapter());
+							setListAdapter(new ImportSubscriptionAdapter());
 						}
 					}
 			}, null);
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
+	public void onListItemClick(ListView l, View v, int position, long id) {
 		if (position == 0) {
-    		AlertDialog.Builder alert = new AlertDialog.Builder(this);
-    		alert.setTitle("Podcast URL");
-    		alert.setMessage("Type the URL of the podcast RSS");
-    		final EditText input = new EditText(this);
-    		//input.setText("http://blog.axelby.com/podcast.xml");
-    		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-    		alert.setView(input);
-    		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+			alert.setTitle("Podcast URL");
+			alert.setMessage("Type the URL of the podcast RSS");
+			final EditText input = new EditText(getActivity());
+			//input.setText("http://blog.axelby.com/podcast.xml");
+			input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+			alert.setView(input);
+			alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
 					String subscriptionUrl = input.getText().toString();
 					if (!subscriptionUrl.contains("://"))
@@ -93,18 +102,18 @@ public class ImportSubscriptionActivity extends ListActivity {
 					ContentValues values = new ContentValues();
 					values.put(SubscriptionProvider.COLUMN_URL, subscriptionUrl);
 					values.put(SubscriptionProvider.COLUMN_TITLE, subscriptionUrl);
-					Uri subscriptionUri = getContentResolver().insert(SubscriptionProvider.URI, values);
-					UpdateService.updateSubscription(ImportSubscriptionActivity.this, subscriptionUri);
+					Uri subscriptionUri = getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
+					UpdateService.updateSubscription(getActivity(), subscriptionUri);
 				}
 			});
-    		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
 					// do nothing
 				}
 			});
-    		alert.show();
-    		return;
-    	}
+			alert.show();
+			return;
+		}
 
 		if (position == 1) {
 			FileFilter fileFilter = new FileFilter() {
@@ -116,35 +125,35 @@ public class ImportSubscriptionActivity extends ListActivity {
 			File[] opmlFiles = externalStorageDir.listFiles(fileFilter);
 			if (opmlFiles.length == 0) {
 				String message = "The OPML file must be at " + externalStorageDir.getAbsolutePath() + "/podcasts.opml.";
-				Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+				Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
 				return;
 			}
 
 			try {
-				int newSubscriptions = OPMLImporter.read(this, opmlFiles[0]);
+				int newSubscriptions = OPMLImporter.read(getActivity(), opmlFiles[0]);
 				String message = "Found " + newSubscriptions + " subscriptions.";
-				Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-				finish();
-				startActivity(new Intent(this, SubscriptionListActivity.class));
+				Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+				getActivity().finish();
+				startActivity(new Intent(getActivity(), SubscriptionListActivity.class));
 			} catch (IOException e) {
 				String message = "There was an error while reading the OPML file.";
-				Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+				Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
 			} catch (SAXException e) {
 				String message = "The podcasts.opml file is not valid OPML.";
-				Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+				Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
 			}
 			return;
 		}
 
 		if (position == 2) {
-			startActivity(new Intent(this, DiscoverActivity.class));
+			startActivity(new Intent(getActivity(), DiscoverActivity.class));
 			return;
 		}
 
 		if (position == 3) {
 			if (_gpodderAccounts.length > 0) {
 				return;
-			} else if (!Helper.isGPodderInstalled(this)) {
+			} else if (!Helper.isGPodderInstalled(getActivity())) {
 				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.axelby.gpodder"));
 				intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 				startActivity(intent);
@@ -167,13 +176,13 @@ public class ImportSubscriptionActivity extends ListActivity {
 
 	public class ImportSubscriptionAdapter extends BaseAdapter {
 		LayoutInflater _inflater;
-		
+
 		public ImportSubscriptionAdapter() {
-			_inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+			_inflater = (LayoutInflater)getActivity().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 		}
-		
+
 		public int getCount() {
-			return _googleAccounts.length == 0 ? 
+			return _googleAccounts.length == 0 ?
 						GOOGLE_ACCOUNT_START - 1 :
 						_googleAccounts.length + GOOGLE_ACCOUNT_START;
 		}
@@ -222,8 +231,8 @@ public class ImportSubscriptionActivity extends ListActivity {
 			}
 
 			if (position == GOOGLE_ACCOUNT_START - 1) {
-				TextView view = new TextView(ImportSubscriptionActivity.this);
-				view.setTextAppearance(ImportSubscriptionActivity.this, android.R.style.TextAppearance_Medium);
+				TextView view = new TextView(getActivity());
+				view.setTextAppearance(getActivity(), android.R.style.TextAppearance_Medium);
 				view.setBackgroundDrawable(getResources().getDrawable(R.drawable.back));
 				view.setText("Google Reader Accounts");
 				return view;
@@ -247,7 +256,7 @@ public class ImportSubscriptionActivity extends ListActivity {
 		if (_chosenAccount == null)
 			return;
 
-		_accountManager.getAuthToken(_chosenAccount, "reader", true, new AccountManagerCallback<Bundle>() {
+		_accountManager.getAuthToken(_chosenAccount, "reader", null, true, new AccountManagerCallback<Bundle>() {
 			public void run(AccountManagerFuture<Bundle> future) {
 				Bundle authTokenBundle = null;
 				try {
@@ -269,9 +278,8 @@ public class ImportSubscriptionActivity extends ListActivity {
 						return;
 					}
 
-					Activity activity = ImportSubscriptionActivity.this;
 					String authToken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
-					GoogleReaderImporter.doImport(activity, authToken);
+					GoogleReaderImporter.doImport(getActivity(), authToken);
 				} catch (OperationCanceledException e) {
 					Log.e("Podax", "Operation Canceled", e);
 				} catch (IOException e) {
@@ -280,15 +288,14 @@ public class ImportSubscriptionActivity extends ListActivity {
 					Log.e("Podax", "Authentication Failed", e);
 				}
 			}
-		}, 
+		},
 		null);
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == 1)
-		{
-			if (resultCode == RESULT_OK && data == null)
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == 1) {
+			if (resultCode == Activity.RESULT_OK && data == null)
 				getAuthToken();
 		}
 	}

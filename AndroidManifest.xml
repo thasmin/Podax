@@ -93,9 +93,9 @@
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
 		<activity android:name=".ui.Preferences"
 				  android:label="@string/preferences" />
-		<activity android:name=".ui.ImportSubscriptionActivity"
+		<activity android:name=".ui.AddSubscriptionActivity"
 				  android:label="@string/import_subscriptions"
-				  android:theme="@android:style/Theme.Black.NoTitleBar" />
+				  android:theme="@style/Theme.Sherlock" />
 		<activity android:name=".ui.AboutActivity"
 				  android:label="@string/about_podax"
 				  android:theme="@android:style/Theme.Black.NoTitleBar" />
