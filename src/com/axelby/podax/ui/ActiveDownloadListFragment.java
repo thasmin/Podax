@@ -2,77 +2,102 @@ package com.axelby.podax.ui;
 
 import java.io.File;
 
-import android.app.ListActivity;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
-import com.axelby.podax.UpdateService;
 
-public class ActiveDownloadListActivity extends ListActivity {
+public class ActiveDownloadListFragment extends SherlockListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	Runnable refresher;
 	Handler handler = new Handler();
+	private ActiveDownloadAdapter _adapter;
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.downloads_list);
+		getLoaderManager().initLoader(0, null, this);
+
+		_adapter = new ActiveDownloadAdapter(getActivity(), null);
+		setListAdapter(_adapter);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	        Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.downloads_list, container, false);
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 
 		updateWifiNotice();
 		
 		refresher = new Runnable() {
-			Cursor _cursor = null;
 			public void run() {
-				final Uri toDownloadURI = Uri.withAppendedPath(PodcastProvider.URI, "to_download");
-				final String[] projection = new String[] {
-						PodcastProvider.COLUMN_ID,
-						PodcastProvider.COLUMN_TITLE,
-						PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-						PodcastProvider.COLUMN_MEDIA_URL,
-						PodcastProvider.COLUMN_FILE_SIZE,
-				};
-
-				if (_cursor != null)
-					_cursor.close();
-				_cursor = ActiveDownloadListActivity.this.getContentResolver().query(toDownloadURI, projection, null, null, null);
-				setListAdapter(new ActiveDownloadAdapter(ActiveDownloadListActivity.this, _cursor));
+				getLoaderManager().restartLoader(0, null, ActiveDownloadListFragment.this);
 				handler.postDelayed(this, 1000);
 			}
 		};
 	}
 
 	@Override
-	protected void onResume() {
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		final Uri toDownloadUri = Uri.withAppendedPath(PodcastProvider.URI, "to_download");
+		final String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_FILE_SIZE,
+		};
+		return new CursorLoader(getActivity(), toDownloadUri, projection, null, null, null);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+		_adapter.changeCursor(cursor);
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		_adapter.changeCursor(null);
+	}
+
+	@Override
+	public void onResume() {
 		updateWifiNotice();
 		refresher.run();
 		super.onResume();
 	}
 
 	@Override
-	protected void onPause() {
+	public void onPause() {
 		handler.removeCallbacks(refresher);
 		super.onPause();
 	}
 
 	public void updateWifiNotice() {
-		boolean wifiOnly = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("wifiPref", true);
-		TextView wifiNotice = (TextView) findViewById(R.id.wifinotice);
+		boolean wifiOnly = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("wifiPref", true);
+		TextView wifiNotice = (TextView) getActivity().findViewById(R.id.wifinotice);
 		wifiNotice.setText(wifiOnly ? R.string.download_only_on_wifi : R.string.download_anytime);
 	}
 
@@ -80,9 +105,9 @@ public class ActiveDownloadListActivity extends ListActivity {
 		LayoutInflater _layoutInflater;
 		
 		public ActiveDownloadAdapter(Context context, Cursor cursor) {
-			super(context, R.layout.downloads_list_item, cursor);
+			super(context, R.layout.downloads_list_item, cursor, true);
 			
-			_layoutInflater = LayoutInflater.from(ActiveDownloadListActivity.this);
+			_layoutInflater = LayoutInflater.from(getActivity());
 		}
 
 		@Override
@@ -117,26 +142,4 @@ public class ActiveDownloadListActivity extends ListActivity {
 			}
 		}
 	}
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(Menu.NONE, 0, Menu.NONE, "Restart Downloader");
-		menu.add(Menu.NONE, 1, Menu.NONE, R.string.preferences);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case 0:
-			UpdateService.downloadPodcasts(this);
-			break;
-		case 1:
-			startActivity(new Intent(this, Preferences.class));
-			break;
-		default:
-			return super.onContextItemSelected(item);
-		}
-		return true;
-    }
 }

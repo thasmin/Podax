@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
 		View activedownloads = this.findViewById(R.id.activedownloads);
 		activedownloads.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, ActiveDownloadListActivity.class);
+				Intent intent = new Intent(MainActivity.this, ActiveDownloadActivity.class);
 				startActivity(intent);
 			}
 		});

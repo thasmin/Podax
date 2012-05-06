@@ -1,38 +1,45 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent"
-				android:orientation="vertical">
-	<com.axelby.podax.TopBar android:id="@+id/topbar"
-							 android:layout_width="fill_parent"
-							 android:layout_height="50dp"
-							 android:layout_alignParentTop="true" />
-	<LinearLayout android:layout_width="fill_parent"
-				  android:layout_height="fill_parent"
-				  android:orientation="vertical"
-				  android:layout_below="@id/topbar"
-				  android:layout_above="@+id/bottombar">
-		<TextView android:id="@+id/wifinotice"
-				  android:layout_width="fill_parent"
-				  android:layout_height="wrap_content"
-				  android:text="@string/download_only_on_wifi"
-				  android:gravity="center_horizontal"
-				  android:textAppearance="?android:attr/textAppearanceMedium" />
-		<View android:id="@+id/separator"
-			  android:layout_width="fill_parent"
-			  android:layout_height="1dp"
-			  android:background="#FFE59F39" />
-		<ListView android:id="@+id/android:list"
-				  android:layout_width="fill_parent"
-				  android:layout_height="fill_parent"
-				  android:layout_alignParentTop="true" />
-		<TextView android:id="@+id/android:empty"
-				   android:layout_width="fill_parent"
-				   android:layout_height="fill_parent"
-				   android:textAppearance="?android:attr/textAppearanceLarge"
-				   android:text="@string/no_downloads" />
-	</LinearLayout>
-	<com.axelby.podax.ui.BottomBar android:id="@+id/bottombar"
-								android:layout_width="fill_parent"
-								android:layout_height="wrap_content"
-								android:layout_alignParentBottom="true" />
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/bottombar"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/wifinotice"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/download_only_on_wifi"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="#FFE59F39" />
+
+        <ListView
+            android:id="@+id/android:list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" />
+
+        <TextView
+            android:id="@+id/android:empty"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:text="@string/no_downloads"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </LinearLayout>
+
+    <com.axelby.podax.ui.BottomBar
+        android:id="@+id/bottombar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
 </RelativeLayout>

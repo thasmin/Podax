@@ -20,7 +20,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.axelby.podax.R.drawable;
-import com.axelby.podax.ui.ActiveDownloadListActivity;
+import com.axelby.podax.ui.ActiveDownloadActivity;
 
 class PodcastDownloader {
 	private Context _context;
@@ -168,7 +168,7 @@ class PodcastDownloader {
 		
 		CharSequence contentTitle = "Downloading Podcast";
 		CharSequence contentText = podcast.getTitle();
-		Intent notificationIntent = new Intent(_context, ActiveDownloadListActivity.class);
+		Intent notificationIntent = new Intent(_context, ActiveDownloadActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 		notification.setLatestEventInfo(_context, contentTitle, contentText, contentIntent);
 		notification.flags |= Notification.FLAG_ONGOING_EVENT;

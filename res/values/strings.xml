@@ -74,4 +74,5 @@
 	<string name="no_podcasts_in_queue">There are no podcasts in the queue.</string>
 	<string name="add">Add</string>
 	<string name="discover">Discover</string>
+	<string name="restart">Restart</string>
 </resources>
