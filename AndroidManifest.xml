@@ -112,7 +112,8 @@
             android:theme="@style/Theme.Sherlock" />
         <activity
             android:name=".ui.Preferences"
-            android:label="@string/preferences" />
+            android:label="@string/preferences"
+            android:theme="@style/Theme.Sherlock" />
         <activity
             android:name=".ui.AddSubscriptionActivity"
             android:label="@string/import_subscriptions"

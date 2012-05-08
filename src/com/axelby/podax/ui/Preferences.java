@@ -1,11 +1,11 @@
 package com.axelby.podax.ui;
 
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 
+import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.axelby.podax.R;
 
-public class Preferences extends PreferenceActivity {
+public class Preferences extends SherlockPreferenceActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
