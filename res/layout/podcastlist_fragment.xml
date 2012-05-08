@@ -8,13 +8,13 @@
         android:id="@android:id/empty"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Refresh the subscription to find the podcasts."
+        android:text="@string/refresh_subscription_to_find_podcasts"
         android:textSize="20dp" />
 
     <ListView
         android:id="@android:id/list"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="0dp"
         android:layout_weight="1" />
 
 </LinearLayout>
