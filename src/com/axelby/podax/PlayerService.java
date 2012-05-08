@@ -580,6 +580,10 @@ public class PlayerService extends Service {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_SKIPTO, secs);
 	}
 
+	public static void play(Context context, int podcastId) {
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcastId);
+	}
+
 	public static void play(Context context, PodcastCursor podcast) {
 		if (podcast == null)
 			return;

@@ -105,7 +105,7 @@
             android:theme="@style/Theme.Sherlock" />
         <activity
             android:name=".ui.PodcastDetailActivity"
-            android:theme="@android:style/Theme.Black.NoTitleBar" />
+            android:theme="@style/Theme.Sherlock" />
         <activity
             android:name=".ui.ActiveDownloadActivity"
             android:label="@string/active_downloads"

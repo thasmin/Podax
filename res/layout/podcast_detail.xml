@@ -1,113 +1,142 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent"
-				android:orientation="vertical">
-	<com.axelby.podax.TopBar android:id="@+id/topbar"
-							 android:layout_width="fill_parent"
-							 android:layout_height="50dp"
-							 android:layout_alignParentTop="true" />
-	<ScrollView android:id="@+id/scrollview"
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent"
-				android:layout_below="@id/topbar"
-				android:layout_above="@id/bottombar">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollview"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
 
-		<LinearLayout android:id="@+id/mainlayout"
-			android:layout_width="fill_parent" android:layout_height="wrap_content"
-			android:orientation="vertical">
+    <LinearLayout
+        android:id="@+id/mainlayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
 
-			<TextView android:id="@+id/subscription_title"
-				android:layout_width="fill_parent" android:layout_height="wrap_content"
-				android:textSize="16dp" android:gravity="center_horizontal" />
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="16dp" />
 
-			<LinearLayout android:id="@+id/seekLayout"
-				android:layout_width="fill_parent" android:layout_height="wrap_content"
-				android:orientation="horizontal">
-				<TextView android:id="@+id/position"
-					android:layout_width="wrap_content" android:layout_height="wrap_content"
-					android:layout_gravity="center_vertical" android:layout_weight="0"
-					android:layout_marginRight="10dp" android:layout_marginLeft="10dp" />
+        <TextView
+            android:id="@+id/subscription_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-				<SeekBar
-				    android:id="@+id/seekbar"
-				    android:layout_width="fill_parent"
-				    android:layout_height="wrap_content"
-				    android:layout_weight="1"
-				    android:progressDrawable="@drawable/progress" />
+        <LinearLayout
+            android:id="@+id/seekLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
-				<TextView android:id="@+id/duration"
-					android:layout_width="wrap_content" android:layout_height="wrap_content"
-					android:layout_gravity="center_vertical" android:layout_weight="0"
-					android:layout_marginRight="10dp" android:layout_marginLeft="10dp" />
-			</LinearLayout>
+            <TextView
+                android:id="@+id/position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="0" />
 
-			<LinearLayout android:id="@+id/play_layout"
-				android:orientation="horizontal"
-				android:weightSum="8"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content">
+            <SeekBar
+                android:id="@+id/seekbar"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:progressDrawable="@drawable/progress" />
 
-				<ImageButton android:id="@+id/restart_btn"
-					android:layout_weight="1"
-					android:padding="10dp"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@android:color/transparent"
-					android:contentDescription="@string/restart"
-					android:src="@drawable/ic_media_previous" />
-				<ImageButton android:id="@+id/rewind_btn"
-					android:layout_weight="1"
-					android:padding="10dp"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@android:color/transparent"
-					android:contentDescription="@string/rewind"
-					android:src="@drawable/ic_media_rew" />
-				<ImageButton android:id="@+id/play_btn"
-					android:layout_weight="3"
-					android:padding="10dp"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@android:color/transparent"
-					android:contentDescription="@string/pause"
-					android:src="@drawable/ic_media_play" />
-				<ImageButton android:id="@+id/forward_btn"
-					android:layout_weight="1"
-					android:padding="10dp"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@android:color/transparent"
-					android:contentDescription="@string/fast_forward"
-					android:src="@drawable/ic_media_ff" />
-				<ImageButton android:id="@+id/skiptoend_btn"
-					android:layout_weight="1"
-					android:padding="10dp"
-					android:layout_width="48dp"
-					android:layout_height="48dp"
-					android:background="@android:color/transparent"
-					android:contentDescription="@string/skip_to_end"
-					android:src="@drawable/ic_media_next" />
+            <TextView
+                android:id="@+id/duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="0" />
+        </LinearLayout>
 
-			</LinearLayout>
+        <LinearLayout
+            android:id="@+id/play_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="8" >
 
-			<LinearLayout android:id="@+id/queue_layout"
-				android:orientation="horizontal" android:layout_width="wrap_content"
-				android:layout_height="wrap_content">
-				<Button android:id="@+id/queue_btn" android:layout_width="wrap_content"
-					android:layout_height="wrap_content" android:text="@string/add_to_queue" />
-				<TextView android:id="@+id/queue_position" android:layout_width="wrap_content"
-					android:layout_height="fill_parent"
-					android:gravity="center_vertical" />
-			</LinearLayout>
+            <ImageButton
+                android:id="@+id/restart_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/restart"
+                android:padding="10dp"
+                android:src="@drawable/ic_media_previous" />
 
-			<WebView android:id="@+id/description" android:layout_width="fill_parent"
-				android:layout_height="fill_parent" />
+            <ImageButton
+                android:id="@+id/rewind_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/rewind"
+                android:padding="10dp"
+                android:src="@drawable/ic_media_rew" />
 
-		</LinearLayout>
+            <ImageButton
+                android:id="@+id/play_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_weight="3"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/pause"
+                android:padding="10dp"
+                android:src="@drawable/ic_media_play" />
 
-	</ScrollView>
-	<com.axelby.podax.ui.BottomBar android:id="@+id/bottombar"
-								android:layout_width="fill_parent"
-								android:layout_height="wrap_content"
-								android:layout_alignParentBottom="true" />
-</RelativeLayout>
+            <ImageButton
+                android:id="@+id/forward_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/fast_forward"
+                android:padding="10dp"
+                android:src="@drawable/ic_media_ff" />
+
+            <ImageButton
+                android:id="@+id/skiptoend_btn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/skip_to_end"
+                android:padding="10dp"
+                android:src="@drawable/ic_media_next" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/queue_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/queue_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_to_queue" />
+
+            <TextView
+                android:id="@+id/queue_position"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical" />
+        </LinearLayout>
+
+        <WebView
+            android:id="@+id/description"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" />
+    </LinearLayout>
+
+</ScrollView>
