@@ -19,9 +19,9 @@
 
     <supports-screens
         android:anyDensity="true"
-        android:xlargeScreens="true"
         android:largeScreens="true"
-        android:normalScreens="true" />
+        android:normalScreens="true"
+        android:xlargeScreens="true" />
 
     <application
         android:icon="@drawable/icon"
@@ -36,30 +36,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.app.default_searchable"
-                android:value=".SearchActivity" />
-        </activity>
-        <activity
-            android:name=".ui.SearchActivity"
-            android:label="@string/search"
-            android:launchMode="singleTop"
-            android:theme="@android:style/Theme.Black.NoTitleBar" >
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-        </activity>
-        <activity
-            android:name=".ui.SubscriptionListActivity"
-            android:label="@string/subscriptions"
-            android:theme="@style/Theme.Sherlock" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -95,20 +71,31 @@
                 <data android:mimeType="application/atom+xml" />
                 <data android:mimeType="application/xml" />
             </intent-filter>
+
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchActivity" />
+        </activity>
+        <activity
+            android:name=".ui.SearchActivity"
+            android:label="@string/search"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
         </activity>
         <activity
             android:name=".ui.PodcastListActivity"
             android:theme="@style/Theme.Sherlock" />
         <activity
-            android:name=".ui.QueueActivity"
-            android:label="@string/queue"
-            android:theme="@style/Theme.Sherlock" />
-        <activity
             android:name=".ui.PodcastDetailActivity"
-            android:theme="@style/Theme.Sherlock" />
-        <activity
-            android:name=".ui.ActiveDownloadActivity"
-            android:label="@string/active_downloads"
             android:theme="@style/Theme.Sherlock" />
         <activity
             android:name=".ui.Preferences"
@@ -117,10 +104,6 @@
         <activity
             android:name=".ui.AddSubscriptionActivity"
             android:label="@string/import_subscriptions"
-            android:theme="@style/Theme.Sherlock" />
-        <activity
-            android:name=".ui.AboutActivity"
-            android:label="@string/about"
             android:theme="@style/Theme.Sherlock" />
         <activity android:name=".ui.PopularSubscriptionListActivity" />
         <activity

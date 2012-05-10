@@ -26,9 +26,6 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
 
-import com.axelby.podax.R.drawable;
-import com.axelby.podax.ui.SubscriptionListActivity;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -42,6 +39,9 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.Xml;
+
+import com.axelby.podax.R.drawable;
+import com.axelby.podax.ui.MainActivity;
 
 public class SubscriptionUpdater {
 	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
@@ -232,7 +232,7 @@ public class SubscriptionUpdater {
 	};
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
-		Intent notificationIntent = new Intent(_context, SubscriptionListActivity.class);
+		Intent notificationIntent = MainActivity.getSubscriptionIntent(_context);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)

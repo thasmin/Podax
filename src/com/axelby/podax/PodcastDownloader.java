@@ -21,7 +21,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.axelby.podax.R.drawable;
-import com.axelby.podax.ui.ActiveDownloadActivity;
+import com.axelby.podax.ui.MainActivity;
 
 class PodcastDownloader {
 	private Context _context;
@@ -162,7 +162,7 @@ class PodcastDownloader {
 	}
 
 	void updateDownloadNotification(PodcastCursor podcast, long downloaded) {
-		Intent notificationIntent = new Intent(_context, ActiveDownloadActivity.class);
+		Intent notificationIntent = MainActivity.getSubscriptionIntent(_context);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)

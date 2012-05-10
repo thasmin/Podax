@@ -174,7 +174,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 				String message = "Found " + newSubscriptions + " subscriptions.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
 				getActivity().finish();
-				startActivity(new Intent(getActivity(), SubscriptionListActivity.class));
+				getActivity().startActivity(MainActivity.getSubscriptionIntent(getActivity()));
 			} catch (IOException e) {
 				String message = "There was an error while reading the OPML file.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();

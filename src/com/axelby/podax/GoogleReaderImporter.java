@@ -13,7 +13,6 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.net.Uri;
 import android.sax.Element;
 import android.sax.ElementListener;
@@ -22,7 +21,7 @@ import android.sax.TextElementListener;
 import android.util.Xml;
 import android.widget.Toast;
 
-import com.axelby.podax.ui.SubscriptionListActivity;
+import com.axelby.podax.ui.MainActivity;
 import com.google.api.client.googleapis.GoogleHeaders;
 import com.google.api.client.googleapis.GoogleTransport;
 import com.google.api.client.http.GenericUrl;
@@ -167,7 +166,7 @@ public class GoogleReaderImporter {
 					// close the activity and go to the subscription list
 					Toast.makeText(activity, "Google Reader subscriptions imported", Toast.LENGTH_LONG).show();
 					activity.finish();
-					activity.startActivity(new Intent(activity, SubscriptionListActivity.class));
+					activity.startActivity(MainActivity.getSubscriptionIntent(activity));
 				}
 			});
 			builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
