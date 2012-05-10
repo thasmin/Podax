@@ -1,11 +1,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.axelby.podax"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
     <com.viewpagerindicator.TitlePageIndicator
         android:id="@+id/titles"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:textSize="@dimen/titleIndicatorTextSize" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
