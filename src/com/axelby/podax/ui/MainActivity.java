@@ -13,6 +13,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.axelby.podax.R;
+import com.axelby.podax.UpdateService;
 import com.viewpagerindicator.TitlePageIndicator;
 import com.viewpagerindicator.TitleProvider;
 
@@ -56,8 +57,12 @@ public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getSupportMenuInflater();
-	    if (_focusedPage == 1) {
+	    switch (_focusedPage) {
+	    case 1:
 	    	inflater.inflate(R.menu.subscriptionlist_activity, menu);
+	    	return true;
+	    case 2:
+	    	inflater.inflate(R.menu.downloadlist_activity, menu);
 	    	return true;
 	    }
 	    return false;
@@ -70,6 +75,12 @@ public class MainActivity extends SherlockFragmentActivity {
 			return true;
 		} else if (item.getItemId() == R.id.discover) {
 			startActivity(new Intent(this, DiscoverActivity.class));
+			return true;
+		} else if (item.getItemId() == R.id.restart) {
+			UpdateService.downloadPodcasts(this);
+			return true;
+		} else if (item.getItemId() == R.id.preferences) {
+			startActivity(new Intent(this, Preferences.class));
 			return true;
 		} else {
 			return super.onMenuItemSelected(featureId, item);
