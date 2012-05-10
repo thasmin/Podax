@@ -26,6 +26,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
 
+import com.axelby.podax.R.drawable;
 import com.axelby.podax.ui.SubscriptionListActivity;
 
 import android.app.Notification;
@@ -38,6 +39,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.Xml;
 
@@ -230,17 +232,19 @@ public class SubscriptionUpdater {
 	};
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
-		int icon = R.drawable.icon;
-		CharSequence tickerText = "Error Updating Subscription";
-		long when = System.currentTimeMillis();			
-		Notification notification = new Notification(icon, tickerText, when);
-		
-		CharSequence contentTitle = "Error updating " + subscription.getTitle();
-		CharSequence contentText = reason;
 		Intent notificationIntent = new Intent(_context, SubscriptionListActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
-		notification.setLatestEventInfo(_context, contentTitle, contentText, contentIntent);
-		
+
+		Notification notification = new NotificationCompat.Builder(_context)
+			.setSmallIcon(drawable.icon)
+			.setTicker("Error Updating Subscription")
+			.setWhen(System.currentTimeMillis())
+			.setContentTitle("Error updating " + subscription.getTitle())
+			.setContentText(reason)
+			.setContentIntent(contentIntent)
+			.setOngoing(true)
+			.getNotification();
+
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
 		notificationManager.notify(Constants.SUBSCRIPTION_UPDATE_ERROR, notification);
@@ -293,18 +297,19 @@ public class SubscriptionUpdater {
 	}
 
 	private void updateUpdateNotification(SubscriptionCursor subscription, String status) {
-		int icon = R.drawable.icon;
-		CharSequence tickerText = "Updating Subscriptions";
-		long when = System.currentTimeMillis();			
-		Notification notification = new Notification(icon, tickerText, when);
-		
-		CharSequence contentTitle = "Updating " + subscription.getTitle();
-		CharSequence contentText = status;
 		Intent notificationIntent = new Intent(_context, SubscriptionUpdater.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
-		notification.setLatestEventInfo(_context, contentTitle, contentText, contentIntent);
-		notification.flags |= Notification.FLAG_ONGOING_EVENT;
-		
+
+		Notification notification = new NotificationCompat.Builder(_context)
+			.setSmallIcon(drawable.icon)
+			.setTicker("Updating Subscriptions")
+			.setWhen(System.currentTimeMillis())
+			.setContentTitle("Updating " + subscription.getTitle())
+			.setContentText(status)
+			.setContentIntent(contentIntent)
+			.setOngoing(true)
+			.getNotification();
+
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
 		notificationManager.notify(Constants.SUBSCRIPTION_UPDATE_ONGOING, notification);
