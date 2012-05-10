@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.axelby.podax.R.drawable;
@@ -161,20 +162,21 @@ class PodcastDownloader {
 	}
 
 	void updateDownloadNotification(PodcastCursor podcast, long downloaded) {
-		int icon = drawable.icon;
-		CharSequence tickerText = "Downloading podcast: " + podcast.getTitle();
-		long when = System.currentTimeMillis();			
-		Notification notification = new Notification(icon, tickerText, when);
-		
-		CharSequence contentTitle = "Downloading Podcast";
-		CharSequence contentText = podcast.getTitle();
 		Intent notificationIntent = new Intent(_context, ActiveDownloadActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
-		notification.setLatestEventInfo(_context, contentTitle, contentText, contentIntent);
-		notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+		Notification notification = new NotificationCompat.Builder(_context)
+				.setSmallIcon(drawable.icon)
+				.setTicker("Downloading podcast: " + podcast.getTitle())
+				.setWhen(System.currentTimeMillis())
+				.setContentTitle("Downloading Podcast")
+				.setContentText(podcast.getTitle())
+				.setContentIntent(contentIntent)
+				.setOngoing(true)
+				.getNotification();
 		
-		String ns = Context.NOTIFICATION_SERVICE;
-		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
+		NotificationManager notificationManager = (NotificationManager) _context
+				.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(Constants.PODCAST_DOWNLOAD_ONGOING, notification);
 	}
 
