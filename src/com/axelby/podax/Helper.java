@@ -26,7 +26,7 @@ public class Helper {
 			return false;
 		}
 		// check for 3g data turned off
-		if (cm.getBackgroundDataSetting() == false) {
+		if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected()) {
 			Log.d("Podax", "Not downloading because background data is turned off");
 			return false;
 		}
