@@ -7,10 +7,6 @@
         android:showAsAction="ifRoom|withText"
         android:title="@string/add"/>
     <item
-        android:id="@+id/discover"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/discover"/>
-    <item
         android:id="@+id/refresh_subscriptions"
         android:icon="@drawable/ic_menu_refresh"
         android:showAsAction="ifRoom|withText"

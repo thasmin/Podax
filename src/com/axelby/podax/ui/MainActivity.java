@@ -71,9 +71,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		case R.id.add_subscription:
 			startActivity(new Intent(this, AddSubscriptionActivity.class));
 			return true;
-		case R.id.discover:
-			startActivity(new Intent(this, DiscoverActivity.class));
-			return true;
 		case R.id.restart:
 			UpdateService.downloadPodcasts(this);
 			return true;

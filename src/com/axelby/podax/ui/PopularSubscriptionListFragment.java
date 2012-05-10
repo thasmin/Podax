@@ -98,7 +98,9 @@ public class PopularSubscriptionListFragment extends SherlockListFragment {
 
 			@Override
 			protected void onPostExecute(Vector<PodaxFeed> result) {
-				setListAdapter(new ArrayAdapter<PodaxFeed>(getActivity(), android.R.layout.simple_list_item_1, result));
+				// make sure the activity still exists
+				if (getActivity() != null)
+					setListAdapter(new ArrayAdapter<PodaxFeed>(getActivity(), android.R.layout.simple_list_item_1, result));
 				super.onPostExecute(result);
 			}
 		}.execute((Void)null);

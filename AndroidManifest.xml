@@ -122,10 +122,6 @@
             android:name=".ui.AboutActivity"
             android:label="@string/about"
             android:theme="@style/Theme.Sherlock" />
-        <activity
-            android:name=".ui.DiscoverActivity"
-            android:label="@string/discover_subscriptions"
-            android:theme="@style/Theme.Sherlock" />
         <activity android:name=".ui.PopularSubscriptionListActivity" />
         <activity
             android:name=".ui.PopularSubscriptionActivity"

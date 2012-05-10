@@ -45,9 +45,6 @@ public class SubscriptionListActivity extends SherlockFragmentActivity {
 		if (item.getItemId() == R.id.add_subscription) {
 			startActivity(new Intent(this, AddSubscriptionActivity.class));
 			return true;
-		} else if (item.getItemId() == R.id.discover) {
-			startActivity(new Intent(this, DiscoverActivity.class));
-			return true;
 		} else {
 			return super.onMenuItemSelected(featureId, item);
 		}
