@@ -70,21 +70,24 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		if (item.getItemId() == R.id.add_subscription) {
+		switch (item.getItemId()) {
+		case R.id.add_subscription:
 			startActivity(new Intent(this, AddSubscriptionActivity.class));
 			return true;
-		} else if (item.getItemId() == R.id.discover) {
+		case R.id.discover:
 			startActivity(new Intent(this, DiscoverActivity.class));
 			return true;
-		} else if (item.getItemId() == R.id.restart) {
+		case R.id.restart:
 			UpdateService.downloadPodcasts(this);
 			return true;
-		} else if (item.getItemId() == R.id.preferences) {
+		case R.id.preferences:
 			startActivity(new Intent(this, Preferences.class));
 			return true;
-		} else {
-			return super.onMenuItemSelected(featureId, item);
+		case R.id.refresh_subscriptions:
+			UpdateService.updateSubscriptions(this);
+			return true;
 		}
+		return super.onMenuItemSelected(featureId, item);
 	}
 
 	public static class TabsAdapter extends FragmentStatePagerAdapter

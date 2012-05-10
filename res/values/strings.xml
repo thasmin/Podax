@@ -77,4 +77,5 @@
 	<string name="restart">Restart</string>
 	<string name="about">About</string>
 	<string name="refresh_subscription_to_find_podcasts">Refresh the subscription to find the podcasts.</string>
+	<string name="refresh">Refresh</string>
 </resources>
