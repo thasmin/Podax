@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -480,17 +481,18 @@ public class PlayerService extends Service {
 			return;
 		PodcastCursor podcast = new PodcastCursor(this, c);
 
-		int icon = drawable.icon;
-		CharSequence tickerText = podcast.getTitle();
-		long when = System.currentTimeMillis();
-		Notification notification = new Notification(icon, tickerText, when);
-
-		CharSequence contentTitle = podcast.getTitle();
-		CharSequence contentText = podcast.getSubscriptionTitle();
 		Intent notificationIntent = new Intent(this, PodcastDetailActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-		notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
-		notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+		Notification notification = new NotificationCompat.Builder(this)
+			.setSmallIcon(drawable.icon)
+			.setTicker(podcast.getTitle())
+			.setWhen(System.currentTimeMillis())
+			.setContentTitle(podcast.getTitle())
+			.setContentText(podcast.getSubscriptionTitle())
+			.setContentIntent(contentIntent)
+			.setOngoing(true)
+			.getNotification();
 
 		startForeground(Constants.NOTIFICATION_PLAYING, notification);
 
