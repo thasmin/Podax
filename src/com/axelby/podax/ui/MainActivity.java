@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -40,16 +39,16 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 		});
 
-        final ActionBar bar = getSupportActionBar();
 		if (savedInstanceState != null) {
-			bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+			_focusedPage = savedInstanceState.getInt("focusedPage", 0);
+			titleIndicator.setCurrentItem(_focusedPage);
 		}
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
+		outState.putInt("focusedPage", _focusedPage);
 	}
 
 	@Override
