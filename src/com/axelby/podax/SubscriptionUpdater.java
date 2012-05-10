@@ -209,7 +209,7 @@ public class SubscriptionUpdater {
 				wr.write("&sub[");
 				wr.write(String.valueOf(c.getPosition()));
 				wr.write("]=");
-				wr.write(URLEncoder.encode(url));
+				wr.write(URLEncoder.encode(url, "UTF-8"));
 			}
 			wr.flush();
 
