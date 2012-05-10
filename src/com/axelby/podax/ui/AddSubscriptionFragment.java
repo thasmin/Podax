@@ -12,12 +12,14 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.InputType;
@@ -52,6 +54,40 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 	private final int ADD_GPODDER = 2;
 	private final int GOOGLE_ACCOUNT_HEADER = 3;
 	private final int GOOGLE_ACCOUNT_START = 4;
+
+	private AccountManagerCallback<Bundle> _accountCallback = new AccountManagerCallback<Bundle>() {
+		public void run(AccountManagerFuture<Bundle> future) {
+			Bundle authTokenBundle = null;
+			try {
+				authTokenBundle = future.getResult();
+
+				if (authTokenBundle == null)
+					return;
+
+				if(authTokenBundle.containsKey(AccountManager.KEY_INTENT)) {
+					// User input required
+					Intent intent = (Intent)authTokenBundle.get(AccountManager.KEY_INTENT);
+
+					// clear the new task flag
+					int flags = intent.getFlags();
+				    flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
+				    intent.setFlags(flags);
+
+					startActivityForResult(intent, 1);
+					return;
+				}
+
+				String authToken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
+				GoogleReaderImporter.doImport(getActivity(), authToken);
+			} catch (OperationCanceledException e) {
+				Log.e("Podax", "Operation Canceled", e);
+			} catch (IOException e) {
+				Log.e("Podax", "IOException", e);
+			} catch (AuthenticatorException e) {
+				Log.e("Podax", "Authentication Failed", e);
+			}
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -245,44 +281,17 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
+	@SuppressLint("NewApi")
 	private void getAuthToken() {
 		if (_chosenAccount == null)
 			return;
 
-		_accountManager.getAuthToken(_chosenAccount, "reader", null, true, new AccountManagerCallback<Bundle>() {
-			public void run(AccountManagerFuture<Bundle> future) {
-				Bundle authTokenBundle = null;
-				try {
-					authTokenBundle = future.getResult();
-
-					if (authTokenBundle == null)
-						return;
-
-					if(authTokenBundle.containsKey(AccountManager.KEY_INTENT)) {
-						// User input required
-						Intent intent = (Intent)authTokenBundle.get(AccountManager.KEY_INTENT);
-
-						// clear the new task flag
-						int flags = intent.getFlags();
-					    flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
-					    intent.setFlags(flags);
-
-						startActivityForResult(intent, 1);
-						return;
-					}
-
-					String authToken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
-					GoogleReaderImporter.doImport(getActivity(), authToken);
-				} catch (OperationCanceledException e) {
-					Log.e("Podax", "Operation Canceled", e);
-				} catch (IOException e) {
-					Log.e("Podax", "IOException", e);
-				} catch (AuthenticatorException e) {
-					Log.e("Podax", "Authentication Failed", e);
-				}
-			}
-		},
-		null);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			_accountManager.getAuthToken(_chosenAccount, "reader", null, true, _accountCallback, null);
+		} else {
+			_accountManager.getAuthToken(_chosenAccount, "reader", true, _accountCallback, null);
+		}
 	}
 
 	@Override
