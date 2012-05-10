@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -22,15 +23,12 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
-
-import android.bluetooth.BluetoothDevice;
 
 import com.axelby.podax.R.drawable;
 import com.axelby.podax.ui.PodcastDetailActivity;
@@ -222,10 +220,8 @@ public class PlayerService extends Service {
 	}
 
 	public void stop() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-			am.abandonAudioFocus(_afChangeListener);
-		}
+		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		am.abandonAudioFocus(_afChangeListener);
 
 		doStop();
 	}
@@ -261,14 +257,12 @@ public class PlayerService extends Service {
 		if (_onPhone)
 			return;
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-			int result = am.requestAudioFocus(_afChangeListener,
-	                AudioManager.STREAM_MUSIC,
-	                AudioManager.AUDIOFOCUS_GAIN);
-			if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED)
-				stop();
-		}
+		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		int result = am.requestAudioFocus(_afChangeListener,
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN);
+		if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED)
+			stop();
 
 		doResume();
 	}
