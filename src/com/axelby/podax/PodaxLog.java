@@ -20,7 +20,6 @@ public class PodaxLog {
 			out.write(message);
 			out.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
