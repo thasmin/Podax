@@ -1,89 +1,79 @@
 package com.axelby.podax.ui;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Debug;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 
-import com.axelby.podax.BootReceiver;
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.axelby.podax.R;
+import com.viewpagerindicator.TitlePageIndicator;
+import com.viewpagerindicator.TitleProvider;
 
-public class MainActivity extends Activity {
+public class MainActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.main);
 
-		View _queue = this.findViewById(R.id.queue);
-		_queue.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, QueueActivity.class);
-				startActivity(intent);
-			}
-		});
+		ViewPager pager = (ViewPager) findViewById(R.id.pager);
+		TabsAdapter tabsAdapter = new TabsAdapter(getSupportFragmentManager());
+		pager.setAdapter(tabsAdapter);
 
+		TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
+		titleIndicator.setViewPager(pager);
 
-		View subscriptions = this.findViewById(R.id.subscriptions);
-		subscriptions.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, SubscriptionListActivity.class);
-				startActivity(intent);
-			}
-		});
+        final ActionBar bar = getSupportActionBar();
+        /*
+		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+		*/
 
-		View activedownloads = this.findViewById(R.id.activedownloads);
-		activedownloads.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, ActiveDownloadActivity.class);
-				startActivity(intent);
-			}
-		});
-
-		View about = this.findViewById(R.id.about);
-		about.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, AboutActivity.class);
-				startActivity(intent);
-			}
-		});
-	}
-
-    @Override
-	protected void onResume() {
-		super.onResume();
-
-		BootReceiver.setupAlarms(this);
-	}
-
-	@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-		//menu.add(0, 0, 0, "Start Profiler");
-		//menu.add(0, 1, 0, "Stop Profiler");
-		menu.add(0, 2, 0, "Preferences");
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case 0:
-			Debug.startMethodTracing("podax");
-			break;
-		case 1:
-			Debug.stopMethodTracing();
-			break;
-		case 2:
-			startActivity(new Intent(this, Preferences.class));
-			break;
-		default:
-			return super.onContextItemSelected(item);
+		if (savedInstanceState != null) {
+			bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
 		}
-		return true;
-    }
+	}
 
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
+	}
+
+	public static class TabsAdapter extends FragmentStatePagerAdapter
+		implements TitleProvider
+	{
+
+		public TabsAdapter(FragmentManager fm) {
+			super(fm);
+		}
+
+		@Override
+		public Fragment getItem(int item) {
+			switch (item) {
+			case 0:
+				return new QueueFragment();
+			case 1:
+				return new SubscriptionListFragment();
+			case 2:
+				return new ActiveDownloadListFragment();
+			case 3:
+				return new AboutFragment();
+			}
+			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public String getTitle(int position) {
+			return new String[] { "Queue", "Subscriptions", "Downloads", "About" }[position];
+		}
+
+		@Override
+		public int getCount() {
+			return 4;
+		}
+	}
 }
