@@ -1,5 +1,6 @@
 package com.axelby.podax.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -8,11 +9,16 @@ import android.support.v4.view.ViewPager;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.axelby.podax.R;
 import com.viewpagerindicator.TitlePageIndicator;
 import com.viewpagerindicator.TitleProvider;
 
 public class MainActivity extends SherlockFragmentActivity {
+	protected int _focusedPage;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -25,12 +31,16 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
 		titleIndicator.setViewPager(pager);
+		titleIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+			@Override
+			public void onPageSelected(int position) {
+				_focusedPage = position;
+				invalidateOptionsMenu();
+			}
+		});
 
         final ActionBar bar = getSupportActionBar();
-        /*
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-		bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
-		*/
 
 		if (savedInstanceState != null) {
 			bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
@@ -41,6 +51,29 @@ public class MainActivity extends SherlockFragmentActivity {
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getSupportMenuInflater();
+	    if (_focusedPage == 1) {
+	    	inflater.inflate(R.menu.subscriptionlist_activity, menu);
+	    	return true;
+	    }
+	    return false;
+	}
+
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		if (item.getItemId() == R.id.add_subscription) {
+			startActivity(new Intent(this, AddSubscriptionActivity.class));
+			return true;
+		} else if (item.getItemId() == R.id.discover) {
+			startActivity(new Intent(this, DiscoverActivity.class));
+			return true;
+		} else {
+			return super.onMenuItemSelected(featureId, item);
+		}
 	}
 
 	public static class TabsAdapter extends FragmentStatePagerAdapter
@@ -68,7 +101,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		@Override
 		public String getTitle(int position) {
-			return new String[] { "Queue", "Subscriptions", "Downloads", "About" }[position];
+			return new String[] { "Queue", "Subscriptions", "Downloads", "About" }[position].toUpperCase();
 		}
 
 		@Override
