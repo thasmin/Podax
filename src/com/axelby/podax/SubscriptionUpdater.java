@@ -410,17 +410,37 @@ public class SubscriptionUpdater {
 	private void processSubscriptionXML(Integer subscriptionId,
 			ContentValues subscriptionValues, XmlPullParser parser)
 			throws XmlPullParserException, IOException, ParseException {
+		boolean in_image = false;
+
 		// look for subscription details, stop at item tag
 		for (int eventType = parser.getEventType();
 				eventType != XmlPullParser.END_DOCUMENT;
 				eventType = parser.next()) {
+			// check for an ending image tag
+			if (in_image && eventType == XmlPullParser.END_TAG && parser.getName().equals("image")) {
+				in_image = false;
+				continue;
+			}
 			if (eventType != XmlPullParser.START_TAG)
 				continue;
 
 			String name = parser.getName();
+			// these are elements about the thumbnail
+			if (in_image) {
+				if (name.equals("url")) {
+					String thumbnail = parser.nextText();
+					subscriptionValues.put(SubscriptionProvider.COLUMN_THUMBNAIL, thumbnail);
+					downloadThumbnail(subscriptionId, thumbnail);
+				}
+				continue;
+			}
+
 			// if we're starting an item, move past the subscription details section
 			if (name.equals("item")) {
 				break;
+			} else if (name.equals("image")) {
+				in_image = true;
+				continue;
 			} else if (name.equalsIgnoreCase("lastBuildDate")) {
 				String date = parser.nextText();
 				SimpleDateFormat format = findMatchingDateFormat(rfc822DateFormats, date);
