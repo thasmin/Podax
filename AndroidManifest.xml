@@ -29,7 +29,7 @@
         <activity
             android:name=".ui.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Sherlock" >
+            android:theme="@style/Theme.Podax" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -93,18 +93,18 @@
         </activity>
         <activity
             android:name=".ui.PodcastListActivity"
-            android:theme="@style/Theme.Sherlock" />
+            android:theme="@style/Theme.Podax" />
         <activity
             android:name=".ui.PodcastDetailActivity"
-            android:theme="@style/Theme.Sherlock" />
+            android:theme="@style/Theme.Podax" />
         <activity
             android:name=".ui.Preferences"
             android:label="@string/preferences"
-            android:theme="@style/Theme.Sherlock" />
+            android:theme="@style/Theme.Podax" />
         <activity
             android:name=".ui.AddSubscriptionActivity"
             android:label="@string/import_subscriptions"
-            android:theme="@style/Theme.Sherlock" />
+            android:theme="@style/Theme.Podax" />
         <activity android:name=".ui.PopularSubscriptionListActivity" />
         <activity
             android:name=".ui.PopularSubscriptionActivity"
