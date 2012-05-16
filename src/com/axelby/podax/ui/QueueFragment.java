@@ -105,15 +105,16 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 		switch (item.getItemId()) {
 		case OPTION_MOVETOFIRSTINQUEUE:
 			podcast.moveToFirstInQueue();
-			break;
+			return true;
 		case OPTION_REMOVEFROMQUEUE:
 			podcast.removeFromQueue();
-			break;
+			return true;
 		case OPTION_PLAY:
 			PlayerService.play(getActivity(), podcast);
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
