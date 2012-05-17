@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 3;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -90,6 +90,18 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"FROM subscriptions_old");
 			db.execSQL("DROP TABLE subscriptions_old");
 			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
+		}
+
+		if (newVersion <= 3) {
+			// delete podcasts that are in subscriptions that were deleted incorrectly
+			// this happened when gpodder deleted podcasts
+			db.execSQL("DELETE FROM podcasts WHERE subscriptionid NOT IN (SELECT _id FROM subscriptions)");
+
+			// fix queue so things are ordered right for queue fragment reordering
+			String sql = "UPDATE PODCASTS SET queueposition = " +
+					"(SELECT COUNT(*) FROM podcasts p2 WHERE p2.queueposition IS NOT NULL AND p2.queueposition < podcasts.queueposition) " +
+					"WHERE podcasts.queueposition IS NOT NULL";
+			db.execSQL(sql);
 		}
 	}
 }

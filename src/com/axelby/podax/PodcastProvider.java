@@ -139,6 +139,7 @@ public class PodcastProvider extends ContentProvider {
 					+ getNeedsDownloadIds() + ")");
 			if (sortOrder == null)
 				sortOrder = "queuePosition";
+			_dbAdapter.getWritableDatabase().execSQL("update podcasts set queueposition = (select count(*) from podcasts p2 where p2.queueposition is not null and p2.queueposition < podcasts.queueposition) where podcasts.queueposition is not null");
 			break;
 		case PODCASTS_ACTIVE:
 			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_WORLD_READABLE);
@@ -385,9 +386,14 @@ public class PodcastProvider extends ContentProvider {
 		// find out what we're deleting and delete downloaded files
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		String[] columns = new String[] { COLUMN_ID };
-		Cursor c = db.query("podcasts", columns, where, whereArgs, null, null, null);
-		while (c.moveToNext())
+		String podcastsWhere = "queuePosition IS NOT NULL";
+		if (where != null)
+			podcastsWhere = where + " AND " + podcastsWhere;
+		Cursor c = db.query("podcasts", columns, podcastsWhere, whereArgs, null, null, null);
+		while (c.moveToNext()) {
+			updateQueuePosition(String.valueOf(c.getLong(0)), null);
 			deleteDownload(c.getLong(0));
+		}
 		c.close();
 		
 		int count = db.delete("podcasts", where, whereArgs);

@@ -2,6 +2,7 @@ package com.axelby.podax;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Vector;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -173,6 +174,8 @@ public class SubscriptionProvider extends ContentProvider {
 
 	@Override
 	public int delete(Uri uri, String where, String[] whereArgs) {
+		ContentResolver contentResolver = getContext().getContentResolver();
+
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
 			break;
@@ -182,9 +185,6 @@ public class SubscriptionProvider extends ContentProvider {
 				where = extraWhere + " AND " + where;
 			else
 				where = extraWhere;
-			getContext().getContentResolver().delete(PodcastProvider.URI,
-					"subscriptionId = ?",
-					new String[] { uri.getLastPathSegment() });
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -192,16 +192,29 @@ public class SubscriptionProvider extends ContentProvider {
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
+		// delete from gpodder
 		if (Helper.isGPodderInstalled(getContext())) {
-			// delete from gpodder
 			Cursor c = db.query("subscriptions", new String[] { "url" }, where, whereArgs, null, null, null);
 			while (c.moveToNext())
-				getContext().getContentResolver().delete(Constants.GPODDER_URI, "url = ?", new String[] { c.getString(0) });
+				contentResolver.delete(Constants.GPODDER_URI, "url = ?", new String[] { c.getString(0) });
 			c.close();
 		}
 
+		// go through subscriptions about to be deleted and remove podcasts
+		Cursor c = db.query("subscriptions", new String[] { COLUMN_ID }, where, whereArgs, null, null, null);
+		Vector<String> subIds = new Vector<String>();
+		String in = "";
+		while (c.moveToNext()) {
+			in += ",?";
+			subIds.add(String.valueOf(c.getInt(0)));
+		}
+		if (!in.equals("")) {
+			in = "(" + in.substring(1) + ")";
+			contentResolver.delete(PodcastProvider.URI, "subscriptionId IN " + in, subIds.toArray(new String[] { }));
+		}
+
 		int count = db.delete("subscriptions", where, whereArgs);
-		getContext().getContentResolver().notifyChange(URI, null);
+		contentResolver.notifyChange(URI, null);
 
 		db.close();
 

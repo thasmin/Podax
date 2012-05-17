@@ -118,7 +118,6 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 		String[] projection = new String[] {
 			PodcastProvider.COLUMN_ID,
 			PodcastProvider.COLUMN_TITLE,
@@ -128,7 +127,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			PodcastProvider.COLUMN_FILE_SIZE,
 			PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 		};
-		return new CursorLoader(getActivity(), queueUri, projection, null, null, null);
+		return new CursorLoader(getActivity(), PodcastProvider.QUEUE_URI, projection, null, null, null);
 	}
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
