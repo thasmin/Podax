@@ -1,0 +1,6 @@
+[submodule "ActionBarSherlock"]
+	path = ActionBarSherlock
+	url = git@github.com:thasmin/ActionBarSherlock.git
+[submodule "ViewPagerIndicator"]
+	path = ViewPagerIndicator
+	url = git@github.com:thasmin/ViewPagerIndicator.git
