@@ -83,6 +83,10 @@ class PodcastDownloader {
 						if (mediaFile.exists() && mediaFile.length() > 0)
 							c.setRequestProperty("Range", "bytes=" + mediaFile.length() + "-");
 	
+						// only valid response codes are 200 and 206
+						if (c.getResponseCode() != 200 && c.getResponseCode() != 206)
+							continue;
+
 						// response code 206 means partial content and range header worked
 						boolean append = false;
 						if (c.getResponseCode() == 206) {
@@ -91,8 +95,7 @@ class PodcastDownloader {
 								continue;
 							}
 							append = true;
-						}
-						else {
+						} else {
 							podcast.setFileSize(c.getContentLength());
 						}
 	

@@ -130,8 +130,9 @@ public class SubscriptionUpdater {
 						HttpResponse response = client.execute(request);
 
 						int code = response.getStatusLine().getStatusCode();
-						// check for content not modified
-						if (code == 304) {
+						// only valid response code is 200
+						// 304 (content not modified) is OK too
+						if (code != 200) {
 							continue;
 						}
 
