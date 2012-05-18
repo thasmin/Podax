@@ -43,6 +43,8 @@ public class PlayerService extends Service {
 	protected int _lastPosition = 0;
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
+			if (!_player.isPlaying())
+				return;
 			int oldPosition = _lastPosition;
 			_lastPosition = _player.getCurrentPosition();
 			if (oldPosition / 1000 != _lastPosition / 1000)
@@ -51,7 +53,7 @@ public class PlayerService extends Service {
 	}
 	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
 
-	protected static MediaPlayer _player;
+	protected MediaPlayer _player;
 	protected PlayerBinder _binder;
 	protected boolean _onPhone;
 	protected boolean _pausedForPhone;
@@ -79,10 +81,6 @@ public class PlayerService extends Service {
 		return _binder;
 	}
 
-	public static boolean isPlaying() {
-		return _player != null && _player.isPlaying();
-	}
-
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -91,6 +89,7 @@ public class PlayerService extends Service {
 		_binder = new PlayerBinder();
 
 		verifyPodcastReady();
+		setupMediaPlayer();
 
 		// may or may not be creating the service
 		TelephonyManager _telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -98,12 +97,12 @@ public class PlayerService extends Service {
 			@Override
 			public void onCallStateChanged(int state, String incomingNumber) {
 				_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
-				if (_player != null && _onPhone) {
+				if (_onPhone) {
 					_player.pause();
 					updateActivePodcastPosition();
 					_pausedForPhone = true;
 				}
-				if (_player != null && !_onPhone && _pausedForPhone) {
+				if (!_onPhone && _pausedForPhone) {
 					_player.start();
 					updateActivePodcastPosition();
 					_pausedForPhone = false;
@@ -194,7 +193,7 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
 				Log.d("Podax", "PlayerService got a command: playpause");
-				if (_player != null) {
+				if (_player.isPlaying()) {
 					Log.d("Podax", "  stopping the player");
 					stop();
 				} else {
@@ -233,13 +232,11 @@ public class PlayerService extends Service {
 		if (_updateTimer != null)
 			_updateTimer.cancel();
 		removeNotification();
-		if (_player != null)
-			_player.pause();
+		_player.pause();
 
 		updateActivePodcastPosition();
 
-		if (_player != null)
-			_player.stop();
+		_player.stop();
 		_player = null;
 		stopSelf();
 
@@ -251,9 +248,6 @@ public class PlayerService extends Service {
 	}
 	
 	public void resume() {
-		if (_player == null)
-			setupMediaPlayer();
-
 		if (_onPhone)
 			return;
 
@@ -335,7 +329,7 @@ public class PlayerService extends Service {
 	}
 
 	public void skip(int secs) {
-		if (_player != null) {
+		if (_player.isPlaying()) {
 			_player.seekTo(_player.getCurrentPosition() + secs * 1000);
 			updateActivePodcastPosition();
 		} else {
@@ -352,7 +346,7 @@ public class PlayerService extends Service {
 	}
 
 	public void skipTo(int secs) {
-		if (_player != null) {
+		if (_player.isPlaying()) {
 			_player.seekTo(secs * 1000);
 			updateActivePodcastPosition();
 		} else {
@@ -361,7 +355,7 @@ public class PlayerService extends Service {
 	}
 
 	public void restart() {
-		if (_player != null) {
+		if (_player.isPlaying()) {
 			_player.seekTo(0);
 			updateActivePodcastPosition();
 		} else {
@@ -380,8 +374,7 @@ public class PlayerService extends Service {
 		Log.d("Podax", "moving to next podcast");
 
 		// stop the player and the updating while we do some administrative stuff
-		if (_player != null)
-			_player.pause();
+		_player.pause();
 		if (_updatePlayerPositionTimerTask != null) {
 			_updatePlayerPositionTimerTask.cancel();
 			_updatePlayerPositionTimerTask = null;
@@ -516,7 +509,7 @@ public class PlayerService extends Service {
 	}
 
 	public void updateActivePodcastPosition() {
-		if (_player == null)
+		if (!_player.isPlaying())
 			return;
 
 		ContentValues values = new ContentValues();

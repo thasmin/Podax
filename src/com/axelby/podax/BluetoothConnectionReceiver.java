@@ -29,7 +29,7 @@ public class BluetoothConnectionReceiver extends BroadcastReceiver {
 		Log.d("Podax", "We only care about " + BluetoothClass.Device.Major.AUDIO_VIDEO);
 		if (btDevice.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.AUDIO_VIDEO)
 			// if we're playing, pause
-			if (PlayerService.isPlaying())
+			if (Helper.isPlaying(context))
 				PlayerService.pause(context);
 	}
 }

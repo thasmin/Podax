@@ -2,6 +2,8 @@ package com.axelby.podax;
 
 import java.util.List;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.content.pm.ProviderInfo;
 import android.net.ConnectivityManager;
@@ -59,7 +61,11 @@ public class Helper {
 
 
 	public static boolean isPlaying(Context context) {
-		return PlayerService.isPlaying();
+		ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+		for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
+			if ("com.axelby.podax.PlayerService".equals(service.service.getClassName()))
+				return true;
+		return false;
 	}
 
 	public static boolean isGPodderInstalled(Context context) {
