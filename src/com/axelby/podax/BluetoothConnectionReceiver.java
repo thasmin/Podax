@@ -23,12 +23,8 @@ public class BluetoothConnectionReceiver extends BroadcastReceiver {
 		// Figure out what kind of device it is
 		BluetoothDevice btDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-		// if it's a headphones thingy
-
-		Log.d("Podax", "Device class is " + btDevice.getBluetoothClass().getMajorDeviceClass());
-		Log.d("Podax", "We only care about " + BluetoothClass.Device.Major.AUDIO_VIDEO);
+		// pause if it's headphones
 		if (btDevice.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.AUDIO_VIDEO)
-			// if we're playing, pause
 			if (Helper.isPlaying(context))
 				PlayerService.pause(context);
 	}
