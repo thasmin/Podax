@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -25,10 +26,12 @@ import com.viewpagerindicator.TitleProvider;
 
 public class MainActivity extends SherlockFragmentActivity {
 
-	public static final int TAB_QUEUE = 0;
-	public static final int TAB_SUBSCRIPTIONS = 1;
-	public static final int TAB_DOWNLOADS = 2;
-	public static final int TAB_ABOUT = 3;
+	public static final int TAB_WELCOME = 0;
+	public static final int TAB_QUEUE = 1;
+	public static final int TAB_SUBSCRIPTIONS = 2;
+	public static final int TAB_DOWNLOADS = 3;
+	public static final int TAB_ABOUT = 4;
+	private static final int TAB_COUNT = 5;
 
 	protected int _focusedPage;
 
@@ -72,6 +75,13 @@ public class MainActivity extends SherlockFragmentActivity {
 		} else if (savedInstanceState != null) {
 			_focusedPage = savedInstanceState.getInt("focusedPage", 0);
 			titleIndicator.setCurrentItem(_focusedPage);
+		} else {
+			Cursor c = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
+			if (c.getCount() > 0) {
+				_focusedPage = intent.getIntExtra(Constants.EXTRA_TAB, TAB_QUEUE);
+				titleIndicator.setCurrentItem(_focusedPage);
+			}
+			c.close();
 		}
 	}
 
@@ -85,10 +95,10 @@ public class MainActivity extends SherlockFragmentActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getSupportMenuInflater();
 	    switch (_focusedPage) {
-	    case 1:
+	    case TAB_SUBSCRIPTIONS:
 	    	inflater.inflate(R.menu.subscriptionlist_activity, menu);
 	    	return true;
-	    case 2:
+	    case TAB_DOWNLOADS:
 	    	inflater.inflate(R.menu.downloadlist_activity, menu);
 	    	return true;
 	    }
@@ -125,6 +135,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 			Resources resources = getResources();
 			_titles = new String[] {
+					resources.getString(R.string.welcome),
 					resources.getString(R.string.queue),
 					resources.getString(R.string.subscriptions),
 					resources.getString(R.string.downloads),
@@ -135,6 +146,8 @@ public class MainActivity extends SherlockFragmentActivity {
 		@Override
 		public Fragment getItem(int item) {
 			switch (item) {
+			case TAB_WELCOME:
+				return new WelcomeFragment();
 			case TAB_QUEUE:
 				return new QueueFragment();
 			case TAB_SUBSCRIPTIONS:
@@ -154,7 +167,7 @@ public class MainActivity extends SherlockFragmentActivity {
 
 		@Override
 		public int getCount() {
-			return 4;
+			return TAB_COUNT;
 		}
 	}
 
