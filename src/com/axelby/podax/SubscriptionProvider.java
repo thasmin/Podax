@@ -55,7 +55,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_columnMap.put(COLUMN_TITLE, "title");
 		_columnMap.put(COLUMN_URL, "url");
 		_columnMap.put(COLUMN_LAST_MODIFIED, "lastModified");
-		_columnMap.put(COLUMN_LAST_UPDATE, "id");
+		_columnMap.put(COLUMN_LAST_UPDATE, "lastUpdate");
 		_columnMap.put(COLUMN_ETAG, "eTag");
 		_columnMap.put(COLUMN_THUMBNAIL, "thumbnail");
 	}
