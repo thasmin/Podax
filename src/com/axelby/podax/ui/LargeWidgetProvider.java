@@ -1,7 +1,4 @@
-package com.axelby.podax;
-
-import com.axelby.podax.ui.PodcastDetailActivity;
-import com.axelby.podax.ui.QueueFragment;
+package com.axelby.podax.ui;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -11,6 +8,14 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.widget.RemoteViews;
+
+import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
+import com.axelby.podax.PlayerService;
+import com.axelby.podax.PodcastCursor;
+import com.axelby.podax.PodcastProgress;
+import com.axelby.podax.PodcastProvider;
+import com.axelby.podax.R;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
 	@Override

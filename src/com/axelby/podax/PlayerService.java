@@ -31,7 +31,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.axelby.podax.R.drawable;
+import com.axelby.podax.ui.LargeWidgetProvider;
 import com.axelby.podax.ui.PodcastDetailActivity;
+import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class PlayerService extends Service {
 	public class PlayerBinder extends Binder {

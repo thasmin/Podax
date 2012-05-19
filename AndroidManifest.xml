@@ -115,7 +115,7 @@
         <service android:name=".PlayerService" />
 
         <receiver
-            android:name=".SmallWidgetProvider"
+            android:name=".ui.SmallWidgetProvider"
             android:label="Podax 4x1" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -126,7 +126,7 @@
                 android:resource="@xml/smallwidget" />
         </receiver>
         <receiver
-            android:name=".LargeWidgetProvider"
+            android:name=".ui.LargeWidgetProvider"
             android:label="Podax 4x2" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
