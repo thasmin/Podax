@@ -38,9 +38,8 @@
 	    <p>Podax is open source software. You can get the source code at
 	    	<a href="http://github.com/thasmin/Podax">http://github.com/thasmin/Podax</a>.
 	    	It is available under the 2 clause BSD license.</p>
-	    <p>Icons are made by The Working Group and are licensed under a Creative Commons Attribution-Share Alike license.
-	    	You can see their website at <a href="http://twg.ca">http://twg.ca</a> and find the icons at 
-	    	<a href="http://blog.twg.ca/2010/11/retina-display-icon-set/">http://blog.twg.ca/2010/11/retina-display-icon-set/</a>.</p>
+	    <p>Podax uses the awesome <a href="www.actionbarsherlock.com">ActionBarSherlock</a> and
+			<a href="www.viewpagerindicator">ViewPagerIndicator</a> libraries.</p>
 	    <p>Special thanks to everyone who\'s helped on Github:</p>
 	    <ul>
 	    <li><a href="https://github.com/mcepl">mcepl</a></li>
