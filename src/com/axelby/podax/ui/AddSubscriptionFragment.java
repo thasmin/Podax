@@ -78,7 +78,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 				}
 
 				String authToken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
-				GoogleReaderImporter.doImport(getActivity(), authToken);
+				new GoogleReaderImporter(getActivity()).doImport(authToken);
 			} catch (OperationCanceledException e) {
 				Log.e("Podax", "Operation Canceled", e);
 			} catch (IOException e) {
