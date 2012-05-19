@@ -66,7 +66,10 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 		});
 
-		if (savedInstanceState != null) {
+		if (intent.hasExtra(Constants.EXTRA_TAB)) {
+			_focusedPage = intent.getIntExtra(Constants.EXTRA_TAB, TAB_QUEUE);
+			titleIndicator.setCurrentItem(_focusedPage);
+		} else if (savedInstanceState != null) {
 			_focusedPage = savedInstanceState.getInt("focusedPage", 0);
 			titleIndicator.setCurrentItem(_focusedPage);
 		}
