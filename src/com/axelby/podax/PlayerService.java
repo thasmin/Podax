@@ -77,6 +77,8 @@ public class PlayerService extends Service {
 	private final HeadsetConnectionReceiver _headsetConnectionReceiver = new HeadsetConnectionReceiver();
 	private final BluetoothConnectionReceiver _bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
 
+	private PhoneStateListener _phoneStateListener;
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		handleIntent(intent);
@@ -95,7 +97,7 @@ public class PlayerService extends Service {
 
 		// may or may not be creating the service
 		TelephonyManager _telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		_telephony.listen(new PhoneStateListener() {
+		_phoneStateListener = new PhoneStateListener() {
 			@Override
 			public void onCallStateChanged(int state, String incomingNumber) {
 				_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
@@ -110,7 +112,8 @@ public class PlayerService extends Service {
 					_pausedForPhone = false;
 				}
 			}
-		}, PhoneStateListener.LISTEN_CALL_STATE);
+		};
+		_telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 		_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
 
 		// hook our headset connection and disconnection
@@ -233,6 +236,10 @@ public class PlayerService extends Service {
 			_updatePlayerPositionTimerTask.cancel();
 		if (_updateTimer != null)
 			_updateTimer.cancel();
+
+		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
+
 		removeNotification();
 		_player.pause();
 
