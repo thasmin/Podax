@@ -31,12 +31,12 @@ import com.axelby.podax.R;
 public class PodcastDetailFragment extends SherlockFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	int _podcastId;
 	// id of the first podcast in the queue
-	Integer _firstQueuePodcastId = null;
+	Integer _activePodcastId = null;
 	boolean _controlsEnabled = true;
 	Integer _initializedPodcastId = null;
 
 	private static final int CURSOR_PODCAST = 1;
-	private static final int CURSOR_QUEUE = 2;
+	private static final int CURSOR_ACTIVE = 2;
 
 	TextView _titleView;
 	TextView _subscriptionTitleView;
@@ -63,7 +63,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		_podcastId = getActivity().getIntent().getIntExtra(Constants.EXTRA_PODCAST_ID, 0);
 		if (_podcastId != 0)
 			getLoaderManager().initLoader(CURSOR_PODCAST, null, this);
-		getLoaderManager().initLoader(CURSOR_QUEUE, null, this);
+		getLoaderManager().initLoader(CURSOR_ACTIVE, null, this);
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if (Helper.isPlaying(getActivity()) &&
-						_firstQueuePodcastId != null && _firstQueuePodcastId.equals(_podcastId))
+						_activePodcastId != null && _activePodcastId.equals(_podcastId))
 					PlayerService.pause(getActivity());
 				else
 					PlayerService.play(getActivity(), _podcastId);
@@ -187,7 +187,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	}
 
 	private void updatePlayerControls(PodcastCursor podcast) {
-		if (_firstQueuePodcastId != null && _firstQueuePodcastId.equals(_podcastId)) {
+		if (_activePodcastId != null && _activePodcastId.equals(_podcastId)) {
 			if (!_seekbar_dragging) {
 				_position.setText(Helper.getTimeString(podcast.getLastPosition()));
 				_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
@@ -252,12 +252,18 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				};
 				return new CursorLoader(getActivity(), uri, _projection, null, null, null);
 			}
-		} else if (id == CURSOR_QUEUE) {
+		} else if (id == CURSOR_ACTIVE) {
 			String[] _projection = new String[] {
 					PodcastProvider.COLUMN_ID,
+					PodcastProvider.COLUMN_TITLE,
+					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+					PodcastProvider.COLUMN_DESCRIPTION,
+					PodcastProvider.COLUMN_DURATION,
+					PodcastProvider.COLUMN_LAST_POSITION,
 					PodcastProvider.COLUMN_QUEUE_POSITION,
+					PodcastProvider.COLUMN_MEDIA_URL,
 			};
-			return new CursorLoader(getActivity(), PodcastProvider.QUEUE_URI, _projection, null, null, null);
+			return new CursorLoader(getActivity(), PodcastProvider.ACTIVE_PODCAST_URI, _projection, null, null, null);
 		}
 		return null;
 	}
@@ -272,19 +278,20 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 			}
 			updateQueueViews(podcast);
 			updatePlayerControls(podcast);
-		} else if (loader.getId() == CURSOR_QUEUE) {
+		} else if (loader.getId() == CURSOR_ACTIVE) {
 			if (!cursor.moveToNext()) {
-				_firstQueuePodcastId = null;
+				_activePodcastId = null;
 				return;
 			}
 
-			boolean isActive = _firstQueuePodcastId != null && _firstQueuePodcastId.equals(_podcastId);
+			PodcastCursor podcast = new PodcastCursor(getActivity(), cursor);
+			boolean isActive = _activePodcastId != null && _activePodcastId.equals(_podcastId);
+			_activePodcastId = podcast.getId().intValue();
 
-			_firstQueuePodcastId = cursor.getInt(0);
 			// go to the first podcast in the queue if we don't have a podcast
-			// or if we were active and we're no longer first in the queue
-			if (_podcastId == 0 || (isActive && _firstQueuePodcastId != _podcastId)) {
-				_podcastId = _firstQueuePodcastId;
+			// or if we were active and the active switched
+			if (_podcastId == 0 || (isActive && _activePodcastId != _podcastId)) {
+				_podcastId = _activePodcastId;
 				getLoaderManager().restartLoader(CURSOR_PODCAST, null, this);
 			}
 		}
