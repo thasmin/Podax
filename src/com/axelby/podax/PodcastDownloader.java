@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,7 +34,7 @@ class PodcastDownloader {
 		_context = context;
 	}
 	
-	public void download() {
+	public synchronized void download() {
 		// if we've needed to interrupt 4 times, something may be wrong
 		--_interruptCount;
 		if (_thread != null && _interruptCount > 0) {
@@ -62,16 +63,18 @@ class PodcastDownloader {
 			Log.d("Podax", "starting podcast downloader on thread " + Thread.currentThread().getId());
 			Cursor cursor = null;
 			try {
-				Uri uri = Uri.withAppendedPath(PodcastProvider.URI, "to_download");
 				String[] projection = {
 						PodcastProvider.COLUMN_ID,
 						PodcastProvider.COLUMN_TITLE,
 						PodcastProvider.COLUMN_MEDIA_URL,
+						PodcastProvider.COLUMN_FILE_SIZE,
 				};
-				cursor = _context.getContentResolver().query(uri, projection, null, null, null);
+				cursor = _context.getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
 				while (cursor.moveToNext()) {
-					InputStream instream = null;
 					PodcastCursor podcast = new PodcastCursor(_context, cursor);
+					if (podcast.isDownloaded())
+						continue;
+
 					File mediaFile = new File(podcast.getFilename());
 	
 					try {
@@ -90,6 +93,7 @@ class PodcastDownloader {
 						// response code 206 means partial content and range header worked
 						boolean append = false;
 						if (c.getResponseCode() == 206) {
+							// make sure there's more data to download
 							if (c.getContentLength() <= 0) {
 								podcast.setFileSize(mediaFile.length());
 								continue;
@@ -99,33 +103,21 @@ class PodcastDownloader {
 							podcast.setFileSize(c.getContentLength());
 						}
 	
-						FileOutputStream outstream = new FileOutputStream(mediaFile, append);
-						instream = c.getInputStream();
-						int read;
-						byte[] b = new byte[1024*64];
-						while (!Thread.currentThread().isInterrupted() && (read = instream.read(b, 0, b.length)) != -1) {
-							outstream.write(b, 0, read);
-						}
-						instream.close();
-						outstream.close();
+						if (!downloadFile(c, mediaFile, append))
+							continue;
 
-						MediaPlayer mp = new MediaPlayer();
-						mp.setDataSource(podcast.getFilename());
-						mp.prepare();
-						podcast.setDuration(mp.getDuration());
-						mp.release();
+						if (mediaFile.length() == c.getContentLength()) {
+							MediaPlayer mp = new MediaPlayer();
+							mp.setDataSource(podcast.getFilename());
+							mp.prepare();
+							podcast.setDuration(mp.getDuration());
+							mp.release();
+						}
 	
 						Log.d("Podax", "Done downloading " + podcast.getTitle());
 					} catch (Exception e) {
 						Log.e("Podax", "Exception while downloading " + podcast.getTitle(), e);
 						removeDownloadNotification();
-	
-						try {
-							if (instream != null)
-								instream.close();
-						} catch (IOException e2) {
-							e2.printStackTrace();
-						}
 						break;
 					}
 				}
@@ -135,6 +127,25 @@ class PodcastDownloader {
 				removeDownloadNotification();
 				_thread = null;
 			}
+		}
+
+		private boolean downloadFile(HttpURLConnection conn, File file, boolean append) {
+			FileOutputStream outstream = null;
+			InputStream instream = null;
+			try {
+				outstream = new FileOutputStream(file, append);
+				instream = conn.getInputStream();
+				int read;
+				byte[] b = new byte[1024*64];
+				while (!Thread.currentThread().isInterrupted() && (read = instream.read(b, 0, b.length)) != -1)
+					outstream.write(b, 0, read);
+			} catch (Exception e) {
+				return false;
+			} finally {
+				close(outstream);
+				close(instream);
+			}
+			return file.length() == conn.getContentLength();
 		}
 	};
 
@@ -161,6 +172,15 @@ class PodcastDownloader {
 				Log.w("Podax", "deleting file " + f.getName());
 				f.delete();
 			}
+		}
+	}
+
+	public static void close(Closeable c) {
+		if (c == null)
+			return;
+		try {
+			c.close();
+		} catch (IOException e) {
 		}
 	}
 
