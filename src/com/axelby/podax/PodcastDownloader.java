@@ -78,6 +78,9 @@ class PodcastDownloader {
 					File mediaFile = new File(podcast.getFilename());
 	
 					try {
+						if (PodcastDownloader.this._thread != Thread.currentThread())
+							return;
+
 						Log.d("Podax", "Downloading " + podcast.getTitle());
 						updateDownloadNotification(podcast, 0);
 	
@@ -137,7 +140,9 @@ class PodcastDownloader {
 				instream = conn.getInputStream();
 				int read;
 				byte[] b = new byte[1024*64];
-				while (!Thread.currentThread().isInterrupted() && (read = instream.read(b, 0, b.length)) != -1)
+				while (!Thread.currentThread().isInterrupted() &&
+						Thread.currentThread() == PodcastDownloader.this._thread &&
+						(read = instream.read(b, 0, b.length)) != -1)
 					outstream.write(b, 0, read);
 			} catch (Exception e) {
 				return false;
