@@ -26,28 +26,14 @@ import com.axelby.podax.ui.MainActivity;
 class PodcastDownloader {
 	private Context _context;
 	private Thread _thread;
-	// how many times we couldn't run the downloader because it was already running
-	private int _interruptCount = 2;
 
 	PodcastDownloader(Context context) {
 		_context = context;
 	}
 	
 	public synchronized void download() {
-		// if we've needed to interrupt 2 times, something may be wrong
-		--_interruptCount;
-		if (_thread != null && _interruptCount > 0) {
-			Log.w("Podax", "Downloader is currently running");
+		if (_thread != null)
 			return;
-		}
-		if (_interruptCount == 0)
-			Log.w("Podax", "Interrupted downloader");
-
-		// reset the interrupt counter
-		_interruptCount = 2;
-
-		if (_thread != null && _thread.isAlive())
-			_thread.interrupt();
 		_thread = new Thread(_worker);
 		_thread.start();
 	}
@@ -60,47 +46,56 @@ class PodcastDownloader {
 			verifyDownloadedFiles();
 
 			Log.d("Podax", "starting podcast downloader on thread " + Thread.currentThread().getId());
-			Cursor cursor = null;
-			try {
-				String[] projection = {
-						PodcastProvider.COLUMN_ID,
-						PodcastProvider.COLUMN_TITLE,
-						PodcastProvider.COLUMN_MEDIA_URL,
-						PodcastProvider.COLUMN_FILE_SIZE,
-				};
-				cursor = _context.getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
-				while (cursor.moveToNext()) {
-					PodcastCursor podcast = new PodcastCursor(_context, cursor);
-					if (podcast.isDownloaded())
-						continue;
 
-					File mediaFile = new File(podcast.getFilename());
+			// keep going through the queue until there are no podcasts left to download
+			boolean foundone = true;
+			while (foundone) {
+				foundone = false;
 
-					if (PodcastDownloader.this._thread != Thread.currentThread())
-						return;
+				Cursor cursor = null;
+				try {
+					String[] projection = {
+							PodcastProvider.COLUMN_ID,
+							PodcastProvider.COLUMN_TITLE,
+							PodcastProvider.COLUMN_MEDIA_URL,
+							PodcastProvider.COLUMN_FILE_SIZE,
+					};
+					cursor = _context.getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
+					while (cursor.moveToNext()) {
+						PodcastCursor podcast = new PodcastCursor(_context, cursor);
+						if (podcast.isDownloaded())
+							continue;
 
-					Log.d("Podax", "Downloading " + podcast.getTitle());
-					updateDownloadNotification(podcast, 0);
+						foundone = true;
 
-					HttpURLConnection c = openConnection(podcast, mediaFile);
-					if (c == null)
-						continue;
+						File mediaFile = new File(podcast.getFilename());
 
-					if (!downloadFile(c, mediaFile))
-						continue;
+						if (PodcastDownloader.this._thread != Thread.currentThread())
+							return;
 
-					if (mediaFile.length() == c.getContentLength())
-						podcast.determineDuration();
+						Log.d("Podax", "Downloading " + podcast.getTitle());
+						updateDownloadNotification(podcast, 0);
 
-					Log.d("Podax", "Done downloading " + podcast.getTitle());
+						HttpURLConnection c = openConnection(podcast, mediaFile);
+						if (c == null)
+							continue;
+
+						if (!downloadFile(c, mediaFile))
+							continue;
+
+						if (mediaFile.length() == c.getContentLength())
+							podcast.determineDuration();
+
+						removeDownloadNotification();
+						Log.d("Podax", "Done downloading " + podcast.getTitle());
+					}
+				} finally {
+					if (cursor != null)
+						cursor.close();
 				}
-			} finally {
-				if (cursor != null)
-					cursor.close();
-
-				removeDownloadNotification();
-				_thread = null;
 			}
+
+			_thread = null;
 		}
 
 		// returns null if connection should not be used (404, already downloaded, etc)
@@ -148,6 +143,7 @@ class PodcastDownloader {
 						(read = instream.read(b, 0, b.length)) != -1)
 					outstream.write(b, 0, read);
 			} catch (Exception e) {
+				Log.e("Podax", "Interrupted while downloading " + conn.getURL().toExternalForm());
 				return false;
 			} finally {
 				close(outstream);
