@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 import android.content.ContentUris;
@@ -8,8 +9,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
+import android.util.Log;
 
 public class PodcastCursor {
 
@@ -221,5 +224,19 @@ public class PodcastCursor {
 		if (!podaxFile.exists())
 			podaxFile.mkdirs();
 		return podaxDir + "/" + getSubscriptionId() + ".jpg";
+	}
+
+	public void determineDuration() {
+		MediaPlayer mp = new MediaPlayer();
+		try {
+			mp.setDataSource(this.getFilename());
+			mp.prepare();
+			this.setDuration(mp.getDuration());
+		} catch (IOException ex) {
+			Log.e("Podax", "Unable to determine length of " + this.getFilename());
+		} finally {
+			if (mp != null)
+				mp.release();
+		}
 	}
 }

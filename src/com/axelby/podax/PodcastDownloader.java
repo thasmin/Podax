@@ -16,7 +16,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -35,7 +34,7 @@ class PodcastDownloader {
 	}
 	
 	public synchronized void download() {
-		// if we've needed to interrupt 4 times, something may be wrong
+		// if we've needed to interrupt 2 times, something may be wrong
 		--_interruptCount;
 		if (_thread != null && _interruptCount > 0) {
 			Log.w("Podax", "Downloader is currently running");
@@ -76,67 +75,71 @@ class PodcastDownloader {
 						continue;
 
 					File mediaFile = new File(podcast.getFilename());
-	
-					try {
-						if (PodcastDownloader.this._thread != Thread.currentThread())
-							return;
 
-						Log.d("Podax", "Downloading " + podcast.getTitle());
-						updateDownloadNotification(podcast, 0);
-	
-						URL u = new URL(podcast.getMediaUrl());
-						HttpURLConnection c = (HttpURLConnection)u.openConnection();
-						if (mediaFile.exists() && mediaFile.length() > 0)
-							c.setRequestProperty("Range", "bytes=" + mediaFile.length() + "-");
-	
-						// only valid response codes are 200 and 206
-						if (c.getResponseCode() != 200 && c.getResponseCode() != 206)
-							continue;
+					if (PodcastDownloader.this._thread != Thread.currentThread())
+						return;
 
-						// response code 206 means partial content and range header worked
-						boolean append = false;
-						if (c.getResponseCode() == 206) {
-							// make sure there's more data to download
-							if (c.getContentLength() <= 0) {
-								podcast.setFileSize(mediaFile.length());
-								continue;
-							}
-							append = true;
-						} else {
-							podcast.setFileSize(c.getContentLength());
-						}
-	
-						if (!downloadFile(c, mediaFile, append))
-							continue;
+					Log.d("Podax", "Downloading " + podcast.getTitle());
+					updateDownloadNotification(podcast, 0);
 
-						if (mediaFile.length() == c.getContentLength()) {
-							MediaPlayer mp = new MediaPlayer();
-							mp.setDataSource(podcast.getFilename());
-							mp.prepare();
-							podcast.setDuration(mp.getDuration());
-							mp.release();
-						}
-	
-						Log.d("Podax", "Done downloading " + podcast.getTitle());
-					} catch (Exception e) {
-						Log.e("Podax", "Exception while downloading " + podcast.getTitle(), e);
-						removeDownloadNotification();
-						break;
-					}
+					HttpURLConnection c = openConnection(podcast, mediaFile);
+					if (c == null)
+						continue;
+
+					if (!downloadFile(c, mediaFile))
+						continue;
+
+					if (mediaFile.length() == c.getContentLength())
+						podcast.determineDuration();
+
+					Log.d("Podax", "Done downloading " + podcast.getTitle());
 				}
 			} finally {
 				if (cursor != null)
 					cursor.close();
+
 				removeDownloadNotification();
 				_thread = null;
 			}
 		}
 
-		private boolean downloadFile(HttpURLConnection conn, File file, boolean append) {
+		// returns null if connection should not be used (404, already downloaded, etc)
+		private HttpURLConnection openConnection(PodcastCursor podcast, File mediaFile) {
+			try {
+				URL u = new URL(podcast.getMediaUrl());
+				HttpURLConnection c = (HttpURLConnection)u.openConnection();
+				if (mediaFile.exists() && mediaFile.length() > 0)
+					c.setRequestProperty("Range", "bytes=" + mediaFile.length() + "-");
+
+				// only valid response codes are 200 and 206
+				if (c.getResponseCode() != 200 && c.getResponseCode() != 206)
+					return null;
+
+				// response code 206 means partial content and range header worked
+				if (c.getResponseCode() == 206) {
+					// make sure there's more data to download
+					if (c.getContentLength() <= 0) {
+						podcast.setFileSize(mediaFile.length());
+						return null;
+					}
+				} else {
+					podcast.setFileSize(c.getContentLength());
+					// all content returned so delete existing content
+					mediaFile.delete();
+				}
+				return c;
+			} catch (IOException ex) {
+				Log.e("Podax", "Unable to open connection to " + podcast.getMediaUrl() + ": " + ex.getMessage());
+				return null;
+			}
+		}
+
+		private boolean downloadFile(HttpURLConnection conn, File file) {
 			FileOutputStream outstream = null;
 			InputStream instream = null;
 			try {
-				outstream = new FileOutputStream(file, append);
+				// file was deleted if accept-range header didn't work so always append
+				outstream = new FileOutputStream(file, true);
 				instream = conn.getInputStream();
 				int read;
 				byte[] b = new byte[1024*64];
