@@ -17,6 +17,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
@@ -83,6 +84,8 @@ public class MainActivity extends SherlockFragmentActivity {
 			}
 			c.close();
 		}
+
+		BootReceiver.setupAlarms(getApplicationContext());
 	}
 
 	@Override
