@@ -47,8 +47,8 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
-	public UpdateService(String name) {
-		super(name);
+	public UpdateService() {
+		super("Podax_UpdateService");
 	}
 
 	@Override
