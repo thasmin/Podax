@@ -42,29 +42,30 @@ class PodcastDownloader {
 			cursor = _context.getContentResolver().query(PodcastProvider.QUEUE_URI, projection,
 					PodcastProvider.COLUMN_ID + " = ?",
 					new String[] { String.valueOf(podcastId) }, null);
-			while (cursor.moveToNext()) {
-				PodcastCursor podcast = new PodcastCursor(_context, cursor);
-				if (podcast.isDownloaded())
-					continue;
+			if (!cursor.moveToNext())
+				return;
 
-				File mediaFile = new File(podcast.getFilename());
+			PodcastCursor podcast = new PodcastCursor(_context, cursor);
+			if (podcast.isDownloaded())
+				return;
 
-				Log.d("Podax", "Downloading " + podcast.getTitle());
-				updateDownloadNotification(podcast, 0);
+			File mediaFile = new File(podcast.getFilename());
 
-				HttpURLConnection c = openConnection(podcast, mediaFile);
-				if (c == null)
-					continue;
+			Log.d("Podax", "Downloading " + podcast.getTitle());
+			updateDownloadNotification(podcast, 0);
 
-				if (!downloadFile(c, mediaFile))
-					continue;
+			HttpURLConnection c = openConnection(podcast, mediaFile);
+			if (c == null)
+				return;
 
-				if (mediaFile.length() == c.getContentLength())
-					podcast.determineDuration();
+			if (!downloadFile(c, mediaFile))
+				return;
 
-				removeDownloadNotification();
-				Log.d("Podax", "Done downloading " + podcast.getTitle());
-			}
+			if (mediaFile.length() == c.getContentLength())
+				podcast.determineDuration();
+
+			removeDownloadNotification();
+			Log.d("Podax", "Done downloading " + podcast.getTitle());
 		} finally {
 			if (cursor != null)
 				cursor.close();
