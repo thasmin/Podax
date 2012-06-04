@@ -10,6 +10,7 @@ public class Constants {
 	
 	public static final String ACTION_REFRESH_ALL_SUBSCRIPTIONS = "com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS";
 	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";
+	public static final String ACTION_DOWNLOAD_PODCAST = "com.axelby.podax.DOWNLOAD_PODCAST";
 	public static final String ACTION_DOWNLOAD_PODCASTS = "com.axelby.podax.DOWNLOAD_PODCASTS";
 
 	public static final Uri GPODDER_URI = Uri.parse("content://com.axelby.gpodder.podcasts");

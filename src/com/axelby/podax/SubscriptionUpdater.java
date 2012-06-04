@@ -1,22 +1,14 @@
 package com.axelby.podax;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Vector;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -35,7 +27,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.Xml;
@@ -47,10 +38,6 @@ public class SubscriptionUpdater {
 	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
 	private static final String NAMESPACE_MEDIA = "http://search.yahoo.com/mrss/";
 
-	private Context _context;
-	Vector<Integer> _toUpdate = new Vector<Integer>();
-	Thread _runningThread;
-	
 	public static final SimpleDateFormat rfc822DateFormats[] = new SimpleDateFormat[] {
 			new SimpleDateFormat("EEE, d MMM yy HH:mm:ss z"),
 			new SimpleDateFormat("EEE, d MMM yy HH:mm z"),
@@ -62,173 +49,94 @@ public class SubscriptionUpdater {
 			new SimpleDateFormat("d MMM yyyy HH:mm:ss z"), };
 	public static SimpleDateFormat rssDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
 
-	SubscriptionUpdater(Context context) {
+	private Context _context;
+
+	public SubscriptionUpdater(Context context) {
 		_context = context;
 	}
 	
-	public void addSubscriptionId(int id) {
-		_toUpdate.add(id);
-	}
-	
-	public void addAllSubscriptions() {
-		String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
-		Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
-		while (c.moveToNext())
-			_toUpdate.add((int)(long)c.getLong(0));
-		c.close();
-	}
-	
-	public void run() {
-		if (_runningThread != null)
-			return;
-		_runningThread = new Thread(_worker);
-		_runningThread.start();
-	}
-	
-	private Runnable _worker = new Runnable() {
-		public void run() {
-			try {
-				if (!Helper.ensureWifi(_context))
-					return;
-
-				// send subscriptions to the Podax server
-				// errors are acceptible
-				try {
-					sendSubscriptionsToPodaxServer();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-
-				while (_toUpdate.size() > 0) {
-					Integer subscriptionId = _toUpdate.get(0);
-					_toUpdate.remove(0);
-					Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
-					String[] projection = new String[] {
-							SubscriptionProvider.COLUMN_ID,
-							SubscriptionProvider.COLUMN_TITLE,
-							SubscriptionProvider.COLUMN_URL,
-							SubscriptionProvider.COLUMN_ETAG,
-							SubscriptionProvider.COLUMN_LAST_MODIFIED,
-					};
-
-					ContentValues subscriptionValues = new ContentValues();
-
-					Cursor c = _context.getContentResolver().query(subscriptionUri, projection, null, null, null);
-					try {
-						if (!c.moveToNext())
-							continue;
-						SubscriptionCursor subscription = new SubscriptionCursor(_context, c);
-
-						HttpGet request = new HttpGet(subscription.getUrl());
-						if (subscription.getETag() != null)
-							request.addHeader("If-None-Match", subscription.getETag());
-						if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
-							SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-							request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
-						}
-						HttpClient client = new DefaultHttpClient();
-						HttpResponse response = client.execute(request);
-
-						int code = response.getStatusLine().getStatusCode();
-						// only valid response code is 200
-						// 304 (content not modified) is OK too
-						if (code != 200) {
-							continue;
-						}
-
-						String eTag = null;
-						if (response.containsHeader("ETag")) {
-							eTag = response.getLastHeader("ETag").getValue();
-							subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
-							if (eTag.equals(subscription.getETag())) {
-								continue;
-							}
-						}
-
-						updateUpdateNotification(subscription, "Downloading Feed");
-						InputStream responseStream = response.getEntity().getContent();
-						if (responseStream == null) {
-							showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
-							continue;
-						}
-
-						try {
-							XmlPullParser parser = Xml.newPullParser();
-							parser.setInput(responseStream, null);
-							processSubscriptionXML(subscriptionId, subscriptionValues, parser);
-							// parseSubscriptionXML stops when it finds an item tag
-							processPodcastXML(subscriptionId, subscription, parser);
-						} catch (XmlPullParserException e) {
-							// not much we can do about this
-							Log.w("Podax", "error in subscription xml: " + e.getMessage());
-							showUpdateErrorNotification(subscription, _context.getString(R.string.rss_not_valid));
-						}
-
-						updateUpdateNotification(subscription, "Saving...");
-					} catch (Exception e) {
-						Log.w("Podax", "error while updating: " + e.getMessage());
-					} finally {
-						c.close();
-					}
-
-					// finish grabbing subscription values and update
-					subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
-					_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
-				}
-
-				writeSubscriptionOPML();
-			} catch (Exception e) {
-				Log.w("Podax", "error in outer loop: " + e.getMessage());
-			} finally {
-				removeUpdateNotification();
-				_runningThread = null;
-				UpdateService.downloadPodcasts(_context);
-			}
-		}
-
-		public void sendSubscriptionsToPodaxServer()
-				throws MalformedURLException, IOException, ProtocolException {
-			if (PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("usageDataPref", true) == false)
+	public void update(int subscriptionId) {
+		Cursor cursor = null;
+		try {
+			if (!Helper.ensureWifi(_context))
 				return;
 
-			URL podaxServer = new URL("http://www.axelby.com/podax.php");
-			HttpURLConnection podaxConn = (HttpURLConnection)podaxServer.openConnection();
-			podaxConn.setRequestMethod("POST");
-			podaxConn.setDoOutput(true);
-			podaxConn.setDoInput(true);
-			podaxConn.connect();
-			
+			Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
 			String[] projection = new String[] {
+					SubscriptionProvider.COLUMN_ID,
+					SubscriptionProvider.COLUMN_TITLE,
 					SubscriptionProvider.COLUMN_URL,
+					SubscriptionProvider.COLUMN_ETAG,
+					SubscriptionProvider.COLUMN_LAST_MODIFIED,
 			};
-			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
 
-			OutputStreamWriter wr = new OutputStreamWriter(podaxConn.getOutputStream());
-			wr.write("inst=");
-			wr.write(Installation.id(_context));
-			while (c.moveToNext()) {
-				SubscriptionCursor subscription = new SubscriptionCursor(_context, c);
-				String url = subscription.getUrl();
-				wr.write("&sub[");
-				wr.write(String.valueOf(c.getPosition()));
-				wr.write("]=");
-				wr.write(URLEncoder.encode(url, "UTF-8"));
+			ContentValues subscriptionValues = new ContentValues();
+
+			cursor = _context.getContentResolver().query(subscriptionUri, projection,
+					SubscriptionProvider.COLUMN_ID + " = ?",
+					new String[] { String.valueOf(subscriptionId) }, null);
+			if (!cursor.moveToNext())
+				return;
+			SubscriptionCursor subscription = new SubscriptionCursor(_context, cursor);
+
+			HttpGet request = new HttpGet(subscription.getUrl());
+			if (subscription.getETag() != null)
+				request.addHeader("If-None-Match", subscription.getETag());
+			if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
+				SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+				request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
 			}
-			wr.flush();
+			HttpClient client = new DefaultHttpClient();
+			HttpResponse response = client.execute(request);
 
-			c.close();
-
-			BufferedReader rd = new BufferedReader(new InputStreamReader(podaxConn.getInputStream()));
-			Vector<String> response = new Vector<String>();
-			String line;
-			while ((line = rd.readLine()) != null)
-				response.add(line);
-			if (response.size() > 1 || !response.get(0).equals("OK")) {
-				Log.w("Podax", "Podax server error");
-				Log.w("Podax", "------------------");
-				for (String s : response)
-					Log.w("Podax", s);
+			int code = response.getStatusLine().getStatusCode();
+			// only valid response code is 200
+			// 304 (content not modified) is OK too
+			if (code != 200) {
+				return;
 			}
+
+			String eTag = null;
+			if (response.containsHeader("ETag")) {
+				eTag = response.getLastHeader("ETag").getValue();
+				subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
+				if (eTag.equals(subscription.getETag()))
+					return;
+			}
+
+			updateUpdateNotification(subscription, "Downloading Feed");
+			InputStream responseStream = response.getEntity().getContent();
+			if (responseStream == null) {
+				showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
+				return;
+			}
+
+			try {
+				XmlPullParser parser = Xml.newPullParser();
+				parser.setInput(responseStream, null);
+				processSubscriptionXML(subscriptionId, subscriptionValues, parser);
+				// parseSubscriptionXML stops when it finds an item tag
+				processPodcastXML(subscriptionId, subscription, parser);
+			} catch (XmlPullParserException e) {
+				// not much we can do about this
+				Log.w("Podax", "error in subscription xml: " + e.getMessage());
+				showUpdateErrorNotification(subscription, _context.getString(R.string.rss_not_valid));
+			}
+
+			updateUpdateNotification(subscription, "Saving...");
+
+			// finish grabbing subscription values and update
+			subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
+			_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
+
+			writeSubscriptionOPML();
+		} catch (Exception e) {
+			Log.w("Podax", "error while updating: " + e.getMessage());
+		} finally {
+			if (cursor != null)
+				cursor.close();
+			removeUpdateNotification();
+			UpdateService.downloadPodcasts(_context);
 		}
 	};
 
