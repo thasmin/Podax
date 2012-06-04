@@ -126,7 +126,7 @@ public class UpdateService extends IntentService {
 			wr.write("inst=");
 			wr.write(Installation.id(this));
 			while (c.moveToNext()) {
-				SubscriptionCursor subscription = new SubscriptionCursor(this, c);
+				SubscriptionCursor subscription = new SubscriptionCursor(c);
 				String url = subscription.getUrl();
 				wr.write("&sub[");
 				wr.write(String.valueOf(c.getPosition()));

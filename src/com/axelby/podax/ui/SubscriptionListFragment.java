@@ -82,7 +82,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		case 0:
 			AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 			Cursor cursor = (Cursor) getListAdapter().getItem(menuInfo.position);
-			SubscriptionCursor subscription = new SubscriptionCursor(getActivity(), cursor);
+			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 			getActivity().getContentResolver().delete(subscription.getContentUri(), null, null);
 			break;
 		default:
@@ -94,7 +94,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
 		Fragment podcastList = getFragmentManager().findFragmentById(R.id.podcastlist_fragment);
-		SubscriptionCursor sub = new SubscriptionCursor(getActivity(), (Cursor)list.getItemAtPosition(position));
+		SubscriptionCursor sub = new SubscriptionCursor((Cursor)list.getItemAtPosition(position));
 		int subscriptionId = (int)(long)sub.getId();
 		if (podcastList == null || !podcastList.isInLayout()) {
 			Intent intent = new Intent(getActivity(), PodcastListActivity.class);
@@ -133,7 +133,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			SubscriptionCursor subscription = new SubscriptionCursor(context, cursor);
+			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
 			TextView text = (TextView)view.findViewById(R.id.text);
 			ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);

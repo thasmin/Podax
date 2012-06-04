@@ -108,7 +108,7 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 		if (!subscriptionCursor.moveToNext()) {
 			return false;
 		}
-		SubscriptionCursor subscription = new SubscriptionCursor(getActivity(), subscriptionCursor);
+		SubscriptionCursor subscription = new SubscriptionCursor(subscriptionCursor);
 		try {
 			getActivity().setTitle(subscription.getTitle() + " Podcasts");
 		} finally {

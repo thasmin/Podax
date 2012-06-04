@@ -77,7 +77,7 @@ public class SubscriptionUpdater {
 					new String[] { String.valueOf(subscriptionId) }, null);
 			if (!cursor.moveToNext())
 				return;
-			SubscriptionCursor subscription = new SubscriptionCursor(_context, cursor);
+			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
 			HttpGet request = new HttpGet(subscription.getUrl());
 			if (subscription.getETag() != null)
@@ -187,7 +187,7 @@ public class SubscriptionUpdater {
 			};
 			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection , null, null, SubscriptionProvider.COLUMN_TITLE);
 			while (c.moveToNext()) {
-				SubscriptionCursor sub = new SubscriptionCursor(_context, c);
+				SubscriptionCursor sub = new SubscriptionCursor(c);
 
 				serializer.startTag(null, "outline");
 				serializer.attribute(null, "title", sub.getTitle());

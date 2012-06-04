@@ -4,15 +4,12 @@ import java.io.File;
 import java.util.Date;
 
 import android.content.ContentUris;
-import android.content.Context;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 
 public class SubscriptionCursor {
 
-	private Context _context;
 	private Cursor _cursor;
 	
 	private Integer _idColumn = null;
@@ -23,8 +20,7 @@ public class SubscriptionCursor {
 	private Integer _etagColumn = null;
 	private Integer _thumbnailColumn = null;
 
-	public SubscriptionCursor(Context context, Cursor cursor) {
-		_context = context;
+	public SubscriptionCursor(Cursor cursor) {
 		if (cursor.isAfterLast())
 			return;
 		_cursor = cursor;
@@ -38,16 +34,6 @@ public class SubscriptionCursor {
 		if (getId() == null)
 			return null;
 		return ContentUris.withAppendedId(SubscriptionProvider.URI, getId());
-	}
-
-	public void registerContentObserver(ContentObserver observer) {
-		if (getId() == null)
-			return;
-		_context.getContentResolver().registerContentObserver(getContentUri(), false, observer);
-	}
-
-	public void unregisterContentObserver(ContentObserver observer) {
-		_context.getContentResolver().unregisterContentObserver(observer);
 	}
 
 	public Long getId() {
