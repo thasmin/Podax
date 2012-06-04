@@ -127,7 +127,7 @@ public class BottomBar extends LinearLayout {
 		boolean isPlaying = Helper.isPlaying(getContext());
 		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
 
-		PodcastCursor podcast = new PodcastCursor(getContext(), _cursor);
+		PodcastCursor podcast = new PodcastCursor(_cursor);
 		if (!podcast.isNull()) {
 			if (isPlaying || _podcastProgress.isEmpty())
 				_podcastProgress.set(podcast);

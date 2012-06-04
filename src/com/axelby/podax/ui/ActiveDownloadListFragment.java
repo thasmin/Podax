@@ -113,7 +113,7 @@ public class ActiveDownloadListFragment extends SherlockListFragment implements 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			LinearLayout layout = (LinearLayout)view;
-			PodcastCursor podcast = new PodcastCursor(context, cursor);
+			PodcastCursor podcast = new PodcastCursor(cursor);
 			
 			TextView title = (TextView)layout.findViewById(R.id.title);
 			title.setText(podcast.getTitle());

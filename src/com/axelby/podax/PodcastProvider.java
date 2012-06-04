@@ -178,7 +178,7 @@ public class PodcastProvider extends ContentProvider {
 
 		String queueIds = "";
 		while (queue.moveToNext()) {
-			PodcastCursor podcast = new PodcastCursor(getContext(), queue);
+			PodcastCursor podcast = new PodcastCursor(queue);
 			if (!podcast.isDownloaded())
 				queueIds = queueIds + queue.getLong(0) + ",";
 		}

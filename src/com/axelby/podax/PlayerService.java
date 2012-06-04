@@ -282,7 +282,7 @@ public class PlayerService extends Service {
 		};
 		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
 		try {
-			PodcastCursor p = new PodcastCursor(this, c);
+			PodcastCursor p = new PodcastCursor(c);
 			if (p.isNull())
 				return;
 			if (!p.isDownloaded()) {
@@ -412,7 +412,7 @@ public class PlayerService extends Service {
 		Cursor c = getContentResolver().query(queueUri, projection, null, null, null);
 		try {
 			while (c.moveToNext()) {
-				PodcastCursor podcast = new PodcastCursor(this, c);
+				PodcastCursor podcast = new PodcastCursor(c);
 				if (podcast.isDownloaded())
 					return podcast.getId();
 			}
@@ -444,9 +444,9 @@ public class PlayerService extends Service {
 		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
 		try {
 			if (c.moveToNext()) {
-				PodcastCursor podcast = new PodcastCursor(this, c);
+				PodcastCursor podcast = new PodcastCursor(c);
 				if (podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000)
-					podcast.setLastPosition(0);
+					podcast.setLastPosition(this, 0);
 			}
 		} finally {
 			c.close();
@@ -475,7 +475,7 @@ public class PlayerService extends Service {
 		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
 		if (c.isAfterLast())
 			return;
-		PodcastCursor podcast = new PodcastCursor(this, c);
+		PodcastCursor podcast = new PodcastCursor(c);
 
 		Intent notificationIntent = new Intent(this, PodcastDetailActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);

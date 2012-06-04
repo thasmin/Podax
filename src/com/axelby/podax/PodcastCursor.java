@@ -7,7 +7,6 @@ import java.util.Date;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -16,7 +15,6 @@ import android.util.Log;
 
 public class PodcastCursor {
 
-	private Context _context;
 	private Cursor _cursor;
 	
 	private Integer _idColumn = null;
@@ -31,8 +29,7 @@ public class PodcastCursor {
 	private Integer _durationColumn = null;
 	private Integer _pubDateColumn = null;
 
-	public PodcastCursor(Context context, Cursor cursor) {
-		_context = context;
+	public PodcastCursor(Cursor cursor) {
 		_cursor = cursor;
 		if (_cursor.getCount() == 0)
 			return;
@@ -53,16 +50,6 @@ public class PodcastCursor {
 		if (getId() == null)
 			return null;
 		return ContentUris.withAppendedId(PodcastProvider.URI, getId());
-	}
-
-	public void registerContentObserver(ContentObserver observer) {
-		if (getId() == null)
-			return;
-		_context.getContentResolver().registerContentObserver(getContentUri(), false, observer);
-	}
-
-	public void unregisterContentObserver(ContentObserver observer) {
-		_context.getContentResolver().unregisterContentObserver(observer);
 	}
 
 	public Long getId() {
@@ -113,12 +100,6 @@ public class PodcastCursor {
 		return _cursor.getInt(_fileSizeColumn);
 	}
 
-	public void setFileSize(long fileSize) {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_FILE_SIZE, fileSize);
-		_context.getContentResolver().update(getContentUri(), values, null, null);
-	}
-
 	public Integer getQueuePosition() {
 		if (_queuePositionColumn == null)
 			_queuePositionColumn = _cursor.getColumnIndex(PodcastProvider.COLUMN_QUEUE_POSITION);
@@ -142,12 +123,6 @@ public class PodcastCursor {
 			return null;
 		return _cursor.getInt(_lastPositionColumn);
 	}
-	
-	public void setLastPosition(long lastPosition) {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_LAST_POSITION, lastPosition);
-		_context.getContentResolver().update(getContentUri(), values, null, null);
-	}
 
 	public Integer getDuration() {
 		if (_durationColumn == null)
@@ -164,12 +139,6 @@ public class PodcastCursor {
 			return null;
 		return new Date(_cursor.getLong(_durationColumn) * 1000);
 	}
-	
-	public void setDuration(long duration) {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_DURATION, duration);
-		_context.getContentResolver().update(getContentUri(), values, null, null);
-	}
 
 	public String getFilename() {
 		return PodcastCursor.getStoragePath() + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
@@ -180,24 +149,6 @@ public class PodcastCursor {
 			return false;
 		File file = new File(getFilename());
 		return file.exists() && file.length() == getFileSize() && getFileSize() != 0;
-	}
-
-	public void removeFromQueue() {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
-		_context.getContentResolver().update(getContentUri(), values, null, null);
-	}
-
-	public void addToQueue() {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
-		_context.getContentResolver().update(getContentUri(), values, null, null);
-	}
-
-	public void moveToFirstInQueue() {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, 0);
-		_context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
 	public static String getExtension(String filename) {
@@ -226,12 +177,46 @@ public class PodcastCursor {
 		return podaxDir + "/" + getSubscriptionId() + ".jpg";
 	}
 
-	public void determineDuration() {
+	// setters
+
+	public void setFileSize(Context context, long fileSize) {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_FILE_SIZE, fileSize);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	public void setLastPosition(Context context, long lastPosition) {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, lastPosition);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	public void removeFromQueue(Context context) {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	public void addToQueue(Context context) {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	public void moveToFirstInQueue(Context context) {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, 0);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	public void determineDuration(Context context) {
 		MediaPlayer mp = new MediaPlayer();
 		try {
 			mp.setDataSource(this.getFilename());
 			mp.prepare();
-			this.setDuration(mp.getDuration());
+			ContentValues values = new ContentValues();
+			values.put(PodcastProvider.COLUMN_DURATION, mp.getDuration());
+			context.getContentResolver().update(getContentUri(), values, null, null);
 		} catch (IOException ex) {
 			Log.e("Podax", "Unable to determine length of " + this.getFilename());
 		} finally {

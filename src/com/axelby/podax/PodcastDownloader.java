@@ -45,7 +45,7 @@ class PodcastDownloader {
 			if (!cursor.moveToNext())
 				return;
 
-			PodcastCursor podcast = new PodcastCursor(_context, cursor);
+			PodcastCursor podcast = new PodcastCursor(cursor);
 			if (podcast.isDownloaded())
 				return;
 
@@ -62,7 +62,7 @@ class PodcastDownloader {
 				return;
 
 			if (mediaFile.length() == c.getContentLength())
-				podcast.determineDuration();
+				podcast.determineDuration(_context);
 
 			removeDownloadNotification();
 			Log.d("Podax", "Done downloading " + podcast.getTitle());
@@ -88,11 +88,11 @@ class PodcastDownloader {
 			if (c.getResponseCode() == 206) {
 				// make sure there's more data to download
 				if (c.getContentLength() <= 0) {
-					podcast.setFileSize(mediaFile.length());
+					podcast.setFileSize(_context, mediaFile.length());
 					return null;
 				}
 			} else {
-				podcast.setFileSize(c.getContentLength());
+				podcast.setFileSize(_context, c.getContentLength());
 				// all content returned so delete existing content
 				mediaFile.delete();
 			}

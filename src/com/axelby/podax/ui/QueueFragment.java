@@ -80,7 +80,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 					ContextMenuInfo menuInfo) {
 				AdapterContextMenuInfo mi = (AdapterContextMenuInfo) menuInfo;
 				Cursor c = (Cursor) getListAdapter().getItem(mi.position);
-				PodcastCursor podcast = new PodcastCursor(getActivity(), c);
+				PodcastCursor podcast = new PodcastCursor(c);
 
 				menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINQUEUE,
 						ContextMenu.NONE, R.string.move_to_first_in_queue);
@@ -100,14 +100,14 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
 		Cursor cursor = (Cursor)getListAdapter().getItem(info.position);
-		PodcastCursor podcast = new PodcastCursor(getActivity(), cursor);
+		PodcastCursor podcast = new PodcastCursor(cursor);
 
 		switch (item.getItemId()) {
 		case OPTION_MOVETOFIRSTINQUEUE:
-			podcast.moveToFirstInQueue();
+			podcast.moveToFirstInQueue(getActivity());
 			return true;
 		case OPTION_REMOVEFROMQUEUE:
-			podcast.removeFromQueue();
+			podcast.removeFromQueue(getActivity());
 			return true;
 		case OPTION_PLAY:
 			PlayerService.play(getActivity(), podcast);
@@ -244,7 +244,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			View btn = view.findViewById(R.id.dragable);
 			btn.setOnTouchListener(downListener);
 
-			PodcastCursor podcast = new PodcastCursor(getActivity(), cursor);
+			PodcastCursor podcast = new PodcastCursor(cursor);
 			view.setTag(podcast.getId());
 			TextView queueText = (TextView) view.findViewById(R.id.title);
 			queueText.setText(podcast.getTitle());

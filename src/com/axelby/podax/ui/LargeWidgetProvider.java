@@ -61,7 +61,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		};
 		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 		Cursor cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
-		PodcastCursor podcast = new PodcastCursor(context, cursor);
+		PodcastCursor podcast = new PodcastCursor(cursor);
 
 		if (podcast.isNull()) {
 			views.setTextViewText(R.id.title, "Queue empty");

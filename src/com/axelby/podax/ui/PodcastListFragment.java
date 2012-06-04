@@ -71,7 +71,7 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 					ContextMenuInfo menuInfo) {
 				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 				Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
-				PodcastCursor podcast = new PodcastCursor(getActivity(), cursor);
+				PodcastCursor podcast = new PodcastCursor(cursor);
 
 				if (podcast.getQueuePosition() == null)
 					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE,
@@ -121,14 +121,14 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
 		Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
-		PodcastCursor podcast = new PodcastCursor(getActivity(), cursor);
+		PodcastCursor podcast = new PodcastCursor(cursor);
 
 		switch (item.getItemId()) {
 		case OPTION_ADDTOQUEUE:
-			podcast.addToQueue();
+			podcast.addToQueue(getActivity());
 			break;
 		case OPTION_REMOVEFROMQUEUE:
-			podcast.removeFromQueue();
+			podcast.removeFromQueue(getActivity());
 			break;
 		case OPTION_PLAY:
 			PlayerService.play(getActivity(), podcast);
@@ -157,7 +157,7 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	public void onListItemClick(ListView list, View view, int position, long id) {
 		Intent intent = new Intent(getActivity(), PodcastDetailActivity.class);
 		Cursor cursor = (Cursor) list.getItemAtPosition(position);
-		PodcastCursor podcast = new PodcastCursor(getActivity(), cursor);
+		PodcastCursor podcast = new PodcastCursor(cursor);
 		intent.putExtra(Constants.EXTRA_PODCAST_ID, (int)(long)podcast.getId());
 		startActivity(intent);
 	}
@@ -196,7 +196,7 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			TextView textview = (TextView)view;
-			String podcastTitle = new PodcastCursor(context, cursor).getTitle();
+			String podcastTitle = new PodcastCursor(cursor).getTitle();
 			textview.setText(podcastTitle);
 		}
 	}

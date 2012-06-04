@@ -162,7 +162,7 @@ public class UpdateService extends IntentService {
 		Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 		Cursor c = getContentResolver().query(queueUri, projection, null, null, null);
 		while (c.moveToNext())
-			validMediaFilenames.add(new PodcastCursor(this, c).getFilename());
+			validMediaFilenames.add(new PodcastCursor(c).getFilename());
 		c.close();
 
 		File dir = new File(PodcastCursor.getStoragePath());

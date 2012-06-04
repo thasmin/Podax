@@ -140,11 +140,11 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 						};
 						Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
 						if (c.moveToNext()) {
-							PodcastCursor podcast = new PodcastCursor(getActivity(), c);
+							PodcastCursor podcast = new PodcastCursor(c);
 							if (podcast.getQueuePosition() == null)
-								podcast.addToQueue();
+								podcast.addToQueue(getActivity());
 							else
-								podcast.removeFromQueue();
+								podcast.removeFromQueue(getActivity());
 						}
 						c.close();
 
@@ -271,7 +271,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		if (loader.getId() == CURSOR_PODCAST) {
-			PodcastCursor podcast = new PodcastCursor(getActivity(), cursor);
+			PodcastCursor podcast = new PodcastCursor(cursor);
 			if (_initializedPodcastId == null || !_initializedPodcastId.equals(_podcastId)) {
 				initializeUI(podcast);
 				_initializedPodcastId = _podcastId;
@@ -284,7 +284,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				return;
 			}
 
-			PodcastCursor podcast = new PodcastCursor(getActivity(), cursor);
+			PodcastCursor podcast = new PodcastCursor(cursor);
 			boolean isActive = _activePodcastId != null && _activePodcastId.equals(_podcastId);
 			_activePodcastId = podcast.getId().intValue();
 
