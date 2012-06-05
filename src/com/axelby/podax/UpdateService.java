@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -47,9 +48,17 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
+	public static void downloadPodcastsSilently(Context context) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.setAction(Constants.ACTION_DOWNLOAD_PODCASTS);
+		context.startService(intent);
+	}
+
 	public UpdateService() {
 		super("Podax_UpdateService");
 	}
+
+	Handler _handler = new Handler();
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
@@ -58,7 +67,13 @@ public class UpdateService extends IntentService {
 			return;
 
 		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && !Helper.ensureWifi(this)) {
-			Toast.makeText(this, R.string.update_request_no_wifi, Toast.LENGTH_SHORT).show();
+			_handler.post(new Runnable() {
+				public void run() {
+					Toast.makeText(UpdateService.this,
+							R.string.update_request_no_wifi,
+							Toast.LENGTH_SHORT).show();
+				}
+			});
 			return;
 		}
 

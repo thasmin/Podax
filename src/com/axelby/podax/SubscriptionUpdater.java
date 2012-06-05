@@ -136,7 +136,7 @@ public class SubscriptionUpdater {
 			if (cursor != null)
 				cursor.close();
 			removeUpdateNotification();
-			UpdateService.downloadPodcasts(_context);
+			UpdateService.downloadPodcastsSilently(_context);
 		}
 	};
 

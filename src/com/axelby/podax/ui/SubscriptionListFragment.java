@@ -3,12 +3,10 @@ package com.axelby.podax.ui;
 import java.io.File;
 
 import android.app.NotificationManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -30,7 +28,6 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.UpdateService;
 
 public class SubscriptionListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;
@@ -53,15 +50,6 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		Intent intent = getActivity().getIntent();
-		// check if this was opened by android to save an RSS feed
-		if (intent.getDataString() != null) {
-			ContentValues values = new ContentValues();
-			values.put(SubscriptionProvider.COLUMN_URL, intent.getDataString());
-			Uri savedSubscription = getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
-			UpdateService.updateSubscription(getActivity(), Integer.valueOf(savedSubscription.getLastPathSegment()));
-		}
 
 		registerForContextMenu(getListView());
 
