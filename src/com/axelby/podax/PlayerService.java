@@ -296,6 +296,8 @@ public class PlayerService extends Service {
 				_updatePlayerPositionTimerTask = null;
 			}
 
+			if (_player == null)
+				_player = new MediaPlayer();
 			_player.reset();
 			_player.setDataSource(p.getFilename());
 			_player.prepare();
