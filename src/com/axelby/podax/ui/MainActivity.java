@@ -154,7 +154,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			case TAB_QUEUE:
 				return new QueueFragment();
 			case TAB_SUBSCRIPTIONS:
-				return new SubscriptionListFragment();
+				return new SubscriptionFragment();
 			case TAB_DOWNLOADS:
 				return new ActiveDownloadListFragment();
 			case TAB_ABOUT:

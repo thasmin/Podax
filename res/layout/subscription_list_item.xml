@@ -1,18 +1,24 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-			  android:layout_width="fill_parent"
-			  android:layout_height="wrap_content"
-			  android:paddingLeft="6dip">
-	<ImageView android:id="@+id/thumbnail"
-			   android:layout_width="50dip"
-			   android:layout_height="50dip"
-			   android:layout_gravity="center_vertical"
-			   android:paddingRight="5dip">
-	</ImageView>
-	<TextView android:id="@+id/text"
-			  android:layout_width="fill_parent"
-			  android:layout_height="wrap_content"
-			  android:textAppearance="?android:attr/textAppearanceLarge"
-			  android:gravity="center_vertical"
-			  android:minHeight="?android:attr/listPreferredItemHeight"
-	/>
-</LinearLayout>
+<com.axelby.podax.ui.CheckedLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/podaxColor"
+    android:paddingLeft="6dip" >
+
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/subscription_thumbnail"
+        android:paddingRight="5dip" >
+    </ImageView>
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="?android:attr/listPreferredItemHeight"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+</com.axelby.podax.ui.CheckedLinearLayout>

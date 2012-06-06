@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <fragment
+        android:id="@+id/subscriptionlist_fragment"
+        android:name="com.axelby.podax.ui.SubscriptionListFragment"
+        android:layout_width="298dp"
+        android:layout_height="match_parent" >
+
+        <!-- Preview: layout=@layout/subscription_list -->
+    </fragment>
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_marginRight="2dp"
+        android:background="@color/podaxColor" />
+
+    <fragment
+        android:id="@+id/podcastlist_fragment"
+        android:name="com.axelby.podax.ui.PodcastListFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <!-- Preview: layout=@layout/podcastlist_fragment -->
+    </fragment>
+
+</LinearLayout>

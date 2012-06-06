@@ -85,4 +85,5 @@
 	<string name="rss">RSS</string>
 	<string name="welcome_tech_news_today">Tech News Today</string>
 	<string name="welcome_tech_news_today_desc">Tom Merritt brings you "Tech News Today" with co-hosts Sarah Lane (TechTV, Revision3), Iyaz Akhtar (PC Mag, TechVi) and others. Get up to speed, with a fun and friendly ride through the need-to-know tech news of the day.</string>
+	<string name="subscription_thumbnail">subscription thumbnail</string>
 </resources>

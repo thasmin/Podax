@@ -51,8 +51,6 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		registerForContextMenu(getListView());
-
 		// remove any subscription update errors
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) getActivity().getSystemService(ns);
@@ -91,6 +89,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		} else {
 			PodcastListFragment podcastListFragment = (PodcastListFragment) podcastList;
 			podcastListFragment.setSubscriptionId(subscriptionId);
+			getListView().setItemChecked(position, true);
 		}
 	}
 
