@@ -83,13 +83,15 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		SubscriptionCursor sub = new SubscriptionCursor((Cursor)list.getItemAtPosition(position));
 		int subscriptionId = (int)(long)sub.getId();
 		if (podcastList == null || !podcastList.isInLayout()) {
+			// no need to check the item if it's not side by side
+			list.clearChoices();
+
 			Intent intent = new Intent(getActivity(), PodcastListActivity.class);
 			intent.putExtra("subscriptionId", subscriptionId);
 			startActivity(intent);
 		} else {
 			PodcastListFragment podcastListFragment = (PodcastListFragment) podcastList;
 			podcastListFragment.setSubscriptionId(subscriptionId);
-			getListView().setItemChecked(position, true);
 		}
 	}
 
