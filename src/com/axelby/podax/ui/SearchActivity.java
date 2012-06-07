@@ -1,6 +1,5 @@
 package com.axelby.podax.ui;
 
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -14,17 +13,21 @@ import android.widget.ExpandableListView;
 import android.widget.ResourceCursorTreeAdapter;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.MenuItem;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SearchSuggestionProvider;
 import com.axelby.podax.SubscriptionProvider;
 
-public class SearchActivity extends Activity {
+public class SearchActivity extends SherlockActivity {
 	ExpandableListView epView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 	    setContentView(R.layout.search);
 
@@ -51,6 +54,20 @@ public class SearchActivity extends Activity {
 	    epView.expandGroup(0);
 	    epView.expandGroup(1);
 	}	
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	        case android.R.id.home:
+	            // app icon in action bar clicked; go home
+	            Intent intent = new Intent(this, MainActivity.class);
+	            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+	            startActivity(intent);
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}
 
     public class SearchResultsAdapter extends ResourceCursorTreeAdapter {
     	private Context _context;

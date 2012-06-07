@@ -80,7 +80,7 @@
             android:name=".ui.SearchActivity"
             android:label="@string/search"
             android:launchMode="singleTop"
-            android:theme="@android:style/Theme.Black.NoTitleBar" >
+            android:theme="@style/Theme.Podax" >
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
 
@@ -109,7 +109,7 @@
         <activity
             android:name=".ui.PopularSubscriptionActivity"
             android:label="@string/popular_subscription_title"
-            android:theme="@android:style/Theme.Black.NoTitleBar" />
+            android:theme="@style/Theme.Podax" />
 
         <service android:name=".UpdateService" />
         <service android:name=".PlayerService" />
