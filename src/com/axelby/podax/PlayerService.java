@@ -236,6 +236,7 @@ public class PlayerService extends Service {
 			_updatePlayerPositionTimerTask.cancel();
 		if (_updateTimer != null)
 			_updateTimer.cancel();
+		_updateTimer = null;
 
 		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
@@ -325,6 +326,8 @@ public class PlayerService extends Service {
 		showNotification();
 
 		_updatePlayerPositionTimerTask = new UpdatePlayerPositionTimerTask();
+		if (_updateTimer == null)
+			_updateTimer = new Timer();
 		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 
 		updateWidgets();
