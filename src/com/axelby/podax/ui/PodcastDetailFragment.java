@@ -69,7 +69,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	        Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.podcast_detail, container, false);
+		return inflater.inflate(R.layout.podcast_detail, null, false);
 	}
 
 	@Override

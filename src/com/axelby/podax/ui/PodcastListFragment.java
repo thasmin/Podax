@@ -59,7 +59,7 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	        Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.podcastlist_fragment, container, false);
+		return inflater.inflate(R.layout.podcastlist_fragment, null, false);
 	}
 
 	@Override

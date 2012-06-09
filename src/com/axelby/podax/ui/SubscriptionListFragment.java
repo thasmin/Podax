@@ -44,7 +44,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	        Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.subscription_list, container, false);
+		return inflater.inflate(R.layout.subscription_list, null, false);
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		Fragment podcastList = getFragmentManager().findFragmentById(R.id.podcastlist_fragment);
 		SubscriptionCursor sub = new SubscriptionCursor((Cursor)list.getItemAtPosition(position));
 		int subscriptionId = (int)(long)sub.getId();
-		if (podcastList == null || !podcastList.isInLayout()) {
+		if (podcastList == null) {
 			// no need to check the item if it's not side by side
 			list.clearChoices();
 

@@ -60,7 +60,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 	        Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.queue, container, false);
+		return inflater.inflate(R.layout.queue, null, false);
 	}
 
 	@Override

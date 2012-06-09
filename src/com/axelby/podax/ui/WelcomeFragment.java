@@ -45,8 +45,7 @@ public class WelcomeFragment extends SherlockFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		super.onCreateView(inflater, container, savedInstanceState);
-		return inflater.inflate(R.layout.welcome, container, false);
+		return inflater.inflate(R.layout.welcome, null, false);
 	}
 
 	@Override
