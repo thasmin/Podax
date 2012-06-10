@@ -80,6 +80,12 @@ class PodcastDownloader {
 			if (mediaFile.exists() && mediaFile.length() > 0)
 				c.setRequestProperty("Range", "bytes=" + mediaFile.length() + "-");
 
+			// response code 416 means range is invalid
+			if (c.getResponseCode() == 416) {
+				mediaFile.delete();
+				c = (HttpURLConnection)u.openConnection();
+			}
+
 			// only valid response codes are 200 and 206
 			if (c.getResponseCode() != 200 && c.getResponseCode() != 206)
 				return null;
