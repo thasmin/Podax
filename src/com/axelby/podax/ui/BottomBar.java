@@ -16,7 +16,6 @@ import android.widget.TextView;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodcastCursor;
-import com.axelby.podax.PodcastProgress;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 

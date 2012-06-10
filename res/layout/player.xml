@@ -23,7 +23,7 @@
 			  android:layout_toLeftOf="@+id/showplayer"
 			  android:layout_toRightOf="@id/pausebtn"
 			  android:layout_below="@+id/separator" />
-	<com.axelby.podax.PodcastProgress android:id="@+id/podcastprogress"
+	<com.axelby.podax.ui.PodcastProgress android:id="@+id/podcastprogress"
 	    							  android:layout_width="fill_parent"
 	    							  android:layout_height="wrap_content"
 	    							  android:layout_toLeftOf="@+id/showplayer"
