@@ -104,7 +104,6 @@ public class SubscriptionUpdater {
 					return;
 			}
 
-			updateUpdateNotification(subscription, "Downloading Feed");
 			InputStream responseStream = response.getEntity().getContent();
 			if (responseStream == null) {
 				showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
@@ -123,8 +122,6 @@ public class SubscriptionUpdater {
 				showUpdateErrorNotification(subscription, _context.getString(R.string.rss_not_valid));
 			}
 
-			updateUpdateNotification(subscription, "Saving...");
-
 			// finish grabbing subscription values and update
 			subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
 			_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
@@ -135,7 +132,6 @@ public class SubscriptionUpdater {
 		} finally {
 			if (cursor != null)
 				cursor.close();
-			removeUpdateNotification();
 			UpdateService.downloadPodcastsSilently(_context);
 		}
 	};
@@ -203,31 +199,6 @@ public class SubscriptionUpdater {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private void updateUpdateNotification(SubscriptionCursor subscription, String status) {
-		Intent notificationIntent = new Intent(_context, SubscriptionUpdater.class);
-		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
-
-		Notification notification = new NotificationCompat.Builder(_context)
-			.setSmallIcon(drawable.icon)
-			.setTicker("Updating Subscriptions")
-			.setWhen(System.currentTimeMillis())
-			.setContentTitle("Updating " + subscription.getTitle())
-			.setContentText(status)
-			.setContentIntent(contentIntent)
-			.setOngoing(true)
-			.getNotification();
-
-		String ns = Context.NOTIFICATION_SERVICE;
-		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
-		notificationManager.notify(Constants.SUBSCRIPTION_UPDATE_ONGOING, notification);
-	}
-	
-	private void removeUpdateNotification() {
-		String ns = Context.NOTIFICATION_SERVICE;
-		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
-		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ONGOING);
 	}
 
 	private SimpleDateFormat findMatchingDateFormat(SimpleDateFormat[] choices, String date) {
