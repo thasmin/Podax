@@ -76,6 +76,7 @@ public class PlayerService extends Service {
 
 	private final HeadsetConnectionReceiver _headsetConnectionReceiver = new HeadsetConnectionReceiver();
 	private final BluetoothConnectionReceiver _bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
+	private final MediaButtonIntentReceiver mMediaButtonReceiver = new MediaButtonIntentReceiver();
 
 	private PhoneStateListener _phoneStateListener;
 
@@ -121,6 +122,9 @@ public class PlayerService extends Service {
 		// hook our bluetooth headset connection and disconnection
 		//this.registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED));
 		this.registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
+		IntentFilter mediaFilter = new IntentFilter(Intent.ACTION_MEDIA_BUTTON);
+		mediaFilter.setPriority(500);
+		this.registerReceiver(mMediaButtonReceiver, mediaFilter);
 	}
 
 	private void setupMediaPlayer() {
@@ -153,6 +157,7 @@ public class PlayerService extends Service {
 
 		this.unregisterReceiver(_headsetConnectionReceiver);
 		this.unregisterReceiver(_bluetoothConnectionReceiver);
+		this.unregisterReceiver(mMediaButtonReceiver);
 
 		Log.d("Podax", "destroying PlayerService");
 	}

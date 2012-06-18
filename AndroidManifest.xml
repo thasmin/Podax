@@ -148,6 +148,11 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".MediaButtonIntentReceiver">
+            <intent-filter android:priority="5000">
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name=".SearchSuggestionProvider"
