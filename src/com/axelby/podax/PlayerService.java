@@ -76,7 +76,7 @@ public class PlayerService extends Service {
 
 	private final HeadsetConnectionReceiver _headsetConnectionReceiver = new HeadsetConnectionReceiver();
 	private final BluetoothConnectionReceiver _bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
-	private final MediaButtonIntentReceiver mMediaButtonReceiver = new MediaButtonIntentReceiver();
+	private final MediaButtonIntentReceiver _MediaButtonReceiver = new MediaButtonIntentReceiver();
 
 	private PhoneStateListener _phoneStateListener;
 
@@ -125,7 +125,7 @@ public class PlayerService extends Service {
 		// Hooks up our headset button for pre-ICS
 		IntentFilter mediaFilter = new IntentFilter(Intent.ACTION_MEDIA_BUTTON);
 		mediaFilter.setPriority(500);
-		this.registerReceiver(mMediaButtonReceiver, mediaFilter);
+		this.registerReceiver(_MediaButtonReceiver, mediaFilter);
 		// Hooks up our headset button for ICS
 		((AudioManager)getSystemService(AUDIO_SERVICE)).registerMediaButtonEventReceiver(new ComponentName(this, MediaButtonIntentReceiver.class));
 	}
@@ -160,7 +160,7 @@ public class PlayerService extends Service {
 
 		this.unregisterReceiver(_headsetConnectionReceiver);
 		this.unregisterReceiver(_bluetoothConnectionReceiver);
-		this.unregisterReceiver(mMediaButtonReceiver);
+		this.unregisterReceiver(_MediaButtonReceiver);
 
 		Log.d("Podax", "destroying PlayerService");
 	}
