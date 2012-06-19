@@ -28,7 +28,9 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
         		PlayerService.playpause(context);
         	}
         }
-        abortBroadcast();
+        if (this.isOrderedBroadcast()) {
+        	abortBroadcast();
+        }
     }
 
 }

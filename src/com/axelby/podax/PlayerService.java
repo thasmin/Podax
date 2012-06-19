@@ -122,9 +122,12 @@ public class PlayerService extends Service {
 		// hook our bluetooth headset connection and disconnection
 		//this.registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED));
 		this.registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
+		// Hooks up our headset button for pre-ICS
 		IntentFilter mediaFilter = new IntentFilter(Intent.ACTION_MEDIA_BUTTON);
 		mediaFilter.setPriority(500);
 		this.registerReceiver(mMediaButtonReceiver, mediaFilter);
+		// Hooks up our headset button for ICS
+		((AudioManager)getSystemService(AUDIO_SERVICE)).registerMediaButtonEventReceiver(new ComponentName(this, MediaButtonIntentReceiver.class));
 	}
 
 	private void setupMediaPlayer() {
