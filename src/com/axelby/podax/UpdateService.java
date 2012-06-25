@@ -85,6 +85,7 @@ public class UpdateService extends IntentService {
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
 			while (c.moveToNext())
 				startService(createUpdateSubscriptionIntent(this, c.getInt(0)));
+			c.close();
 		} else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
 			int subscriptionId = intent.getIntExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 			if (subscriptionId == -1)
@@ -97,6 +98,7 @@ public class UpdateService extends IntentService {
 			Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
 			while (c.moveToNext())
 				startService(createDownloadPodcastIntent(this, c.getInt(0)));
+			c.close();
 		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCAST)) {
 			int podcastId = intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1);
 			if (podcastId == -1)
