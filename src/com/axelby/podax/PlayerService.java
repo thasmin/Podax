@@ -18,9 +18,12 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.RemoteControlClient;
+
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -54,6 +57,12 @@ public class PlayerService extends Service {
 	protected Timer _updateTimer;
 	private static final Uri _activePodcastUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 	
+    // our RemoteControlClient object, which will use remote control APIs available in
+    // SDK level >= 14, if they're available.
+    RemoteControlClientCompat mRemoteControlClientCompat;
+    AudioManager mAudioManager;
+    ComponentName mMediaButtonReceiverComponent;
+	
 	private OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
@@ -85,6 +94,10 @@ public class PlayerService extends Service {
 
 		verifyPodcastReady();
 		setupMediaPlayer();
+       
+		mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+
+        mMediaButtonReceiverComponent = new ComponentName(this, MediaButtonIntentReceiver.class);
 
 		// may or may not be creating the service
 		TelephonyManager _telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -246,6 +259,12 @@ public class PlayerService extends Service {
 		getContentResolver().update(_activePodcastUri, values, null, null);
 
 		updateWidgets();
+		
+        // Tell any remote controls that our playback state is 'paused'.
+        if (mRemoteControlClientCompat != null) {
+            mRemoteControlClientCompat
+                    .setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
+        }
 	}
 	
 	public void resume() {
@@ -275,6 +294,8 @@ public class PlayerService extends Service {
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_DURATION,
 				PodcastProvider.COLUMN_FILE_SIZE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_TITLE,
 		};
 		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
 		try {
@@ -298,6 +319,46 @@ public class PlayerService extends Service {
 			_player.setDataSource(p.getFilename());
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
+			
+            // Use the remote control APIs (if available) to set the playback state
+
+            if (mRemoteControlClientCompat == null) {
+                Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+                intent.setComponent(mMediaButtonReceiverComponent);
+                mRemoteControlClientCompat = new RemoteControlClientCompat(
+                        PendingIntent.getBroadcast(this /*context*/,
+                                0 /*requestCode, ignored*/, intent /*intent*/, 0 /*flags*/));
+                RemoteControlHelper.registerRemoteControlClient(mAudioManager,
+                        mRemoteControlClientCompat);
+            }
+
+            mRemoteControlClientCompat.setPlaybackState(
+                    RemoteControlClient.PLAYSTATE_PLAYING);
+
+            mRemoteControlClientCompat.setTransportControlFlags(
+                    RemoteControlClient.FLAG_KEY_MEDIA_PLAY |
+                    RemoteControlClient.FLAG_KEY_MEDIA_PAUSE |
+                    RemoteControlClient.FLAG_KEY_MEDIA_NEXT |
+                    RemoteControlClient.FLAG_KEY_MEDIA_STOP);
+
+            try {
+            // Update the remote controls
+            mRemoteControlClientCompat.editMetadata(true)
+                    .putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, p.getSubscriptionTitle())
+                    .putString(MediaMetadataRetriever.METADATA_KEY_TITLE, p.getTitle())
+                    .putLong(MediaMetadataRetriever.METADATA_KEY_DURATION,
+                            p.getDuration())
+                    // TODO: fetch real item artwork
+                    /*.putBitmap(
+                            RemoteControlClientCompat.MetadataEditorCompat.METADATA_KEY_ARTWORK,
+                            mDummyAlbumArt)
+                    */
+                    .apply();
+            }
+            catch (Exception e) {
+            	Log.d("Podax", "Updating lockscreen: " + e.toString());
+            }
+
 			
 			// set this podcast as active -- it may have been first in queue
 			changeActivePodcast(p.getId());
@@ -326,6 +387,12 @@ public class PlayerService extends Service {
 		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 
 		updateWidgets();
+		
+        // Tell any remote controls that our playback state is 'playing'.
+        if (mRemoteControlClientCompat != null) {
+            mRemoteControlClientCompat
+                    .setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+        }
 	}
 
 	public void play(Long podcastId) {
