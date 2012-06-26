@@ -218,10 +218,6 @@ public class PlayerService extends Service {
 		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		am.abandonAudioFocus(_afChangeListener);
 
-		// release the media button since we lost audio focus
-		AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-		audioManager.unregisterMediaButtonEventReceiver(new ComponentName(this, MediaButtonIntentReceiver.class));
-
 		doStop();
 	}
 
