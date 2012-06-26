@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SearchSuggestionProvider;
@@ -54,6 +55,20 @@ public class SearchActivity extends SherlockActivity {
 	    epView.expandGroup(0);
 	    epView.expandGroup(1);
 	}	
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		Helper.unregisterMediaButtons(this);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		Helper.registerMediaButtons(this);
+	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

@@ -9,6 +9,7 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
 public class AddSubscriptionActivity extends SherlockFragmentActivity {
@@ -53,6 +54,20 @@ public class AddSubscriptionActivity extends SherlockFragmentActivity {
         if (savedInstanceState != null) {
             bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		Helper.unregisterMediaButtons(this);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		Helper.registerMediaButtons(this);
 	}
 
 	@Override

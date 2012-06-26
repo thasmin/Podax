@@ -28,6 +28,7 @@ import android.widget.TextView;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.SubscriptionUpdater;
@@ -130,6 +131,20 @@ public class PopularSubscriptionActivity extends SherlockActivity {
 			}
 
 		}.execute(url);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		Helper.unregisterMediaButtons(this);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		Helper.registerMediaButtons(this);
 	}
 
 	@Override

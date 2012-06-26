@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
 public class PodcastListActivity extends SherlockFragmentActivity {
@@ -16,6 +17,20 @@ public class PodcastListActivity extends SherlockFragmentActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		Helper.unregisterMediaButtons(this);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		Helper.registerMediaButtons(this);
+	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
