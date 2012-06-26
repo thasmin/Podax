@@ -36,16 +36,10 @@ import com.axelby.podax.ui.PodcastDetailActivity;
 import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class PlayerService extends Service {
-	public class PlayerBinder extends Binder {
-		PlayerService getService() {
-			return PlayerService.this;
-		}
-	}
-
 	protected int _lastPosition = 0;
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
-			if (!_player.isPlaying())
+			if (_player != null && !_player.isPlaying())
 				return;
 			int oldPosition = _lastPosition;
 			_lastPosition = _player.getCurrentPosition();
@@ -56,7 +50,6 @@ public class PlayerService extends Service {
 	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
 
 	protected MediaPlayer _player;
-	protected PlayerBinder _binder;
 	protected boolean _onPhone;
 	protected boolean _pausedForPhone;
 	protected Timer _updateTimer;
@@ -82,7 +75,7 @@ public class PlayerService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		handleIntent(intent);
-		return _binder;
+		return null;
 	}
 
 	@Override
@@ -90,7 +83,6 @@ public class PlayerService extends Service {
 		super.onCreate();
 		
 		_updateTimer = new Timer();
-		_binder = new PlayerBinder();
 
 		verifyPodcastReady();
 		setupMediaPlayer();
