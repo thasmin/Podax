@@ -57,13 +57,6 @@ public class AddSubscriptionActivity extends SherlockFragmentActivity {
 	}
 
 	@Override
-	protected void onPause() {
-		super.onPause();
-
-		Helper.unregisterMediaButtons(this);
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
 

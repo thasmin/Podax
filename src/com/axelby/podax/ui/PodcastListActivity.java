@@ -19,13 +19,6 @@ public class PodcastListActivity extends SherlockFragmentActivity {
     }
 
 	@Override
-	protected void onPause() {
-		super.onPause();
-
-		Helper.unregisterMediaButtons(this);
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
 

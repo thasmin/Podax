@@ -57,13 +57,6 @@ public class SearchActivity extends SherlockActivity {
 	}	
 
 	@Override
-	protected void onPause() {
-		super.onPause();
-
-		Helper.unregisterMediaButtons(this);
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
 
