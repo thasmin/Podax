@@ -1,11 +1,5 @@
 package com.axelby.podax.ui;
 
-import com.axelby.podax.Helper;
-import com.axelby.podax.PodcastCursor;
-import com.axelby.podax.R;
-import com.axelby.podax.R.id;
-import com.axelby.podax.R.layout;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -13,6 +7,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+
+import com.axelby.podax.Helper;
+import com.axelby.podax.PodcastCursor;
+import com.axelby.podax.R;
 
 public class PodcastProgress extends RelativeLayout {
 
