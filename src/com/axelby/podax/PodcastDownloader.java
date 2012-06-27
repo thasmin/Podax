@@ -122,7 +122,7 @@ class PodcastDownloader {
 					(read = instream.read(b)) != -1)
 				outstream.write(b, 0, read);
 		} catch (Exception e) {
-			Log.e("Podax", "Interrupted while downloading " + conn.getURL().toExternalForm());
+			Log.e("Podax", "Interrupted while downloading " + conn.getURL().toExternalForm(), e);
 			return false;
 		} finally {
 			close(outstream);
