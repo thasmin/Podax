@@ -16,7 +16,7 @@
 		<CheckBoxPreference
 			android:title="Stop When Bluetooth Headphones Are Unplugged"
 			android:defaultValue="true"
-			android:summary="When checked, playback will stop when blueooth headphones are disconnected."
+			android:summary="When checked, playback will stop when bluetooth headphones are disconnected."
 			android:key="stopOnBluetoothPref" />
 
 		<CheckBoxPreference
@@ -28,7 +28,7 @@
 		<CheckBoxPreference
 			android:title="Send Usage Data to Podax Server"
 			android:defaultValue="true"
-			android:summary="Send anonymous usage data improve Podax"
+			android:summary="Send anonymous usage data to improve Podax"
 			android:key="usageDataPref" />
 
 	</PreferenceCategory>
