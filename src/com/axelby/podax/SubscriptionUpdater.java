@@ -190,6 +190,7 @@ public class SubscriptionUpdater {
 				serializer.attribute(null, "xmlUrl", sub.getUrl());
 				serializer.endTag(null, "outline");
 			}
+			c.close();
 
 			serializer.endTag(null, "body");
 			serializer.endTag(null, "opml");
