@@ -1,7 +1,6 @@
 package com.axelby.podax;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -286,9 +285,9 @@ public class PodcastProvider extends ContentProvider {
 			// remove 3: 1 2 3 4 5 do: 4-- 5--
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 "
 					+ "WHERE queuePosition > ?", new Object[] { oldPosition });
-
-			// delete the podcast's file
-			deleteDownload(Long.valueOf(podcastId));
+			
+			// delete media file
+			UpdateService.downloadPodcastsSilently(getContext());
 		} else if (oldPosition != newPosition) {
 			// moving up: 1 2 3 4 5 2 -> 4: 3-- 4-- 2->4
 			if (oldPosition < newPosition)
@@ -392,7 +391,6 @@ public class PodcastProvider extends ContentProvider {
 		Cursor c = db.query("podcasts", columns, podcastsWhere, whereArgs, null, null, null);
 		while (c.moveToNext()) {
 			updateQueuePosition(String.valueOf(c.getLong(0)), null);
-			deleteDownload(c.getLong(0));
 		}
 		c.close();
 		
@@ -401,17 +399,5 @@ public class PodcastProvider extends ContentProvider {
 			getContext().getContentResolver().notifyChange(URI, null);
 		getContext().getContentResolver().notifyChange(uri, null);
 		return count;
-	}
-
-	public static void deleteDownload(final long podcastId) {
-		File storage = new File(PodcastCursor.getStoragePath());
-		File[] files = storage.listFiles(new FileFilter() {
-			public boolean accept(File pathname) {
-				return pathname.getName().startsWith(String.valueOf(podcastId)) &&
-						pathname.getPath().endsWith(".mp3");
-			}
-		});
-		for (File f : files)
-			f.delete();
 	}
 }
