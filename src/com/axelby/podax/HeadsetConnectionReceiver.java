@@ -24,8 +24,12 @@ public class HeadsetConnectionReceiver extends BroadcastReceiver {
 
 		if (headsetConnected && !justConnected) {
 			// if we're playing, pause
-			if (Helper.isPlaying(context))
+			if (Helper.isPlaying(context)) {
 					PlayerService.pause(context);
+			} else if (prefs.getBoolean("resumeOnBluetoothPref", true)) {
+				Log.d("Podax", "Headset button: Resume");
+				PlayerService.playpause(context);
+			}
 		}
 
 		headsetConnected = justConnected;
