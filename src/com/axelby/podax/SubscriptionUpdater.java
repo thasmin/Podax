@@ -113,7 +113,8 @@ public class SubscriptionUpdater {
 			try {
 				XmlPullParser parser = Xml.newPullParser();
 				parser.setInput(responseStream, null);
-				processSubscriptionXML(subscriptionId, subscriptionValues, parser);
+				if (!processSubscriptionXML(subscriptionId, subscriptionValues, parser))
+					return;
 				// parseSubscriptionXML stops when it finds an item tag
 				processPodcastXML(subscriptionId, subscription, parser);
 			} catch (XmlPullParserException e) {
@@ -288,13 +289,22 @@ public class SubscriptionUpdater {
 		}
 	}
 
-	private void processSubscriptionXML(Integer subscriptionId,
+	private boolean processSubscriptionXML(Integer subscriptionId,
 			ContentValues subscriptionValues, XmlPullParser parser)
 			throws XmlPullParserException, IOException, ParseException {
 		boolean in_image = false;
 
+		// make sure this is an RSS document
+		int eventType = parser.getEventType();
+		while (eventType != XmlPullParser.START_TAG)
+			eventType = parser.next();
+		if (!parser.getName().equals("rss")) {
+			Log.w("Podax", "got a document that isn't RSS");
+			return false;
+		}
+
 		// look for subscription details, stop at item tag
-		for (int eventType = parser.getEventType();
+		for (eventType = parser.getEventType();
 				eventType != XmlPullParser.END_DOCUMENT;
 				eventType = parser.next()) {
 			// check for an ending image tag
@@ -343,5 +353,7 @@ public class SubscriptionUpdater {
 				downloadThumbnail(subscriptionId, thumbnail);
 			}
 		}
+
+		return true;
 	}
 }
