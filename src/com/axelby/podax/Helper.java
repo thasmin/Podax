@@ -65,7 +65,8 @@ public class Helper {
 	public static boolean isPlaying(Context context) {
 		ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 		for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
-			if ("com.axelby.podax.PlayerService".equals(service.service.getClassName()))
+			if ("com.axelby.podax.PlayerService".equals(service.service.getClassName()) &&
+					PlayerService.isPlaying())
 				return true;
 		return false;
 	}
