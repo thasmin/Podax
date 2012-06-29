@@ -28,6 +28,7 @@ public class PodcastCursor {
 	private Integer _lastPositionColumn = null;
 	private Integer _durationColumn = null;
 	private Integer _pubDateColumn = null;
+	private Integer _paymentColumn = null;
 
 	public PodcastCursor(Cursor cursor) {
 		_cursor = cursor;
@@ -173,6 +174,15 @@ public class PodcastCursor {
 		if (!podaxFile.exists())
 			podaxFile.mkdirs();
 		return podaxDir + "/" + getSubscriptionId() + ".jpg";
+	}
+
+	public String getPaymentUrl() {
+
+		if (_paymentColumn == null)
+			_paymentColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_PAYMENT);
+		if (_cursor.isNull(_paymentColumn))
+			return null;
+		return _cursor.getString(_paymentColumn);
 	}
 
 	// setters

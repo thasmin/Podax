@@ -1,6 +1,7 @@
 package com.axelby.podax.ui;
 
 import android.content.ContentUris;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -52,6 +53,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	ImageButton _skipToEndButton;
 	SeekBar _seekbar;
 	boolean _seekbar_dragging = false;
+	Button _paymentButton;
 
 	TextView _position;
 	TextView _duration;
@@ -90,6 +92,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		_seekbar = (SeekBar) getActivity().findViewById(R.id.seekbar);
 		_position = (TextView) getActivity().findViewById(R.id.position);
 		_duration = (TextView) getActivity().findViewById(R.id.duration);
+		_paymentButton = (Button) getActivity().findViewById(R.id.payment);
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -166,6 +169,31 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				PlayerService.skipBack(getActivity());
 			}
 		});
+		_paymentButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				new AsyncTask<Integer, Void, Void>() {
+					@Override
+					protected Void doInBackground(Integer... params) {
+						Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
+						String[] projection = new String[] {
+								PodcastProvider.COLUMN_ID,
+								PodcastProvider.COLUMN_PAYMENT,
+						};
+						Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
+						if (c.moveToNext()) {
+							PodcastCursor podcast = new PodcastCursor(c);
+							Intent intent = new Intent(Intent.ACTION_VIEW);
+							intent.setData(Uri.parse(podcast.getPaymentUrl()));
+							startActivity(intent);
+						}
+						c.close();
+
+						return null;
+					}
+				}.execute(_podcastId);
+			}
+		});
+
 	}
 
 	private void initializeUI(PodcastCursor podcast) {
@@ -184,6 +212,11 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_position.setText(Helper.getTimeString(podcast.getLastPosition()));
 		_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
+		if (podcast.getPaymentUrl() != null) {
+			_paymentButton.setVisibility(View.VISIBLE);
+		} else {
+			_paymentButton.setVisibility(View.GONE);
+		}
 	}
 
 	private void updatePlayerControls(PlayerStatus playerState, PodcastCursor podcast) {
@@ -245,6 +278,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_QUEUE_POSITION,
 				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_PAYMENT,
 		};
 
 		if (id == CURSOR_PODCAST) {
