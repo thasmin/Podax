@@ -11,5 +11,10 @@
         android:icon="@drawable/ic_menu_refresh"
         android:showAsAction="ifRoom|withText"
         android:title="@string/refresh"/>
+    <item
+        android:id="@+id/preferences"
+        android:icon="@android:drawable/ic_menu_preferences"
+        android:menuCategory="system"
+        android:title="@string/preferences"/>
 
 </menu>
