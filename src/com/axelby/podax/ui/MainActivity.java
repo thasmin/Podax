@@ -33,8 +33,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	public static final int TAB_SUBSCRIPTIONS = 2;
 	public static final int TAB_DOWNLOADS = 3;
 	public static final int TAB_ABOUT = 4;
-	public static final int TAB_PREFERENCES = 5;
-	private static final int TAB_COUNT = 6;
+	private static final int TAB_COUNT = 5;
 
 	protected int _focusedPage;
 
@@ -151,8 +150,7 @@ public class MainActivity extends SherlockFragmentActivity {
 					resources.getString(R.string.queue),
 					resources.getString(R.string.subscriptions),
 					resources.getString(R.string.downloads),
-					resources.getString(R.string.about),
-					resources.getString(R.string.preferences)
+					resources.getString(R.string.about)
 			};
 		}
 
@@ -169,12 +167,6 @@ public class MainActivity extends SherlockFragmentActivity {
 				return new ActiveDownloadListFragment();
 			case TAB_ABOUT:
 				return new AboutFragment();
-			case TAB_PREFERENCES:
-				Fragment preferenceFragment = new PreferenceFragment();
-				Bundle args = new Bundle();
-				args.putInt("xml", R.xml.preferences);
-				preferenceFragment.setArguments(args);
-				return preferenceFragment;
 			}
 			throw new IllegalArgumentException();
 		}
