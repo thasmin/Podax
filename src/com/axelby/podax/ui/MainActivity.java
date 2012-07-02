@@ -109,12 +109,15 @@ public class MainActivity extends SherlockFragmentActivity {
 	    switch (_focusedPage) {
 	    case TAB_SUBSCRIPTIONS:
 	    	inflater.inflate(R.menu.subscriptionlist_activity, menu);
-	    	return true;
+	    	break;
 	    case TAB_DOWNLOADS:
 	    	inflater.inflate(R.menu.downloadlist_activity, menu);
-	    	return true;
+	    	break;
+	    default:
+	    	inflater.inflate(R.menu.base, menu);
 	    }
-	    return false;
+
+	    return true;
 	}
 
 	@Override
