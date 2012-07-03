@@ -482,7 +482,6 @@ public class PlayerService extends Service {
 
 		Notification notification = new NotificationCompat.Builder(this)
 			.setSmallIcon(drawable.icon)
-			.setTicker(podcast.getTitle())
 			.setWhen(System.currentTimeMillis())
 			.setContentTitle(podcast.getTitle())
 			.setContentText(podcast.getSubscriptionTitle())
