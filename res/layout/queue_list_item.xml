@@ -1,61 +1,66 @@
 <ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
-			  android:layout_width="fill_parent"
-			  android:layout_height="wrap_content">
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
 
-	<!-- the list item -->
-	<RelativeLayout android:id="@+id/listitem"
-					android:layout_width="fill_parent"
-					android:layout_height="wrap_content"
-					android:padding="6dip"
-					android:gravity="center_vertical">
+    <!-- the list item -->
 
-		<ImageView
-		   android:id="@+id/thumbnail"
-		   android:layout_alignParentLeft="true"
-		   android:layout_width="50dip"
-		   android:layout_height="50dip"
-		   android:layout_centerVertical="true"
-		   android:layout_gravity="center"
-		   android:paddingRight="5dip"
-		   android:contentDescription="@string/thumbnail"
-		   />
+    <LinearLayout
+        android:id="@+id/info"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="6dip" >
 
-		<LinearLayout
-			android:layout_width="fill_parent"
-			android:layout_height="fill_parent"
-			android:layout_toLeftOf="@+id/dragable"
-			android:layout_toRightOf="@+id/thumbnail"
-			android:gravity="center_vertical"
-			android:orientation="vertical" >
-			<TextView
-				android:id="@+id/title"
-				android:text=""
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:textAppearance="?android:attr/textAppearanceMedium" />
-			<TextView
-				android:id="@+id/subscription"
-				android:text=""
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:textAppearance="?android:attr/textAppearanceSmall" />
-		</LinearLayout>
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:contentDescription="@string/thumbnail" />
 
-		<ImageView
-			android:id="@+id/dragable"
-			android:src="@drawable/ic_list_gripper"
-			android:layout_alignParentRight="true"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_centerVertical="true"
-			android:gravity="center"
-			android:contentDescription="@string/drag_to_rearrange_queue"
-			/>
-	</RelativeLayout>
+        <LinearLayout
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingLeft="5dip"
+            android:paddingRight="5dip" >
 
-	<!-- the separator -->
-	<View android:layout_width="fill_parent"
-		  android:layout_height="6dip"
-		  android:background="#FFE59F39"
-	/>
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/subscription"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <ViewStub
+                android:id="@+id/dlprogress_stub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inflatedId="@+id/dlprogress"
+                android:layout="@layout/queue_dl_progress" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/dragable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/drag_to_rearrange_queue"
+            android:src="@drawable/ic_list_gripper" />
+    </LinearLayout>
+
+    <!-- the separator -->
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="6dip"
+        android:background="#FFE59F39" />
+
 </ViewSwitcher>

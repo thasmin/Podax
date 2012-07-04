@@ -31,9 +31,8 @@ public class MainActivity extends SherlockFragmentActivity {
 	public static final int TAB_WELCOME = 0;
 	public static final int TAB_QUEUE = 1;
 	public static final int TAB_SUBSCRIPTIONS = 2;
-	public static final int TAB_DOWNLOADS = 3;
-	public static final int TAB_ABOUT = 4;
-	private static final int TAB_COUNT = 5;
+	public static final int TAB_ABOUT = 3;
+	private static final int TAB_COUNT = 4;
 
 	protected int _focusedPage;
 
@@ -106,11 +105,11 @@ public class MainActivity extends SherlockFragmentActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getSupportMenuInflater();
 	    switch (_focusedPage) {
+	    case TAB_QUEUE:
+	    	inflater.inflate(R.menu.queue_fragment, menu);
+	    	break;
 	    case TAB_SUBSCRIPTIONS:
 	    	inflater.inflate(R.menu.subscriptionlist_activity, menu);
-	    	break;
-	    case TAB_DOWNLOADS:
-	    	inflater.inflate(R.menu.downloadlist_activity, menu);
 	    	break;
 	    default:
 	    	inflater.inflate(R.menu.base, menu);
@@ -125,7 +124,7 @@ public class MainActivity extends SherlockFragmentActivity {
 		case R.id.add_subscription:
 			startActivity(new Intent(this, AddSubscriptionActivity.class));
 			return true;
-		case R.id.restart:
+		case R.id.download:
 			UpdateService.downloadPodcasts(this);
 			return true;
 		case R.id.preferences:
@@ -152,7 +151,6 @@ public class MainActivity extends SherlockFragmentActivity {
 					resources.getString(R.string.welcome),
 					resources.getString(R.string.queue),
 					resources.getString(R.string.subscriptions),
-					resources.getString(R.string.downloads),
 					resources.getString(R.string.about)
 			};
 		}
@@ -166,8 +164,6 @@ public class MainActivity extends SherlockFragmentActivity {
 				return new QueueFragment();
 			case TAB_SUBSCRIPTIONS:
 				return new SubscriptionFragment();
-			case TAB_DOWNLOADS:
-				return new ActiveDownloadListFragment();
 			case TAB_ABOUT:
 				return new AboutFragment();
 			}

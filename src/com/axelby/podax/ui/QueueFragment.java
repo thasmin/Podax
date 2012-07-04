@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -24,11 +25,13 @@ import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -45,6 +48,14 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 	static final int OPTION_PLAY = 2;
 	static final int OPTION_MOVETOFIRSTINQUEUE = 3;
 
+	Runnable _refresher = new Runnable() {
+		public void run() {
+			if (getActivity() == null)
+				return;
+			getLoaderManager().restartLoader(0, null, QueueFragment.this);
+		}
+	};
+	Handler _handler = new Handler();
 	QueueListAdapter _adapter;
 
 	@Override
@@ -94,6 +105,18 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 		});
 
 		getListView().setOnTouchListener(this);
+	}
+
+	@Override
+	public void onPause() {
+		_refresher.run();
+		super.onPause();
+	}
+
+	@Override
+	public void onResume() {
+		_handler.removeCallbacks(_refresher);
+		super.onResume();
 	}
 
 	@Override
@@ -238,23 +261,38 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
+			PodcastCursor podcast = new PodcastCursor(cursor);
+
+			// set the switcher to the proper state
 			ViewSwitcher switcher = (ViewSwitcher)view;
 			switcher.setMeasureAllChildren(false);
+			if (_heldPodcastId != null &&
+					(long)podcast.getId() == (long)_heldPodcastId &&
+					switcher.getDisplayedChild() == 0)
+				switcher.showNext();
+			if ((_heldPodcastId == null || (long)podcast.getId() != (long)_heldPodcastId) &&
+					switcher.getDisplayedChild() == 1)
+				switcher.showPrevious();
 
+			// no need to do anything else if switcher is the bar
+			if (switcher.getDisplayedChild() == 1)
+				return;
+
+			view.setTag(podcast.getId());
+
+			// set the listener for the dragable
 			View btn = view.findViewById(R.id.dragable);
 			btn.setOnTouchListener(downListener);
 
-			PodcastCursor podcast = new PodcastCursor(cursor);
-			view.setTag(podcast.getId());
+			// set the title
 			TextView queueText = (TextView) view.findViewById(R.id.title);
 			queueText.setText(podcast.getTitle());
-
-			TextView subscriptionText = (TextView) view
-					.findViewById(R.id.subscription);
+			// set the subscription title
+			TextView subscriptionText = (TextView) view.findViewById(R.id.subscription);
 			subscriptionText.setText(podcast.getSubscriptionTitle());
 
+			// set the thumbnail
 			ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
-
 			File thumbnailFile = new File(podcast.getThumbnailFilename());
 			if (!thumbnailFile.exists())
 				thumbnail.setImageDrawable(null);
@@ -264,13 +302,34 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 				thumbnail.setVisibility(1);
 			}
 
-			if (_heldPodcastId != null &&
-					(long)podcast.getId() == (long)_heldPodcastId &&
-					switcher.getDisplayedChild() == 0)
-				switcher.showNext();
-			if ((_heldPodcastId == null || (long)podcast.getId() != (long)_heldPodcastId) &&
-					switcher.getDisplayedChild() == 1)
-				switcher.showPrevious();
+			// if the podcast is not downloaded, add the download indicator
+			ViewStub dlprogressStub = (ViewStub)view.findViewById(R.id.dlprogress_stub);
+			long downloaded = new File(podcast.getFilename()).length();
+			if (podcast.getFileSize() != null && downloaded != podcast.getFileSize())
+			{
+				View dlprogress;
+				if (dlprogressStub != null)
+					dlprogress = dlprogressStub.inflate();
+				else
+					dlprogress = view.findViewById(R.id.dlprogress);
+				dlprogress.setVisibility(View.VISIBLE);
+				ProgressBar progressBar = (ProgressBar)dlprogress.findViewById(R.id.progressBar);
+				progressBar.setMax(podcast.getFileSize());
+				progressBar.setProgress((int)downloaded);
+				TextView progressText = (TextView)dlprogress.findViewById(R.id.progressText);
+				progressText.setText(Math.round(100.0f * downloaded / podcast.getFileSize()) + "% downloaded");
+
+				// make sure list is refreshed to update downloading files
+				_handler.removeCallbacks(_refresher);
+				_handler.postDelayed(_refresher, 1000);
+			}
+			else
+			{
+				View dlprogress = view.findViewById(R.id.dlprogress);
+				if (dlprogress != null)
+					dlprogress.setVisibility(View.GONE);
+			}
+
 		}
 
 		public void holdPodcast(int position) {
