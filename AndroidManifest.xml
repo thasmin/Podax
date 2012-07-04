@@ -106,6 +106,10 @@
             android:name=".ui.AddSubscriptionActivity"
             android:label="@string/import_subscriptions"
             android:theme="@style/Theme.Podax" />
+        <activity
+            android:name=".ui.AboutActivity"
+            android:label="@string/about_podax"
+            android:theme="@style/Theme.Podax" />
         <activity android:name=".ui.PopularSubscriptionListActivity" />
         <activity
             android:name=".ui.PopularSubscriptionActivity"

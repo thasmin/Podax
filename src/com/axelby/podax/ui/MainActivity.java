@@ -31,8 +31,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	public static final int TAB_WELCOME = 0;
 	public static final int TAB_QUEUE = 1;
 	public static final int TAB_SUBSCRIPTIONS = 2;
-	public static final int TAB_ABOUT = 3;
-	private static final int TAB_COUNT = 4;
+	private static final int TAB_COUNT = 3;
 
 	protected int _focusedPage;
 
@@ -130,6 +129,9 @@ public class MainActivity extends SherlockFragmentActivity {
 		case R.id.preferences:
 			startActivity(new Intent(this, Preferences.class));
 			return true;
+		case R.id.about:
+			startActivity(new Intent(this, AboutActivity.class));
+			return true;
 		case R.id.refresh_subscriptions:
 			UpdateService.updateSubscriptions(this);
 			return true;
@@ -151,7 +153,6 @@ public class MainActivity extends SherlockFragmentActivity {
 					resources.getString(R.string.welcome),
 					resources.getString(R.string.queue),
 					resources.getString(R.string.subscriptions),
-					resources.getString(R.string.about)
 			};
 		}
 
@@ -164,8 +165,6 @@ public class MainActivity extends SherlockFragmentActivity {
 				return new QueueFragment();
 			case TAB_SUBSCRIPTIONS:
 				return new SubscriptionFragment();
-			case TAB_ABOUT:
-				return new AboutFragment();
 			}
 			throw new IllegalArgumentException();
 		}
