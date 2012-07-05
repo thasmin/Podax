@@ -79,6 +79,7 @@
         </activity>
         <activity
             android:name=".ui.SearchActivity"
+            android:exported="false"
             android:label="@string/search"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Podax" >
@@ -121,6 +122,7 @@
 
         <receiver
             android:name=".ui.SmallWidgetProvider"
+            android:exported="false"
             android:label="Podax 4x1" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -132,6 +134,7 @@
         </receiver>
         <receiver
             android:name=".ui.LargeWidgetProvider"
+            android:exported="false"
             android:label="Podax 4x2" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -141,18 +144,24 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/largewidget" />
         </receiver>
-        <receiver android:name=".GPodderReceiver" >
+        <receiver
+            android:name=".GPodderReceiver"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="com.axelby.gpodder.INITIALIZE" />
                 <action android:name="com.axelby.gpodder.SUBSCRIPTION_UPDATE" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".BootReceiver" >
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".MediaButtonIntentReceiver">
+        <receiver
+            android:name=".MediaButtonIntentReceiver"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
@@ -160,14 +169,17 @@
 
         <provider
             android:name=".SearchSuggestionProvider"
+            android:exported="false"
             android:authorities="com.axelby.podax.searchsuggestionprovider"
             android:label="Podax Search" />
         <provider
             android:name=".PodcastProvider"
+            android:exported="false"
             android:authorities="com.axelby.podax.podcastprovider"
             android:label="Podcasts" />
         <provider
             android:name=".SubscriptionProvider"
+            android:exported="false"
             android:authorities="com.axelby.podax.subscriptionprovider"
             android:label="Podcast Subscriptions" />
     </application>
