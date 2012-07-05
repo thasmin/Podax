@@ -29,14 +29,20 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			updatePodcastDetails(context, views);
 	
 			// set up pending intents
-			Intent playIntent = new Intent(context, PlayerService.class);
-			playIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_PLAYPAUSE);
-			PendingIntent playPendingIntent = PendingIntent.getService(context, 0, playIntent, 0);
-			views.setOnClickPendingIntent(R.id.play_btn, playPendingIntent);
-	
+			setClickIntent(context, views, R.id.restart_btn, Constants.PLAYER_COMMAND_RESTART);
+			setClickIntent(context, views, R.id.rewind_btn, Constants.PLAYER_COMMAND_SKIPBACK);
+			setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYPAUSE);
+			setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
+			setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
+
 			Intent showIntent = new Intent(context, PodcastDetailActivity.class);
 			PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+
+			Intent queueIntent = new Intent(context, MainActivity.class);
+			queueIntent.putExtra(Constants.EXTRA_TAB, MainActivity.TAB_QUEUE);
+			PendingIntent queuePendingIntent = PendingIntent.getActivity(context, 0, queueIntent, 0);
+			views.setOnClickPendingIntent(R.id.queue_btn, queuePendingIntent);
 	
 			appWidgetManager.updateAppWidget(widgetId, views);
 		}
@@ -58,18 +64,24 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 
 		if (podcast.isNull()) {
 			views.setTextViewText(R.id.title, "Queue empty");
-			views.setTextViewText(R.id.podcast, "");
 			PodcastProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		} else {
 			views.setTextViewText(R.id.title, podcast.getTitle());
-			views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
 			PodcastProgress.remoteSet(views, podcast);
+
+			int imageRes = Helper.isPlaying(context) ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+			views.setImageViewResource(R.id.play_btn, imageRes);
 		}
-
 		cursor.close();
+	}
 
-		int imageRes = Helper.isPlaying(context) ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
-		views.setImageViewResource(R.id.play_btn, imageRes);
+	public static void setClickIntent(Context context, RemoteViews views, int resourceId, int command) {
+		Intent intent = new Intent(context, PlayerService.class);
+		// pendingintent will reuse intent if possible, does not look at extras so datauri makes this unique to command
+		intent.setData(Uri.parse("podax://playercommand/" + command));
+		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
+		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
+		views.setOnClickPendingIntent(resourceId, pendingIntent);
 	}
 }

@@ -1,6 +1,8 @@
+<!-- pandora widget is 308x89 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-	android:minHeight="56dp"
-	android:minWidth="272dp"
-	android:updatePeriodMillis="86400000"
-	android:initialLayout="@layout/smallwidget">
+    android:initialLayout="@layout/smallwidget"
+    android:minHeight="72dip"
+    android:minWidth="294dip"
+    android:updatePeriodMillis="86400000" >
+
 </appwidget-provider>
