@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flattr_api_key"></string>
+    <string name="flattr_api_secret"></string>
+    
+</resources>
