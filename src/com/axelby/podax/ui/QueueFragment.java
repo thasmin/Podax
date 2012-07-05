@@ -246,6 +246,8 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 					position -= getListView().getFirstVisiblePosition();
 					dragLog(String.format("holding podcast at position %d", position));
 					QueueListAdapter.this.holdPodcast(position);
+					if (getActivity() instanceof MainActivity)
+						((MainActivity)getActivity()).freezeViewPager();
 					return true;
 				}
 				return false;
@@ -341,6 +343,8 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 		public void unholdPodcast() {
 			_heldPodcastId = null;
 			notifyDataSetChanged();
+			if (getActivity() instanceof MainActivity)
+				((MainActivity)getActivity()).unfreezeViewPager();
 		}
 
 		public Long getHeldPodcastId() {

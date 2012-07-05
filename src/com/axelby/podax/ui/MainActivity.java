@@ -34,6 +34,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	private static final int TAB_COUNT = 3;
 
 	protected int _focusedPage;
+	protected FreezableViewPager _viewPager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +56,12 @@ public class MainActivity extends SherlockFragmentActivity {
 		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
 		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
 
-		ViewPager pager = (ViewPager) findViewById(R.id.pager);
+		_viewPager = (FreezableViewPager) findViewById(R.id.pager);
 		TabsAdapter tabsAdapter = new TabsAdapter(getSupportFragmentManager());
-		pager.setAdapter(tabsAdapter);
+		_viewPager.setAdapter(tabsAdapter);
 
 		TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
-		titleIndicator.setViewPager(pager);
+		titleIndicator.setViewPager(_viewPager);
 		titleIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
@@ -137,6 +138,14 @@ public class MainActivity extends SherlockFragmentActivity {
 			return true;
 		}
 		return super.onMenuItemSelected(featureId, item);
+	}
+
+	public void freezeViewPager() {
+		_viewPager.freeze();
+	}
+
+	public void unfreezeViewPager() {
+		_viewPager.unfreeze();
 	}
 
 	public class TabsAdapter extends FragmentStatePagerAdapter
