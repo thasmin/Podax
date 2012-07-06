@@ -187,6 +187,7 @@ public class SubscriptionUpdater {
 				SubscriptionCursor sub = new SubscriptionCursor(c);
 
 				serializer.startTag(null, "outline");
+				serializer.attribute(null, "type", "rss");
 				serializer.attribute(null, "title", sub.getTitle());
 				serializer.attribute(null, "xmlUrl", sub.getUrl());
 				serializer.endTag(null, "outline");
