@@ -233,12 +233,12 @@ public class PlayerService extends Service {
 		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
 
 		removeNotification();
-		_player.pause();
-
-		updateActivePodcastPosition();
-
-		_player.stop();
-		_player = null;
+		if (_player != null) {
+			_player.pause();
+			updateActivePodcastPosition();
+			_player.stop();
+			_player = null;
+		}
 		stopSelf();
 
 		// tell anything listening to the active podcast to refresh now that we're stopped
