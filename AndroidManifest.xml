@@ -118,7 +118,20 @@
             android:theme="@style/Theme.Podax" />
 
         <service android:name=".UpdateService" />
-        <service android:name=".PlayerService" />
+        <service android:exported="false" android:name=".PlayerService">
+            <intent-filter>
+                <action android:name="com.axelby.podax.action.TOGGLE_PLAYBACK" />
+                <action android:name="com.axelby.podax.action.PLAY" />
+                <action android:name="com.axelby.podax.action.PAUSE" />
+                <action android:name="com.axelby.podax.action.SKIP" />
+                <action android:name="com.axelby.podax.action.REWIND" />
+                <action android:name="com.axelby.podax.action.STOP" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.axelby.podax.action.URL" />
+                <data android:scheme="http" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".ui.SmallWidgetProvider"

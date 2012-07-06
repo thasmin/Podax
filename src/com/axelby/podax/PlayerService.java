@@ -18,9 +18,12 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.RemoteControlClient;
+
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -36,6 +39,8 @@ import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class PlayerService extends Service {
 	protected int _lastPosition = 0;
+	private static int _playing = Constants.STATE_PLAYING;
+	
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
 			if (_player != null && !_player.isPlaying())
@@ -44,6 +49,7 @@ public class PlayerService extends Service {
 			_lastPosition = _player.getCurrentPosition();
 			if (oldPosition / 1000 != _lastPosition / 1000)
 				updateActivePodcastPosition();
+			PlayerService.setPlayState();
 		}
 	}
 	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
@@ -53,6 +59,12 @@ public class PlayerService extends Service {
 	protected boolean _pausedForPhone;
 	protected Timer _updateTimer;
 	private static final Uri _activePodcastUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
+	
+    // our RemoteControlClient object, which will use remote control APIs available in
+    // SDK level >= 14, if they're available.
+    RemoteControlClientCompat mRemoteControlClientCompat;
+    AudioManager mAudioManager;
+    ComponentName mMediaButtonReceiverComponent;
 	
 	private OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
@@ -85,6 +97,10 @@ public class PlayerService extends Service {
 
 		verifyPodcastReady();
 		setupMediaPlayer();
+       
+		mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+
+        mMediaButtonReceiverComponent = new ComponentName(this, MediaButtonIntentReceiver.class);
 
 		// may or may not be creating the service
 		TelephonyManager _telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -189,9 +205,9 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
 				Log.d("Podax", "PlayerService got a command: playpause");
-				if (_player.isPlaying()) {
-					Log.d("Podax", "  stopping the player");
-					stop();
+				if (_player.isPlaying() && PlayerService.isPlaying()) {
+					Log.d("Podax", "  pausing the player");
+					pause();
 				} else {
 					Log.d("Podax", "  resuming a podcast");
 					resume();
@@ -203,7 +219,7 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_PAUSE:
 				Log.d("Podax", "PlayerService got a command: pause");
-				stop();
+				pause();
 				break;
 			case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
 				Log.d("Podax", "PlayerService got a command: play specific podcast");
@@ -221,8 +237,8 @@ public class PlayerService extends Service {
 		doStop();
 	}
 
-	private void doStop() {
-		Log.d("Podax", "PlayerService stopping");
+	private void pause() {
+		Log.d("Podax", "PlayerService pausing");
 		if (_updatePlayerPositionTimerTask != null)
 			_updatePlayerPositionTimerTask.cancel();
 		if (_updateTimer != null)
@@ -237,6 +253,20 @@ public class PlayerService extends Service {
 
 		updateActivePodcastPosition();
 
+		updateWidgets();
+		
+        // Tell any remote controls that our playback state is 'paused'.
+        if (mRemoteControlClientCompat != null) {
+            mRemoteControlClientCompat
+                    .setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
+        }
+		PlayerService.setPauseState();
+	}
+	
+	private void doStop() {
+		Log.d("Podax", "PlayerService pausing");
+		
+		PlayerService.setPauseState();
 		_player.stop();
 		_player = null;
 		stopSelf();
@@ -244,8 +274,6 @@ public class PlayerService extends Service {
 		// tell anything listening to the active podcast to refresh now that we're stopped
 		ContentValues values = new ContentValues();
 		getContentResolver().update(_activePodcastUri, values, null, null);
-
-		updateWidgets();
 	}
 	
 	public void resume() {
@@ -262,7 +290,7 @@ public class PlayerService extends Service {
 		// grab the media button when we have audio focus
 		AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 		audioManager.registerMediaButtonEventReceiver(new ComponentName(this, MediaButtonIntentReceiver.class));
-
+		PlayerService.setPlayState();
 		doResume();
 	}
 
@@ -275,6 +303,8 @@ public class PlayerService extends Service {
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_DURATION,
 				PodcastProvider.COLUMN_FILE_SIZE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_TITLE,
 		};
 		Cursor c = getContentResolver().query(_activePodcastUri, projection, null, null, null);
 		try {
@@ -298,6 +328,47 @@ public class PlayerService extends Service {
 			_player.setDataSource(p.getFilename());
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
+			
+            // Use the remote control APIs (if available) to set the playback state
+
+            if (mRemoteControlClientCompat == null) {
+                Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+                intent.setComponent(mMediaButtonReceiverComponent);
+                mRemoteControlClientCompat = new RemoteControlClientCompat(
+                        PendingIntent.getBroadcast(this /*context*/,
+                                0 /*requestCode, ignored*/, intent /*intent*/, 0 /*flags*/));
+                RemoteControlHelper.registerRemoteControlClient(mAudioManager,
+                        mRemoteControlClientCompat);
+            }
+
+            mRemoteControlClientCompat.setPlaybackState(
+                    RemoteControlClient.PLAYSTATE_PLAYING);
+
+            mRemoteControlClientCompat.setTransportControlFlags(
+                    RemoteControlClient.FLAG_KEY_MEDIA_PLAY |
+                    RemoteControlClient.FLAG_KEY_MEDIA_PAUSE |
+                    RemoteControlClient.FLAG_KEY_MEDIA_NEXT |
+                    RemoteControlClient.FLAG_KEY_MEDIA_STOP |
+                    RemoteControlClient.FLAG_KEY_MEDIA_FAST_FORWARD |
+                    RemoteControlClient.FLAG_KEY_MEDIA_REWIND);
+
+            try {
+            // Update the remote controls
+            mRemoteControlClientCompat.editMetadata(true)
+                    .putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, p.getSubscriptionTitle())
+                    .putString(MediaMetadataRetriever.METADATA_KEY_TITLE, p.getTitle())
+                    .putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, p.getDuration())
+                    // TODO: fetch real item artwork
+                    /*.putBitmap(
+                            RemoteControlClientCompat.MetadataEditorCompat.METADATA_KEY_ARTWORK,
+                            mDummyAlbumArt)
+                    */
+                    .apply();
+            }
+            catch (Exception e) {
+            	Log.d("Podax", "Updating lockscreen: " + e.toString());
+            }
+
 			
 			// set this podcast as active -- it may have been first in queue
 			changeActivePodcast(p.getId());
@@ -326,6 +397,13 @@ public class PlayerService extends Service {
 		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 
 		updateWidgets();
+		
+        // Tell any remote controls that our playback state is 'playing'.
+        if (mRemoteControlClientCompat != null) {
+            mRemoteControlClientCompat
+                    .setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+        }
+		PlayerService.setPauseState();
 	}
 
 	public void play(Long podcastId) {
@@ -334,11 +412,12 @@ public class PlayerService extends Service {
 			stop();
 			return;
 		}
+		PlayerService.setPlayState();
 		resume();
 	}
 
 	public void skip(int secs) {
-		if (_player.isPlaying()) {
+		if (_player.isPlaying() && PlayerService.isPlaying()) {
 			_player.seekTo(_player.getCurrentPosition() + secs * 1000);
 			updateActivePodcastPosition();
 		} else {
@@ -355,7 +434,7 @@ public class PlayerService extends Service {
 	}
 
 	public void skipTo(int secs) {
-		if (_player.isPlaying()) {
+		if (_player.isPlaying() && PlayerService.isPlaying()) {
 			_player.seekTo(secs * 1000);
 			updateActivePodcastPosition();
 		} else {
@@ -364,7 +443,7 @@ public class PlayerService extends Service {
 	}
 
 	public void restart() {
-		if (_player.isPlaying()) {
+		if (_player.isPlaying() && PlayerService.isPlaying()) {
 			_player.seekTo(0);
 			updateActivePodcastPosition();
 		} else {
@@ -598,5 +677,20 @@ public class PlayerService extends Service {
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, arg);
 		context.startService(intent);
+	}
+	
+	private static void setPauseState() {
+		PlayerService._playing = Constants.STATE_PAUSED;
+	}
+	
+	private static void setPlayState() {
+		PlayerService._playing = Constants.STATE_PLAYING;
+	}
+	
+	public static boolean isPlaying() {
+		if (PlayerService._playing == Constants.STATE_PAUSED) {
+			return false;
+		}
+		return true;
 	}
 }
