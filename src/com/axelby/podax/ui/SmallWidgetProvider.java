@@ -60,13 +60,12 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		};
 		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
 		Cursor cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
-		PodcastCursor podcast = new PodcastCursor(cursor);
-
-		if (podcast.isNull()) {
+		if (cursor.isAfterLast()) {
 			views.setTextViewText(R.id.title, "Queue empty");
 			PodcastProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		} else {
+			PodcastCursor podcast = new PodcastCursor(cursor);
 			views.setTextViewText(R.id.title, podcast.getTitle());
 			PodcastProgress.remoteSet(views, podcast);
 
