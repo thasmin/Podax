@@ -1,6 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="308dip"
-    android:layout_height="89dip"
+    android:layout_width="294dp"
+    android:layout_height="85dp"
     android:background="@drawable/widget_frame"
     android:orientation="vertical" >
 
@@ -22,7 +22,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:maxLines="1"
+                android:singleLine="true"
                 android:textColor="#cccccc" />
 
             <include
