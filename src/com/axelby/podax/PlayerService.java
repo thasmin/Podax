@@ -36,6 +36,7 @@ import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class PlayerService extends Service {
 	protected int _lastPosition = 0;
+
 	public class UpdatePlayerPositionTimerTask extends TimerTask {
 		public void run() {
 			if (_player != null && !_player.isPlaying())
@@ -46,6 +47,7 @@ public class PlayerService extends Service {
 				updateActivePodcastPosition();
 		}
 	}
+
 	protected UpdatePlayerPositionTimerTask _updatePlayerPositionTimerTask;
 
 	protected MediaPlayer _player;
@@ -53,7 +55,12 @@ public class PlayerService extends Service {
 	protected boolean _pausedForPhone;
 	protected Timer _updateTimer;
 	private static final Uri _activePodcastUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-	
+
+	private final HeadsetConnectionReceiver _headsetConnectionReceiver = new HeadsetConnectionReceiver();
+	private final BluetoothConnectionReceiver _bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
+	private PhoneStateListener _phoneStateListener;
+	private LockscreenManager _lockscreenManager = new LockscreenManager();
+
 	private OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
@@ -66,11 +73,6 @@ public class PlayerService extends Service {
 		}
 	};
 
-	private final HeadsetConnectionReceiver _headsetConnectionReceiver = new HeadsetConnectionReceiver();
-	private final BluetoothConnectionReceiver _bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
-
-	private PhoneStateListener _phoneStateListener;
-
 	@Override
 	public IBinder onBind(Intent intent) {
 		handleIntent(intent);
@@ -80,7 +82,7 @@ public class PlayerService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
+
 		_updateTimer = new Timer();
 
 		verifyPodcastReady();
@@ -107,11 +109,8 @@ public class PlayerService extends Service {
 		_telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 		_onPhone = (_telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
 
-		// hook our headset connection and disconnection
-		this.registerReceiver(_headsetConnectionReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
-		// hook our bluetooth headset connection and disconnection
-		//this.registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED));
-		this.registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
+		registerReceiver(_headsetConnectionReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+		registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
 	}
 
 	private void setupMediaPlayer() {
@@ -208,7 +207,7 @@ public class PlayerService extends Service {
 			case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
 				Log.d("Podax", "PlayerService got a command: play specific podcast");
 				int podcastId = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
-				play((long)podcastId);
+				play((long) podcastId);
 				break;
 			}
 		}
@@ -233,6 +232,9 @@ public class PlayerService extends Service {
 		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
 
 		removeNotification();
+
+		_lockscreenManager.removeLockscreenControls();
+
 		if (_player != null) {
 			_player.pause();
 			updateActivePodcastPosition();
@@ -247,20 +249,18 @@ public class PlayerService extends Service {
 
 		updateWidgets();
 	}
-	
+
 	public void resume() {
 		if (_onPhone)
 			return;
 
 		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		int result = am.requestAudioFocus(_afChangeListener,
-                AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN);
+		int result = am.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 		if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED)
 			stop();
 
 		// grab the media button when we have audio focus
-		AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		audioManager.registerMediaButtonEventReceiver(new ComponentName(this, MediaButtonIntentReceiver.class));
 
 		doResume();
@@ -271,6 +271,9 @@ public class PlayerService extends Service {
 
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 				PodcastProvider.COLUMN_MEDIA_URL,
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_DURATION,
@@ -298,11 +301,12 @@ public class PlayerService extends Service {
 			_player.setDataSource(p.getFilename());
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
-			
+
 			// set this podcast as active -- it may have been first in queue
 			changeActivePodcast(p.getId());
-		}
-		catch (IOException ex) {
+
+			_lockscreenManager.setupLockscreenControls(this, p);
+		} catch (IOException ex) {
 			stop();
 		} finally {
 			c.close();
@@ -540,7 +544,7 @@ public class PlayerService extends Service {
 	public void removeActivePodcastFromQueue() {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, 0);
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
 		PlayerService.this.getContentResolver().update(_activePodcastUri, values, null, null);
 	}
 
