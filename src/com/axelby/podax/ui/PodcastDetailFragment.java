@@ -24,6 +24,7 @@ import com.actionbarsherlock.app.SherlockFragment;
 import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
+import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -92,7 +93,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (Helper.isPlaying(getActivity()) &&
+				if (PlayerStatus.isPlaying() &&
 						_activePodcastId != null && _activePodcastId.equals(_podcastId))
 					PlayerService.pause(getActivity());
 				else
@@ -194,7 +195,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				_seekbar.setProgress(podcast.getLastPosition());
 			}
 
-			int playResource = Helper.isPlaying(getActivity()) ? R.drawable.ic_media_pause
+			int playResource = PlayerStatus.isPlaying() ? R.drawable.ic_media_pause
 					: R.drawable.ic_media_play;
 			_playButton.setImageResource(playResource);
 

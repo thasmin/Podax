@@ -25,7 +25,7 @@ public class BluetoothConnectionReceiver extends BroadcastReceiver {
 
 		// pause if it's headphones
 		if (btDevice.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.AUDIO_VIDEO)
-			if (Helper.isPlaying(context))
+			if (PlayerStatus.isPlaying())
 				PlayerService.pause(context);
 	}
 }

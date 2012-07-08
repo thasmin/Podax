@@ -7,12 +7,9 @@ import android.support.v4.app.FragmentTransaction;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.MenuItem;
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
-public class AddSubscriptionActivity extends SherlockFragmentActivity {
+public class AddSubscriptionActivity extends PodaxFragmentActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -21,7 +18,6 @@ public class AddSubscriptionActivity extends SherlockFragmentActivity {
 		setContentView(R.layout.discover);
 
         final ActionBar bar = getSupportActionBar();
-		bar.setDisplayHomeAsUpEnabled(true);
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         bar.addTab(bar.newTab().setText("Add")
     		.setTabListener(new ActionBar.TabListener() {
@@ -54,24 +50,6 @@ public class AddSubscriptionActivity extends SherlockFragmentActivity {
         if (savedInstanceState != null) {
             bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
         }
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		Helper.registerMediaButtons(this);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-	    switch (item.getItemId()) {
-	        case android.R.id.home:
-	        	finish();
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
 	}
 
 	private class TabListener implements ActionBar.TabListener {

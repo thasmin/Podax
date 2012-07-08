@@ -29,7 +29,19 @@ public class QueueManager {
 		}
 	}
 
+	public static void removeActivePodcast(Context context) {
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, 0);
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+
+		SharedPreferences prefs = context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		prefs.edit().remove(PodcastProvider.PREF_ACTIVE).commit();
+	}
+
 	public static Long moveToNextInQueue(Context context) {
+		QueueManager.removeActivePodcast(context);
+
 		Long activePodcastId = findFirstDownloadedInQueue(context);
 		if (activePodcastId == null)
 			return null;
@@ -42,9 +54,10 @@ public class QueueManager {
 		values.put(PodcastProvider.COLUMN_ID, activePodcastId);
 		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
-		// if the podcast has ended and it's back in the queue, restart it
 		String[] projection = {
 				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 				PodcastProvider.COLUMN_DURATION,
 				PodcastProvider.COLUMN_LAST_POSITION,
 		};
@@ -52,22 +65,19 @@ public class QueueManager {
 		try {
 			if (c.moveToNext()) {
 				PodcastCursor podcast = new PodcastCursor(c);
-				if (podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000)
+				// if the podcast has ended and it's back in the queue, restart it
+				boolean needToRestart = podcast.getDuration() > 0 && podcast.getLastPosition() > podcast.getDuration() - 1000;
+				if (needToRestart)
 					podcast.setLastPosition(context, 0);
-			}
+				PlayerStatus.updatePodcast(podcast.getTitle(), 
+						podcast.getSubscriptionTitle(), 
+						needToRestart ? 0 : podcast.getLastPosition(), 
+						podcast.getDuration());
+			} else
+				PlayerStatus.updateQueueEmpty();
 		} finally {
 			c.close();
 		}
-	}
-
-	public static void removeActivePodcast(Context context) {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_LAST_POSITION, 0);
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
-		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-
-		SharedPreferences prefs = context.getSharedPreferences("internals", Context.MODE_WORLD_READABLE);
-		prefs.edit().remove(PodcastProvider.PREF_ACTIVE).commit();
 	}
 
 }

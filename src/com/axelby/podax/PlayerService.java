@@ -28,6 +28,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.R.drawable;
 import com.axelby.podax.ui.LargeWidgetProvider;
 import com.axelby.podax.ui.PodcastDetailActivity;
@@ -42,6 +43,7 @@ public class PlayerService extends Service {
 				return;
 			int oldPosition = _lastPosition;
 			_lastPosition = _player.getCurrentPosition();
+			PlayerStatus.updatePosition(_lastPosition);
 			if (oldPosition / 1000 != _lastPosition / 1000)
 				updateActivePodcastPosition(_lastPosition);
 		}
@@ -65,11 +67,13 @@ public class PlayerService extends Service {
 			_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
 			if (_onPhone) {
 				_player.pause();
+				PlayerStatus.updateState(PlayerStates.PAUSED);
 				updateActivePodcastPosition(_player.getCurrentPosition());
 				_pausedForPhone = true;
 			}
 			if (!_onPhone && _pausedForPhone) {
 				_player.start();
+				PlayerStatus.updateState(PlayerStates.PLAYING);
 				updateActivePodcastPosition(_player.getCurrentPosition());
 				_pausedForPhone = false;
 			}
@@ -95,6 +99,7 @@ public class PlayerService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
+		PlayerStatus.initialize(this);
 		setupTelephony();
 		setupMediaPlayer();
 		registerReceiver(_headsetConnectionReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
@@ -222,6 +227,7 @@ public class PlayerService extends Service {
 			_player.pause();
 			updateActivePodcastPosition(_player.getCurrentPosition());
 			_player.stop();
+			PlayerStatus.updateState(PlayerStates.STOPPED);
 			_player = null;
 		}
 		stopSelf();
@@ -280,7 +286,7 @@ public class PlayerService extends Service {
 				return;
 			}
 
-			startMediaPlayer(p);
+			prepareMediaPlayer(p);
 
 			// set this podcast as active -- it may not have been first in queue
 			QueueManager.changeActivePodcast(this, p.getId());
@@ -300,6 +306,7 @@ public class PlayerService extends Service {
 
 		_pausedForPhone = false;
 		_player.start();
+		PlayerStatus.updateState(PlayerStates.PLAYING);
 
 		showNotification();
 
@@ -314,7 +321,7 @@ public class PlayerService extends Service {
 		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
 	}
 
-	private void startMediaPlayer(PodcastCursor p) throws IOException {
+	private void prepareMediaPlayer(PodcastCursor p) throws IOException {
 		setupMediaPlayer();
 		_player.reset();
 		_player.setDataSource(p.getFilename());
@@ -380,8 +387,6 @@ public class PlayerService extends Service {
 		_player.pause();
 		stopUpdateTimer();
 		updateActivePodcastPosition(_player.getCurrentPosition());
-
-		QueueManager.removeActivePodcast(this);
 
 		Long activePodcastId = QueueManager.moveToNextInQueue(this);
 		if (activePodcastId == null) {
@@ -455,6 +460,7 @@ public class PlayerService extends Service {
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		PlayerService.this.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
+		PlayerStatus.updatePosition(position);
 		// update widgets
 		updateWidgets();
 	}

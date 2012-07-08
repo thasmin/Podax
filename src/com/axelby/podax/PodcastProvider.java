@@ -137,7 +137,7 @@ public class PodcastProvider extends ContentProvider {
 			_dbAdapter.getWritableDatabase().execSQL("update podcasts set queueposition = (select count(*) from podcasts p2 where p2.queueposition is not null and p2.queueposition < podcasts.queueposition) where podcasts.queueposition is not null");
 			break;
 		case PODCASTS_ACTIVE:
-			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_WORLD_READABLE);
+			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 			if (prefs.contains(PREF_ACTIVE))
 				sqlBuilder.appendWhere("podcasts._id = " + prefs.getLong(PREF_ACTIVE, -1));
 			else
@@ -189,7 +189,7 @@ public class PodcastProvider extends ContentProvider {
 		int count = 0;
 
 		String podcastId;
-		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_WORLD_READABLE);
+		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		Long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
 		switch (uriMatcher.match(uri)) {
 		case PODCAST_ID:

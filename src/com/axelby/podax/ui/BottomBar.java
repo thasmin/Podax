@@ -2,10 +2,8 @@ package com.axelby.podax.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,12 +11,13 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
+import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
-
+import com.squareup.otto.Subscribe;
 
 public class BottomBar extends LinearLayout {
 
@@ -27,23 +26,6 @@ public class BottomBar extends LinearLayout {
 	private ImageButton _pausebtn;
 	private ImageButton _showplayerbtn;
 
-	private Cursor _cursor = null;
-
-	private class ActivePodcastObserver extends ContentObserver {
-		public ActivePodcastObserver(Handler handler) {
-			super(handler);
-		}
-
-		@Override
-		public void onChange(boolean selfChange) {
-			super.onChange(selfChange);
-
-			refreshCursor();
-			updateUI();
-		}
-	}
-	private ActivePodcastObserver _observer = new ActivePodcastObserver(new Handler());
-
 	public BottomBar(Context context) {
 		super(context);
 
@@ -51,10 +33,6 @@ public class BottomBar extends LinearLayout {
 
 		if (isInEditMode())
 			return;
-		loadViews(context);
-
-		retrievePodcast();
-		updateUI();
 	}
 
 	public BottomBar(Context context, AttributeSet attrs) {
@@ -64,39 +42,25 @@ public class BottomBar extends LinearLayout {
 		
 		if (isInEditMode())
 			return;
-		loadViews(context);
+	}
 
-		retrievePodcast();
+	@Override
+	protected void onAttachedToWindow() {
+		super.onAttachedToWindow();
+
+		loadViews(getContext());
 		updateUI();
+		PlayerStatus.register(this);
 	}
 
 	@Override
 	protected void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
 
-		if (!_cursor.isClosed())
-			_cursor.close();
-		getContext().getContentResolver().unregisterContentObserver(_observer);
+		PlayerStatus.unregister(this);
 	}
 
 	Uri _activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-	public void refreshCursor() {
-		if (_cursor != null && !_cursor.isClosed())
-			_cursor.close();
-
-		String[] projection = {
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_TITLE,
-				PodcastProvider.COLUMN_DURATION,
-				PodcastProvider.COLUMN_LAST_POSITION,
-		};
-		_cursor = getContext().getContentResolver().query(_activeUri, projection, null, null, null);
-	}
-
-	public void retrievePodcast() {
-		refreshCursor();
-		getContext().getContentResolver().registerContentObserver(_activeUri, false, _observer);
-	}
 
 	private void loadViews(final Context context) {
 		_podcastTitle = (TextView) findViewById(R.id.podcasttitle);
@@ -123,24 +87,43 @@ public class BottomBar extends LinearLayout {
 
 	private Long _lastPodcastId = null;
 	public void updateUI() {
-		boolean isPlaying = Helper.isPlaying(getContext());
+		boolean isPlaying = PlayerStatus.isPlaying();
 		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
 
-		PodcastCursor podcast = new PodcastCursor(_cursor);
-		if (!podcast.isNull()) {
-			if (isPlaying || _podcastProgress.isEmpty())
-				_podcastProgress.set(podcast);
-			if (_lastPodcastId != podcast.getId()) {
-				_podcastTitle.setText(podcast.getTitle());
-				_showplayerbtn.setEnabled(true);
+		String[] projection = {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_DURATION,
+				PodcastProvider.COLUMN_LAST_POSITION,
+		};
+		Cursor c = getContext().getContentResolver().query(_activeUri, projection, null, null, null);
+		try {
+			if (c.isAfterLast())
+				return;
+	
+			PodcastCursor podcast = new PodcastCursor(c);
+			if (!podcast.isNull()) {
+				if (isPlaying || _podcastProgress.isEmpty())
+					_podcastProgress.set(podcast);
+				if (_lastPodcastId != podcast.getId()) {
+					_podcastTitle.setText(podcast.getTitle());
+					_showplayerbtn.setEnabled(true);
+				}
+			} else if (_lastPodcastId != null) {
+				_podcastTitle.setText("");
+				_podcastProgress.clear();
+				_showplayerbtn.setEnabled(false);
 			}
-		} else if (_lastPodcastId != null) {
-			_podcastTitle.setText("");
-			_podcastProgress.clear();
-			_showplayerbtn.setEnabled(false);
+	
+			_lastPodcastId = podcast.isNull() ? null : podcast.getId();
+		} finally {
+			c.close();
 		}
-
-		_lastPodcastId = podcast.isNull() ? null : podcast.getId();
 	}
 
+	@Subscribe public void playerStateChange(PlayerStatus e) {
+		boolean isPlaying = e.getState() == PlayerStates.PLAYING;
+		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
+		_podcastProgress.set(e.getPosition(), e.getDuration());
+	}
 }

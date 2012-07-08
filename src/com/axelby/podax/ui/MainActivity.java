@@ -13,20 +13,18 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.viewpagerindicator.TitlePageIndicator;
 import com.viewpagerindicator.TitleProvider;
 
-public class MainActivity extends SherlockFragmentActivity {
+public class MainActivity extends PodaxFragmentActivity {
 
 	public static final int TAB_WELCOME = 0;
 	public static final int TAB_QUEUE = 1;
@@ -86,13 +84,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 
 		BootReceiver.setupAlarms(getApplicationContext());
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		Helper.registerMediaButtons(this);
 	}
 
 	@Override

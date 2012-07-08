@@ -5,21 +5,19 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
-import com.axelby.podax.PodcastCursor;
-import com.axelby.podax.PodcastProvider;
+import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
 	@Override
-	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
-			int[] appWidgetIds) {
+	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+		PlayerStatus.initialize(context);
+
 		if (appWidgetIds.length == 0)
 			return;
 
@@ -51,31 +49,20 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 	}
 
 	public void updatePodcastDetails(Context context, RemoteViews views) {
-		String[] projection = {
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-				PodcastProvider.COLUMN_DURATION,
-				PodcastProvider.COLUMN_LAST_POSITION,
-		};
-		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-		Cursor cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
-		PodcastCursor podcast = new PodcastCursor(cursor);
+		PlayerStatus player = PlayerStatus.getCurrentState();
+		if (player.hasActivePodcast()) {
+			views.setTextViewText(R.id.title, player.getTitle());
+			views.setTextViewText(R.id.podcast, player.getSubscriptionTitle());
+			PodcastProgress.remoteSet(views, player.getPosition(), player.getDuration());
 
-		if (podcast.isNull()) {
+			int imageRes = PlayerStatus.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+			views.setImageViewResource(R.id.play_btn, imageRes);
+		} else {
 			views.setTextViewText(R.id.title, "Queue empty");
 			views.setTextViewText(R.id.podcast, "");
 			PodcastProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
-		} else {
-			views.setTextViewText(R.id.title, podcast.getTitle());
-			views.setTextViewText(R.id.podcast, podcast.getSubscriptionTitle());
-			PodcastProgress.remoteSet(views, podcast);
-
-			int imageRes = Helper.isPlaying(context) ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
-			views.setImageViewResource(R.id.play_btn, imageRes);
 		}
-		cursor.close();
 	}
 
 	public static void setClickIntent(Context context, RemoteViews views, int resourceId, int command) {

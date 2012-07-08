@@ -57,6 +57,14 @@ public class PodcastProgress extends RelativeLayout {
 		_remaining.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
 	}
 
+	public void set(int position, int duration) {
+		_position.setText(Helper.getTimeString(position));
+		_progressbar.setVisibility(VISIBLE);
+		_progressbar.setMax(duration);
+		_progressbar.setProgress(position);
+		_remaining.setText("-" + Helper.getTimeString(duration - position));
+	}
+
 	public static void remoteClear(RemoteViews views) {
 		views.setTextViewText(R.id.position, "");
 		views.setViewVisibility(R.id.progress, INVISIBLE);
@@ -68,5 +76,12 @@ public class PodcastProgress extends RelativeLayout {
 		views.setViewVisibility(R.id.progress, VISIBLE);
 		views.setProgressBar(R.id.progress, podcast.getDuration(), podcast.getLastPosition(), false);
 		views.setTextViewText(R.id.remaining, "-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
+	}
+
+	public static void remoteSet(RemoteViews views, int position, int duration) {
+		views.setTextViewText(R.id.position, Helper.getTimeString(position));
+		views.setViewVisibility(R.id.progress, VISIBLE);
+		views.setProgressBar(R.id.progress, duration, position, false);
+		views.setTextViewText(R.id.remaining, "-" + Helper.getTimeString(duration - position));
 	}
 }
