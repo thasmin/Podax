@@ -23,10 +23,10 @@ import android.net.Uri;
 public class PodcastProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.podcastprovider";
 	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/podcasts");
-	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-			+ "/vnd.axelby.podcast";
-	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
-			+ "/vnd.axelby.podcast";
+	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
+	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podcast";
+	public static final Uri ACTIVE_PODCAST_URI = Uri.withAppendedPath(PodcastProvider.URI, "active");
+	public static final Uri QUEUE_URI = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 
 	private final static int PODCASTS = 1;
 	private final static int PODCASTS_QUEUE = 2;
@@ -48,10 +48,7 @@ public class PodcastProvider extends ContentProvider {
 	public static final String COLUMN_LAST_POSITION = "lastPosition";
 	public static final String COLUMN_DURATION = "duration";
 
-	private static final String PREF_ACTIVE = "active";
-
-	public static final Uri ACTIVE_PODCAST_URI = Uri.withAppendedPath(PodcastProvider.URI, "active");
-	public static final Uri QUEUE_URI = Uri.withAppendedPath(PodcastProvider.URI, "queue");
+	static final String PREF_ACTIVE = "active";
 
 	static UriMatcher uriMatcher;
 	static HashMap<String, String> _columnMap;
@@ -61,8 +58,7 @@ public class PodcastProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "podcasts", PODCASTS);
 		uriMatcher.addURI(AUTHORITY, "podcasts/queue", PODCASTS_QUEUE);
 		uriMatcher.addURI(AUTHORITY, "podcasts/#", PODCAST_ID);
-		uriMatcher.addURI(AUTHORITY, "podcasts/to_download",
-				PODCASTS_TO_DOWNLOAD);
+		uriMatcher.addURI(AUTHORITY, "podcasts/to_download", PODCASTS_TO_DOWNLOAD);
 		uriMatcher.addURI(AUTHORITY, "podcasts/active", PODCASTS_ACTIVE);
 		uriMatcher.addURI(AUTHORITY, "podcasts/search", PODCASTS_SEARCH);
 
@@ -70,8 +66,7 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
 		_columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
 		_columnMap.put(COLUMN_SUBSCRIPTION_ID, "subscriptionId");
-		_columnMap.put(COLUMN_SUBSCRIPTION_TITLE,
-				"subscriptions.title AS subscriptionTitle");
+		_columnMap.put(COLUMN_SUBSCRIPTION_TITLE, "subscriptions.title AS subscriptionTitle");
 		_columnMap.put(COLUMN_QUEUE_POSITION, "queuePosition");
 		_columnMap.put(COLUMN_MEDIA_URL, "mediaUrl");
 		_columnMap.put(COLUMN_LINK, "link");
@@ -190,8 +185,7 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	@Override
-	public int update(Uri uri, ContentValues values, String where,
-			String[] whereArgs) {
+	public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
 		int count = 0;
 
 		String podcastId;
@@ -253,7 +247,7 @@ public class PodcastProvider extends ContentProvider {
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
 		if (new Long(podcastId).equals(activePodcastId))
-			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "active"), null);
+			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 		return count;
 	}
 
