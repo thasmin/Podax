@@ -397,12 +397,7 @@ public class PlayerService extends Service {
 		stopUpdateTimer();
 		updateActivePodcastPosition(_player.getCurrentPosition());
 
-		Long activePodcastId = QueueManager.moveToNextInQueue(this);
-		if (activePodcastId == null) {
-			Log.d("Podax", "PlayerService queue finished");
-			stop();
-			return;
-		}
+		QueueManager.moveToNextInQueue(this);
 
 		grabAudioFocusAndResume();
 	}

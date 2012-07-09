@@ -140,8 +140,9 @@ public class PodcastProvider extends ContentProvider {
 			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 			if (prefs.contains(PREF_ACTIVE))
 				sqlBuilder.appendWhere("podcasts._id = " + prefs.getLong(PREF_ACTIVE, -1));
-			else
-				sqlBuilder.appendWhere("podcasts.queuePosition = 0");
+			else {
+				sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
+			}
 			break;
 		case PODCASTS_SEARCH:
 			sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(description) LIKE ?");
@@ -160,6 +161,28 @@ public class PodcastProvider extends ContentProvider {
 				selection, selectionArgs, null, null, sortOrder);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
+	}
+
+	private long getFirstDownloadedId() {
+		String[] innerProjection = {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_FILE_SIZE,
+				PodcastProvider.COLUMN_MEDIA_URL,
+		};
+		Cursor c = query(QUEUE_URI, innerProjection, null, null, null);
+		long podcastId = -1;
+		try {
+			while (c.moveToNext()) {
+				PodcastCursor podcast = new PodcastCursor(c);
+				if (podcast.isDownloaded()) {
+					podcastId = podcast.getId();
+					break;
+				}
+			}
+		} finally {
+			c.close();
+		}
+		return podcastId;
 	}
 
 	private String getNeedsDownloadIds() {
@@ -204,6 +227,9 @@ public class PodcastProvider extends ContentProvider {
 				else
 					editor.remove(PREF_ACTIVE);
 				editor.commit();
+
+				// tell everyone that there's a new active podcast
+				PlayerStatus.refresh(getContext());
 
 				// if we're clearing the active podcast or updating just the ID, don't go to the DB
 				if (activePodcastId == null || values.size() == 1)
