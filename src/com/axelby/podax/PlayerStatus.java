@@ -63,6 +63,12 @@ public class PlayerStatus {
 		_bus.unregister(obj);
 	}
 
+	public static void refresh(Context context) {
+		_current = null;
+		initialize(context);
+		postWithHandler();
+	}
+
 	public static void initialize(Context context) {
 		if (_current != null)
 			return;
@@ -124,4 +130,5 @@ public class PlayerStatus {
 	public boolean hasActivePodcast() {
 		return getState() != PlayerStates.QUEUEEMPTY;
 	}
+
 }

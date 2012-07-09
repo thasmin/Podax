@@ -29,7 +29,7 @@ public class QueueManager {
 		}
 	}
 
-	public static void removeActivePodcast(Context context) {
+	public static Long moveToNextInQueue(Context context) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, 0);
 		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
@@ -37,10 +37,6 @@ public class QueueManager {
 
 		SharedPreferences prefs = context.getSharedPreferences("internals", Context.MODE_PRIVATE);
 		prefs.edit().remove(PodcastProvider.PREF_ACTIVE).commit();
-	}
-
-	public static Long moveToNextInQueue(Context context) {
-		QueueManager.removeActivePodcast(context);
 
 		Long activePodcastId = findFirstDownloadedInQueue(context);
 		if (activePodcastId == null)

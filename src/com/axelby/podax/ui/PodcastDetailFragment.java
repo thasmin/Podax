@@ -286,15 +286,12 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 			}
 
 			PodcastCursor podcast = new PodcastCursor(cursor);
-			boolean isActive = _activePodcastId != null && _activePodcastId.equals(_podcastId);
-			_activePodcastId = podcast.getId().intValue();
-
-			// go to the first podcast in the queue if we don't have a podcast
-			// or if we were active and the active switched
-			if (_podcastId == 0 || (isActive && _activePodcastId != _podcastId)) {
-				_podcastId = _activePodcastId;
-				getLoaderManager().restartLoader(CURSOR_PODCAST, null, this);
+			if (_initializedPodcastId == null || !_initializedPodcastId.equals(_podcastId)) {
+				initializeUI(podcast);
+				_initializedPodcastId = _podcastId;
 			}
+			updateQueueViews(podcast);
+			updatePlayerControls(podcast);
 		}
 	}
 

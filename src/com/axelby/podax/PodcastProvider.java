@@ -246,7 +246,7 @@ public class PodcastProvider extends ContentProvider {
 		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, podcastId), null);
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
-		if (new Long(podcastId).equals(activePodcastId))
+		if (Long.valueOf(podcastId).equals(activePodcastId))
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 		return count;
 	}
@@ -298,6 +298,7 @@ public class PodcastProvider extends ContentProvider {
 						new Object[] { newPosition, oldPosition });
 		}
 
+
 		// if new position is max_value, put the podcast at the end
 		if (newPosition != null && newPosition == Integer.MAX_VALUE) {
 			Cursor max = db.rawQuery(
@@ -311,8 +312,20 @@ public class PodcastProvider extends ContentProvider {
 		// update specified podcast
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
 				new Object[] { newPosition, podcastId });
-		getContext().getContentResolver().notifyChange(
-				Uri.withAppendedPath(URI, "queue"), null);
+		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "queue"), null);
+
+		// figure out if the active podcast changed
+		// explicitly set as active or there is no active and first in queue changed
+		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
+		long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
+		if (String.valueOf(activePodcastId).equals(podcastId)) {
+			prefs.edit().remove(PREF_ACTIVE).commit();
+			PlayerStatus.refresh(getContext());
+		} else if (activePodcastId == -1 &&
+				((oldPosition != null && oldPosition == 0) ||
+				  newPosition != null && newPosition == 0)) {
+			PlayerStatus.refresh(getContext());
+		}
 	}
 
 	@Override

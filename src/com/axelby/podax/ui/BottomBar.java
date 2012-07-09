@@ -125,5 +125,6 @@ public class BottomBar extends LinearLayout {
 		boolean isPlaying = e.getState() == PlayerStates.PLAYING;
 		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
 		_podcastProgress.set(e.getPosition(), e.getDuration());
+		_podcastTitle.setText(e.getTitle());
 	}
 }
