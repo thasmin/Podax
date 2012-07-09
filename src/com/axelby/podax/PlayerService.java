@@ -36,7 +36,7 @@ import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class PlayerService extends Service {
 
-	private TimerTask _updatePlayerPositionTimerTask = new TimerTask() {
+	private class UpdatePositionTimerTask extends TimerTask {
 		protected int _lastPosition = 0;
 		public void run() {
 			if (_player != null && !_player.isPlaying())
@@ -93,6 +93,23 @@ public class PlayerService extends Service {
 	public IBinder onBind(Intent intent) {
 		handleIntent(intent);
 		return null;
+	}
+
+	private void createUpdateTimer() {
+		if (_updateTimer != null)
+			return;
+
+		Log.d("Podax", "in createUpdateTimer");
+		_updateTimer = new Timer();
+		_updateTimer.schedule(new UpdatePositionTimerTask(), 250, 250);
+	}
+
+	private void stopUpdateTimer() {
+		if (_updateTimer == null)
+			return;
+
+		_updateTimer.cancel();
+		_updateTimer = null;
 	}
 
 	@Override
@@ -212,9 +229,7 @@ public class PlayerService extends Service {
 
 	private void doStop() {
 		Log.d("Podax", "PlayerService stopping");
-		if (_updateTimer != null)
-			_updateTimer.cancel();
-		_updateTimer = null;
+		stopUpdateTimer();
 
 		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
@@ -315,12 +330,6 @@ public class PlayerService extends Service {
 		updateWidgets();
 	}
 
-	private void createUpdateTimer() {
-		if (_updateTimer == null)
-			_updateTimer = new Timer();
-		_updateTimer.schedule(_updatePlayerPositionTimerTask, 250, 250);
-	}
-
 	private void prepareMediaPlayer(PodcastCursor p) throws IOException {
 		setupMediaPlayer();
 		_player.reset();
@@ -396,13 +405,6 @@ public class PlayerService extends Service {
 		}
 
 		grabAudioFocusAndResume();
-	}
-
-	private void stopUpdateTimer() {
-		if (_updateTimer != null) {
-			_updateTimer.cancel();
-			_updateTimer = null;
-		}
 	}
 
 	private void showNotification() {
