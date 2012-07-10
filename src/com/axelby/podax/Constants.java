@@ -36,4 +36,6 @@ public class Constants {
 	public static final int PLAYER_COMMAND_PAUSE = 6;
 	public static final int PLAYER_COMMAND_SKIPTO = 7;
 	public static final int PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST = 8;
+	public static final int PLAYER_COMMAND_STOP = 9;
+	public static final int PLAYER_COMMAND_PLAYSTOP = 10;
 }

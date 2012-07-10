@@ -73,7 +73,7 @@ public class BottomBar extends LinearLayout {
 		
 		_pausebtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
-				PlayerService.playpause(BottomBar.this.getContext());
+				PlayerService.playstop(BottomBar.this.getContext());
 			}
 		});
 

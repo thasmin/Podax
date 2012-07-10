@@ -66,4 +66,17 @@ public class LockscreenManager {
 			_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_STOPPED);
 	}
 
+	@TargetApi(14)
+	public void setLockscreenPaused() {
+		if (_remoteControlClient == null)
+			return;
+		_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
+	}
+
+	@TargetApi(14)
+	public void setLockscreenPlaying() {
+		if (_remoteControlClient == null)
+			return;
+		_remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
+	}
 }

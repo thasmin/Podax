@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -94,7 +93,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				if (PlayerStatus.isPlaying() && PlayerStatus.getCurrentState().getId() == _podcastId)
-					PlayerService.pause(getActivity());
+					PlayerService.stop(getActivity());
 				else
 					PlayerService.play(getActivity(), _podcastId);
 			}
@@ -165,7 +164,6 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	}
 
 	private void initializeUI(PodcastCursor podcast) {
-		Log.d("Podax", podcast.getTitle());
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
 
@@ -221,7 +219,6 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	}
 
 	private void updateQueueViews(PodcastCursor podcast) {
-		Log.d("Podax", "queue position " + podcast.getQueuePosition());
 		if (podcast.getQueuePosition() == null) {
 			_queueButton.setText(R.string.add_to_queue);
 			_queuePosition.setText("");
@@ -248,7 +245,6 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		if (id == CURSOR_PODCAST) {
 			if (_podcastId != 0) {
-				Log.d("Podax", "podcast id " + _podcastId);
 				Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
 				return new CursorLoader(getActivity(), uri, projection, null, null, null);
 			}
