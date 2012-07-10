@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,11 +31,9 @@ import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 
 public class PodcastDetailFragment extends SherlockFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	int _podcastId;
-	// id of the first podcast in the queue
-	Integer _activePodcastId = null;
+	long _podcastId;
 	boolean _controlsEnabled = true;
-	Integer _initializedPodcastId = null;
+	Long _initializedPodcastId = null;
 
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
@@ -61,10 +60,11 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		_podcastId = getActivity().getIntent().getIntExtra(Constants.EXTRA_PODCAST_ID, 0);
+		_podcastId = getActivity().getIntent().getLongExtra(Constants.EXTRA_PODCAST_ID, 0);
 		if (_podcastId != 0)
 			getLoaderManager().initLoader(CURSOR_PODCAST, null, this);
-		getLoaderManager().initLoader(CURSOR_ACTIVE, null, this);
+		else
+			getLoaderManager().initLoader(CURSOR_ACTIVE, null, this);
 	}
 
 	@Override
@@ -93,8 +93,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (PlayerStatus.isPlaying() &&
-						_activePodcastId != null && _activePodcastId.equals(_podcastId))
+				if (PlayerStatus.isPlaying() && PlayerStatus.getCurrentState().getId() == _podcastId)
 					PlayerService.pause(getActivity());
 				else
 					PlayerService.play(getActivity(), _podcastId);
@@ -131,14 +130,11 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_queueButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				new AsyncTask<Integer, Void, Void>() {
+				new AsyncTask<Long, Void, Void>() {
 					@Override
-					protected Void doInBackground(Integer... params) {
+					protected Void doInBackground(Long... params) {
 						Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
-						String[] projection = new String[] {
-								PodcastProvider.COLUMN_ID,
-								PodcastProvider.COLUMN_QUEUE_POSITION,
-						};
+						String[] projection = new String[] { PodcastProvider.COLUMN_QUEUE_POSITION };
 						Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
 						if (c.moveToNext()) {
 							PodcastCursor podcast = new PodcastCursor(c);
@@ -169,7 +165,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	}
 
 	private void initializeUI(PodcastCursor podcast) {
-		getActivity().setTitle(podcast.getTitle());
+		Log.d("Podax", podcast.getTitle());
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
 
@@ -188,7 +184,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	}
 
 	private void updatePlayerControls(PodcastCursor podcast) {
-		if (_activePodcastId != null && _activePodcastId.equals(_podcastId)) {
+		if (PlayerStatus.getCurrentState().getId() == podcast.getId()) {
 			if (!_seekbar_dragging) {
 				_position.setText(Helper.getTimeString(podcast.getLastPosition()));
 				_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
@@ -225,6 +221,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	}
 
 	private void updateQueueViews(PodcastCursor podcast) {
+		Log.d("Podax", "queue position " + podcast.getQueuePosition());
 		if (podcast.getQueuePosition() == null) {
 			_queueButton.setText(R.string.add_to_queue);
 			_queuePosition.setText("");
@@ -238,61 +235,42 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_DESCRIPTION,
+				PodcastProvider.COLUMN_DURATION,
+				PodcastProvider.COLUMN_LAST_POSITION,
+				PodcastProvider.COLUMN_QUEUE_POSITION,
+				PodcastProvider.COLUMN_MEDIA_URL,
+		};
+
 		if (id == CURSOR_PODCAST) {
 			if (_podcastId != 0) {
+				Log.d("Podax", "podcast id " + _podcastId);
 				Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
-				String[] _projection = new String[] {
-						PodcastProvider.COLUMN_ID,
-						PodcastProvider.COLUMN_TITLE,
-						PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-						PodcastProvider.COLUMN_DESCRIPTION,
-						PodcastProvider.COLUMN_DURATION,
-						PodcastProvider.COLUMN_LAST_POSITION,
-						PodcastProvider.COLUMN_QUEUE_POSITION,
-						PodcastProvider.COLUMN_MEDIA_URL,
-				};
-				return new CursorLoader(getActivity(), uri, _projection, null, null, null);
+				return new CursorLoader(getActivity(), uri, projection, null, null, null);
 			}
 		} else if (id == CURSOR_ACTIVE) {
-			String[] _projection = new String[] {
-					PodcastProvider.COLUMN_ID,
-					PodcastProvider.COLUMN_TITLE,
-					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-					PodcastProvider.COLUMN_DESCRIPTION,
-					PodcastProvider.COLUMN_DURATION,
-					PodcastProvider.COLUMN_LAST_POSITION,
-					PodcastProvider.COLUMN_QUEUE_POSITION,
-					PodcastProvider.COLUMN_MEDIA_URL,
-			};
-			return new CursorLoader(getActivity(), PodcastProvider.ACTIVE_PODCAST_URI, _projection, null, null, null);
+			return new CursorLoader(getActivity(), PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 		}
 		return null;
 	}
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		if (loader.getId() == CURSOR_PODCAST) {
-			PodcastCursor podcast = new PodcastCursor(cursor);
-			if (_initializedPodcastId == null || !_initializedPodcastId.equals(_podcastId)) {
-				initializeUI(podcast);
-				_initializedPodcastId = _podcastId;
-			}
-			updateQueueViews(podcast);
-			updatePlayerControls(podcast);
-		} else if (loader.getId() == CURSOR_ACTIVE) {
-			if (!cursor.moveToNext()) {
-				_activePodcastId = null;
-				return;
-			}
-
-			PodcastCursor podcast = new PodcastCursor(cursor);
-			if (_initializedPodcastId == null || !_initializedPodcastId.equals(_podcastId)) {
-				initializeUI(podcast);
-				_initializedPodcastId = _podcastId;
-			}
-			updateQueueViews(podcast);
-			updatePlayerControls(podcast);
+		if (!cursor.moveToNext()) {
+			getActivity().finish();
 		}
+
+		PodcastCursor podcast = new PodcastCursor(cursor);
+		if (_initializedPodcastId == null || !_initializedPodcastId.equals(_podcastId)) {
+			initializeUI(podcast);
+			_initializedPodcastId = _podcastId;
+		}
+		updateQueueViews(podcast);
+		updatePlayerControls(podcast);
 	}
 
 	@Override

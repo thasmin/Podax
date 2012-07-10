@@ -12,7 +12,7 @@ public class QueueManager {
 		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 	}
 
-	public static void changeActivePodcast(Context context, Long activePodcastId) {
+	public static void changeActivePodcast(Context context, long activePodcastId) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_ID, activePodcastId);
 		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);

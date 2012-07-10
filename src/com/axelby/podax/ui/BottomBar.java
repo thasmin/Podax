@@ -85,7 +85,6 @@ public class BottomBar extends LinearLayout {
 		});
 	}
 
-	private Long _lastPodcastId = null;
 	public void updateUI() {
 		boolean isPlaying = PlayerStatus.isPlaying();
 		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
@@ -98,24 +97,16 @@ public class BottomBar extends LinearLayout {
 		};
 		Cursor c = getContext().getContentResolver().query(_activeUri, projection, null, null, null);
 		try {
-			if (c.isAfterLast())
-				return;
-	
-			PodcastCursor podcast = new PodcastCursor(c);
-			if (!podcast.isNull()) {
-				if (isPlaying || _podcastProgress.isEmpty())
-					_podcastProgress.set(podcast);
-				if (_lastPodcastId != podcast.getId()) {
-					_podcastTitle.setText(podcast.getTitle());
-					_showplayerbtn.setEnabled(true);
-				}
-			} else if (_lastPodcastId != null) {
+			if (!c.moveToNext()) {
 				_podcastTitle.setText("");
 				_podcastProgress.clear();
 				_showplayerbtn.setEnabled(false);
+			} else {
+				PodcastCursor podcast = new PodcastCursor(c);
+				_podcastProgress.set(podcast);
+				_podcastTitle.setText(podcast.getTitle());
+				_showplayerbtn.setEnabled(true);
 			}
-	
-			_lastPodcastId = podcast.isNull() ? null : podcast.getId();
 		} finally {
 			c.close();
 		}

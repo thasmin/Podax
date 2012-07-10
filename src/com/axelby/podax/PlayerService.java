@@ -214,8 +214,8 @@ public class PlayerService extends Service {
 			break;
 		case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
 			Log.d("Podax", "PlayerService got a command: play specific podcast");
-			int podcastId = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
-			play((long) podcastId);
+			long podcastId = intent.getLongExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
+			play(podcastId);
 			break;
 		}
 	}
@@ -495,14 +495,14 @@ public class PlayerService extends Service {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_SKIPTO, secs);
 	}
 
-	public static void play(Context context, int podcastId) {
+	public static void play(Context context, long podcastId) {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcastId);
 	}
 
 	public static void play(Context context, PodcastCursor podcast) {
 		if (podcast == null)
 			return;
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, (int)(long)podcast.getId());
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcast.getId());
 	}
 
 	private static void sendCommand(Context context, int command) {
@@ -512,6 +512,13 @@ public class PlayerService extends Service {
 	}
 
 	private static void sendCommand(Context context, int command, int arg) {
+		Intent intent = new Intent(context, PlayerService.class);
+		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
+		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, arg);
+		context.startService(intent);
+	}
+
+	private static void sendCommand(Context context, int command, long arg) {
 		Intent intent = new Intent(context, PlayerService.class);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, arg);

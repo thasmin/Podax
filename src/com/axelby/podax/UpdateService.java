@@ -97,10 +97,10 @@ public class UpdateService extends IntentService {
 			String[] projection = { PodcastProvider.COLUMN_ID };
 			Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
 			while (c.moveToNext())
-				startService(createDownloadPodcastIntent(this, c.getInt(0)));
+				startService(createDownloadPodcastIntent(this, c.getLong(0)));
 			c.close();
 		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCAST)) {
-			int podcastId = intent.getIntExtra(Constants.EXTRA_PODCAST_ID, -1);
+			long podcastId = intent.getLongExtra(Constants.EXTRA_PODCAST_ID, -1L);
 			if (podcastId == -1)
 				return;
 			new PodcastDownloader(this).download(podcastId);
@@ -114,7 +114,7 @@ public class UpdateService extends IntentService {
 		return intent;
 	}
 
-	private static Intent createDownloadPodcastIntent(Context context, int subscriptionId) {
+	private static Intent createDownloadPodcastIntent(Context context, long subscriptionId) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_DOWNLOAD_PODCAST);
 		intent.putExtra(Constants.EXTRA_PODCAST_ID, subscriptionId);

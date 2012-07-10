@@ -27,7 +27,7 @@ class PodcastDownloader {
 		_context = context;
 	}
 	
-	public void download(int podcastId) {
+	public void download(long podcastId) {
 		if (!Helper.ensureWifi(_context))
 			return;
 

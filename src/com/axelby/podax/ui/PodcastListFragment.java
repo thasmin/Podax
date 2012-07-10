@@ -158,7 +158,7 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 		Intent intent = new Intent(getActivity(), PodcastDetailActivity.class);
 		Cursor cursor = (Cursor) list.getItemAtPosition(position);
 		PodcastCursor podcast = new PodcastCursor(cursor);
-		intent.putExtra(Constants.EXTRA_PODCAST_ID, (int)(long)podcast.getId());
+		intent.putExtra(Constants.EXTRA_PODCAST_ID, podcast.getId());
 		startActivity(intent);
 	}
 

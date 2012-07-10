@@ -47,16 +47,12 @@ public class PodcastCursor {
 	}
 
 	public Uri getContentUri() {
-		if (getId() == null)
-			return null;
 		return ContentUris.withAppendedId(PodcastProvider.URI, getId());
 	}
 
-	public Long getId() {
+	public long getId() {
 		if (_idColumn == null)
 			_idColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_ID);
-		if (_cursor.isNull(_idColumn))
-			return null;
 		return _cursor.getLong(_idColumn);
 	}
 

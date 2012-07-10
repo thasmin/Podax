@@ -42,7 +42,8 @@ public class PlayerStatus {
 		postWithHandler();
 	}
 
-	public static void updatePodcast(String podcast, String subscription, int position, int duration) {
+	public static void updatePodcast(long id, String podcast, String subscription, int position, int duration) {
+		_current._id = id;
 		_current._title = podcast;
 		_current._subscriptionTitle = subscription;
 		_current._position = position;
@@ -74,6 +75,7 @@ public class PlayerStatus {
 			return;
 
 		String[] projection = {
+				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 				PodcastProvider.COLUMN_LAST_POSITION,
@@ -84,10 +86,11 @@ public class PlayerStatus {
 		_current = new PlayerStatus();
 		if (cursor.moveToNext()) {
 			_current._state = PlayerStates.STOPPED;
-			_current._title = cursor.getString(0);
-			_current._subscriptionTitle = cursor.getString(1);
-			_current._position = cursor.getInt(2);
-			_current._duration = cursor.getInt(3);
+			_current._id = cursor.getLong(0);
+			_current._title = cursor.getString(1);
+			_current._subscriptionTitle = cursor.getString(2);
+			_current._position = cursor.getInt(3);
+			_current._duration = cursor.getInt(4);
 		}
 		cursor.close();
 	}
@@ -98,6 +101,7 @@ public class PlayerStatus {
 	}
 
 	private PlayerStates _state;
+	private long _id;
 	private int _position;
 	private int _duration;
 	private String _title;
@@ -109,6 +113,10 @@ public class PlayerStatus {
 
 	public PlayerStates getState() {
 		return _state;
+	}
+
+	public long getId() {
+		return _id;
 	}
 
 	public int getPosition() {

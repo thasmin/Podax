@@ -53,6 +53,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			if (getActivity() == null)
 				return;
 			getLoaderManager().restartLoader(0, null, QueueFragment.this);
+			_handler.postDelayed(_refresher, 1000);
 		}
 	};
 	Handler _handler = new Handler();
@@ -82,7 +83,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			public void onItemClick(AdapterView<?> parent, View view, int position,
 					long id) {
 				Intent intent = new Intent(getActivity(), PodcastDetailActivity.class);
-				intent.putExtra(Constants.EXTRA_PODCAST_ID, (int)id);
+				intent.putExtra(Constants.EXTRA_PODCAST_ID, id);
 				startActivity(intent);
 			}
 		});
@@ -109,14 +110,14 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 
 	@Override
 	public void onPause() {
-		_refresher.run();
 		super.onPause();
+		_handler.removeCallbacks(_refresher);
 	}
 
 	@Override
 	public void onResume() {
-		_handler.removeCallbacks(_refresher);
 		super.onResume();
+		_refresher.run();
 	}
 
 	@Override
@@ -269,10 +270,10 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			ViewSwitcher switcher = (ViewSwitcher)view;
 			switcher.setMeasureAllChildren(false);
 			if (_heldPodcastId != null &&
-					(long)podcast.getId() == (long)_heldPodcastId &&
+					podcast.getId() == (long)_heldPodcastId &&
 					switcher.getDisplayedChild() == 0)
 				switcher.showNext();
-			if ((_heldPodcastId == null || (long)podcast.getId() != (long)_heldPodcastId) &&
+			if ((_heldPodcastId == null || podcast.getId() != (long)_heldPodcastId) &&
 					switcher.getDisplayedChild() == 1)
 				switcher.showPrevious();
 
