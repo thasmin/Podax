@@ -1,35 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-	<PreferenceCategory android:title="Preferences">
-		<CheckBoxPreference
-			android:title="Wi-Fi Only"
-			android:defaultValue="true"
-			android:summary="Only update subscriptions or download podcasts while connected to a Wi-Fi network"
-			android:key="wifiPref" />
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-		<CheckBoxPreference
-			android:title="Stop When Wired Headphones Are Unplugged"
-			android:defaultValue="true"
-			android:summary="When checked, playback will stop when headphones are disconnected."
-			android:key="stopOnHeadphonePref" />
+    <PreferenceCategory android:title="Preferences" >
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="wifiPref"
+            android:summary="Only update subscriptions or download podcasts while connected to a Wi-Fi network."
+            android:title="Wi-Fi Only" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="stopOnHeadphonePref"
+            android:summary="When checked, playback will stop when headphones are disconnected."
+            android:title="Stop When Wired Headphones Are Unplugged" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="stopOnBluetoothPref"
+            android:summary="When checked, playback will stop when bluetooth headphones are disconnected."
+            android:title="Stop When Bluetooth Headphones Are Unplugged" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="resumeOnBluetoothPref"
+            android:summary="When checked, Podax will resume playing when a bluetooth device connects."
+            android:title="Resume Playing When Bluetooth Connects" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="usageDataPref"
+            android:summary="Send anonymous usage data to improve Podax."
+            android:title="Send Usage Data" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="acra.enable"
+            android:summary="Send error reports to the developers if Podax crashes."
+            android:title="Send Crash Reports" />
+    </PreferenceCategory>
 
-		<CheckBoxPreference
-			android:title="Stop When Bluetooth Headphones Are Unplugged"
-			android:defaultValue="true"
-			android:summary="When checked, playback will stop when bluetooth headphones are disconnected."
-			android:key="stopOnBluetoothPref" />
-
-		<CheckBoxPreference
-			android:title="Resume Playing When Bluetooth Connects"
-			android:defaultValue="true"
-			android:summary="When checked, Podax will resume playing when a bluetooth device connects."
-			android:key="resumeOnBluetoothPref" />
-
-		<CheckBoxPreference
-			android:title="Send Usage Data to Podax Server"
-			android:defaultValue="true"
-			android:summary="Send anonymous usage data to improve Podax"
-			android:key="usageDataPref" />
-
-	</PreferenceCategory>
 </PreferenceScreen>
