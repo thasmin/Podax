@@ -52,7 +52,6 @@ class PodcastDownloader {
 			File mediaFile = new File(podcast.getFilename());
 
 			Log.d("Podax", "Downloading " + podcast.getTitle());
-			updateDownloadNotification(podcast, 0);
 
 			HttpURLConnection c = openConnection(podcast, mediaFile);
 			if (c == null)
@@ -64,7 +63,6 @@ class PodcastDownloader {
 			if (mediaFile.length() == c.getContentLength())
 				podcast.determineDuration(_context);
 
-			removeDownloadNotification();
 			Log.d("Podax", "Done downloading " + podcast.getTitle());
 		} finally {
 			if (cursor != null)
@@ -138,30 +136,5 @@ class PodcastDownloader {
 			c.close();
 		} catch (IOException e) {
 		}
-	}
-
-	void updateDownloadNotification(PodcastCursor podcast, long downloaded) {
-		Intent notificationIntent = MainActivity.getSubscriptionIntent(_context);
-		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
-
-		Notification notification = new NotificationCompat.Builder(_context)
-				.setSmallIcon(drawable.icon)
-				.setTicker("Downloading podcast: " + podcast.getTitle())
-				.setWhen(System.currentTimeMillis())
-				.setContentTitle("Downloading Podcast")
-				.setContentText(podcast.getTitle())
-				.setContentIntent(contentIntent)
-				.setOngoing(true)
-				.getNotification();
-		
-		NotificationManager notificationManager = (NotificationManager) _context
-				.getSystemService(Context.NOTIFICATION_SERVICE);
-		notificationManager.notify(Constants.PODCAST_DOWNLOAD_ONGOING, notification);
-	}
-
-	void removeDownloadNotification() {
-		String ns = Context.NOTIFICATION_SERVICE;
-		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
-		notificationManager.cancel(Constants.PODCAST_DOWNLOAD_ONGOING);
 	}
 }
