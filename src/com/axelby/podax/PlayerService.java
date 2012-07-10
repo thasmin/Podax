@@ -338,12 +338,8 @@ public class PlayerService extends Service {
 		_player.seekTo(p.getLastPosition());
 	}
 
-	public void play(Long podcastId) {
+	public void play(long podcastId) {
 		QueueManager.changeActivePodcast(this, podcastId);
-		if (podcastId == null) {
-			stop();
-			return;
-		}
 		grabAudioFocusAndResume();
 	}
 
