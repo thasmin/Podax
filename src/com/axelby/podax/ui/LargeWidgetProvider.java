@@ -29,7 +29,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 			// set up pending intents
 			setClickIntent(context, views, R.id.restart_btn, Constants.PLAYER_COMMAND_RESTART);
 			setClickIntent(context, views, R.id.rewind_btn, Constants.PLAYER_COMMAND_SKIPBACK);
-			setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYPAUSE);
+			setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYSTOP);
 			setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
 			setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
 
