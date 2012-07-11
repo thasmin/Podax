@@ -56,7 +56,7 @@ public class PlayerService extends Service {
 			if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
 				resume();
 			} else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-				pause();
+				pauseAndKeepAudioFocus();
 			}
 		}
 	};
@@ -292,7 +292,7 @@ public class PlayerService extends Service {
 		updateWidgets();
 	}
 
-	public void pause() {
+	public void pauseAndKeepAudioFocus() {
 		Log.d("Podax", "PlayerService pausing");
 		_player.pause();
 		updateActivePodcastPosition(_player.getCurrentPosition());
@@ -301,6 +301,13 @@ public class PlayerService extends Service {
 
 		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
+	}
+
+	public void pause() {
+		pauseAndKeepAudioFocus();
+
+		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		am.abandonAudioFocus(_afChangeListener);
 	}
 
 	public void stop() {
