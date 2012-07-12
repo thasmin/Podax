@@ -171,7 +171,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				"a { color: #E59F39 }" +
 				"</style></head>" +
 				"<body style=\"background:black;color:white\">" + podcast.getDescription() + "</body></html>"; 
-		_descriptionView.loadData(html, "text/html", "utf-8");
+		_descriptionView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
 		_descriptionView.setBackgroundColor(Color.BLACK);
 
 		_seekbar.setMax(podcast.getDuration());
