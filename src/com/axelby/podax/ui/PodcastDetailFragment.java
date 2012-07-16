@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -133,14 +134,16 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 					@Override
 					protected Void doInBackground(Long... params) {
 						Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
-						String[] projection = new String[] { PodcastProvider.COLUMN_QUEUE_POSITION };
+						String[] projection = new String[] { PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_QUEUE_POSITION };
 						Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
+						
 						if (c.moveToNext()) {
 							PodcastCursor podcast = new PodcastCursor(c);
 							if (podcast.getQueuePosition() == null)
 								podcast.addToQueue(getActivity());
 							else
 								podcast.removeFromQueue(getActivity());
+							podcast.closeCursor();
 						}
 						c.close();
 
