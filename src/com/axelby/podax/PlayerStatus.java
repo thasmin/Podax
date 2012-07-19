@@ -32,6 +32,10 @@ public class PlayerStatus {
 		return _current.getState() == PlayerStates.PAUSED;
 	}
 
+	public static boolean isStopped() {
+		return _current.getState() == PlayerStates.STOPPED;
+	}
+
 	private static void postWithHandler() {
 		_handler.post(_runnable);
 	}
