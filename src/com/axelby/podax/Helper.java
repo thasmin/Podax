@@ -2,6 +2,11 @@ package com.axelby.podax;
 
 import java.util.List;
 
+import com.axelby.podax.ui.LargeWidgetProvider;
+import com.axelby.podax.ui.SmallWidgetProvider;
+
+import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ProviderInfo;
@@ -76,5 +81,23 @@ public class Helper {
 	public static void unregisterMediaButtons(Context context) {
 		AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
 		audioManager.unregisterMediaButtonEventReceiver(new ComponentName(context, MediaButtonIntentReceiver.class));
+	}
+
+	public static void updateWidgets(Context context) {
+		AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
+
+		int[] widgetIds;
+
+		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(context, LargeWidgetProvider.class));
+		if (widgetIds.length > 0) {
+			AppWidgetProvider provider = (AppWidgetProvider) new LargeWidgetProvider();
+			provider.onUpdate(context, widgetManager, widgetIds);
+		}
+
+		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(context, SmallWidgetProvider.class));
+		if (widgetIds.length > 0) {
+			AppWidgetProvider provider = (AppWidgetProvider) new SmallWidgetProvider();
+			provider.onUpdate(context, widgetManager, widgetIds);
+		}
 	}
 }

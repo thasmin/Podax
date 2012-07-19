@@ -76,6 +76,7 @@ public class PlayerStatus {
 		_current = null;
 		initialize(context);
 		postWithHandler();
+		Helper.updateWidgets(context);
 	}
 
 	public static void initialize(Context context) {

@@ -7,8 +7,6 @@ import java.util.TimerTask;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.appwidget.AppWidgetManager;
-import android.appwidget.AppWidgetProvider;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -30,9 +28,7 @@ import android.widget.Toast;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.R.drawable;
-import com.axelby.podax.ui.LargeWidgetProvider;
 import com.axelby.podax.ui.PodcastDetailActivity;
-import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class PlayerService extends Service {
 
@@ -287,7 +283,7 @@ public class PlayerService extends Service {
 		setupTelephony();
 		showNotification();
 		createUpdateTimer();
-		updateWidgets();
+		Helper.updateWidgets(this);
 	}
 
 	public void pause() {
@@ -329,7 +325,7 @@ public class PlayerService extends Service {
 		ContentValues values = new ContentValues();
 		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
-		updateWidgets();
+		Helper.updateWidgets(this);
 	}
 
 	public boolean grabAudioFocus() {
@@ -455,32 +451,13 @@ public class PlayerService extends Service {
 		stopForeground(true);
 	}
 
-	private void updateWidgets() {
-		AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
-
-		int[] widgetIds;
-
-		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(this, LargeWidgetProvider.class));
-		if (widgetIds.length > 0) {
-			AppWidgetProvider provider = (AppWidgetProvider) new LargeWidgetProvider();
-			provider.onUpdate(this, widgetManager, widgetIds);
-		}
-
-		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(this, SmallWidgetProvider.class));
-		if (widgetIds.length > 0) {
-			AppWidgetProvider provider = (AppWidgetProvider) new SmallWidgetProvider();
-			provider.onUpdate(this, widgetManager, widgetIds);
-		}
-	}
-
 	public void updateActivePodcastPosition(int position) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		PlayerService.this.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
 		PlayerStatus.updatePosition(position);
-		// update widgets
-		updateWidgets();
+		Helper.updateWidgets(this);
 	}
 
 	// static functions for easier controls
