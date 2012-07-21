@@ -187,7 +187,7 @@ public class UpdateService extends IntentService {
 		for (File f : files) {
 			// make sure the file is a media file
 			String extension = PodcastCursor.getExtension(f.getName());
-			String[] mediaExtensions = new String[] { "mp3", "ogg", "wma", };
+			String[] mediaExtensions = new String[] { "mp3", "ogg", "wma", "m4a", };
 			if (Arrays.binarySearch(mediaExtensions, extension) < 0)
 				continue;
 			if (!validMediaFilenames.contains(f.getAbsolutePath())) {

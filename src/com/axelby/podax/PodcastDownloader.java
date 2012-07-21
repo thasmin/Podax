@@ -97,7 +97,7 @@ class PodcastDownloader {
 			}
 			return c;
 		} catch (IOException ex) {
-			Log.e("Podax", "Unable to open connection to " + podcast.getMediaUrl() + ": " + ex.getMessage());
+			Log.e("Podax", "Unable to open connection to " + podcast.getMediaUrl(), ex);
 			return null;
 		}
 	}
@@ -115,7 +115,7 @@ class PodcastDownloader {
 					(read = instream.read(b)) != -1)
 				outstream.write(b, 0, read);
 		} catch (Exception e) {
-			Log.e("Podax", "Interrupted while downloading " + conn.getURL().toExternalForm());
+			Log.e("Podax", "Interrupted while downloading " + conn.getURL().toExternalForm(), e);
 			return false;
 		} finally {
 			close(outstream);
