@@ -25,7 +25,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		case KeyEvent.KEYCODE_HEADSETHOOK:
 		case KeyEvent.KEYCODE_MEDIA_PLAY:
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-			PodaxLog.log(context, "media button from {0}: MEDIA_PLAY_PAUSE", event.getDevice().getName());
+
 			// use the pref before we start playing
 			if (PlayerStatus.isStopped() && !canResume)
 				break;
@@ -38,21 +38,17 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 			}
 			break;
 		case KeyEvent.KEYCODE_MEDIA_PAUSE:
-			PodaxLog.log(context, "media button from {0}: MEDIA_PAUSE", event.getDevice().getName());
 			PlayerService.pause(context);
 			break;
 		case KeyEvent.KEYCODE_MEDIA_STOP:
-			PodaxLog.log(context, "media button from {0}: MEDIA_STOP", event.getDevice().getName());
 			PlayerService.stop(context);
 			break;
 		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
 		case KeyEvent.KEYCODE_MEDIA_NEXT:
-			PodaxLog.log(context, "media button from {0}: MEDIA_NEXT", event.getDevice().getName());
 			PlayerService.skipForward(context);
 			break;
 		case KeyEvent.KEYCODE_MEDIA_REWIND:
 		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-			PodaxLog.log(context, "media button from {0}: MEDIA_PREVIOUS", event.getDevice().getName());
 			PlayerService.skipBack(context);
 			break;
 		default:
