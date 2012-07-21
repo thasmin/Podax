@@ -88,4 +88,18 @@
 	<string name="subscription_thumbnail">subscription thumbnail</string>
 	<string name="download">Download</string>
 	<string name="crash_toast_text">Oops, Podax has crashed. A bug report has been sent to the developers.</string>
+	<string name="pref_update_wifi">Only update subscriptions or download podcasts while connected to a Wi-Fi network.</string>
+	<string name="pref_update_wifi_title">Wi-Fi Only</string>
+	<string name="pref_auto_delete">Delete podcasts automatically when playback finishes or you skip to the next podcast. If disabled, the podcast will be added to the bottom of the queue.</string>
+	<string name="pref_auto_delete_title">Delete Podcasts Automatically</string>
+	<string name="pref_headset_disconnect">When checked, playback will stop when headphones are disconnected.</string>
+	<string name="pref_headset_disconnect_title">Stop When Wired Headphones Are Unplugged</string>
+	<string name="pref_bluetooth_disconnect">When checked, playback will stop when bluetooth headphones are disconnected.</string>
+	<string name="pref_bluetooth_disconnect_title">Stop When Bluetooth Headphones Are Unplugged</string>
+	<string name="pref_bluetooth_connect">When checked, Podax will resume playing when a bluetooth device connects.</string>
+	<string name="pref_bluetooth_connect_title">Resume Playing When Bluetooth Connects</string>
+	<string name="pref_anon_usage">Send anonymous usage data to improve Podax.</string>
+	<string name="pref_anon_usage_title">Send Usage Data</string>
+	<string name="pref_crash_reports">Send error reports to the developers if Podax crashes.</string>
+	<string name="pref_crash_reports_title">Send Crash Reports</string>
 </resources>
