@@ -41,11 +41,6 @@ public class PodcastCursor {
 		return _cursor.isAfterLast();
 	}
 
-	public void closeCursor() {
-		if (!_cursor.isClosed())
-			_cursor.close();
-	}
-
 	public Uri getContentUri() {
 		return ContentUris.withAppendedId(PodcastProvider.URI, getId());
 	}

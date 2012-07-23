@@ -1,9 +1,13 @@
 package com.axelby.podax.ui;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,13 +17,14 @@ import android.widget.TextView;
 
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
-import com.squareup.otto.Subscribe;
 
 public class BottomBar extends LinearLayout {
+
+	private Timer _timer;
+	private Handler _handler = new Handler();
 
 	private TextView _podcastTitle;
 	private PodcastProgress _podcastProgress;
@@ -50,14 +55,27 @@ public class BottomBar extends LinearLayout {
 
 		loadViews(getContext());
 		updateUI();
-		PlayerStatus.register(this);
+
+		_timer = new Timer();
+		_timer.schedule(new TimerTask() {
+			public void run() {
+				_handler.post(new Runnable() {
+					public void run() {
+						_pausebtn.setImageResource(PlayerStatus.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
+						PlayerStatus status = PlayerStatus.getCurrentState();
+						_podcastProgress.set(status.getPosition(), status.getDuration());
+						_podcastTitle.setText(status.getTitle());
+					}
+				});
+			}
+		}, 500, 500);
 	}
 
 	@Override
 	protected void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
 
-		PlayerStatus.unregister(this);
+		_timer.cancel();
 	}
 
 	Uri _activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
@@ -110,12 +128,5 @@ public class BottomBar extends LinearLayout {
 		} finally {
 			c.close();
 		}
-	}
-
-	@Subscribe public void playerStateChange(PlayerStatus e) {
-		boolean isPlaying = e.getState() == PlayerStates.PLAYING;
-		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
-		_podcastProgress.set(e.getPosition(), e.getDuration());
-		_podcastTitle.setText(e.getTitle());
 	}
 }

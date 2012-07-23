@@ -3,79 +3,63 @@ package com.axelby.podax;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Handler;
-
-import com.squareup.otto.Bus;
 
 public class PlayerStatus {
 
 	// internal event bus and state
-	private static final Bus _bus = new Bus("PlayerStatus");
 	private static PlayerStatus _current;
-	private static final Handler _handler = new Handler();
-	private static final Runnable _runnable = new Runnable() {
-		@Override
-		public void run() {
-			_bus.post(_current);
-		}
-	};
 
 	public static PlayerStatus getCurrentState() {
 		return _current;
 	}
 
 	public static boolean isPlaying() {
+		if (_current == null)
+			return false;
 		return _current.getState() == PlayerStates.PLAYING;
 	}
 
 	public static boolean isPaused() {
+		if (_current == null)
+			return false;
 		return _current.getState() == PlayerStates.PAUSED;
 	}
 
 	public static boolean isStopped() {
+		if (_current == null)
+			return false;
 		return _current.getState() == PlayerStates.STOPPED;
 	}
 
-	private static void postWithHandler() {
-		_handler.post(_runnable);
-	}
-
 	public static void updateState(PlayerStates state) {
+		if (_current == null)
+			return;
 		_current._state = state;
-		postWithHandler();
 	}
 
 	public static void updatePosition(int position) {
+		if (_current == null)
+			return;
 		_current._position = position;
-		postWithHandler();
 	}
 
 	public static void updatePodcast(long id, String podcast, String subscription, int position, int duration) {
+		if (_current == null)
+			return;
 		_current._id = id;
 		_current._title = podcast;
 		_current._subscriptionTitle = subscription;
 		_current._position = position;
 		_current._duration = duration;
-		postWithHandler();
 	}
 
 	public static void updateQueueEmpty() {
 		_current = new PlayerStatus();
-		postWithHandler();
-	}
-
-	public static void register(Object obj) {
-		_bus.register(obj);
-	}
-
-	public static void unregister(Object obj) {
-		_bus.unregister(obj);
 	}
 
 	public static void refresh(Context context) {
 		_current = null;
 		initialize(context);
-		postWithHandler();
 		Helper.updateWidgets(context);
 	}
 

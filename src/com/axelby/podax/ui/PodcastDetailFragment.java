@@ -142,7 +142,6 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 								podcast.addToQueue(getActivity());
 							else
 								podcast.removeFromQueue(getActivity());
-							podcast.closeCursor();
 						}
 						c.close();
 
@@ -260,9 +259,11 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		if (!cursor.moveToNext()) {
 			getActivity().finish();
+			return;
 		}
 
 		PodcastCursor podcast = new PodcastCursor(cursor);
+		_podcastId = podcast.getId();
 		if (_initializedPodcastId == null || !_initializedPodcastId.equals(_podcastId)) {
 			initializeUI(podcast);
 			_initializedPodcastId = _podcastId;
