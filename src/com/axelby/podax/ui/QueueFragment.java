@@ -301,8 +301,12 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 				thumbnail.setImageDrawable(null);
 			else
 			{
-				thumbnail.setImageBitmap(BitmapFactory.decodeFile(podcast.getThumbnailFilename()));
-				thumbnail.setVisibility(1);
+				try {
+					thumbnail.setImageBitmap(BitmapFactory.decodeFile(podcast.getThumbnailFilename()));
+					thumbnail.setVisibility(View.VISIBLE);
+				} catch (OutOfMemoryError e) {
+					thumbnail.setVisibility(View.INVISIBLE);
+				}
 			}
 
 			// if the podcast is not downloaded, add the download indicator
