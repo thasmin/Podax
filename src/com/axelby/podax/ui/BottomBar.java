@@ -63,8 +63,13 @@ public class BottomBar extends LinearLayout {
 					public void run() {
 						_pausebtn.setImageResource(PlayerStatus.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
 						PlayerStatus status = PlayerStatus.getCurrentState();
-						_podcastProgress.set(status.getPosition(), status.getDuration());
-						_podcastTitle.setText(status.getTitle());
+						if (status != null) {
+							_podcastProgress.set(status.getPosition(), status.getDuration());
+							_podcastTitle.setText(status.getTitle());
+						} else {
+							_podcastProgress.clear();
+							_podcastTitle.setText("");
+						}
 					}
 				});
 			}
