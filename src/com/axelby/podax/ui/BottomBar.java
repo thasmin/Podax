@@ -80,7 +80,8 @@ public class BottomBar extends LinearLayout {
 	protected void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
 
-		_timer.cancel();
+		if (_timer != null)
+			_timer.cancel();
 	}
 
 	Uri _activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
