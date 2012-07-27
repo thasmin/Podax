@@ -184,6 +184,9 @@ public class UpdateService extends IntentService {
 
 		File dir = new File(PodcastCursor.getStoragePath());
 		File[] files = dir.listFiles();
+		// this is possible if the directory does not exist
+		if (files == null)
+			return;
 		for (File f : files) {
 			// make sure the file is a media file
 			String extension = PodcastCursor.getExtension(f.getName());
