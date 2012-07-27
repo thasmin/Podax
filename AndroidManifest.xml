@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.axelby.podax"
     android:versionCode="25"
-    android:versionName="4.3dev" >
+    android:versionName="4.3" >
 
     <uses-sdk
         android:minSdkVersion="8"
