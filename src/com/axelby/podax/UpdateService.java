@@ -81,6 +81,8 @@ public class UpdateService extends IntentService {
 			// when updating all subscriptions, send the list to the podax server
 			sendSubscriptionsToPodaxServer();
 
+			GPodderReceiver.syncWithProvider(this);
+
 			String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
 			while (c.moveToNext())

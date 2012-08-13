@@ -22,30 +22,35 @@ public class GPodderReceiver extends BroadcastReceiver {
 				contentResolver.insert(Constants.GPODDER_URI, makeUrlValues(url));
 		} else if (intent.getAction().equals(
 				"com.axelby.gpodder.SUBSCRIPTION_UPDATE")) {
-			Vector<String> at_gpodder = getGPodderUrls(contentResolver);
-			Vector<String> in_podax = getPodaxUrls(contentResolver);
-
-			for (String url : at_gpodder)
-				if (!in_podax.contains(url))
-					contentResolver.insert(SubscriptionProvider.URI, makeUrlValues(url));
-
-			for (String url : in_podax)
-				if (!at_gpodder.contains(url))
-					contentResolver.delete(SubscriptionProvider.URI,
-							SubscriptionProvider.COLUMN_URL + "=?",
-							new String[] { url });
+			syncWithProvider(context);
 		}
 	}
 
-	private Vector<String> getPodaxUrls(ContentResolver contentResolver) {
+	public static void syncWithProvider(Context context) {
+		ContentResolver contentResolver = context.getContentResolver();
+		Vector<String> at_gpodder = getGPodderUrls(contentResolver);
+		Vector<String> in_podax = getPodaxUrls(contentResolver);
+
+		for (String url : at_gpodder)
+			if (!in_podax.contains(url))
+				contentResolver.insert(SubscriptionProvider.URI, makeUrlValues(url));
+
+		for (String url : in_podax)
+			if (!at_gpodder.contains(url))
+				contentResolver.delete(SubscriptionProvider.URI,
+						SubscriptionProvider.COLUMN_URL + "=?",
+						new String[] { url });
+	}
+
+	private static Vector<String> getPodaxUrls(ContentResolver contentResolver) {
 		return retrieveUrls(contentResolver, SubscriptionProvider.URI);
 	}
 
-	private Vector<String> getGPodderUrls(ContentResolver contentResolver) {
+	private static Vector<String> getGPodderUrls(ContentResolver contentResolver) {
 		return retrieveUrls(contentResolver, Constants.GPODDER_URI);
 	}
 
-	private Vector<String> retrieveUrls(ContentResolver contentResolver, Uri uri) {
+	private static Vector<String> retrieveUrls(ContentResolver contentResolver, Uri uri) {
 		Vector<String> in_podax = new Vector<String>();
 		Cursor c = contentResolver.query(uri, new String[] { "url" }, null, null, null);
 		while (c.moveToNext())
@@ -54,7 +59,7 @@ public class GPodderReceiver extends BroadcastReceiver {
 		return in_podax;
 	}
 
-	private ContentValues makeUrlValues(String url) {
+	private static ContentValues makeUrlValues(String url) {
 		ContentValues values = new ContentValues();
 		values.put(SubscriptionProvider.COLUMN_URL, url);
 		return values;
