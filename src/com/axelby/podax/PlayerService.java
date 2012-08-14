@@ -59,6 +59,9 @@ public class PlayerService extends Service {
 	private final PhoneStateListener _phoneStateListener = new PhoneStateListener() {
 		@Override
 		public void onCallStateChanged(int state, String incomingNumber) {
+			if (_player == null)
+				return;
+
 			_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
 			if (_onPhone) {
 				_player.pause();
@@ -163,6 +166,8 @@ public class PlayerService extends Service {
 
 		if (!intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND)) 
 			return;
+
+		setupMediaPlayer();
 
 		switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
 		case -1:
@@ -270,6 +275,8 @@ public class PlayerService extends Service {
 			c.close();
 		}
 
+		setupMediaPlayer();
+
 		// the user will probably try this if the podcast is over and the next one didn't start
 		if (_player.getCurrentPosition() >= _player.getDuration() - 1000) {
 			playNextPodcast();
@@ -288,6 +295,10 @@ public class PlayerService extends Service {
 
 	public void pause() {
 		Log.d("Podax", "PlayerService pausing");
+
+		if (_player == null)
+			return;
+
 		_player.pause();
 		updateActivePodcastPosition(_player.getCurrentPosition());
 		PlayerStatus.updateState(PlayerStates.PAUSED);
@@ -299,6 +310,9 @@ public class PlayerService extends Service {
 
 	public void stop() {
 		Log.d("Podax", "PlayerService stopping");
+		
+		if (_player == null)
+			return;
 
 		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		am.abandonAudioFocus(_afChangeListener);
@@ -365,6 +379,9 @@ public class PlayerService extends Service {
 	}
 
 	public void skip(int secs) {
+		if (_player == null)
+			return;
+
 		if (_player.isPlaying()) {
 			_player.seekTo(_player.getCurrentPosition() + secs * 1000);
 			updateActivePodcastPosition(_player.getCurrentPosition());
@@ -382,6 +399,9 @@ public class PlayerService extends Service {
 	}
 
 	public void skipTo(int secs) {
+		if (_player == null)
+			return;
+
 		if (_player.isPlaying()) {
 			_player.seekTo(secs * 1000);
 			updateActivePodcastPosition(_player.getCurrentPosition());
@@ -391,6 +411,9 @@ public class PlayerService extends Service {
 	}
 
 	public void restart() {
+		if (_player == null)
+			return;
+
 		if (_player.isPlaying()) {
 			_player.seekTo(0);
 			updateActivePodcastPosition(_player.getCurrentPosition());
@@ -400,6 +423,8 @@ public class PlayerService extends Service {
 	}
 
 	public String getPositionString() {
+		if (_player == null)
+			return "";
 		if (_player.getDuration() == 0)
 			return "";
 		return Helper.getTimeString(_player.getCurrentPosition())
@@ -409,10 +434,12 @@ public class PlayerService extends Service {
 	private void playNextPodcast() {
 		Log.d("Podax", "moving to next podcast");
 
-		// stop the player and the updating while we do some administrative stuff
-		_player.pause();
-		stopUpdateTimer();
-		updateActivePodcastPosition(_player.getCurrentPosition());
+		if (_player != null) {
+			// stop the player and the updating while we do some administrative stuff
+			_player.pause();
+			stopUpdateTimer();
+			updateActivePodcastPosition(_player.getCurrentPosition());
+		}
 
 		QueueManager.moveToNextInQueue(this);
 
