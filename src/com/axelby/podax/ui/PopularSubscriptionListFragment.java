@@ -40,6 +40,7 @@ public class PopularSubscriptionListFragment extends SherlockListFragment {
 
 	private String _source;
 	private String _url;
+	private boolean _loaded = false;
 
 	public PopularSubscriptionListFragment() {
 	}
@@ -64,6 +65,7 @@ public class PopularSubscriptionListFragment extends SherlockListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
+		_loaded = false;
 		String[] strings = { "Loading from " + _source };
 		setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings));
 
@@ -99,8 +101,10 @@ public class PopularSubscriptionListFragment extends SherlockListFragment {
 			@Override
 			protected void onPostExecute(Vector<PodaxFeed> result) {
 				// make sure the activity still exists
-				if (getActivity() != null)
+				if (getActivity() != null) {
 					setListAdapter(new ArrayAdapter<PodaxFeed>(getActivity(), android.R.layout.simple_list_item_1, result));
+					_loaded = true;
+				}
 				super.onPostExecute(result);
 			}
 		}.execute((Void)null);
@@ -108,6 +112,9 @@ public class PopularSubscriptionListFragment extends SherlockListFragment {
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
+		if (!_loaded)
+			return;
+
 		PodaxFeed feed = (PodaxFeed) l.getItemAtPosition(position);
 
 		Intent intent = new Intent(getActivity(), PopularSubscriptionActivity.class);
