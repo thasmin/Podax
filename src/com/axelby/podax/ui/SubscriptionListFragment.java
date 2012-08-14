@@ -136,8 +136,12 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 				thumbnail.setImageDrawable(null);
 			else
 			{
-				thumbnail.setImageBitmap(BitmapFactory.decodeFile(subscription.getThumbnailFilename()));
-				thumbnail.setVisibility(1);
+				try {
+					thumbnail.setImageBitmap(BitmapFactory.decodeFile(subscription.getThumbnailFilename()));
+					thumbnail.setVisibility(1);
+				} catch (OutOfMemoryError ex) {
+					thumbnail.setImageDrawable(null);
+				}
 			}
 		}
 	}
