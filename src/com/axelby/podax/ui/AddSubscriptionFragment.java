@@ -163,7 +163,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 			};
 			File externalStorageDir = Environment.getExternalStorageDirectory();
 			File[] opmlFiles = externalStorageDir.listFiles(fileFilter);
-			if (opmlFiles.length == 0) {
+			if (opmlFiles!= null && opmlFiles.length == 0) {
 				String message = "The OPML file must be at " + externalStorageDir.getAbsolutePath() + "/podcasts.opml.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
 				return;
