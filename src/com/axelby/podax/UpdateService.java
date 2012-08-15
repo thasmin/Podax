@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Vector;
 
+import android.accounts.AccountManager;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
@@ -81,7 +82,10 @@ public class UpdateService extends IntentService {
 			// when updating all subscriptions, send the list to the podax server
 			sendSubscriptionsToPodaxServer();
 
-			GPodderReceiver.syncWithProvider(this);
+			// sync with gpodder if it's installed and there's a linked account
+			AccountManager am = AccountManager.get(this);
+			if (Helper.isGPodderInstalled(this) && am.getAccountsByType("com.axelby.gpodder.account").length > 0)
+				GPodderReceiver.syncWithProvider(this);
 
 			String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
