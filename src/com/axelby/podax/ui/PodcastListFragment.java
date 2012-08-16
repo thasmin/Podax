@@ -178,6 +178,9 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+		if (getActivity() == null)
+			return;
+
 		_adapter.changeCursor(cursor);
 		setTitle();
 	}

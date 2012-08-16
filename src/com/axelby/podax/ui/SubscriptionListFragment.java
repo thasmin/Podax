@@ -109,6 +109,9 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+		if (getActivity() == null)
+			return;
+
 		_adapter.changeCursor(cursor);
 	}
 

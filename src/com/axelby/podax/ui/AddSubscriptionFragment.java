@@ -59,6 +59,9 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 		public void run(AccountManagerFuture<Bundle> future) {
 			Bundle authTokenBundle = null;
 			try {
+				if (getActivity() == null)
+					return;
+
 				authTokenBundle = future.getResult();
 
 				if (authTokenBundle == null)

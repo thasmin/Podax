@@ -159,6 +159,9 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {
+		if (getActivity() == null)
+			return;
+
 		_adapter.changeCursor(null);
 	}
 

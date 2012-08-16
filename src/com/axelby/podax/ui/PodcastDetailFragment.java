@@ -257,6 +257,9 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+		if (getActivity() == null)
+			return;
+
 		if (!cursor.moveToNext()) {
 			getActivity().finish();
 			return;
