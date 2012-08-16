@@ -3,6 +3,7 @@ package com.axelby.podax.ui;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.Vector;
 
 import org.xml.sax.SAXException;
 
@@ -80,8 +81,81 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 					return;
 				}
 
-				String authToken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
-				new GoogleReaderImporter(getActivity()).doImport(authToken);
+				final String authToken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
+				GoogleReaderImporter googleReaderImporter = new GoogleReaderImporter(getActivity());
+				googleReaderImporter.setUnauthorizedHandler(new GoogleReaderImporter.UnauthorizedHandler() {
+					@Override
+					public void onUnauthorized() {
+						_accountManager.invalidateAuthToken("com.google", authToken);
+						getAuthToken();
+					}
+				});
+				googleReaderImporter.setSuccessHandler(new GoogleReaderImporter.SuccessHandler() {
+					@Override
+					public void onSuccess(final GoogleReaderImporter.Results results) {
+						if (getActivity() == null)
+							return;
+
+						Vector<String> options = new Vector<String>();
+						// add folders to list
+						for (String cat : results.categories.keySet())
+							if (!options.contains(cat))
+								options.add(cat);
+						// add podcasts not in a folder
+						for (String title : results.nofolder.keySet())
+							options.add(title);
+
+						final String[] itemText = options.toArray(new String[] {});
+
+						final boolean[] checkedItems = new boolean[itemText.length];
+						for (int i = 0; i < itemText.length; ++i)
+							checkedItems[i] = true;
+
+						AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+						builder.setTitle("Google Reader Folders");
+						builder.setMultiChoiceItems(itemText, checkedItems,
+								new DialogInterface.OnMultiChoiceClickListener() {
+									public void onClick(DialogInterface dialog, int which,
+											boolean isChecked) {
+										checkedItems[which] = isChecked;
+									}
+								});
+
+						builder.setPositiveButton("Import",
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog, int which) {
+										for (int i = 0; i < itemText.length; ++i) {
+											if (checkedItems[i]) {
+												if (i < results.categories.keySet().size()) {
+													for (String title : results.categories.get(itemText[i]).keySet())
+														addReaderFeedToDB(title, results.categories.get(itemText[i]).get(title));
+												} else {
+													for (String title : results.nofolder.keySet())
+														if (title.equals(itemText[i]))
+															addReaderFeedToDB(title, results.nofolder.get(title));
+												}
+											}
+										}
+
+										// close the activity and go to the subscription list
+										Toast.makeText(getActivity(),
+												"Google Reader subscriptions imported",
+												Toast.LENGTH_LONG).show();
+										getActivity().finish();
+										getActivity().startActivity(MainActivity.getSubscriptionIntent(getActivity()));
+									}
+								});
+						builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						});
+
+						AlertDialog dialog = builder.create();
+						dialog.show();
+					}
+				});
+				googleReaderImporter.execute(authToken);
 			} catch (OperationCanceledException e) {
 				Log.e("Podax", "Operation Canceled", e);
 			} catch (IOException e) {
@@ -91,6 +165,15 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 			}
 		}
 	};
+
+	private void addReaderFeedToDB(String title, String url) {
+		ContentValues values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, title);
+		values.put(SubscriptionProvider.COLUMN_URL, url);
+		Uri uri = getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
+		int subscriptionId = Integer.valueOf(uri.getLastPathSegment());
+		UpdateService.updateSubscription(getActivity(), subscriptionId);
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
