@@ -8,6 +8,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -79,17 +80,17 @@ public class PlayerService extends Service {
 	};
 
 	protected MediaPlayer _player;
+	private boolean _isPlayerPrepared;
 	protected boolean _onPhone;
 	protected boolean _pausedForPhone = false;
 	protected Timer _updateTimer;
 
-	private final HeadsetConnectionReceiver _headsetConnectionReceiver = new HeadsetConnectionReceiver();
-	private final BluetoothConnectionReceiver _bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
-	private final LockscreenManager _lockscreenManager = new LockscreenManager();
+	private HeadsetConnectionReceiver _headsetConnectionReceiver;
+	private BluetoothConnectionReceiver _bluetoothConnectionReceiver;
+	private LockscreenManager _lockscreenManager;
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		handleIntent(intent);
 		return null;
 	}
 
@@ -113,16 +114,15 @@ public class PlayerService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
-		PlayerStatus.initialize(this);
-		setupMediaPlayer();
-		registerReceiver(_headsetConnectionReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
-		registerReceiver(_bluetoothConnectionReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
+		setup();
 	}
 
-	private void setupTelephony() {
-		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-		_onPhone = (telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		safeUnregisterReceiver(_headsetConnectionReceiver);
+		safeUnregisterReceiver(_bluetoothConnectionReceiver);
 	}
 
 	private void setupMediaPlayer() {
@@ -143,15 +143,45 @@ public class PlayerService extends Service {
 					playNextPodcast();
 				}
 			});
+
+			_isPlayerPrepared = false;
 		}
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
+	private void setup() {
+		PlayerStatus.initialize(this);
+		setupMediaPlayer();
+		setupTelephony();
+		setupReceiver(_headsetConnectionReceiver, Intent.ACTION_HEADSET_PLUG);
+		setupReceiver(_bluetoothConnectionReceiver, BluetoothDevice.ACTION_ACL_DISCONNECTED);
 
-		this.unregisterReceiver(_headsetConnectionReceiver);
-		this.unregisterReceiver(_bluetoothConnectionReceiver);
+		if (_lockscreenManager == null)
+			_lockscreenManager = new LockscreenManager();
+	}
+
+	private void setupReceiver(BroadcastReceiver receiver, String action) {
+		safeUnregisterReceiver(receiver);
+		receiver = new HeadsetConnectionReceiver();
+		registerReceiver(receiver, new IntentFilter(action));
+	}
+
+	private void safeUnregisterReceiver(BroadcastReceiver receiver) {
+		if (receiver == null)
+			return;
+		try {
+			unregisterReceiver(receiver);
+		} catch (IllegalArgumentException ex) { }
+	}
+
+	private void setupTelephony() {
+		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+		_onPhone = (telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
+	}
+
+	private void tearDownTelephony() {
+		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
 	}
 
 	@Override
@@ -167,7 +197,7 @@ public class PlayerService extends Service {
 		if (!intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND)) 
 			return;
 
-		setupMediaPlayer();
+		setup();
 
 		switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
 		case -1:
@@ -235,7 +265,7 @@ public class PlayerService extends Service {
 	private void resume() {
 		PodaxLog.log(this, "PlayerService resume");
 
-		if (_player != null && PlayerStatus.isPaused()) {
+		if (PlayerStatus.isPaused() && _isPlayerPrepared) {
 			_player.start();
 			PlayerStatus.updateState(PlayerStates.PLAYING);
 			_lockscreenManager.setLockscreenPlaying();
@@ -268,14 +298,13 @@ public class PlayerService extends Service {
 			// set this podcast as active -- it may not have been first in queue
 			QueueManager.changeActivePodcast(this, p.getId());
 
+			_lockscreenManager = new LockscreenManager();
 			_lockscreenManager.setupLockscreenControls(this, p);
 		} catch (IOException ex) {
 			stop();
 		} finally {
 			c.close();
 		}
-
-		setupMediaPlayer();
 
 		// the user will probably try this if the podcast is over and the next one didn't start
 		if (_player.getCurrentPosition() >= _player.getDuration() - 1000) {
@@ -287,40 +316,31 @@ public class PlayerService extends Service {
 		PlayerStatus.updateState(PlayerStates.PLAYING);
 
 		_pausedForPhone = false;
-		setupTelephony();
 		showNotification();
 		createUpdateTimer();
 		Helper.updateWidgets(this);
 	}
 
-	public void pause() {
+	private void pause() {
 		Log.d("Podax", "PlayerService pausing");
-
-		if (_player == null)
-			return;
 
 		_player.pause();
 		updateActivePodcastPosition(_player.getCurrentPosition());
 		PlayerStatus.updateState(PlayerStates.PAUSED);
 		_lockscreenManager.setLockscreenPaused();
 
-		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
+		tearDownTelephony();
 	}
 
-	public void stop() {
+	private void stop() {
 		Log.d("Podax", "PlayerService stopping");
-		
-		if (_player == null)
-			return;
 
 		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		am.abandonAudioFocus(_afChangeListener);
 
 		stopUpdateTimer();
 
-		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
+		tearDownTelephony();
 
 		removeNotification();
 
@@ -342,7 +362,7 @@ public class PlayerService extends Service {
 		Helper.updateWidgets(this);
 	}
 
-	public boolean grabAudioFocus() {
+	private boolean grabAudioFocus() {
 		if (_onPhone)
 			return false;
 
@@ -360,28 +380,25 @@ public class PlayerService extends Service {
 		return true;
 	}
 
-	public void grabAudioFocusAndResume() {
+	private void grabAudioFocusAndResume() {
 		if (grabAudioFocus())
 			resume();
 	}
 
 	private void prepareMediaPlayer(PodcastCursor p) throws IOException {
-		setupMediaPlayer();
 		_player.reset();
 		_player.setDataSource(p.getFilename());
 		_player.prepare();
 		_player.seekTo(p.getLastPosition());
+		_isPlayerPrepared = true;
 	}
 
-	public void play(long podcastId) {
+	private void play(long podcastId) {
 		QueueManager.changeActivePodcast(this, podcastId);
 		grabAudioFocusAndResume();
 	}
 
-	public void skip(int secs) {
-		if (_player == null)
-			return;
-
+	private void skip(int secs) {
 		if (_player.isPlaying()) {
 			_player.seekTo(_player.getCurrentPosition() + secs * 1000);
 			updateActivePodcastPosition(_player.getCurrentPosition());
@@ -398,10 +415,7 @@ public class PlayerService extends Service {
 		}
 	}
 
-	public void skipTo(int secs) {
-		if (_player == null)
-			return;
-
+	private void skipTo(int secs) {
 		if (_player.isPlaying()) {
 			_player.seekTo(secs * 1000);
 			updateActivePodcastPosition(_player.getCurrentPosition());
@@ -410,25 +424,13 @@ public class PlayerService extends Service {
 		}
 	}
 
-	public void restart() {
-		if (_player == null)
-			return;
-
+	private void restart() {
 		if (_player.isPlaying()) {
 			_player.seekTo(0);
 			updateActivePodcastPosition(_player.getCurrentPosition());
 		} else {
 			updateActivePodcastPosition(0);
 		}
-	}
-
-	public String getPositionString() {
-		if (_player == null)
-			return "";
-		if (_player.getDuration() == 0)
-			return "";
-		return Helper.getTimeString(_player.getCurrentPosition())
-				+ " / " + Helper.getTimeString(_player.getDuration() - _player.getCurrentPosition());
 	}
 
 	private void playNextPodcast() {
@@ -478,7 +480,7 @@ public class PlayerService extends Service {
 		stopForeground(true);
 	}
 
-	public void updateActivePodcastPosition(int position) {
+	private void updateActivePodcastPosition(int position) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		PlayerService.this.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
