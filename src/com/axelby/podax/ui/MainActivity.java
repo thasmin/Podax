@@ -22,7 +22,6 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.viewpagerindicator.TitlePageIndicator;
-import com.viewpagerindicator.TitleProvider;
 
 public class MainActivity extends PodaxFragmentActivity {
 
@@ -140,7 +139,6 @@ public class MainActivity extends PodaxFragmentActivity {
 	}
 
 	public class TabsAdapter extends FragmentStatePagerAdapter
-		implements TitleProvider
 	{
 
 		private String[] _titles;
@@ -170,7 +168,7 @@ public class MainActivity extends PodaxFragmentActivity {
 		}
 
 		@Override
-		public String getTitle(int position) {
+		public String getPageTitle(int position) {
 			return _titles[position].toUpperCase();
 		}
 
