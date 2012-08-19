@@ -195,6 +195,9 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 		_accountManager.getAccountsByTypeAndFeatures("com.google", new String[] { "service_reader" },
 				new AccountManagerCallback<Account[]>() {
 					public void run(AccountManagerFuture<Account[]> future) {
+						if (getActivity() == null)
+							return;
+
 						try {
 							_googleAccounts = future.getResult();
 						} catch (OperationCanceledException e) {
