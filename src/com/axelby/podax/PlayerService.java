@@ -50,8 +50,10 @@ public class PlayerService extends Service {
 		public void onAudioFocusChange(int focusChange) {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
 			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
-			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && !PlayerStatus.isPaused())
+			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && !PlayerStatus.isPaused()) {
+				setup();
 				resume();
+			}
 			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
 				pause();
 		}
@@ -63,6 +65,7 @@ public class PlayerService extends Service {
 			if (_player == null)
 				return;
 
+			setup();
 			_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
 			if (_onPhone) {
 				_player.pause();
