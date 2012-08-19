@@ -51,8 +51,11 @@ public class LockscreenManager {
 					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, podcast.getTitle())
 					.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, podcast.getDuration());
 			if (new File(podcast.getThumbnailFilename()).exists()) {
-				Bitmap subscriptionThumbnail = BitmapFactory.decodeFile(podcast.getThumbnailFilename());
-				metadataEditor.putBitmap(METADATA_KEY_ARTWORK, subscriptionThumbnail);
+				try {
+					Bitmap subscriptionThumbnail = BitmapFactory.decodeFile(podcast.getThumbnailFilename());
+					metadataEditor.putBitmap(METADATA_KEY_ARTWORK, subscriptionThumbnail);
+				} catch (OutOfMemoryError ex) {
+				}
 			}
 			metadataEditor.apply();
 		} catch (Exception e) {
