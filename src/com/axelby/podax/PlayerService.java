@@ -346,13 +346,14 @@ public class PlayerService extends Service {
 
 		_lockscreenManager.removeLockscreenControls();
 
-		if (_player != null) {
+		if (_player != null && _player.isPlaying()) {
 			_player.pause();
 			updateActivePodcastPosition(_player.getCurrentPosition());
 			_player.stop();
-			PlayerStatus.updateState(PlayerStates.STOPPED);
-			_player = null;
 		}
+
+		PlayerStatus.updateState(PlayerStates.STOPPED);
+		_player = null;
 		stopSelf();
 
 		// tell anything listening to the active podcast to refresh now that we're stopped
