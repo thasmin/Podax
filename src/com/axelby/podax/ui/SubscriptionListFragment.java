@@ -2,7 +2,6 @@ package com.axelby.podax.ui;
 
 import java.io.File;
 
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -24,7 +23,6 @@ import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
-import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
@@ -52,11 +50,6 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		super.onActivityCreated(savedInstanceState);
 
 		registerForContextMenu(getListView());
-
-		// remove any subscription update errors
-		String ns = Context.NOTIFICATION_SERVICE;
-		NotificationManager notificationManager = (NotificationManager) getActivity().getSystemService(ns);
-		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
 	}
 
 	@Override

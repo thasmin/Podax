@@ -33,6 +33,7 @@ import android.util.Xml;
 
 import com.axelby.podax.R.drawable;
 import com.axelby.podax.ui.MainActivity;
+import com.axelby.podax.ui.PodcastDetailActivity;
 
 public class SubscriptionUpdater {
 	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
@@ -78,6 +79,8 @@ public class SubscriptionUpdater {
 			if (!cursor.moveToNext())
 				return;
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
+
+			showNotification(subscription);
 
 			HttpGet request = new HttpGet(subscription.getUrl());
 			if (subscription.getETag() != null)
@@ -148,7 +151,7 @@ public class SubscriptionUpdater {
 			.setContentTitle("Error updating " + subscription.getTitle())
 			.setContentText(reason)
 			.setContentIntent(contentIntent)
-			.setOngoing(true)
+			.setOngoing(false)
 			.getNotification();
 
 		String ns = Context.NOTIFICATION_SERVICE;
@@ -356,5 +359,20 @@ public class SubscriptionUpdater {
 		}
 
 		return true;
+	}
+
+	void showNotification(SubscriptionCursor subscription) {
+		Intent notificationIntent = new Intent(_context, PodcastDetailActivity.class);
+		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
+
+		Notification notification = new NotificationCompat.Builder(_context)
+			.setSmallIcon(drawable.icon)
+			.setWhen(System.currentTimeMillis())
+			.setContentTitle("Updating " + subscription.getTitle())
+			.setContentIntent(contentIntent)
+			.getNotification();
+
+		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(Constants.NOTIFICATION_UPDATE, notification);
 	}
 }

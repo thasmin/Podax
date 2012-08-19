@@ -8,9 +8,17 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+
+import com.axelby.podax.R.drawable;
+import com.axelby.podax.ui.PodcastDetailActivity;
 
 class PodcastDownloader {
 	private Context _context;
@@ -28,11 +36,12 @@ class PodcastDownloader {
 			String[] projection = {
 					PodcastProvider.COLUMN_ID,
 					PodcastProvider.COLUMN_TITLE,
+					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 					PodcastProvider.COLUMN_MEDIA_URL,
 					PodcastProvider.COLUMN_FILE_SIZE,
 			};
 			cursor = _context.getContentResolver().query(PodcastProvider.QUEUE_URI, projection,
-					PodcastProvider.COLUMN_ID + " = ?",
+					"podcasts._id = ?",
 					new String[] { String.valueOf(podcastId) }, null);
 			if (!cursor.moveToNext())
 				return;
@@ -40,6 +49,8 @@ class PodcastDownloader {
 			PodcastCursor podcast = new PodcastCursor(cursor);
 			if (podcast.isDownloaded())
 				return;
+
+			showNotification(podcast);
 
 			File mediaFile = new File(podcast.getFilename());
 
@@ -122,6 +133,23 @@ class PodcastDownloader {
 			close(instream);
 		}
 		return file.length() == conn.getContentLength();
+	}
+
+	void showNotification(PodcastCursor podcast) {
+		Intent notificationIntent = new Intent(_context, PodcastDetailActivity.class);
+		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
+
+		Notification notification = new NotificationCompat.Builder(_context)
+			.setSmallIcon(drawable.icon)
+			.setWhen(System.currentTimeMillis())
+			.setTicker("Downloading " + podcast.getTitle())
+			.setContentTitle("Downloading " + podcast.getTitle())
+			.setContentText(podcast.getSubscriptionTitle())
+			.setContentIntent(contentIntent)
+			.getNotification();
+
+		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(Constants.NOTIFICATION_UPDATE, notification);
 	}
 
 	public static void close(Closeable c) {

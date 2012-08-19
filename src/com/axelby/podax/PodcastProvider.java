@@ -106,14 +106,11 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection,
-			String[] selectionArgs, String sortOrder) {
-
+	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(_columnMap);
 		if (Arrays.asList(projection).contains(COLUMN_SUBSCRIPTION_TITLE))
-			sqlBuilder
-					.setTables("podcasts JOIN subscriptions on podcasts.subscriptionId = subscriptions._id");
+			sqlBuilder.setTables("podcasts JOIN subscriptions on podcasts.subscriptionId = subscriptions._id");
 		else
 			sqlBuilder.setTables("podcasts");
 
@@ -126,12 +123,10 @@ public class PodcastProvider extends ContentProvider {
 				sortOrder = "queuePosition";
 			break;
 		case PODCAST_ID:
-			sqlBuilder
-					.appendWhere("podcasts._id = " + uri.getLastPathSegment());
+			sqlBuilder.appendWhere("podcasts._id = " + uri.getLastPathSegment());
 			break;
 		case PODCASTS_TO_DOWNLOAD:
-			sqlBuilder.appendWhere("podcasts._id IN ("
-					+ getNeedsDownloadIds() + ")");
+			sqlBuilder.appendWhere("podcasts._id IN (" + getNeedsDownloadIds() + ")");
 			if (sortOrder == null)
 				sortOrder = "queuePosition";
 			_dbAdapter.getWritableDatabase().execSQL("update podcasts set queueposition = (select count(*) from podcasts p2 where p2.queueposition is not null and p2.queueposition < podcasts.queueposition) where podcasts.queueposition is not null");
@@ -140,9 +135,8 @@ public class PodcastProvider extends ContentProvider {
 			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 			if (prefs.contains(PREF_ACTIVE))
 				sqlBuilder.appendWhere("podcasts._id = " + prefs.getLong(PREF_ACTIVE, -1));
-			else {
+			else
 				sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
-			}
 			break;
 		case PODCASTS_SEARCH:
 			sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(description) LIKE ?");
@@ -157,8 +151,7 @@ public class PodcastProvider extends ContentProvider {
 		}
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		Cursor c = sqlBuilder.query(db, projection,
-				selection, selectionArgs, null, null, sortOrder);
+		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}

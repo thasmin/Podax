@@ -93,19 +93,19 @@ public class MainActivity extends PodaxFragmentActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-	    MenuInflater inflater = getSupportMenuInflater();
-	    switch (_focusedPage) {
-	    case TAB_QUEUE:
-	    	inflater.inflate(R.menu.queue_fragment, menu);
-	    	break;
-	    case TAB_SUBSCRIPTIONS:
-	    	inflater.inflate(R.menu.subscriptionlist_activity, menu);
-	    	break;
-	    default:
-	    	inflater.inflate(R.menu.base, menu);
-	    }
+		MenuInflater inflater = getSupportMenuInflater();
+		switch (_focusedPage) {
+		case TAB_QUEUE:
+			inflater.inflate(R.menu.queue_fragment, menu);
+			break;
+		case TAB_SUBSCRIPTIONS:
+			inflater.inflate(R.menu.subscriptionlist, menu);
+			break;
+		default:
+			inflater.inflate(R.menu.base, menu);
+		}
 
-	    return true;
+		return true;
 	}
 
 	@Override
