@@ -50,12 +50,10 @@ public class PlayerService extends Service {
 		public void onAudioFocusChange(int focusChange) {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
 			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
-			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && !PlayerStatus.isPaused()) {
-				setup();
-				resume();
-			}
+			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && !PlayerStatus.isPaused())
+				PlayerService.play(PlayerService.this);
 			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
-				pause();
+				PlayerService.pause(PlayerService.this);
 		}
 	};
 
@@ -65,18 +63,13 @@ public class PlayerService extends Service {
 			if (_player == null)
 				return;
 
-			setup();
 			_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
 			if (_onPhone) {
-				_player.pause();
-				PlayerStatus.updateState(PlayerStates.PAUSED);
-				updateActivePodcastPosition(_player.getCurrentPosition());
+				PlayerService.pause(PlayerService.this);
 				_pausedForPhone = true;
 			}
 			if (!_onPhone && _pausedForPhone) {
-				_player.start();
-				PlayerStatus.updateState(PlayerStates.PLAYING);
-				updateActivePodcastPosition(_player.getCurrentPosition());
+				PlayerService.play(PlayerService.this);
 				_pausedForPhone = false;
 			}
 		}
@@ -88,9 +81,9 @@ public class PlayerService extends Service {
 	protected boolean _pausedForPhone = false;
 	protected Timer _updateTimer;
 
-	private HeadsetConnectionReceiver _headsetConnectionReceiver;
-	private BluetoothConnectionReceiver _bluetoothConnectionReceiver;
-	private LockscreenManager _lockscreenManager;
+	private HeadsetConnectionReceiver _headsetConnectionReceiver = null;
+	private BluetoothConnectionReceiver _bluetoothConnectionReceiver = null;
+	private LockscreenManager _lockscreenManager = null;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -153,10 +146,16 @@ public class PlayerService extends Service {
 
 	private void setup() {
 		PlayerStatus.initialize(this);
-		setupMediaPlayer();
-		setupTelephony();
-		setupReceiver(_headsetConnectionReceiver, Intent.ACTION_HEADSET_PLUG);
-		setupReceiver(_bluetoothConnectionReceiver, BluetoothDevice.ACTION_ACL_DISCONNECTED);
+
+		if (_player == null) {
+			setupMediaPlayer();
+			setupTelephony();
+		}
+
+		if (_headsetConnectionReceiver == null)
+			setupReceiver(_headsetConnectionReceiver, Intent.ACTION_HEADSET_PLUG);
+		if (_bluetoothConnectionReceiver == null)
+			setupReceiver(_bluetoothConnectionReceiver, BluetoothDevice.ACTION_ACL_DISCONNECTED);
 
 		if (_lockscreenManager == null)
 			_lockscreenManager = new LockscreenManager();
