@@ -152,10 +152,14 @@ public class PlayerService extends Service {
 			setupTelephony();
 		}
 
-		if (_headsetConnectionReceiver == null)
+		if (_headsetConnectionReceiver == null) {
+			_headsetConnectionReceiver = new HeadsetConnectionReceiver();
 			setupReceiver(_headsetConnectionReceiver, Intent.ACTION_HEADSET_PLUG);
-		if (_bluetoothConnectionReceiver == null)
+		}
+		if (_bluetoothConnectionReceiver == null) {
+			_bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
 			setupReceiver(_bluetoothConnectionReceiver, BluetoothDevice.ACTION_ACL_DISCONNECTED);
+		}
 
 		if (_lockscreenManager == null)
 			_lockscreenManager = new LockscreenManager();
@@ -163,7 +167,6 @@ public class PlayerService extends Service {
 
 	private void setupReceiver(BroadcastReceiver receiver, String action) {
 		safeUnregisterReceiver(receiver);
-		receiver = new HeadsetConnectionReceiver();
 		registerReceiver(receiver, new IntentFilter(action));
 	}
 
