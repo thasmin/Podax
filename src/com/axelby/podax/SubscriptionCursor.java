@@ -93,12 +93,16 @@ public class SubscriptionCursor {
 	}
 
 	public String getThumbnailFilename() {
+		return getThumbnailFilename(getId());
+	}
+
+	public static String getThumbnailFilename(long id) {
 		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
 		File podaxFile = new File(podaxDir);
 		if (!podaxFile.exists())
 			podaxFile.mkdirs();
-		return podaxDir + "/" + getId() + ".jpg";
+		return podaxDir + "/" + id + ".jpg";
 	}
 
 }

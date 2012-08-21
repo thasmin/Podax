@@ -43,16 +43,6 @@ public class PlayerStatus {
 		_current._position = position;
 	}
 
-	public static void updatePodcast(long id, String podcast, String subscription, int position, int duration) {
-		if (_current == null)
-			return;
-		_current._id = id;
-		_current._title = podcast;
-		_current._subscriptionTitle = subscription;
-		_current._position = position;
-		_current._duration = duration;
-	}
-
 	public static void updateQueueEmpty() {
 		_current = new PlayerStatus();
 	}
@@ -70,6 +60,7 @@ public class PlayerStatus {
 		String[] projection = {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_DURATION,
@@ -78,12 +69,14 @@ public class PlayerStatus {
 		Cursor cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
 		_current = new PlayerStatus();
 		if (cursor.moveToNext()) {
+			PodcastCursor podcast = new PodcastCursor(cursor);
 			_current._state = PlayerStates.STOPPED;
-			_current._id = cursor.getLong(0);
-			_current._title = cursor.getString(1);
-			_current._subscriptionTitle = cursor.getString(2);
-			_current._position = cursor.getInt(3);
-			_current._duration = cursor.getInt(4);
+			_current._id = podcast.getId();
+			_current._subscriptionId = podcast.getSubscriptionId();
+			_current._title = podcast.getTitle();
+			_current._subscriptionTitle = podcast.getSubscriptionTitle();
+			_current._position = podcast.getLastPosition();
+			_current._duration = podcast.getDuration();
 		}
 		cursor.close();
 	}
@@ -95,6 +88,7 @@ public class PlayerStatus {
 
 	private PlayerStates _state;
 	private long _id;
+	private long _subscriptionId;
 	private int _position;
 	private int _duration;
 	private String _title;
@@ -110,6 +104,10 @@ public class PlayerStatus {
 
 	public long getId() {
 		return _id;
+	}
+
+	public long getSubscriptionId() {
+		return _subscriptionId;
 	}
 
 	public int getPosition() {

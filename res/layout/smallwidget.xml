@@ -1,14 +1,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="294dp"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
     android:layout_height="85dp"
-    android:background="@drawable/widget_frame"
+    android:background="#222222"
+    android:gravity="bottom"
     android:orientation="vertical" >
 
     <LinearLayout
-        android:id="@+id/toprow"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="83dp"
         android:orientation="horizontal" >
+
+        <ImageButton
+            android:id="@+id/show_btn"
+            android:layout_width="83dp"
+            android:layout_height="83dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/go_to_details"
+            android:src="@drawable/ic_widget_bouncearrow" />
+
+        <FrameLayout
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/podaxColor" />
 
         <LinearLayout
             android:id="@+id/innerLayout"
@@ -19,77 +33,76 @@
 
             <TextView
                 android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:layout_margin="2dp"
                 android:ellipsize="end"
+                android:gravity="center_vertical"
                 android:singleLine="true"
                 android:textColor="#cccccc" />
 
             <include
                 android:id="@+id/positionstring"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
                 layout="@layout/podcast_progress" />
+
+            <LinearLayout
+                android:id="@+id/bottomrow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="5" >
+
+                <ImageButton
+                    android:id="@+id/rewind_btn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/rewind"
+                    android:src="@drawable/ic_media_rew" />
+
+                <ImageButton
+                    android:id="@+id/play_btn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/play"
+                    android:src="@drawable/ic_media_play" />
+
+                <ImageButton
+                    android:id="@+id/skip_btn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/fast_forward"
+                    android:src="@drawable/ic_media_ff" />
+
+                <FrameLayout
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    tools:ignore="UselessLeaf" />
+
+                <ImageButton
+                    android:id="@+id/next_btn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/skip_to_end"
+                    android:src="@drawable/ic_media_next" />
+            </LinearLayout>
+
         </LinearLayout>
-
-        <ImageButton
-            android:id="@+id/show_btn"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/go_to_details"
-            android:src="@drawable/ic_widget_bouncearrow" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/bottomrow"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="40dp"
-        android:weightSum="5" >
-
-        <ImageButton
-            android:id="@+id/restart_btn"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/restart"
-            android:src="@drawable/ic_media_previous" />
-
-        <ImageButton
-            android:id="@+id/rewind_btn"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/rewind"
-            android:src="@drawable/ic_media_rew" />
-
-        <ImageButton
-            android:id="@+id/play_btn"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/play"
-            android:src="@drawable/ic_media_play" />
-
-        <ImageButton
-            android:id="@+id/skip_btn"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/fast_forward"
-            android:src="@drawable/ic_media_ff" />
-
-        <ImageButton
-            android:id="@+id/next_btn"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/skip_to_end"
-            android:src="@drawable/ic_media_next" />
-    </LinearLayout>
+        android:layout_height="2dp"
+        android:background="@color/podaxColor" />
 
 </LinearLayout>
