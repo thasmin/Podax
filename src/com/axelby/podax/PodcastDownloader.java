@@ -70,6 +70,8 @@ class PodcastDownloader {
 			PlayerStatus.refresh(_context);
 
 			Log.d("Podax", "Done downloading " + podcast.getTitle());
+		} catch (Exception e) {
+			Log.e("Podax", "error while downloading", e);
 		} finally {
 			if (cursor != null)
 				cursor.close();
