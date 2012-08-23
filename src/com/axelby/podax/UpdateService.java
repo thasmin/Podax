@@ -10,20 +10,24 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Vector;
 
-
 import android.accounts.AccountManager;
-import android.app.IntentService;
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-public class UpdateService extends IntentService {
+public class UpdateService extends Service {
 	public static void updateSubscriptions(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS);
@@ -57,101 +61,119 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
+	private final class UpdateServiceHandler extends Handler {
+		public UpdateServiceHandler(Looper looper) {
+			super(looper);
+		}
+
+		@Override
+		public void handleMessage(Message msg) {
+			super.handleMessage(msg);
+
+			Log.d("Podax", "handling an intent");
+			handleIntent((Intent)msg.obj);
+
+			try {
+				if (!hasMessages(0)) {
+					Thread.sleep(1000);
+					if (!hasMessages(0)) {
+						Log.d("Podax", "stopping the update service");
+						removeNotification();
+						stopSelf();
+					}
+				}
+			} catch (InterruptedException e) {
+				Log.e("Podax", "interrupted before stopping updateservice", e);
+			}
+		}
+	}
+	@SuppressLint("HandlerLeak")
+	private volatile UpdateServiceHandler _handler;
+	private volatile HandlerThread _handlerThread;
+
 	private static UpdateService _singleton = null;
 	public static boolean isRunning() {
 		return _singleton != null;
 	}
 
-	private Vector<Intent> _intents = new Vector<Intent>();
-
-	public UpdateService() {
-		super("Podax_UpdateService");
-	}
-
-	Handler _handler = new Handler();
+	Handler _uiHandler = new Handler();
 
 	@Override
-	protected void onHandleIntent(Intent intent) {
-		_intents.add((Intent)intent.clone());
-		if (!isRunning())
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					handleIntents();
-				}
-			}).start();
+	public IBinder onBind(Intent intent) {
+		return null;
 	}
 
-	protected void handleIntents() {
-		if (_intents.size() == 0)
-			return;
+	@Override
+	public void onCreate() {
+		super.onCreate();
 
-		_singleton = this;
+		_handlerThread = new HandlerThread("UpdateService");
+		_handlerThread.start();
+		_handler = new UpdateServiceHandler(_handlerThread.getLooper());
+	}
 
-		while (_intents.size() > 0) {
-			Intent intent = _intents.get(0);
-			_intents.remove(0);
+	@Override
+	public void onDestroy() {
+		_handlerThread.getLooper().quit();
+	}
 
-			String action = intent.getAction();
-			if (action == null)
-				return;
-
-			if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && !Helper.ensureWifi(this)) {
-				_handler.post(new Runnable() {
-					public void run() {
-						Toast.makeText(UpdateService.this,
-								R.string.update_request_no_wifi,
-								Toast.LENGTH_SHORT).show();
-					}
-				});
-				return;
-			}
-
-			if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
-				// when updating all subscriptions, send the list to the podax server
-				sendSubscriptionsToPodaxServer();
-
-				// sync with gpodder if it's installed and there's a linked account
-				AccountManager am = AccountManager.get(this);
-				if (Helper.isGPodderInstalled(this) && am.getAccountsByType("com.axelby.gpodder.account").length > 0)
-					GPodderReceiver.syncWithProvider(this);
-
-				String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
-				Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
-				while (c.moveToNext())
-					_intents.add(createUpdateSubscriptionIntent(this, c.getInt(0)));
-				c.close();
-			} else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
-				int subscriptionId = intent.getIntExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
-				if (subscriptionId == -1)
-					return;
-				new SubscriptionUpdater(this).update(subscriptionId);
-			} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCASTS)) {
-				verifyDownloadedFiles();
-
-				String[] projection = { PodcastProvider.COLUMN_ID };
-				Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
-				while (c.moveToNext())
-					_intents.add(createDownloadPodcastIntent(this, c.getLong(0)));
-				c.close();
-			} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCAST)) {
-				long podcastId = intent.getLongExtra(Constants.EXTRA_PODCAST_ID, -1L);
-				if (podcastId == -1)
-					return;
-				new PodcastDownloader(this).download(podcastId);
-			}
-
-			// make sure we're not getting any more intents before we stop
-			try {
-				if (_intents.size() == 0)
-					Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && !Helper.ensureWifi(this)) {
+			_uiHandler.post(new Runnable() {
+				public void run() {
+					Toast.makeText(UpdateService.this,
+							R.string.update_request_no_wifi,
+							Toast.LENGTH_SHORT).show();
+				}
+			});
+		} else {
+			Log.d("Podax", "received an intent");
+			Message msg = _handler.obtainMessage(0, intent.clone());
+			_handler.sendMessage(msg);
 		}
 
-		_singleton = null;
-		removeNotification();
-		stopSelf();
+		return START_NOT_STICKY;
+	}
+
+	protected void handleIntent(Intent intent) {
+		String action = intent.getAction();
+		if (action == null)
+			return;
+
+		if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
+			// when updating all subscriptions, send the list to the podax server
+			sendSubscriptionsToPodaxServer();
+
+			// sync with gpodder if it's installed and there's a linked account
+			AccountManager am = AccountManager.get(this);
+			if (Helper.isGPodderInstalled(this) && am.getAccountsByType("com.axelby.gpodder.account").length > 0)
+				GPodderReceiver.syncWithProvider(this);
+
+			String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
+			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
+			while (c.moveToNext())
+				startService(createUpdateSubscriptionIntent(this, c.getLong(0)));
+			c.close();
+		} else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
+			int subscriptionId = intent.getIntExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+			if (subscriptionId == -1)
+				return;
+			new SubscriptionUpdater(this).update(subscriptionId);
+		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCASTS)) {
+			verifyDownloadedFiles();
+
+			String[] projection = { PodcastProvider.COLUMN_ID };
+			Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
+			while (c.moveToNext())
+				startService(createDownloadPodcastIntent(this, c.getLong(0)));
+			c.close();
+		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCAST)) {
+			long podcastId = intent.getLongExtra(Constants.EXTRA_PODCAST_ID, -1L);
+			if (podcastId == -1)
+				return;
+			new PodcastDownloader(this).download(podcastId);
+		}
 	}
 
 	private static Intent createUpdateSubscriptionIntent(Context context, long subscriptionId) {
