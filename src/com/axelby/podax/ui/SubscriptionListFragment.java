@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -139,6 +140,15 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 					thumbnail.setImageDrawable(null);
 				}
 			}
+
+			// more button handler
+			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					int position = getListView().getPositionForView(view);
+					getActivity().openContextMenu(getListView().getChildAt(position));
+				}
+			});
 		}
 	}
 }
