@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
@@ -94,14 +95,13 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 				Cursor c = (Cursor) getListAdapter().getItem(mi.position);
 				PodcastCursor podcast = new PodcastCursor(c);
 
-				menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINQUEUE,
-						ContextMenu.NONE, R.string.move_to_first_in_queue);
-				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
-						ContextMenu.NONE, R.string.remove_from_queue);
-
 				if (podcast.isDownloaded())
-					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
-							R.string.play);
+					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
+
+				if (mi.position != 0)
+					menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINQUEUE, ContextMenu.NONE, R.string.move_to_first_in_queue);
+
+				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
 			}
 		});
 
@@ -289,6 +289,15 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			// set the listener for the dragable
 			View btn = view.findViewById(R.id.dragable);
 			btn.setOnTouchListener(downListener);
+
+			// more button handler
+			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					int position = getListView().getPositionForView(view);
+					getActivity().openContextMenu(getListView().getChildAt(position));
+				}
+			});
 
 			// set the title
 			TextView queueText = (TextView) view.findViewById(R.id.title);
