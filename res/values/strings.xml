@@ -102,4 +102,5 @@
 	<string name="pref_anon_usage_title">Send Usage Data</string>
 	<string name="pref_crash_reports">Send error reports to the developers if Podax crashes.</string>
 	<string name="pref_crash_reports_title">Send Crash Reports</string>
+	<string name="more_options">More Options</string>
 </resources>
