@@ -24,7 +24,6 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
@@ -50,6 +49,7 @@ public class PlayerService extends Service {
 		public void onAudioFocusChange(int focusChange) {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
 			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
+			PodaxLog.log(PlayerService.this, "audio focus change event");
 			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && !PlayerStatus.isPaused())
 				PlayerService.play(PlayerService.this);
 			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
@@ -208,59 +208,59 @@ public class PlayerService extends Service {
 		case -1:
 			return;
 		case Constants.PLAYER_COMMAND_SKIPTO:
-			Log.d("Podax", "PlayerService got a command: skip to");
+			PodaxLog.log(this, "PlayerService got a command: skip to");
 			skipTo(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, 0));
 			break;
 		case Constants.PLAYER_COMMAND_SKIPTOEND:
-			Log.d("Podax", "PlayerService got a command: skip to end");
+			PodaxLog.log(this, "PlayerService got a command: skip to end");
 			playNextPodcast();
 			break;
 		case Constants.PLAYER_COMMAND_RESTART:
-			Log.d("Podax", "PlayerService got a command: restart");
+			PodaxLog.log(this, "PlayerService got a command: restart");
 			restart();
 			break;
 		case Constants.PLAYER_COMMAND_SKIPBACK:
-			Log.d("Podax", "PlayerService got a command: skip back");
+			PodaxLog.log(this, "PlayerService got a command: skip back");
 			skip(-15);
 			break;
 		case Constants.PLAYER_COMMAND_SKIPFORWARD:
-			Log.d("Podax", "PlayerService got a command: skip forward");
+			PodaxLog.log(this, "PlayerService got a command: skip forward");
 			skip(30);
 			break;
 		case Constants.PLAYER_COMMAND_PLAYPAUSE:
-			Log.d("Podax", "PlayerService got a command: playpause");
+			PodaxLog.log(this, "PlayerService got a command: playpause");
 			if (_player.isPlaying()) {
-				Log.d("Podax", "  pausing");
+				PodaxLog.log(this, "  pausing");
 				pause();
 			} else {
-				Log.d("Podax", "  resuming");
+				PodaxLog.log(this, "  resuming");
 				grabAudioFocusAndResume();
 			}
 			break;
 		case Constants.PLAYER_COMMAND_PLAYSTOP:
-			Log.d("Podax", "PlayerService got a command: playstop");
+			PodaxLog.log(this, "PlayerService got a command: playstop");
 			if (_player.isPlaying()) {
-				Log.d("Podax", "  stopping");
+				PodaxLog.log(this, "  stopping");
 				stop();
 			} else {
-				Log.d("Podax", "  resuming");
+				PodaxLog.log(this, "  resuming");
 				grabAudioFocusAndResume();
 			}
 			break;
 		case Constants.PLAYER_COMMAND_PLAY:
-			Log.d("Podax", "PlayerService got a command: play");
+			PodaxLog.log(this, "PlayerService got a command: play");
 			grabAudioFocusAndResume();
 			break;
 		case Constants.PLAYER_COMMAND_PAUSE:
-			Log.d("Podax", "PlayerService got a command: pause");
+			PodaxLog.log(this, "PlayerService got a command: pause");
 			pause();
 			break;
 		case Constants.PLAYER_COMMAND_STOP:
-			Log.d("Podax", "PlayerService got a command: stop");
+			PodaxLog.log(this, "PlayerService got a command: stop");
 			stop();
 			break;
 		case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
-			Log.d("Podax", "PlayerService got a command: play specific podcast");
+			PodaxLog.log(this, "PlayerService got a command: play specific podcast");
 			long podcastId = intent.getLongExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
 			play(podcastId);
 			break;
@@ -327,7 +327,7 @@ public class PlayerService extends Service {
 	}
 
 	private void pause() {
-		Log.d("Podax", "PlayerService pausing");
+		PodaxLog.log(this, "PlayerService pausing");
 
 		_player.pause();
 		updateActivePodcastPosition(_player.getCurrentPosition());
@@ -338,7 +338,7 @@ public class PlayerService extends Service {
 	}
 
 	private void stop() {
-		Log.d("Podax", "PlayerService stopping");
+		PodaxLog.log(this, "PlayerService stopping");
 
 		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		am.abandonAudioFocus(_afChangeListener);
@@ -440,7 +440,7 @@ public class PlayerService extends Service {
 	}
 
 	private void playNextPodcast() {
-		Log.d("Podax", "moving to next podcast");
+		PodaxLog.log(this, "moving to next podcast");
 
 		if (_player != null) {
 			// stop the player and the updating while we do some administrative stuff

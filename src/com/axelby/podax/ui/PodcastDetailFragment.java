@@ -25,6 +25,7 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -94,8 +95,10 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 			public void onClick(View v) {
 				if (PlayerStatus.isPlaying() && PlayerStatus.getCurrentState().getId() == _podcastId)
 					PlayerService.stop(getActivity());
-				else
+				else {
+					PodaxLog.log(getActivity(), "playing a specific podcast from podcastdetailfragment");
 					PlayerService.play(getActivity(), _podcastId);
+				}
 			}
 		});
 

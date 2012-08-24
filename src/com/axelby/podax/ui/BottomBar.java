@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -97,6 +98,7 @@ public class BottomBar extends LinearLayout {
 		
 		_pausebtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
+				PodaxLog.log(context, "playstopping from bottom bar");
 				PlayerService.playstop(BottomBar.this.getContext());
 			}
 		});

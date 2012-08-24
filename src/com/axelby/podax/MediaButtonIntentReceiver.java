@@ -30,9 +30,10 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 			if (PlayerStatus.isStopped() && !canResume)
 				break;
 
-			if  (event.getRepeatCount() == 0)
+			if  (event.getRepeatCount() == 0) {
+				PodaxLog.log(context, "playpausing because of media button intent");
 				PlayerService.playpause(context);
-			else if (event.getRepeatCount() == 2) {
+			} else if (event.getRepeatCount() == 2) {
 				PlayerService.skipForward(context);
 				PlayerService.play(context);
 			}

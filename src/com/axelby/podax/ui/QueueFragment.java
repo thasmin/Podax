@@ -40,6 +40,7 @@ import android.widget.ViewSwitcher;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
+import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -134,6 +135,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			podcast.removeFromQueue(getActivity());
 			return true;
 		case OPTION_PLAY:
+			PodaxLog.log(getActivity(), "playing a specific podcast from queuefragment");
 			PlayerService.play(getActivity(), podcast);
 			return true;
 		}
