@@ -14,6 +14,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -68,22 +69,18 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 		super.onActivityCreated(savedInstanceState);
 
 		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
-			public void onCreateContextMenu(ContextMenu menu, View v,
-					ContextMenuInfo menuInfo) {
+			public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 				Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
 				PodcastCursor podcast = new PodcastCursor(cursor);
 
-				if (podcast.getQueuePosition() == null)
-					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE,
-							ContextMenu.NONE, R.string.add_to_queue);
-				else
-					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE,
-							ContextMenu.NONE, R.string.remove_from_queue);
-
 				if (podcast.isDownloaded())
-					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE,
-							R.string.play);
+					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
+
+				if (podcast.getQueuePosition() == null)
+					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_queue);
+				else
+					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
 			}
 		});
 	}
@@ -195,14 +192,24 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 
 	private class PodcastAdapter extends ResourceCursorAdapter {
 		public PodcastAdapter(Context context, Cursor cursor) {
-			super(context, R.layout.list_item, cursor, true);
+			super(context, R.layout.podcast_list_item, cursor, true);
 		}
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			TextView textview = (TextView)view;
+			TextView textview = (TextView) view.findViewById(R.id.text);
 			String podcastTitle = new PodcastCursor(cursor).getTitle();
 			textview.setText(podcastTitle);
+
+			// more button handler
+			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					int position = getListView().getPositionForView(view);
+					getActivity().openContextMenu(getListView().getChildAt(position));
+				}
+			});
+
 		}
 	}
 }
