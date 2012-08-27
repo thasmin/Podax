@@ -27,6 +27,7 @@ public class PodcastProvider extends ContentProvider {
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podcast";
 	public static final Uri ACTIVE_PODCAST_URI = Uri.withAppendedPath(PodcastProvider.URI, "active");
 	public static final Uri QUEUE_URI = Uri.withAppendedPath(PodcastProvider.URI, "queue");
+	public static final Uri SEARCH_URI = Uri.withAppendedPath(PodcastProvider.URI, "search");
 
 	private final static int PODCASTS = 1;
 	private final static int PODCASTS_QUEUE = 2;
@@ -139,10 +140,9 @@ public class PodcastProvider extends ContentProvider {
 				sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
 			break;
 		case PODCASTS_SEARCH:
-			sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(description) LIKE ?");
+			sqlBuilder.appendWhere("LOWER(podcasts.title) LIKE ?");
 			if (!selectionArgs[0].startsWith("%"))
 				selectionArgs[0] = "%" + selectionArgs[0] + "%";
-			selectionArgs = new String[] { selectionArgs[0], selectionArgs[0] };
 			if (sortOrder == null)
 				sortOrder = "pubDate DESC";
 			break;

@@ -80,7 +80,7 @@
                 android:value=".SearchActivity" />
         </activity>
         <activity
-            android:name=".ui.SearchActivity"
+            android:name=".ui.SearchFragment"
             android:exported="false"
             android:label="@string/search"
             android:launchMode="singleTop"

@@ -41,19 +41,19 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	static final int OPTION_PLAY = 2;
 
 	private PodcastAdapter _adapter = null;
-	private int _subscriptionId = 0;
+	private long _subscriptionId = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		_subscriptionId = getActivity().getIntent().getIntExtra("subscriptionId", 0);
+		_subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, 0);
 		getLoaderManager().initLoader(0, null, this);
 		_adapter = new PodcastAdapter(getActivity(), null);
 		setListAdapter(_adapter);
 	}
 
-	public void setSubscriptionId(int id) {
+	public void setSubscriptionId(long id) {
 		_subscriptionId = id;
 		getLoaderManager().restartLoader(0, null, this);
 	}

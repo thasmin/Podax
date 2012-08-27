@@ -24,6 +24,7 @@ import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
+import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
@@ -77,13 +78,13 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	public void onListItemClick(ListView list, View view, int position, long id) {
 		Fragment podcastList = getFragmentManager().findFragmentById(R.id.podcastlist_fragment);
 		SubscriptionCursor sub = new SubscriptionCursor((Cursor)list.getItemAtPosition(position));
-		int subscriptionId = (int)(long)sub.getId();
+		long subscriptionId = sub.getId();
 		if (podcastList == null) {
 			// no need to check the item if it's not side by side
 			list.clearChoices();
 
 			Intent intent = new Intent(getActivity(), PodcastListActivity.class);
-			intent.putExtra("subscriptionId", subscriptionId);
+			intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
 			startActivity(intent);
 		} else {
 			PodcastListFragment podcastListFragment = (PodcastListFragment) podcastList;

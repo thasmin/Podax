@@ -31,7 +31,7 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
-	public static void updateSubscription(Context context, int subscriptionId) {
+	public static void updateSubscription(Context context, long subscriptionId) {
 		Intent intent = createUpdateSubscriptionIntent(context, subscriptionId);
 		intent.putExtra(Constants.EXTRA_MANUAL_REFRESH, true);
 		context.startService(intent);
@@ -154,7 +154,7 @@ public class UpdateService extends IntentService {
 		stopSelf();
 	}
 
-	private static Intent createUpdateSubscriptionIntent(Context context, int subscriptionId) {
+	private static Intent createUpdateSubscriptionIntent(Context context, long subscriptionId) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_REFRESH_SUBSCRIPTION);
 		intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);

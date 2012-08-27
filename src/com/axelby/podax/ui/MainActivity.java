@@ -28,7 +28,8 @@ public class MainActivity extends PodaxFragmentActivity {
 	public static final int TAB_WELCOME = 0;
 	public static final int TAB_QUEUE = 1;
 	public static final int TAB_SUBSCRIPTIONS = 2;
-	private static final int TAB_COUNT = 3;
+	public static final int TAB_SEARCH = 3;
+	private static final int TAB_COUNT = 4;
 
 	protected int _focusedPage;
 	protected FreezableViewPager _viewPager;
@@ -151,6 +152,7 @@ public class MainActivity extends PodaxFragmentActivity {
 					resources.getString(R.string.welcome),
 					resources.getString(R.string.queue),
 					resources.getString(R.string.subscriptions),
+					resources.getString(R.string.search),
 			};
 		}
 
@@ -163,6 +165,8 @@ public class MainActivity extends PodaxFragmentActivity {
 				return new QueueFragment();
 			case TAB_SUBSCRIPTIONS:
 				return new SubscriptionFragment();
+			case TAB_SEARCH:
+				return new SearchFragment();
 			}
 			throw new IllegalArgumentException();
 		}

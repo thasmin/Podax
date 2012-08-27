@@ -14,16 +14,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Environment;
+import android.util.Log;
 
 public class SubscriptionProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.subscriptionprovider";
 	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/subscriptions");
-	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-			+ "/vnd.axelby.subscription";
-	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
-			+ "/vnd.axelby.subscription";
-	public static final String PODCAST_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-			+ "/vnd.axelby.podcast";
+	public static final Uri SEARCH_URI = Uri.withAppendedPath(URI, "search");
+
+	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.subscription";
+	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.subscription";
+	public static final String PODCAST_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
