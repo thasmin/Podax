@@ -24,6 +24,8 @@ public class BluetoothConnectionReceiver extends BroadcastReceiver {
 		if (btDevice.getBluetoothClass() == null)
 			return;
 
+		PodaxLog.log(context, "taking action on bluetooth event");
+
 		// pause if it's headphones
 		if (btDevice.getBluetoothClass().getMajorDeviceClass() == BluetoothClass.Device.Major.AUDIO_VIDEO)
 			PlayerService.stop(context);
