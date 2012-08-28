@@ -56,7 +56,7 @@ public class SubscriptionUpdater {
 		_context = context;
 	}
 	
-	public void update(int subscriptionId) {
+	public void update(long subscriptionId) {
 		Cursor cursor = null;
 		try {
 			if (!Helper.ensureWifi(_context))
@@ -228,7 +228,7 @@ public class SubscriptionUpdater {
 		return null;
 	}
 
-	private void processPodcastXML(Integer subscriptionId, SubscriptionCursor subscription, XmlPullParser parser)
+	private void processPodcastXML(long subscriptionId, SubscriptionCursor subscription, XmlPullParser parser)
 			throws XmlPullParserException, IOException, ParseException {
 		// grab podcasts from item tags
 		ContentValues podcastValues = null;
@@ -293,8 +293,7 @@ public class SubscriptionUpdater {
 		}
 	}
 
-	private boolean processSubscriptionXML(Integer subscriptionId,
-			ContentValues subscriptionValues, XmlPullParser parser)
+	private boolean processSubscriptionXML(long subscriptionId, ContentValues subscriptionValues, XmlPullParser parser)
 			throws XmlPullParserException, IOException, ParseException {
 		boolean in_image = false;
 

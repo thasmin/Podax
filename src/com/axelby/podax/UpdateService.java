@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -11,7 +12,6 @@ import java.util.Arrays;
 import java.util.Vector;
 
 import android.accounts.AccountManager;
-import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
@@ -61,9 +61,12 @@ public class UpdateService extends Service {
 		context.startService(intent);
 	}
 
-	private final class UpdateServiceHandler extends Handler {
-		public UpdateServiceHandler(Looper looper) {
+	private static final class UpdateServiceHandler extends Handler {
+		private WeakReference<UpdateService> _service;
+
+		public UpdateServiceHandler(UpdateService service, Looper looper) {
 			super(looper);
+			_service = new WeakReference<UpdateService>(service);
 		}
 
 		@Override
@@ -71,15 +74,15 @@ public class UpdateService extends Service {
 			super.handleMessage(msg);
 
 			Log.d("Podax", "handling an intent");
-			handleIntent((Intent)msg.obj);
+			_service.get().handleIntent((Intent)msg.obj);
 
 			try {
 				if (!hasMessages(0)) {
 					Thread.sleep(1000);
 					if (!hasMessages(0)) {
 						Log.d("Podax", "stopping the update service");
-						removeNotification();
-						stopSelf();
+						_service.get().removeNotification();
+						_service.get().stopSelf();
 					}
 				}
 			} catch (InterruptedException e) {
@@ -87,7 +90,6 @@ public class UpdateService extends Service {
 			}
 		}
 	}
-	@SuppressLint("HandlerLeak")
 	private volatile UpdateServiceHandler _handler;
 	private volatile HandlerThread _handlerThread;
 
@@ -109,7 +111,7 @@ public class UpdateService extends Service {
 
 		_handlerThread = new HandlerThread("UpdateService");
 		_handlerThread.start();
-		_handler = new UpdateServiceHandler(_handlerThread.getLooper());
+		_handler = new UpdateServiceHandler(this, _handlerThread.getLooper());
 	}
 
 	@Override
@@ -156,7 +158,7 @@ public class UpdateService extends Service {
 				startService(createUpdateSubscriptionIntent(this, c.getLong(0)));
 			c.close();
 		} else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
-			int subscriptionId = intent.getIntExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+			long subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 			if (subscriptionId == -1)
 				return;
 			new SubscriptionUpdater(this).update(subscriptionId);
