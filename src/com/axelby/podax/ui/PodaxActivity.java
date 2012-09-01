@@ -6,7 +6,6 @@ import android.os.Bundle;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.axelby.podax.Helper;
-import com.axelby.podax.PlayerStatus;
 
 public class PodaxActivity extends SherlockActivity {
 
@@ -27,7 +26,6 @@ public class PodaxActivity extends SherlockActivity {
 		super.onResume();
 
 		Helper.registerMediaButtons(this);
-		PlayerStatus.initialize(this);
 	}
 
 	@Override

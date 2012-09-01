@@ -14,7 +14,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Environment;
-import android.util.Log;
 
 public class SubscriptionProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.subscriptionprovider";

@@ -222,7 +222,7 @@ public class PodcastProvider extends ContentProvider {
 				editor.commit();
 
 				// tell everyone that there's a new active podcast
-				PlayerStatus.refresh(getContext());
+				Helper.updateWidgets(getContext());
 
 				// if we're clearing the active podcast or updating just the ID, don't go to the DB
 				if (activePodcastId == null || values.size() == 1)
@@ -339,11 +339,11 @@ public class PodcastProvider extends ContentProvider {
 		long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
 		if (String.valueOf(activePodcastId).equals(podcastId)) {
 			prefs.edit().remove(PREF_ACTIVE).commit();
-			PlayerStatus.refresh(getContext());
+			Helper.updateWidgets(getContext());
 		} else if (activePodcastId == -1 &&
 				((oldPosition != null && oldPosition == 0) ||
 				  newPosition != null && newPosition == 0)) {
-			PlayerStatus.refresh(getContext());
+			Helper.updateWidgets(getContext());
 		}
 	}
 

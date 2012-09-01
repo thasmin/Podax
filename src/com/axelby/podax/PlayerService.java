@@ -20,6 +20,7 @@ import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
@@ -39,7 +40,6 @@ public class PlayerService extends Service {
 				return;
 			int oldPosition = _lastPosition;
 			_lastPosition = _player.getCurrentPosition();
-			PlayerStatus.updatePosition(_lastPosition);
 			if (oldPosition / 1000 != _lastPosition / 1000)
 				updateActivePodcastPosition(_lastPosition);
 		}
@@ -50,7 +50,7 @@ public class PlayerService extends Service {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
 			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
 			PodaxLog.log(PlayerService.this, "audio focus change event");
-			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && !PlayerStatus.isPaused())
+			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && PlayerStatus.getCurrentState(PlayerService.this).isPaused())
 				PlayerService.play(PlayerService.this);
 			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
 				PlayerService.pause(PlayerService.this);
@@ -145,8 +145,6 @@ public class PlayerService extends Service {
 	}
 
 	private void setup() {
-		PlayerStatus.initialize(this);
-
 		if (_player == null) {
 			setupMediaPlayer();
 			setupTelephony();
@@ -270,9 +268,9 @@ public class PlayerService extends Service {
 	private void resume() {
 		PodaxLog.log(this, "PlayerService resume");
 
-		if (PlayerStatus.isPaused() && _isPlayerPrepared) {
+		if (PlayerStatus.getCurrentState(this).isPaused() && _isPlayerPrepared) {
 			_player.start();
-			PlayerStatus.updateState(PlayerStates.PLAYING);
+			PlayerStatus.updateState(this, PlayerStates.PLAYING);
 			_lockscreenManager.setLockscreenPlaying();
 			return;
 		}
@@ -318,7 +316,7 @@ public class PlayerService extends Service {
 		}
 
 		_player.start();
-		PlayerStatus.updateState(PlayerStates.PLAYING);
+		PlayerStatus.updateState(this, PlayerStates.PLAYING);
 
 		_pausedForPhone = false;
 		showNotification();
@@ -331,7 +329,7 @@ public class PlayerService extends Service {
 
 		_player.pause();
 		updateActivePodcastPosition(_player.getCurrentPosition());
-		PlayerStatus.updateState(PlayerStates.PAUSED);
+		PlayerStatus.updateState(this, PlayerStates.PAUSED);
 		_lockscreenManager.setLockscreenPaused();
 
 		tearDownTelephony();
@@ -357,7 +355,7 @@ public class PlayerService extends Service {
 			_player.stop();
 		}
 
-		PlayerStatus.updateState(PlayerStates.STOPPED);
+		PlayerStatus.updateState(this, PlayerStates.STOPPED);
 		_player = null;
 		stopSelf();
 
@@ -491,7 +489,6 @@ public class PlayerService extends Service {
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		PlayerService.this.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
-		PlayerStatus.updatePosition(position);
 		Helper.updateWidgets(this);
 	}
 

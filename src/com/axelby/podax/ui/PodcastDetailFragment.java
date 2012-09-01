@@ -93,7 +93,8 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (PlayerStatus.isPlaying() && PlayerStatus.getCurrentState().getId() == _podcastId)
+				PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());
+				if (playerState.isPlaying() && playerState.getId() == _podcastId)
 					PlayerService.stop(getActivity());
 				else {
 					PodaxLog.log(getActivity(), "playing a specific podcast from podcastdetailfragment");
@@ -185,16 +186,15 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
 	}
 
-	private void updatePlayerControls(PodcastCursor podcast) {
-		if (PlayerStatus.getCurrentState().getId() == podcast.getId()) {
+	private void updatePlayerControls(PlayerStatus playerState, PodcastCursor podcast) {
+		if (playerState.hasActivePodcast() && playerState.getId() == podcast.getId()) {
 			if (!_seekbar_dragging) {
 				_position.setText(Helper.getTimeString(podcast.getLastPosition()));
 				_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
 				_seekbar.setProgress(podcast.getLastPosition());
 			}
 
-			int playResource = PlayerStatus.isPlaying() ? R.drawable.ic_media_pause
-					: R.drawable.ic_media_play;
+			int playResource = playerState.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			_playButton.setImageResource(playResource);
 
 			if (_controlsEnabled == true)
@@ -275,7 +275,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 			_initializedPodcastId = _podcastId;
 		}
 		updateQueueViews(podcast);
-		updatePlayerControls(podcast);
+		updatePlayerControls(PlayerStatus.getCurrentState(getActivity()), podcast);
 	}
 
 	@Override

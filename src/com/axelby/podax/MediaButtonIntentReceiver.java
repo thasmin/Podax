@@ -34,7 +34,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 
 			// use the pref before we start playing
-			if (PlayerStatus.isStopped() && !canResume)
+			if (PlayerStatus.getCurrentState(context).isStopped() && !canResume)
 				break;
 
 			if  (event.getRepeatCount() == 0) {

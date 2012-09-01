@@ -55,21 +55,21 @@ public class BottomBar extends LinearLayout {
 		super.onAttachedToWindow();
 
 		loadViews(getContext());
-		updateUI();
+		updateUI(PlayerStatus.getCurrentState(getContext()));
 
 		_timer = new Timer();
 		_timer.schedule(new TimerTask() {
 			public void run() {
 				_handler.post(new Runnable() {
 					public void run() {
-						_pausebtn.setImageResource(PlayerStatus.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
-						PlayerStatus status = PlayerStatus.getCurrentState();
-						if (status != null) {
+						PlayerStatus status = PlayerStatus.getCurrentState(getContext());
+						_pausebtn.setImageResource(status.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
+						if (status.hasActivePodcast()) {
 							_podcastProgress.set(status.getPosition(), status.getDuration());
 							_podcastTitle.setText(status.getTitle());
 						} else {
 							_podcastProgress.clear();
-							_podcastTitle.setText("");
+							_podcastTitle.setText("Queue empty");
 						}
 					}
 				});
@@ -111,8 +111,8 @@ public class BottomBar extends LinearLayout {
 		});
 	}
 
-	public void updateUI() {
-		boolean isPlaying = PlayerStatus.isPlaying();
+	public void updateUI(PlayerStatus status) {
+		boolean isPlaying = status.isPlaying();
 		_pausebtn.setImageResource(isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
 
 		String[] projection = {

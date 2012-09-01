@@ -24,7 +24,7 @@ public class HeadsetConnectionReceiver extends BroadcastReceiver {
 
 		if (headsetConnected && !justConnected) {
 			// if we're playing, pause
-			if (PlayerStatus.isPlaying())
+			if (PlayerStatus.getCurrentState(context).isPlaying())
 					PlayerService.stop(context);
 		}
 

@@ -25,15 +25,14 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 			int[] appWidgetIds) {
-		PlayerStatus.initialize(context);
-
 		if (appWidgetIds.length == 0)
 			return;
 
 		for (int widgetId : appWidgetIds) {
 			RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.smallwidget);
-	
-			updatePodcastDetails(context, views);
+
+			PlayerStatus playerState = PlayerStatus.getCurrentState(context);
+			updatePodcastDetails(playerState, views);
 	
 			// set up pending intents
 			setClickIntent(context, views, R.id.rewind_btn, Constants.PLAYER_COMMAND_SKIPBACK);
@@ -46,7 +45,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
 			try {
-				long subscriptionId = PlayerStatus.getCurrentState().getSubscriptionId();
+				long subscriptionId = playerState.getSubscriptionId();
 				String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
 				if (new File(imageFilename).exists()) {
 					Bitmap bitmap = BitmapFactory.decodeFile(imageFilename);
@@ -69,13 +68,12 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}
 
-	public void updatePodcastDetails(Context context, RemoteViews views) {
-		PlayerStatus player = PlayerStatus.getCurrentState();
+	public void updatePodcastDetails(PlayerStatus player, RemoteViews views) {
 		if (player.hasActivePodcast()) {
 			views.setTextViewText(R.id.title, player.getTitle());
 			PodcastProgress.remoteSet(views, player.getPosition(), player.getDuration());
 
-			int imageRes = PlayerStatus.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+			int imageRes = player.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		} else {
 			views.setTextViewText(R.id.title, "Queue empty");

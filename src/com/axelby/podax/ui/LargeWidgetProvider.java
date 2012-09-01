@@ -16,8 +16,6 @@ import com.axelby.podax.R;
 public class LargeWidgetProvider extends AppWidgetProvider {
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-		PlayerStatus.initialize(context);
-
 		if (appWidgetIds.length == 0)
 			return;
 
@@ -49,13 +47,13 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 	}
 
 	public void updatePodcastDetails(Context context, RemoteViews views) {
-		PlayerStatus player = PlayerStatus.getCurrentState();
+		PlayerStatus player = PlayerStatus.getCurrentState(context);
 		if (player.hasActivePodcast()) {
 			views.setTextViewText(R.id.title, player.getTitle());
 			views.setTextViewText(R.id.podcast, player.getSubscriptionTitle());
 			PodcastProgress.remoteSet(views, player.getPosition(), player.getDuration());
 
-			int imageRes = PlayerStatus.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+			int imageRes = player.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		} else {
 			views.setTextViewText(R.id.title, "Queue empty");
