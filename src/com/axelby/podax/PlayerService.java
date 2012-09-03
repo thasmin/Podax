@@ -20,7 +20,6 @@ import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
-import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
@@ -130,6 +129,8 @@ public class PlayerService extends Service {
 			_player.setOnErrorListener(new OnErrorListener() {
 				public boolean onError(MediaPlayer mp, int what, int extra) {
 					PodaxLog.log(PlayerService.this, "mediaplayer error - what: %d, extra: %d", what, extra);
+					stopUpdateTimer();
+					_player = null;
 					return true;
 				}
 			});
