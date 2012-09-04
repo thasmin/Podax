@@ -8,7 +8,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="83dp"
+        android:layout_height="match_parent"
         android:orientation="horizontal" >
 
         <ImageButton
@@ -27,7 +27,7 @@
         <LinearLayout
             android:id="@+id/innerLayout"
             android:layout_width="0dip"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical" >
 
@@ -45,7 +45,8 @@
                 android:id="@+id/positionstring"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="2dp"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
                 layout="@layout/podcast_progress" />
 
             <LinearLayout
@@ -56,8 +57,10 @@
 
                 <ImageButton
                     android:id="@+id/rewind_btn"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/rewind"
@@ -65,8 +68,10 @@
 
                 <ImageButton
                     android:id="@+id/play_btn"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/play"
@@ -74,8 +79,10 @@
 
                 <ImageButton
                     android:id="@+id/skip_btn"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/fast_forward"
@@ -89,8 +96,10 @@
 
                 <ImageButton
                     android:id="@+id/next_btn"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/skip_to_end"
