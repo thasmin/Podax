@@ -7,12 +7,10 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
-import android.util.TypedValue;
 import android.widget.RemoteViews;
 
 import com.axelby.podax.Constants;
@@ -49,10 +47,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 				String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
 				if (new File(imageFilename).exists()) {
 					Bitmap bitmap = BitmapFactory.decodeFile(imageFilename);
-					Resources r = context.getResources();
-					int px = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 83, r.getDisplayMetrics());
-					Bitmap scaled = Bitmap.createScaledBitmap(bitmap, px, px, true);
-					views.setImageViewBitmap(R.id.show_btn, scaled);
+					views.setImageViewBitmap(R.id.show_btn, bitmap);
 				} else {
 					Log.d("Podax", "file doesn't exist: " + imageFilename);
 					views.setImageViewResource(R.id.show_btn, R.drawable.icon);
