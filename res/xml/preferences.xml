@@ -16,16 +16,6 @@
     <PreferenceCategory android:title="Controls" >
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="stopOnHeadphonePref"
-            android:summary="@string/pref_headset_disconnect"
-            android:title="@string/pref_headset_disconnect_title" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="stopOnBluetoothPref"
-            android:summary="@string/pref_bluetooth_disconnect"
-            android:title="@string/pref_bluetooth_disconnect_title" />
-        <CheckBoxPreference
-            android:defaultValue="true"
             android:key="resumeOnBluetoothPref"
             android:summary="@string/pref_bluetooth_connect"
             android:title="@string/pref_bluetooth_connect_title" />
