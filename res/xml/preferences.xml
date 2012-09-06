@@ -13,13 +13,6 @@
             android:summary="@string/pref_auto_delete"
             android:title="@string/pref_auto_delete_title" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Controls" >
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="resumeOnBluetoothPref"
-            android:summary="@string/pref_bluetooth_connect"
-            android:title="@string/pref_bluetooth_connect_title" />
-    </PreferenceCategory>
     <PreferenceCategory android:title="Debug" >
         <CheckBoxPreference
             android:defaultValue="true"

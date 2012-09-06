@@ -4,9 +4,7 @@ import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -20,9 +18,6 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		if (event.getAction() != KeyEvent.ACTION_DOWN)
 			return;
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		boolean canResume = prefs.getBoolean("resumeOnBluetoothPref", true);
-
 		PodaxLog.log(context, "got media button down event");
 		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD && event.getDevice() != null)
 			PodaxLog.log(context, "  from %s", event.getDevice().getName());
@@ -32,11 +27,6 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		case KeyEvent.KEYCODE_HEADSETHOOK:
 		case KeyEvent.KEYCODE_MEDIA_PLAY:
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-
-			// use the pref before we start playing
-			if (PlayerStatus.getCurrentState(context).isStopped() && !canResume)
-				break;
-
 			if  (event.getRepeatCount() == 0) {
 				PodaxLog.log(context, "playpausing because of media button intent");
 				PlayerService.playpause(context);
