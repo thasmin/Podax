@@ -376,10 +376,16 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 		public long getItemId(int position) {
 			if (isHeader(position))
 				return -1;
+
+			Cursor cursor = (Cursor)getItem(position);
+			if (cursor == null)
+				return -1;
+
 			if (isSubscription(position))
-				return new SubscriptionCursor((Cursor)getItem(position)).getId();
+				return new SubscriptionCursor(cursor).getId();
 			if (isPodcast(position))
-				return new PodcastCursor((Cursor)getItem(position)).getId();
+				return new PodcastCursor(cursor).getId();
+
 			throw new IllegalStateException();
 		}
 
