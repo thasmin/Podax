@@ -23,7 +23,7 @@
 		<item>Subscriptions</item>
 		<item>Podcasts</item>
 	</string-array>
-	<string name="search_hint">Search podcasts and subscriptions</string>
+	<string name="search_hint">Search within Podax</string>
 	<string name="refresh_subscription">Refresh Subscription</string>
 	<string name="refresh_subscriptions">Refresh Subscriptions</string>
 	<string name="active_downloads">Active Downloads</string>
