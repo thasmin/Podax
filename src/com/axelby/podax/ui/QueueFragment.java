@@ -296,8 +296,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					int position = getListView().getPositionForView(view);
-					getActivity().openContextMenu(getListView().getChildAt(position));
+					getActivity().openContextMenu((View)(view.getParent()));
 				}
 			});
 

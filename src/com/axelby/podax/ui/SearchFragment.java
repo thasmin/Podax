@@ -435,8 +435,9 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 				view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						int position = getListView().getPositionForView(view);
-						getActivity().openContextMenu(getListView().getChildAt(position));
+						if (getActivity() == null)
+							return;
+						getActivity().openContextMenu((View)(view.getParent()));
 					}
 				});
 				
@@ -456,8 +457,7 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 					public void onClick(View view) {
 						if (getActivity() == null)
 							return;
-						int position = getListView().getPositionForView(view);
-						getActivity().openContextMenu(getListView().getChildAt(position));
+						getActivity().openContextMenu((View)(view.getParent()));
 					}
 				});
 
