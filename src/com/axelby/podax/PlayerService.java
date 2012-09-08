@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,19 +16,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
-import com.axelby.podax.R.drawable;
 import com.axelby.podax.ui.PodcastDetailActivity;
 
 public class PlayerService extends Service {
@@ -457,6 +463,7 @@ public class PlayerService extends Service {
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 		};
 		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
@@ -464,17 +471,63 @@ public class PlayerService extends Service {
 			return;
 		PodcastCursor podcast = new PodcastCursor(c);
 
-		Intent notificationIntent = new Intent(this, PodcastDetailActivity.class);
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		// both paths use the pendingintent
+		Intent showIntent = new Intent(this, PodcastDetailActivity.class);
+		PendingIntent showPendingIntent = PendingIntent.getActivity(this, 0, showIntent, 0);
 
-		Notification notification = new NotificationCompat.Builder(this)
-			.setSmallIcon(drawable.icon)
-			.setWhen(System.currentTimeMillis())
-			.setContentTitle(podcast.getTitle())
-			.setContentText(podcast.getSubscriptionTitle())
-			.setContentIntent(contentIntent)
-			.setOngoing(true)
-			.getNotification();
+		Notification notification = null;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.player_notification);
+			contentView.setTextViewText(R.id.podcast, podcast.getTitle());
+			contentView.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+
+			// set up pause intent
+			Intent pauseIntent = new Intent(this, PlayerService.class);
+			// use data to make intent unique
+			pauseIntent.setData(Uri.parse("podax://playercommand/stop"));
+			pauseIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_STOP);
+			PendingIntent pausePendingIntent = PendingIntent.getService(this, 0, pauseIntent, 0);
+			contentView.setOnClickPendingIntent(R.id.pause, pausePendingIntent);
+
+			// set up forward intent
+			Intent forwardIntent = new Intent(this, PlayerService.class);
+			// use data to make intent unique
+			forwardIntent.setData(Uri.parse("podax://playercommand/forward"));
+			forwardIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_SKIPFORWARD);
+			PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
+			contentView.setOnClickPendingIntent(R.id.forward, forwardPendingIntent);
+
+			// set subscription image
+			try {
+				long subscriptionId = podcast.getSubscriptionId();
+				String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
+				if (new File(imageFilename).exists()) {
+					Bitmap bitmap = BitmapFactory.decodeFile(imageFilename);
+					contentView.setImageViewBitmap(R.id.show_btn, bitmap);
+				} else {
+					Log.d("Podax", "file doesn't exist: " + imageFilename);
+					contentView.setImageViewResource(R.id.show_btn, R.drawable.icon);
+				}
+			} catch (OutOfMemoryError e) {
+				Log.d("Podax", "out of memory error");
+				contentView.setImageViewResource(R.id.show_btn, R.drawable.icon);
+			}
+	
+			notification = new NotificationCompat.Builder(this)
+				.setSmallIcon(R.drawable.icon)
+				.setContent(contentView)
+				.setOngoing(true)
+				.getNotification();
+		} else {
+			notification = new NotificationCompat.Builder(this)
+				.setSmallIcon(R.drawable.icon)
+				.setWhen(System.currentTimeMillis())
+				.setContentTitle(podcast.getTitle())
+				.setContentText(podcast.getSubscriptionTitle())
+				.setContentIntent(showPendingIntent)
+				.setOngoing(true)
+				.getNotification();
+		}
 
 		startForeground(Constants.NOTIFICATION_PLAYING, notification);
 
