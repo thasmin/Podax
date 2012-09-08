@@ -108,6 +108,9 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 						final String[] itemText = options.toArray(new String[] {});
 
 						final boolean[] checkedItems = new boolean[itemText.length];
+						for (int i = 0; i < itemText.length; ++i)
+							if (itemText[i].equals("Listen Subscriptions"))
+								checkedItems[i] = true;
 
 						AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 						builder.setTitle("Google Reader Folders");
