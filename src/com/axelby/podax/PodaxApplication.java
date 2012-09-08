@@ -15,6 +15,8 @@ public class PodaxApplication extends Application {
 	public void onCreate() {
 		ACRA.init(this);
 		super.onCreate();
+
+		PodaxLog.ensureRemoved(this);
 	}
 
 }

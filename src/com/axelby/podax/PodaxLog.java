@@ -9,20 +9,21 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 
 public class PodaxLog {
 
+	public static void ensureRemoved(Context context) {
+		if (isDebuggable(context))
+			return;
+		File file = new File(context.getExternalFilesDir(null), "podax.log");
+		if (file.exists())
+			file.delete();
+	}
+
 	public static void log(Context context, String format, Object... args) {
 		try {
-			// make sure debuggable flag is set before writing to the log
-			PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
-						context.getApplicationInfo().packageName,
-						PackageManager.GET_CONFIGURATIONS);
-			if (packageInfo == null)
-				return;
-			
-			int flags = packageInfo.applicationInfo.flags;
-			if ((flags & ApplicationInfo.FLAG_DEBUGGABLE) == 0)
+			if (!isDebuggable(context))
 				return;
 	
 			String message = String.format(format, args);
@@ -35,6 +36,26 @@ public class PodaxLog {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static boolean isDebuggable(Context context) {
+		// make sure debuggable flag is set before writing to the log
+		PackageInfo packageInfo;
+		try {
+			packageInfo = context.getPackageManager().getPackageInfo(
+						context.getApplicationInfo().packageName,
+						PackageManager.GET_CONFIGURATIONS);
+		} catch (NameNotFoundException e) {
+			return false;
+		}
+		if (packageInfo == null)
+			return false;
+
+		int flags = packageInfo.applicationInfo.flags;
+		if ((flags & ApplicationInfo.FLAG_DEBUGGABLE) == 0)
+			return false;
+
+		return true;
 	}
 
 }
