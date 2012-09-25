@@ -4,16 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
@@ -82,40 +79,40 @@ public class SubscriptionUpdater {
 
 			showNotification(subscription);
 
-			HttpGet request = new HttpGet(subscription.getUrl());
+			URL url = new URL(subscription.getUrl());
+			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 			if (subscription.getETag() != null)
-				request.addHeader("If-None-Match", subscription.getETag());
+				connection.setRequestProperty("If-None-Match", subscription.getETag());
 			if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
 				SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-				request.addHeader("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
+				connection.setRequestProperty("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
 			}
-			HttpClient client = new DefaultHttpClient();
-			HttpResponse response = client.execute(request);
 
-			int code = response.getStatusLine().getStatusCode();
+			int code = connection.getResponseCode();
 			// only valid response code is 200
 			// 304 (content not modified) is OK too
 			if (code != 200) {
 				return;
 			}
 
-			String eTag = null;
-			if (response.containsHeader("ETag")) {
-				eTag = response.getLastHeader("ETag").getValue();
+			String eTag = connection.getHeaderField("ETag");
+			if (eTag != null) {
 				subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
 				if (eTag.equals(subscription.getETag()))
 					return;
 			}
 
-			InputStream responseStream = response.getEntity().getContent();
-			if (responseStream == null) {
-				showUpdateErrorNotification(subscription, "Feed not available. Check the URL.");
-				return;
+			String encoding = connection.getContentEncoding();
+			if (encoding == null) {
+				String contentType = connection.getContentType();
+				if (contentType != null && contentType.indexOf(";") > -1) {
+					encoding = contentType.split(";")[1].trim().substring("charset=".length());
+				}
 			}
 
 			try {
 				XmlPullParser parser = Xml.newPullParser();
-				parser.setInput(responseStream, null);
+				parser.setInput(connection.getInputStream(), encoding);
 				if (!processSubscriptionXML(subscriptionId, subscriptionValues, parser))
 					return;
 				// parseSubscriptionXML stops when it finds an item tag
