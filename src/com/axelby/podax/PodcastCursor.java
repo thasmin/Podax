@@ -143,6 +143,13 @@ public class PodcastCursor {
 	}
 
 	public static String getExtension(String filename) {
+		// dissect the url to get the filename portion
+		int s = filename.lastIndexOf('/');
+		filename = filename.substring(s + 1);
+		int q = filename.indexOf('?');
+		if (q != -1)
+			filename = filename.substring(0, q);
+
 		String extension = "";
 		int i = filename.lastIndexOf('.');
 		if (i > 0)
