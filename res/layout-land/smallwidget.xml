@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="300dp"
-    android:layout_height="85dp"
+    android:layout_width="418dp"
+    android:layout_height="74dp"
     android:background="#111111"
     android:gravity="bottom"
     android:orientation="vertical" >
@@ -13,8 +13,8 @@
 
         <ImageButton
             android:id="@+id/show_btn"
-            android:layout_width="83dp"
-            android:layout_height="83dp"
+            android:layout_width="74dp"
+            android:layout_height="74dp"
             android:background="@android:color/transparent"
             android:contentDescription="@string/go_to_details"
             android:padding="6dp"
@@ -37,7 +37,9 @@
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="24dp"
-                android:layout_margin="2dp"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:layout_marginTop="2dp"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:singleLine="true"
