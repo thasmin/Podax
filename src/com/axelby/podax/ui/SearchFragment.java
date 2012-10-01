@@ -54,6 +54,7 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 	protected static final int OPTION_UNSUBSCRIBE = 4;
 
 	private SearchResultsAdapter _adapter;
+	protected String _lastQuery;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -136,13 +137,8 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 		actv.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
-				String query = s.toString();
-				Bundle bundle = new Bundle();
-				bundle.putString("query", query);
-				getLoaderManager().destroyLoader(CURSOR_SUBSCRIPTIONS);
-				getLoaderManager().initLoader(CURSOR_SUBSCRIPTIONS, bundle, SearchFragment.this);
-				getLoaderManager().destroyLoader(CURSOR_PODCASTS);
-				getLoaderManager().initLoader(CURSOR_PODCASTS, bundle, SearchFragment.this);
+				_lastQuery = s.toString();
+				requery();
 			}
 
 			@Override
@@ -196,9 +192,10 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
 		SearchResultType type = _adapter.getType(info.position);
+		Cursor cursor;
 		switch (type) {
 		case PODCAST:
-			Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
+			cursor = (Cursor) getListView().getItemAtPosition(info.position);
 			PodcastCursor podcast = new PodcastCursor(cursor);
 
 			switch (item.getItemId()) {
@@ -211,6 +208,17 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 			case OPTION_PLAY:
 				PodaxLog.log(getActivity(), "playing a specific podcast from podcastlistfragment");
 				PlayerService.play(getActivity(), podcast);
+				break;
+			}
+			break;
+		case SUBSCRIPTION:
+			cursor = (Cursor) getListView().getItemAtPosition(info.position);
+			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
+			switch (item.getItemId()) {
+			case OPTION_UNSUBSCRIBE:
+				getActivity().getContentResolver().delete(subscription.getContentUri(), null, null);
+				requery();
+				break;
 			}
 			break;
 		}
@@ -260,6 +268,15 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
+	}
+
+	private void requery() {
+		Bundle bundle = new Bundle();
+		bundle.putString("query", _lastQuery);
+		getLoaderManager().destroyLoader(CURSOR_SUBSCRIPTIONS);
+		getLoaderManager().initLoader(CURSOR_SUBSCRIPTIONS, bundle, SearchFragment.this);
+		getLoaderManager().destroyLoader(CURSOR_PODCASTS);
+		getLoaderManager().initLoader(CURSOR_PODCASTS, bundle, SearchFragment.this);
 	}
 
 	private enum SearchResultType {
