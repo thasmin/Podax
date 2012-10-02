@@ -392,7 +392,7 @@ public class PlayerService extends Service {
 	}
 
 	private void grabAudioFocusAndResume() {
-		if (grabAudioFocus())
+		if (grabAudioFocus() && this != null)
 			resume();
 	}
 
