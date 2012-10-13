@@ -8,34 +8,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
-import android.widget.ViewSwitcher;
 
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.axelby.podax.Constants;
@@ -44,8 +38,10 @@ import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
+import com.mobeta.android.dslv.DragSortListView;
+import com.mobeta.android.dslv.DragSortListView.DropListener;
 
-public class QueueFragment extends SherlockListFragment implements OnTouchListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class QueueFragment extends SherlockListFragment implements DropListener, LoaderManager.LoaderCallbacks<Cursor> {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
 	static final int OPTION_MOVETOFIRSTINQUEUE = 3;
@@ -106,8 +102,9 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 			}
 		});
 
-		getListView().setOnTouchListener(this);
-	}
+        DragSortListView lv = (DragSortListView) getListView(); 
+        lv.setDropListener(this);
+    }
 
 	@Override
 	public void onPause() {
@@ -167,101 +164,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 		_adapter.changeCursor(null);
 	}
 
-	public boolean onTouch(View v, MotionEvent event) {
-		QueueListAdapter adapter = (QueueListAdapter)getListAdapter();
-		if (adapter.getHeldPodcastId() == null)
-			return false;
-
-		ListView listView = getListView();
-		if (event.getAction() == MotionEvent.ACTION_UP)
-		{
-			adapter.unholdPodcast();
-			return true;
-		}
-		if (event.getAction() == MotionEvent.ACTION_MOVE)
-		{
-			int position = listView.pointToPosition((int) event.getX(),
-					(int) event.getY());
-			if (position == -1)
-				return true;
-
-			for (int i = listView.getFirstVisiblePosition(); i <= listView.getLastVisiblePosition(); ++i)
-			{
-				Rect bounds = new Rect();
-				listView.getChildAt(i - listView.getFirstVisiblePosition()).getHitRect(bounds);
-				dragLog(String.format("position %d: top: %d, bottom: %d, height %d, centerY: %d", i, bounds.top, bounds.bottom, bounds.height(), bounds.centerY()));
-			}
-			dragLog(String.format("pointing to y %f, position %d", event.getY(), position));
-			View listItem = listView.getChildAt(position - listView.getFirstVisiblePosition());
-			// no listview means we're below the last one
-			if (listItem == null) {
-				dragLogEnd(String.format("moving to last position: %d", getListAdapter().getCount()));
-				adapter.setQueuePosition(getListAdapter().getCount());
-				return true;
-			}
-
-			// don't change anything if we're hovering over this one
-			if (position == adapter.getHeldQueuePosition()) {
-				dragLogEnd("hovering over held podcast");
-				return true;
-			}
-
-			// remove hidden podcast from ordering
-			dragLog(String.format("comparing position %d and geld position %d", position, adapter.getHeldQueuePosition()));
-			if (position >= adapter.getHeldQueuePosition()) {
-				dragLog("subtracting 1 because we're past held");
-				position -= 1;
-			}
-
-			// move podcast to proper position
-			Rect bounds = new Rect();
-			listItem.getHitRect(bounds);
-			dragLog(String.format("height: %d, centerY: %d, eventY: %f", bounds.height(), bounds.centerY(), event.getY()));
-			// if pointer is in top half of item then put separator above,
-			// otherwise below
-			if (event.getY() > bounds.centerY())
-				position += 1;
-			dragLogEnd(String.format("moving to position %d", position));
-			adapter.setQueuePosition(position);
-			return true;
-		}
-		return false;
-	}
-
-	private final boolean logDragMessages = false;
-	private void dragLog(String message) {
-		if (logDragMessages) {
-			Log.d("Podax", message);
-		}
-	}
-	private void dragLogEnd(String message) {
-		if (logDragMessages) {
-			Log.d("Podax", message);
-			Log.d("Podax", " ");
-		}
-	}
-
 	private class QueueListAdapter extends ResourceCursorAdapter {
-
-		private OnTouchListener downListener = new OnTouchListener() {
-			public boolean onTouch(View view, MotionEvent event) {
-				if (event.getAction() == MotionEvent.ACTION_DOWN)
-				{
-					int position = getListView().getPositionForView(view);
-
-					position -= getListView().getFirstVisiblePosition();
-					dragLog(String.format("holding podcast at position %d", position));
-					QueueListAdapter.this.holdPodcast(position);
-					if (getActivity() instanceof MainActivity)
-						((MainActivity)getActivity()).freezeViewPager();
-					return true;
-				}
-				return false;
-			}
-		};
-
-		private Long _heldPodcastId = null;
-		private int _heldQueuePosition;
 
 		public QueueListAdapter(Context context, Cursor cursor) {
 			super(context, R.layout.queue_list_item, cursor, true);
@@ -271,26 +174,7 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 		public void bindView(View view, Context context, Cursor cursor) {
 			PodcastCursor podcast = new PodcastCursor(cursor);
 
-			// set the switcher to the proper state
-			ViewSwitcher switcher = (ViewSwitcher)view;
-			switcher.setMeasureAllChildren(false);
-			if (_heldPodcastId != null &&
-					podcast.getId() == (long)_heldPodcastId &&
-					switcher.getDisplayedChild() == 0)
-				switcher.showNext();
-			if ((_heldPodcastId == null || podcast.getId() != (long)_heldPodcastId) &&
-					switcher.getDisplayedChild() == 1)
-				switcher.showPrevious();
-
-			// no need to do anything else if switcher is the bar
-			if (switcher.getDisplayedChild() == 1)
-				return;
-
 			view.setTag(podcast.getId());
-
-			// set the listener for the dragable
-			View btn = view.findViewById(R.id.dragable);
-			btn.setOnTouchListener(downListener);
 
 			// more button handler
 			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
@@ -352,39 +236,15 @@ public class QueueFragment extends SherlockListFragment implements OnTouchListen
 
 		}
 
-		public void holdPodcast(int position) {
-			_heldQueuePosition = position;
-			_heldPodcastId = (Long)getListView().getChildAt(position).getTag();
-			notifyDataSetChanged();
-		}
-
-		public void unholdPodcast() {
-			_heldPodcastId = null;
-			notifyDataSetChanged();
-			if (getActivity() instanceof MainActivity)
-				((MainActivity)getActivity()).unfreezeViewPager();
-		}
-
-		public Long getHeldPodcastId() {
-			return _heldPodcastId;
-		}
-
-		public int getHeldQueuePosition() {
-			return _heldQueuePosition;
-		}
-
-		public void setQueuePosition(int position) {
-			if (_heldPodcastId == null || _heldQueuePosition == position)
-				return;
-
-			// update the held cursor to have the new queue position
-			// the queue will automatically reorder
-			ContentValues heldValues = new ContentValues();
-			heldValues.put(PodcastProvider.COLUMN_QUEUE_POSITION, position);
-			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _heldPodcastId);
-			getActivity().getContentResolver().update(podcastUri, heldValues, null, null);
-			_heldQueuePosition = position;
-		}
 	}
 
+	@Override
+	public void drop(int from, int to) {
+		Long podcastId = _adapter.getItemId(from);
+		// update position
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, to);
+		Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
+		getActivity().getContentResolver().update(podcastUri, values, null, null);
+	}
 }

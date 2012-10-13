@@ -4,7 +4,7 @@
     android:layout_alignParentTop="true"
     android:orientation="vertical" >
 
-    <ListView
+    <com.mobeta.android.dslv.DragSortListView
         android:id="@+id/android:list"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />

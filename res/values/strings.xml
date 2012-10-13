@@ -38,8 +38,10 @@
 	    <p>Podax is open source software. You can get the source code at
 	    	<a href="http://github.com/thasmin/Podax">http://github.com/thasmin/Podax</a>.
 	    	It is available under the 2 clause BSD license.</p>
-	    <p>Podax uses the awesome <a href="www.actionbarsherlock.com">ActionBarSherlock</a> and
-			<a href="www.viewpagerindicator">ViewPagerIndicator</a> libraries.</p>
+	    <p>Podax uses the awesome <a href="www.actionbarsherlock.com">ActionBarSherlock</a>,
+			<a href="www.viewpagerindicator">ViewPagerIndicator</a> and
+			<a href="https://github.com/bauerca/drag-sort-listview">drag-sort-listview</a>
+			libraries.</p>
 	    <p>Special thanks to everyone who\'s helped on Github:</p>
 	    <ul>
 		    <li><a href="http://coffeecode.net/">Dan Scott</a></li>

@@ -466,7 +466,7 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 				PodcastCursor podcast = new PodcastCursor((Cursor)o);
 				
 				view = _inflater.inflate(R.layout.queue_list_item, null);
-				view.findViewById(R.id.dragable).setVisibility(View.INVISIBLE);
+				view.findViewById(R.id.drag).setVisibility(View.INVISIBLE);
 
 				// more button handler
 				view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
