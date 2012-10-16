@@ -43,7 +43,10 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 				long subscriptionId = playerState.getSubscriptionId();
 				String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
 				if (new File(imageFilename).exists()) {
-					Bitmap bitmap = BitmapFactory.decodeFile(imageFilename);
+					Bitmap origBitmap = BitmapFactory.decodeFile(imageFilename);
+					// scale bitmap down to save memory (needs to be smaller then display size)
+					float density = context.getResources().getDisplayMetrics().density;
+					Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, (int)density*92, (int)density*92, false);
 					views.setImageViewBitmap(R.id.show_btn, bitmap);
 				} else {
 					Log.d("Podax", "file doesn't exist: " + imageFilename);

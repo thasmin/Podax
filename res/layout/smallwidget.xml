@@ -17,7 +17,6 @@
             android:layout_height="83dp"
             android:background="@android:color/transparent"
             android:contentDescription="@string/go_to_details"
-            android:padding="6dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_widget_bouncearrow" />
 
