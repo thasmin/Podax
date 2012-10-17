@@ -111,4 +111,7 @@
 	<string name="pref_crash_reports_title">Send Crash Reports</string>
 	<string name="more_options">More Options</string>
 	<string name="stop">Stop</string>
+	<string name="payment">Payment</string>
+	<string name="donate">Donate</string>
+	<string name="flattr">Flattr</string>
 </resources>

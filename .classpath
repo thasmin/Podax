@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="libs/google-api-client-1.9.0-beta.jar"/>
 	<classpathentry kind="lib" path="libs/google-http-client-1.9.0-beta.jar"/>
 	<classpathentry kind="lib" path="libs/acra-4.2.3.jar"/>
+	<classpathentry kind="lib" path="libs/flattr4j-core-2.4.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

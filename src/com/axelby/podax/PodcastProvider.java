@@ -48,6 +48,7 @@ public class PodcastProvider extends ContentProvider {
 	public static final String COLUMN_FILE_SIZE = "fileSize";
 	public static final String COLUMN_LAST_POSITION = "lastPosition";
 	public static final String COLUMN_DURATION = "duration";
+	public static final String COLUMN_PAYMENT = "payment";
 
 	static final String PREF_ACTIVE = "active";
 
@@ -76,6 +77,7 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap.put(COLUMN_FILE_SIZE, "fileSize");
 		_columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
 		_columnMap.put(COLUMN_DURATION, "duration");
+		_columnMap.put(COLUMN_PAYMENT, "payment");
 
 	}
 

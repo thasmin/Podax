@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import com.axelby.podax.ui.LargeWidgetProvider;
@@ -7,6 +8,7 @@ import com.axelby.podax.ui.SmallWidgetProvider;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ProviderInfo;
@@ -15,6 +17,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import org.shredzone.flattr4j.oauth.AndroidAuthenticator;
+import org.shredzone.flattr4j.oauth.Scope;
 
 
 public class Helper {

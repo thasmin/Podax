@@ -74,7 +74,7 @@
                 <data android:mimeType="application/atom+xml" />
                 <data android:mimeType="application/xml" />
             </intent-filter>
-
+            
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".SearchActivity" />
@@ -100,7 +100,17 @@
             android:theme="@style/Theme.Podax" />
         <activity
             android:name=".ui.PodcastDetailActivity"
-            android:theme="@style/Theme.Podax" />
+            android:theme="@style/Theme.Podax">
+        
+            <intent-filter>
+				<action android:name="android.intent.action.VIEW"/>
+				<category android:name="android.intent.category.DEFAULT"/>
+				<category android:name="android.intent.category.BROWSABLE"/>
+				<data android:scheme="flattr4j" android:host="com.axelby.podax"/>
+			</intent-filter>
+			
+        </activity>
+
         <activity
             android:name=".ui.Preferences"
             android:label="@string/preferences"
