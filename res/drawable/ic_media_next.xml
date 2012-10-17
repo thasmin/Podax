@@ -1,4 +1,5 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@drawable/ic_media_next_disabled" android:state_enabled="false" />
+    <item android:drawable="@drawable/ic_media_next_pressed" android:state_pressed="true" />
     <item android:drawable="@drawable/ic_media_next_normal" />
 </selector>
