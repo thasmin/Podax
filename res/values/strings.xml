@@ -32,29 +32,34 @@
 	<string name="search">Search</string>
 	<string name="preferences">Preferences</string>
 	<string name="about_content">
-	    <![CDATA[
-	    <p>Podax was created by Dan Goldstein. 
-	    	You can email me at <a href="mailto:dan@axelby.com">dan@axelby.com</a> with any comments or questions you have.</p>
-	    <p>Podax is open source software. You can get the source code at
-	    	<a href="http://github.com/thasmin/Podax">http://github.com/thasmin/Podax</a>.
-	    	It is available under the 2 clause BSD license.</p>
-	    <p>Podax uses the awesome <a href="www.actionbarsherlock.com">ActionBarSherlock</a>,
+<![CDATA[
+		<p>Podax was created by Dan Goldstein.
+			You can email me at <a href="mailto:dan@axelby.com">dan@axelby.com</a> with any comments or questions you have.
+		</p>
+		<p>Podax is open source software. You can get the source code at
+			<a href="http://github.com/thasmin/Podax">http://github.com/thasmin/Podax</a>.
+			It is available under the 2 clause BSD license.
+		</p>
+		<p>Podax uses the awesome <a href="www.actionbarsherlock.com">ActionBarSherlock</a>,
 			<a href="www.viewpagerindicator">ViewPagerIndicator</a> and
 			<a href="https://github.com/bauerca/drag-sort-listview">drag-sort-listview</a>
-			libraries.</p>
-	    <p>Special thanks to everyone who\'s helped on Github:</p>
-	    <ul>
-		    <li><a href="http://coffeecode.net/">Dan Scott</a></li>
-		    <li><a href="https://github.com/mcepl">mcepl</a></li>
-		    <li><a href="https://github.com/yamatt">yamatt</a></li>
-		    <li><a href="https://github.com/brimstone">brimstone</a></li>
-		    <li><a href="https://github.com/yarikoptic">yarikoptic</a></li>
-		    <li><a href="https://github.com/LegoChicken">LegoChicken</a></li>
-		    <li><a href="https://github.com/ourToaster">ourToaster</a></li>
-		    <li><a href="https://github.com/untitaker">untitaker</a></li>
-		    <li><a href="https://github.com/tgpraveen">tgpraveen</a></li>
-	    </ul>
+			libraries.
+		</p>
+		<p>Special thanks to everyone who\'s helped on Github:</p>
+		<ul>
+			<li><a href="https://github.com/f1ori">Florian Richter"</a></li>
+			<li><a href="http://coffeecode.net/">Dan Scott</a></li>
+			<li><a href="https://github.com/mcepl">mcepl</a></li>
+			<li><a href="https://github.com/yamatt">yamatt</a></li>
+			<li><a href="https://github.com/brimstone">brimstone</a></li>
+			<li><a href="https://github.com/yarikoptic">yarikoptic</a></li>
+			<li><a href="https://github.com/LegoChicken">LegoChicken</a></li>
+			<li><a href="https://github.com/ourToaster">ourToaster</a></li>
+			<li><a href="https://github.com/untitaker">untitaker</a></li>
+			<li><a href="https://github.com/tgpraveen">tgpraveen</a></li>
+		</ul>
 	    ]]>
+
 	</string>
 	<string name="about_podax">About Podax</string>
 	<string name="download_only_on_wifi">Podax is set to only download podcasts when on Wi-fi.</string>
