@@ -240,7 +240,13 @@ public class SubscriptionUpdater {
 					String text = parser.nextText();
 					podcastValues.put(PodcastProvider.COLUMN_TITLE, text);
 				} else if (name.equalsIgnoreCase("link")) {
-					podcastValues.put(PodcastProvider.COLUMN_LINK, parser.nextText());
+					String rel = parser.getAttributeValue(null, "rel");
+					if(rel != null && rel.equalsIgnoreCase("payment")) {
+						String payment_url = parser.getAttributeValue(null, "href");
+						podcastValues.put(PodcastProvider.COLUMN_PAYMENT, payment_url);
+					} else {
+						podcastValues.put(PodcastProvider.COLUMN_LINK, parser.nextText());
+					}
 				} else if (namespace.equals("") && name.equalsIgnoreCase("description")) {
 					podcastValues.put(PodcastProvider.COLUMN_DESCRIPTION, parser.nextText());
 				} else if (name.equalsIgnoreCase("pubDate")) {

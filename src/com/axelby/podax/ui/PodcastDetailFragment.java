@@ -1,6 +1,12 @@
 package com.axelby.podax.ui;
 
+import org.shredzone.flattr4j.exception.FlattrException;
+import org.shredzone.flattr4j.exception.ForbiddenException;
+import org.shredzone.flattr4j.model.AutoSubmission;
+
+import android.app.Activity;
 import android.content.ContentUris;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -9,6 +15,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,9 +26,12 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.axelby.podax.Constants;
+import com.axelby.podax.FlattrHelper;
+import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
@@ -52,6 +62,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	ImageButton _skipToEndButton;
 	SeekBar _seekbar;
 	boolean _seekbar_dragging = false;
+	Button _paymentButton;
 
 	TextView _position;
 	TextView _duration;
@@ -72,6 +83,14 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	        Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.podcast_detail, null, false);
 	}
+	
+	private void showToast(final Activity activity, final String message) {
+		activity.runOnUiThread(new Runnable() {
+			public void run() {
+				Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
+			}
+		});
+	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -90,6 +109,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		_seekbar = (SeekBar) getActivity().findViewById(R.id.seekbar);
 		_position = (TextView) getActivity().findViewById(R.id.position);
 		_duration = (TextView) getActivity().findViewById(R.id.duration);
+		_paymentButton = (Button) getActivity().findViewById(R.id.payment);
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -166,6 +186,62 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				PlayerService.skipBack(getActivity());
 			}
 		});
+		_paymentButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				new AsyncTask<Long, Void, Void>() {
+					@Override
+					protected Void doInBackground(Long... params) {
+						Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
+						String[] projection = new String[] {
+								PodcastProvider.COLUMN_ID,
+								PodcastProvider.COLUMN_TITLE,
+								PodcastProvider.COLUMN_PAYMENT,
+						};
+						Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
+						if (c.moveToNext()) {
+							PodcastCursor podcast = new PodcastCursor(c);
+							String payment_url = podcast.getPaymentUrl();
+							if (payment_url != null) {
+								AutoSubmission sub = FlattrHelper.parseAutoSubmissionLink(Uri.parse(payment_url));
+								if (sub != null) {
+									// it's a flattr link
+									try {
+										FlattrHelper.flattr(getActivity(), sub);
+										String message = "You flattred " + podcast.getTitle() + "!";
+										showToast(getActivity(), message);
+									} catch (ForbiddenException e) {
+										if (e.getCode().equals("flattr_once")) {
+											String message = "Podcast was already flattred";
+											showToast(getActivity(), message);
+										} else {
+											try {
+												FlattrHelper.obtainToken(getActivity());
+											} catch (NoAppSecretFlattrException e1) {
+												String message = "No flattr app secret in this build.";
+												showToast(getActivity(), message);
+											}
+										}
+									} catch (FlattrException e) {
+										String message = "Could not flattr: " + e.getMessage();
+										showToast(getActivity(), message);
+									}
+
+								} else {
+									// it's another kind of payment link
+									Intent intent = new Intent(Intent.ACTION_VIEW);
+									intent.setData(Uri.parse(podcast.getPaymentUrl()));
+									startActivity(intent);
+								}
+							}
+						}
+						c.close();
+
+						return null;
+					}
+				}.execute(_podcastId);
+			}
+		});
+
 	}
 
 	private void initializeUI(PodcastCursor podcast) {
@@ -184,6 +260,20 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_position.setText(Helper.getTimeString(podcast.getLastPosition()));
 		_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
+		
+		String payment_url = podcast.getPaymentUrl();
+		if (payment_url != null) {
+			_paymentButton.setVisibility(View.VISIBLE);
+			Log.d("Podax", payment_url);
+			AutoSubmission sub = FlattrHelper.parseAutoSubmissionLink(Uri.parse(payment_url));
+			if (sub == null) {
+				_paymentButton.setText(R.string.donate);
+			} else {
+				_paymentButton.setText(R.string.flattr);
+			}
+		} else {
+			_paymentButton.setVisibility(View.GONE);
+		}
 	}
 
 	private void updatePlayerControls(PlayerStatus playerState, PodcastCursor podcast) {
@@ -245,6 +335,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_QUEUE_POSITION,
 				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_PAYMENT,
 		};
 
 		if (id == CURSOR_PODCAST) {
@@ -280,5 +371,18 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				FlattrHelper.handleResumeActivityObtainToken(getActivity());
+				return null;
+			}
+		}.execute();
 	}
 }
