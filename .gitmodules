@@ -1,9 +1,9 @@
 [submodule "ActionBarSherlock"]
 	path = ActionBarSherlock
-	url = git://github.com/thasmin/ActionBarSherlock.git
+	url = git://github.com/JakeWharton/ActionBarSherlock.git
 [submodule "ViewPagerIndicator"]
 	path = ViewPagerIndicator
-	url = git://github.com/thasmin/Android-ViewPagerIndicator.git
+	url = git://github.com/JakeWharton/Android-ViewPagerIndicator.git
 [submodule "drag-sort-listview"]
 	path = drag-sort-listview
 	url = https://github.com/bauerca/drag-sort-listview.git
