@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 4;
+	private static final int DATABASE_VERSION = 5;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -21,7 +21,8 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"lastModified DATE, " + 
 				"lastUpdate DATE," +
 				"eTag VARCHAR," +
-				"thumbnail VARCHAR);");
+				"thumbnail VARCHAR," +
+				"subscribed INTEGER NOT NULL DEFAULT 1);");
 		db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 
 		db.execSQL("CREATE TABLE podcasts(" +
@@ -104,9 +105,14 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"WHERE podcasts.queueposition IS NOT NULL";
 			db.execSQL(sql);
 		}
+
 		if (newVersion <= 4) {
 			// add payment column
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN payment VARCHAR");
+		}
+
+		if (newVersion <= 5) {
+			db.execSQL("ALTER TABLE subscriptions ADD COLUMN subscribed INTEGER NOT NULL DEFAULT 1");
 		}
 	}
 }

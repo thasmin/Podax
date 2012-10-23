@@ -31,12 +31,14 @@ public class SubscriptionProvider extends ContentProvider {
 	public static final String COLUMN_LAST_UPDATE = "lastUpdate";
 	public static final String COLUMN_ETAG = "eTag";
 	public static final String COLUMN_THUMBNAIL = "thumbnail";
+	public static final String COLUMN_SUBSCRIBED = "subscribed";
 
 	private static final int SUBSCRIPTIONS = 1;
 	private static final int SUBSCRIPTION_ID = 2;
 	private static final int PODCASTS = 3;
 	private static final int SUBSCRIPTIONS_SEARCH = 4;
 	private static final int SUBSCRIPTIONS_TO_UNSYNC = 5;
+	private static final int SUBSCRIPTIONS_WATCHED = 6;
 
 	static UriMatcher _uriMatcher;
 	static HashMap<String, String> _columnMap;
@@ -48,6 +50,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/#/podcasts", PODCASTS);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/search", SUBSCRIPTIONS_SEARCH);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/to_unsync", SUBSCRIPTIONS_TO_UNSYNC);
+		_uriMatcher.addURI(AUTHORITY, "subscriptions/watched", SUBSCRIPTIONS_WATCHED);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "_id");
@@ -71,6 +74,9 @@ public class SubscriptionProvider extends ContentProvider {
 	public String getType(Uri uri) {
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
+		case SUBSCRIPTIONS_SEARCH:
+		case SUBSCRIPTIONS_TO_UNSYNC:
+		case SUBSCRIPTIONS_WATCHED:
 			return DIR_TYPE;
 		case SUBSCRIPTION_ID:
 			return ITEM_TYPE;
@@ -99,6 +105,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 		switch (uriMatch) {
 		case SUBSCRIPTIONS:
+			sqlBuilder.appendWhere("subscribed = 1");
 			if (sortOrder == null)
 				sortOrder = "title IS NULL, title";
 			break;
@@ -112,6 +119,11 @@ public class SubscriptionProvider extends ContentProvider {
 			if (sortOrder == null)
 				sortOrder = "title";
 			break;
+		case SUBSCRIPTIONS_WATCHED:
+			sqlBuilder.appendWhere("subscribed = 0");
+			if (sortOrder == null)
+				sortOrder = "title IS NULL, title";
+			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
@@ -124,13 +136,25 @@ public class SubscriptionProvider extends ContentProvider {
 	}
 
 	@Override
-	public int update(Uri uri, ContentValues values, String where,
-			String[] whereArgs) {
+	public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
+		String extraWhere;
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
+			extraWhere = "subscribed = 1";
+			if (where != null)
+				where = extraWhere + " AND " + where;
+			else
+				where = extraWhere;
+			break;
+		case SUBSCRIPTIONS_WATCHED:
+			extraWhere = "subscribed = 0";
+			if (where != null)
+				where = extraWhere + " AND " + where;
+			else
+				where = extraWhere;
 			break;
 		case SUBSCRIPTION_ID:
-			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
+			extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
 			if (where != null)
 				where = extraWhere + " AND " + where;
 			else
@@ -174,12 +198,25 @@ public class SubscriptionProvider extends ContentProvider {
 	@Override
 	public int delete(Uri uri, String where, String[] whereArgs) {
 		ContentResolver contentResolver = getContext().getContentResolver();
+		String extraWhere;
 
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
+			extraWhere = "subscribed = 1";
+			if (where != null)
+				where = extraWhere + " AND " + where;
+			else
+				where = extraWhere;
+			break;
+		case SUBSCRIPTIONS_WATCHED:
+			extraWhere = "subscribed = 0";
+			if (where != null)
+				where = extraWhere + " AND " + where;
+			else
+				where = extraWhere;
 			break;
 		case SUBSCRIPTION_ID:
-			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
+			extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
 			if (where != null)
 				where = extraWhere + " AND " + where;
 			else
