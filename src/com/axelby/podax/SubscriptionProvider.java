@@ -19,6 +19,7 @@ public class SubscriptionProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.subscriptionprovider";
 	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/subscriptions");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(URI, "search");
+	public static final Uri WATCHED_URI = Uri.withAppendedPath(URI, "watched");
 
 	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.subscription";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.subscription";
@@ -178,6 +179,10 @@ public class SubscriptionProvider extends ContentProvider {
 			return null;
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
+			values.put("subscribed", 1);
+			break;
+		case SUBSCRIPTIONS_WATCHED:
+			values.put("subscribed", 0);
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");

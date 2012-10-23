@@ -54,6 +54,9 @@ public class BottomBar extends LinearLayout {
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
 
+		if (isInEditMode())
+			return;
+
 		loadViews(getContext());
 		updateUI(PlayerStatus.getCurrentState(getContext()));
 
