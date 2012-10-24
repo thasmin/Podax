@@ -43,7 +43,7 @@ public class GPodderReceiver extends BroadcastReceiver {
 	}
 
 	private static Vector<String> getPodaxUrls(ContentResolver contentResolver) {
-		return retrieveUrls(contentResolver, SubscriptionProvider.URI);
+		return retrieveUrls(contentResolver, SubscriptionProvider.ALL_URI);
 	}
 
 	private static Vector<String> getGPodderUrls(ContentResolver contentResolver) {

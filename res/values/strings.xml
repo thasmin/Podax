@@ -120,4 +120,6 @@
 	<string name="donate">Donate</string>
 	<string name="flattr">Flattr</string>
 	<string name="watch">Watch</string>
+	<string name="watched">Watched</string>
+	<string name="remove_watch">Remove Watch</string>
 </resources>

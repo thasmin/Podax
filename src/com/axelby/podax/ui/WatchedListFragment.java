@@ -29,23 +29,22 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
-public class SubscriptionListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	private final int MENU_UNSUBSCRIBE = 0;
+public class WatchedListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+	private final int MENU_REMOVE_WATCH = 900;
 
-	private SubscriptionAdapter _adapter = null;
+	private WatchedAdapter _adapter = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		getLoaderManager().initLoader(0, null, this);
-		_adapter = new SubscriptionAdapter(getActivity(), null);
+		_adapter = new WatchedAdapter(getActivity(), null);
 		setListAdapter(_adapter);
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	        Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.subscription_list, null, false);
 	}
 
@@ -58,13 +57,13 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-		menu.add(0, MENU_UNSUBSCRIBE, 0, R.string.unsubscribe);
+		menu.add(0, MENU_REMOVE_WATCH, 0, R.string.remove_watch);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case MENU_UNSUBSCRIBE:
+		case MENU_REMOVE_WATCH:
 			AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 			Cursor cursor = (Cursor) getListAdapter().getItem(menuInfo.position);
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
@@ -101,7 +100,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 				SubscriptionProvider.COLUMN_TITLE,
 				SubscriptionProvider.COLUMN_URL
 		};
-		return new CursorLoader(getActivity(), SubscriptionProvider.URI, projection, null, null, null);
+		return new CursorLoader(getActivity(), SubscriptionProvider.WATCHED_URI, projection, null, null, null);
 	}
 
 	@Override
@@ -117,8 +116,8 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		_adapter.changeCursor(null);
 	}
 
-	private class SubscriptionAdapter extends ResourceCursorAdapter {
-		public SubscriptionAdapter(Context context, Cursor cursor) {
+	private class WatchedAdapter extends ResourceCursorAdapter {
+		public WatchedAdapter(Context context, Cursor cursor) {
 			super(context, R.layout.subscription_list_item, cursor, true);
 		}
 

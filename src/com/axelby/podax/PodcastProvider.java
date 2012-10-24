@@ -377,18 +377,27 @@ public class PodcastProvider extends ContentProvider {
 					values.remove(COLUMN_FILE_SIZE);
 				}
 			}
-			db.update("podcasts", values, COLUMN_ID + " = ?",
-					new String[] { String.valueOf(podcastId) });
+			db.update("podcasts", values, COLUMN_ID + " = ?", new String[] { String.valueOf(podcastId) });
 		} else {
 			podcastId = db.insert("podcasts", null, values);
-			// if the new podcast is less than 5 days old, add it to the queue
+
+			// if the new podcast is less than 5 days old and the subscription is subscribed, add it to the queue
+			Cursor subscribedCursor = db.rawQuery("SELECT subscribed FROM subscriptions WHERE _id = ?",
+					new String[] { String.valueOf(values.getAsInteger(COLUMN_SUBSCRIPTION_ID)) });
+			boolean isSubscribed = false;
+			if (subscribedCursor.moveToNext())
+				isSubscribed = (subscribedCursor.getInt(0) == 1);
+			subscribedCursor.close();
+
+			boolean isRecent = false;
 			if (values.containsKey(COLUMN_PUB_DATE)) {
 				Calendar c = Calendar.getInstance();
 				c.add(Calendar.DATE, -5);
-				if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {
-					updateQueuePosition(String.valueOf(podcastId), Integer.MAX_VALUE);
-				}
+				isRecent = new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime());
 			}
+
+			if (isSubscribed && isRecent)
+				updateQueuePosition(String.valueOf(podcastId), Integer.MAX_VALUE);
 		}
 
 		getContext().getContentResolver().notifyChange(uri, null);

@@ -4,7 +4,6 @@ import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,8 +27,9 @@ public class MainActivity extends PodaxFragmentActivity {
 	public static final int TAB_WELCOME = 0;
 	public static final int TAB_QUEUE = 1;
 	public static final int TAB_SUBSCRIPTIONS = 2;
-	public static final int TAB_SEARCH = 3;
-	private static final int TAB_COUNT = 4;
+	public static final int TAB_WATCHED = 3;
+	public static final int TAB_SEARCH = 4;
+	private static final int TAB_COUNT = 5;
 
 	protected int _focusedPage;
 	protected FreezableViewPager _viewPager;
@@ -100,6 +100,7 @@ public class MainActivity extends PodaxFragmentActivity {
 			inflater.inflate(R.menu.queue_fragment, menu);
 			break;
 		case TAB_SUBSCRIPTIONS:
+		case TAB_WATCHED:
 			inflater.inflate(R.menu.subscriptionlist, menu);
 			break;
 		default:
@@ -142,18 +143,8 @@ public class MainActivity extends PodaxFragmentActivity {
 	public class TabsAdapter extends FragmentStatePagerAdapter
 	{
 
-		private String[] _titles;
-
 		public TabsAdapter(FragmentManager fm) {
 			super(fm);
-
-			Resources resources = getResources();
-			_titles = new String[] {
-					resources.getString(R.string.welcome),
-					resources.getString(R.string.queue),
-					resources.getString(R.string.subscriptions),
-					resources.getString(R.string.search),
-			};
 		}
 
 		@Override
@@ -165,6 +156,8 @@ public class MainActivity extends PodaxFragmentActivity {
 				return new QueueFragment();
 			case TAB_SUBSCRIPTIONS:
 				return new SubscriptionFragment();
+			case TAB_WATCHED:
+				return new WatchedListFragment();
 			case TAB_SEARCH:
 				return new SearchFragment();
 			}
@@ -173,7 +166,14 @@ public class MainActivity extends PodaxFragmentActivity {
 
 		@Override
 		public String getPageTitle(int position) {
-			return _titles[position].toUpperCase();
+			Integer[] titles = new Integer[] {
+					R.string.welcome,
+					R.string.queue,
+					R.string.subscriptions,
+					R.string.watched,
+					R.string.search,
+			};
+			return getResources().getString(titles[position]).toUpperCase();
 		}
 
 		@Override

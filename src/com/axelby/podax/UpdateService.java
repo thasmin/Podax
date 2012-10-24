@@ -153,7 +153,7 @@ public class UpdateService extends Service {
 				GPodderReceiver.syncWithProvider(this);
 
 			String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
-			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
+			Cursor c = getContentResolver().query(SubscriptionProvider.ALL_URI, projection, null, null, null);
 			while (c.moveToNext())
 				startService(createUpdateSubscriptionIntent(this, c.getLong(0)));
 			c.close();
@@ -205,14 +205,14 @@ public class UpdateService extends Service {
 			conn.setDoInput(true);
 			conn.connect();
 
-			String[] projection = new String[] {
-					SubscriptionProvider.COLUMN_URL,
-			};
-			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
-
 			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
 			wr.write("inst=");
 			wr.write(Installation.id(this));
+
+			String[] projection = new String[] { SubscriptionProvider.COLUMN_URL };
+
+			// add subscriptions to post string
+			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
 			while (c.moveToNext()) {
 				SubscriptionCursor subscription = new SubscriptionCursor(c);
 				String url = subscription.getUrl();
@@ -221,9 +221,21 @@ public class UpdateService extends Service {
 				wr.write("]=");
 				wr.write(URLEncoder.encode(url, "UTF-8"));
 			}
-			wr.flush();
-
 			c.close();
+
+			// add watched to post string
+			c = getContentResolver().query(SubscriptionProvider.WATCHED_URI, projection, null, null, null);
+			while (c.moveToNext()) {
+				SubscriptionCursor subscription = new SubscriptionCursor(c);
+				String url = subscription.getUrl();
+				wr.write("&watch[");
+				wr.write(String.valueOf(c.getPosition()));
+				wr.write("]=");
+				wr.write(URLEncoder.encode(url, "UTF-8"));
+			}
+			c.close();
+
+			wr.flush();
 
 			BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			Vector<String> response = new Vector<String>();

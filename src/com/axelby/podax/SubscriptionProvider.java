@@ -20,6 +20,7 @@ public class SubscriptionProvider extends ContentProvider {
 	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/subscriptions");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(URI, "search");
 	public static final Uri WATCHED_URI = Uri.withAppendedPath(URI, "watched");
+	public static final Uri ALL_URI = Uri.withAppendedPath(URI, "all");
 
 	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.subscription";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.subscription";
@@ -40,6 +41,7 @@ public class SubscriptionProvider extends ContentProvider {
 	private static final int SUBSCRIPTIONS_SEARCH = 4;
 	private static final int SUBSCRIPTIONS_TO_UNSYNC = 5;
 	private static final int SUBSCRIPTIONS_WATCHED = 6;
+	private static final int SUBSCRIPTIONS_ALL = 7;
 
 	static UriMatcher _uriMatcher;
 	static HashMap<String, String> _columnMap;
@@ -52,6 +54,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/search", SUBSCRIPTIONS_SEARCH);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/to_unsync", SUBSCRIPTIONS_TO_UNSYNC);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/watched", SUBSCRIPTIONS_WATCHED);
+		_uriMatcher.addURI(AUTHORITY, "subscriptions/all", SUBSCRIPTIONS_ALL);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "_id");
@@ -78,6 +81,7 @@ public class SubscriptionProvider extends ContentProvider {
 		case SUBSCRIPTIONS_SEARCH:
 		case SUBSCRIPTIONS_TO_UNSYNC:
 		case SUBSCRIPTIONS_WATCHED:
+		case SUBSCRIPTIONS_ALL:
 			return DIR_TYPE;
 		case SUBSCRIPTION_ID:
 			return ITEM_TYPE;
@@ -125,6 +129,10 @@ public class SubscriptionProvider extends ContentProvider {
 			if (sortOrder == null)
 				sortOrder = "title IS NULL, title";
 			break;
+		case SUBSCRIPTIONS_ALL:
+			if (sortOrder == null)
+				sortOrder = "title IS NULL, title";
+			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
@@ -153,6 +161,8 @@ public class SubscriptionProvider extends ContentProvider {
 				where = extraWhere + " AND " + where;
 			else
 				where = extraWhere;
+			break;
+		case SUBSCRIPTIONS_ALL:
 			break;
 		case SUBSCRIPTION_ID:
 			extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
@@ -183,6 +193,8 @@ public class SubscriptionProvider extends ContentProvider {
 			break;
 		case SUBSCRIPTIONS_WATCHED:
 			values.put("subscribed", 0);
+			break;
+		case SUBSCRIPTIONS_ALL:
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -219,6 +231,8 @@ public class SubscriptionProvider extends ContentProvider {
 				where = extraWhere + " AND " + where;
 			else
 				where = extraWhere;
+			break;
+		case SUBSCRIPTIONS_ALL:
 			break;
 		case SUBSCRIPTION_ID:
 			extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();

@@ -65,6 +65,7 @@ public class PopularSubscriptionActivity extends PodaxActivity {
 				ContentValues values = new ContentValues();
 				values.put(SubscriptionProvider.COLUMN_URL, getIntent().getExtras().getString(Constants.EXTRA_URL));
 				getContentResolver().insert(SubscriptionProvider.WATCHED_URI, values);
+				UpdateService.updateSubscriptions(PopularSubscriptionActivity.this);
 				finish();
 			}
 		});
