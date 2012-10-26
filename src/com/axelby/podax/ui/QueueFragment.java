@@ -122,6 +122,8 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
 		Cursor cursor = (Cursor)getListAdapter().getItem(info.position);
+		if (!cursor.moveToNext())
+			return false;
 		PodcastCursor podcast = new PodcastCursor(cursor);
 
 		switch (item.getItemId()) {
