@@ -76,11 +76,15 @@ public class MainActivity extends PodaxFragmentActivity {
 			titleIndicator.setCurrentItem(_focusedPage);
 		} else {
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
-			if (c.getCount() > 0) {
-				_focusedPage = intent.getIntExtra(Constants.EXTRA_TAB, TAB_QUEUE);
-				titleIndicator.setCurrentItem(_focusedPage);
+			try {
+				if (c.getCount() > 0) {
+					_focusedPage = intent.getIntExtra(Constants.EXTRA_TAB, TAB_QUEUE);
+					titleIndicator.setCurrentItem(_focusedPage);
+				}
+			} catch (Exception ex) {
+			} finally {
+				c.close();
 			}
-			c.close();
 		}
 
 		BootReceiver.setupAlarms(getApplicationContext());
