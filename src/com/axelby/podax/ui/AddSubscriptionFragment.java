@@ -260,6 +260,8 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 			}
 
 			try {
+				if (getActivity() == null)
+					return;
 				int newSubscriptions = OPMLImporter.read(getActivity(), opmlFiles[0]);
 				String message = "Found " + newSubscriptions + " subscriptions.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
