@@ -79,6 +79,9 @@ public class UpdateService extends Service {
 			try {
 				if (!hasMessages(0)) {
 					Thread.sleep(1000);
+					// make sure service hasn't been garbage collected
+					if (_service.get() == null)
+						return;
 					if (!hasMessages(0)) {
 						Log.d("Podax", "stopping the update service");
 						_service.get().removeNotification();
