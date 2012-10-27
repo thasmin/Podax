@@ -53,6 +53,12 @@
 			<a href="www.viewpagerindicator">ViewPagerIndicator</a> and
 			<a href="https://github.com/bauerca/drag-sort-listview">drag-sort-listview</a>.
 		</p>
+		<p>
+			Podax collects your subscription list to create the list of popular subscriptions from Podax users.
+			No personal information of any kind is stored.
+			The technique used can be found under &quot;Tracking Installations&quot;
+			<a href="http://android-developers.blogspot.com/2011/03/identifying-app-installations.html">on this web page</a>.
+		</p>
 		<p>Special thanks to everyone who\'s helped on Github:</p>
 		<ul>
 			<li><a href="https://github.com/f1ori">Florian Richter"</a></li>
