@@ -33,17 +33,25 @@
 	<string name="preferences">Preferences</string>
 	<string name="about_content">
 <![CDATA[
+		<div style="font-size:larger">Changelog</div>
+		<p><strong>Version %s</strong></p>
+		<ul>
+			<li>Added changelog</li>
+			<li>Fixed bugs that were causing crashes</li>
+		</ul>
+
+		<hr>
+
+		<div style="font-size:larger">About</div>
 		<p>Podax was created by Dan Goldstein.
 			You can email me at <a href="mailto:dan@axelby.com">dan@axelby.com</a> with any comments or questions you have.
 		</p>
 		<p>Podax is open source software. You can get the source code at
 			<a href="http://github.com/thasmin/Podax">http://github.com/thasmin/Podax</a>.
 			It is available under the 2 clause BSD license.
-		</p>
-		<p>Podax uses the awesome <a href="www.actionbarsherlock.com">ActionBarSherlock</a>,
+			The libraries used are <a href="www.actionbarsherlock.com">ActionBarSherlock</a>,
 			<a href="www.viewpagerindicator">ViewPagerIndicator</a> and
-			<a href="https://github.com/bauerca/drag-sort-listview">drag-sort-listview</a>
-			libraries.
+			<a href="https://github.com/bauerca/drag-sort-listview">drag-sort-listview</a>.
 		</p>
 		<p>Special thanks to everyone who\'s helped on Github:</p>
 		<ul>
