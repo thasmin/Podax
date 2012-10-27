@@ -6,7 +6,7 @@ import android.webkit.WebView;
 
 import com.axelby.podax.R;
 
-public class AboutActivity extends PodaxActivity {
+public class ChangelogActivity extends PodaxActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -14,7 +14,7 @@ public class AboutActivity extends PodaxActivity {
 
         setContentView(R.layout.about);
 		WebView webview = (WebView) findViewById(R.id.webview);
-		String content = getString(R.string.about_content);
+		String content = getString(R.string.changelog_content, getString(R.string.app_version));
 		Log.i("Podax", content);
 		String html = "<html><head><style type=\"text/css\">" +
 				"a { color: #E59F39 }" +
@@ -23,5 +23,6 @@ public class AboutActivity extends PodaxActivity {
 		webview.loadData(html, "text/html", "utf-8");
 		webview.setBackgroundColor(0x00000000);
 	}
+
 
 }

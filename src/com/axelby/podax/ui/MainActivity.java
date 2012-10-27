@@ -125,6 +125,9 @@ public class MainActivity extends PodaxFragmentActivity {
 		case R.id.preferences:
 			startActivity(new Intent(this, Preferences.class));
 			return true;
+		case R.id.changelog:
+			startActivity(new Intent(this, ChangelogActivity.class));
+			return true;
 		case R.id.about:
 			startActivity(new Intent(this, AboutActivity.class));
 			return true;

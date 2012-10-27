@@ -120,6 +120,10 @@
             android:label="@string/import_subscriptions"
             android:theme="@style/Theme.Podax" />
         <activity
+            android:name=".ui.ChangelogActivity"
+            android:label="@string/changelog"
+            android:theme="@style/Theme.Podax" />
+        <activity
             android:name=".ui.AboutActivity"
             android:label="@string/about_podax"
             android:theme="@style/Theme.Podax" />

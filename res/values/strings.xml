@@ -33,16 +33,6 @@
 	<string name="preferences">Preferences</string>
 	<string name="about_content">
 <![CDATA[
-		<div style="font-size:larger">Changelog</div>
-		<p><strong>Version %s</strong></p>
-		<ul>
-			<li>Added changelog</li>
-			<li>Fixed bugs that were causing crashes</li>
-		</ul>
-
-		<hr>
-
-		<div style="font-size:larger">About</div>
 		<p>Podax was created by Dan Goldstein.
 			You can email me at <a href="mailto:dan@axelby.com">dan@axelby.com</a> with any comments or questions you have.
 		</p>
@@ -133,4 +123,14 @@
 	<string name="payment">Payment</string>
 	<string name="donate">Donate</string>
 	<string name="flattr">Flattr</string>
+	<string name="changelog">Changelog</string>
+	<string name="changelog_content">
+<![CDATA[
+<p><strong>Version 5.4</strong></p>
+<ul>
+	<li>Added changelog</li>
+	<li>Fixed bugs that were causing crashes</li>
+</ul>
+]]>
+	</string>
 </resources>
