@@ -74,6 +74,7 @@ public class WelcomeFragment extends SherlockFragment {
 				values.put(SubscriptionProvider.COLUMN_URL, url);
 				getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
 				UpdateService.updateSubscriptions(getActivity());
+				rssText.setText("");
 			}
 		});
 	}
