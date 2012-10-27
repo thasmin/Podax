@@ -73,7 +73,6 @@ public class UpdateService extends Service {
 		public void handleMessage(Message msg) {
 			super.handleMessage(msg);
 
-			Log.d("Podax", "handling an intent");
 			_service.get().handleIntent((Intent)msg.obj);
 
 			try {
@@ -133,7 +132,6 @@ public class UpdateService extends Service {
 				}
 			});
 		} else {
-			Log.d("Podax", "received an intent");
 			Message msg = _handler.obtainMessage(0, intent.clone());
 			_handler.sendMessage(msg);
 		}
