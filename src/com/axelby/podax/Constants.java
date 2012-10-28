@@ -37,4 +37,10 @@ public class Constants {
 	public static final int PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST = 8;
 	public static final int PLAYER_COMMAND_STOP = 9;
 	public static final int PLAYER_COMMAND_PLAYSTOP = 10;
+	public static final int PLAYER_COMMAND_RESUME = 11;
+
+	// reasons for pausing
+	public static final int PAUSE_AUDIOFOCUS = 0;
+	public static final int PAUSE_MEDIABUTTON = 1;
+	public static final int PAUSE_COUNT = 2;
 }

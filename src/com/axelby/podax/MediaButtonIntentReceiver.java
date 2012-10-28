@@ -29,7 +29,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 			if  (event.getRepeatCount() == 0) {
 				PodaxLog.log(context, "playpausing because of media button intent");
-				PlayerService.playpause(context);
+				PlayerService.playpause(context, Constants.PAUSE_MEDIABUTTON);
 			} else if (event.getRepeatCount() == 2) {
 				PlayerService.skipForward(context);
 				PlayerService.play(context);
@@ -37,7 +37,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 			break;
 		case KeyEvent.KEYCODE_MEDIA_PAUSE:
 			PodaxLog.log(context, "pausing because of media button intent");
-			PlayerService.pause(context);
+			PlayerService.pause(context, Constants.PAUSE_MEDIABUTTON);
 			break;
 		case KeyEvent.KEYCODE_MEDIA_STOP:
 			PodaxLog.log(context, "stopping because of media button intent");

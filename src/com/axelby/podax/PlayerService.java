@@ -27,8 +27,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -56,35 +54,17 @@ public class PlayerService extends Service {
 			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
 			PodaxLog.log(PlayerService.this, "audio focus change event");
 			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && PlayerStatus.getCurrentState(PlayerService.this).isPaused())
-				PlayerService.play(PlayerService.this);
+				PlayerService.resume(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
 			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
-				PlayerService.pause(PlayerService.this);
-		}
-	};
-
-	private final PhoneStateListener _phoneStateListener = new PhoneStateListener() {
-		@Override
-		public void onCallStateChanged(int state, String incomingNumber) {
-			if (_player == null)
-				return;
-
-			_onPhone = (state != TelephonyManager.CALL_STATE_IDLE);
-			if (_onPhone) {
-				PlayerService.pause(PlayerService.this);
-				_pausedForPhone = true;
-			}
-			if (!_onPhone && _pausedForPhone) {
-				PlayerService.play(PlayerService.this);
-				_pausedForPhone = false;
-			}
+				PlayerService.pause(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
 		}
 	};
 
 	protected MediaPlayer _player;
 	private boolean _isPlayerPrepared;
 	protected boolean _onPhone;
-	protected boolean _pausedForPhone = false;
 	protected Timer _updateTimer;
+	private boolean _pausingFor[] = new boolean[] {false, false};
 
 	private HeadsetConnectionReceiver _headsetConnectionReceiver = null;
 	private BluetoothConnectionReceiver _bluetoothConnectionReceiver = null;
@@ -154,7 +134,6 @@ public class PlayerService extends Service {
 	private void setup() {
 		if (_player == null) {
 			setupMediaPlayer();
-			setupTelephony();
 		}
 
 		if (_headsetConnectionReceiver == null) {
@@ -183,17 +162,6 @@ public class PlayerService extends Service {
 		} catch (IllegalArgumentException ex) { }
 	}
 
-	private void setupTelephony() {
-		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-		_onPhone = (telephony.getCallState() != TelephonyManager.CALL_STATE_IDLE);
-	}
-
-	private void tearDownTelephony() {
-		TelephonyManager telephony = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		telephony.listen(_phoneStateListener, PhoneStateListener.LISTEN_NONE);
-	}
-
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		handleIntent(intent);
@@ -208,6 +176,8 @@ public class PlayerService extends Service {
 			return;
 
 		setup();
+
+		int pauseReason = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
 
 		switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
 		case -1:
@@ -236,7 +206,7 @@ public class PlayerService extends Service {
 			PodaxLog.log(this, "PlayerService got a command: playpause");
 			if (_player.isPlaying()) {
 				PodaxLog.log(this, "  pausing");
-				pause();
+				pause(pauseReason);
 			} else {
 				PodaxLog.log(this, "  resuming");
 				grabAudioFocusAndResume();
@@ -258,7 +228,11 @@ public class PlayerService extends Service {
 			break;
 		case Constants.PLAYER_COMMAND_PAUSE:
 			PodaxLog.log(this, "PlayerService got a command: pause");
-			pause();
+			pause(pauseReason);
+			break;
+		case Constants.PLAYER_COMMAND_RESUME:
+			PodaxLog.log(this, "PlayerService got a command: resume");
+			resume(pauseReason);
 			break;
 		case Constants.PLAYER_COMMAND_STOP:
 			PodaxLog.log(this, "PlayerService got a command: stop");
@@ -272,8 +246,90 @@ public class PlayerService extends Service {
 		}
 	}
 
-	private void resume() {
-		PodaxLog.log(this, "PlayerService resume");
+	private void resume(int reason) {
+		if (reason == -1)
+			return;
+
+		Log.d("Podax", "no longer pausing for " + (reason == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
+		_pausingFor[reason] = false;
+
+		Log.d("Podax", "paused for audio focus: " + String.valueOf(_pausingFor[Constants.PAUSE_AUDIOFOCUS]));
+		Log.d("Podax", "paused for media button: " + String.valueOf(_pausingFor[Constants.PAUSE_MEDIABUTTON]));
+
+		// make sure all of our pause reasons are OK
+		for (int i = 0; i < Constants.PAUSE_COUNT; ++i)
+			if (!_pausingFor[reason])
+				return;
+
+		grabAudioFocusAndResume();
+	}
+
+	private void pause(int reason) {
+		if (reason == -1)
+			return;
+
+		PodaxLog.log(this, "PlayerService pausing");
+		Log.d("Podax", "pausing for " + (reason == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
+
+		_pausingFor[reason] = true;
+		_player.pause();
+		updateActivePodcastPosition(_player.getCurrentPosition());
+		PlayerStatus.updateState(this, PlayerStates.PAUSED);
+		_lockscreenManager.setLockscreenPaused();
+	}
+
+	private void stop() {
+		PodaxLog.log(this, "PlayerService stopping");
+
+		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		am.abandonAudioFocus(_afChangeListener);
+
+		stopUpdateTimer();
+
+		removeNotification();
+
+		_lockscreenManager.removeLockscreenControls();
+
+		if (_player != null && _player.isPlaying()) {
+			_player.pause();
+			updateActivePodcastPosition(_player.getCurrentPosition());
+			_player.stop();
+		}
+
+		PlayerStatus.updateState(this, PlayerStates.STOPPED);
+		_player = null;
+		stopSelf();
+
+		// tell anything listening to the active podcast to refresh now that we're stopped
+		ContentValues values = new ContentValues();
+		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+
+		Helper.updateWidgets(this);
+	}
+
+	private boolean grabAudioFocus() {
+		if (_onPhone)
+			return false;
+
+		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		int result = am.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+		if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
+			stop();
+			return false;
+		}
+
+		// grab the media button when we have audio focus
+		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		audioManager.registerMediaButtonEventReceiver(new ComponentName(this, MediaButtonIntentReceiver.class));
+
+		return true;
+	}
+
+	private void grabAudioFocusAndResume() {
+		if (!grabAudioFocus() || this == null)
+			return;
+
+		PodaxLog.log(this, "PlayerService grabbed audio focus so resuming");
 
 		if (PlayerStatus.getCurrentState(this).isPaused() && _isPlayerPrepared) {
 			_player.start();
@@ -325,75 +381,9 @@ public class PlayerService extends Service {
 		_player.start();
 		PlayerStatus.updateState(this, PlayerStates.PLAYING);
 
-		_pausedForPhone = false;
 		showNotification();
 		createUpdateTimer();
 		Helper.updateWidgets(this);
-	}
-
-	private void pause() {
-		PodaxLog.log(this, "PlayerService pausing");
-
-		_player.pause();
-		updateActivePodcastPosition(_player.getCurrentPosition());
-		PlayerStatus.updateState(this, PlayerStates.PAUSED);
-		_lockscreenManager.setLockscreenPaused();
-
-		tearDownTelephony();
-	}
-
-	private void stop() {
-		PodaxLog.log(this, "PlayerService stopping");
-
-		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		am.abandonAudioFocus(_afChangeListener);
-
-		stopUpdateTimer();
-
-		tearDownTelephony();
-
-		removeNotification();
-
-		_lockscreenManager.removeLockscreenControls();
-
-		if (_player != null && _player.isPlaying()) {
-			_player.pause();
-			updateActivePodcastPosition(_player.getCurrentPosition());
-			_player.stop();
-		}
-
-		PlayerStatus.updateState(this, PlayerStates.STOPPED);
-		_player = null;
-		stopSelf();
-
-		// tell anything listening to the active podcast to refresh now that we're stopped
-		ContentValues values = new ContentValues();
-		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-
-		Helper.updateWidgets(this);
-	}
-
-	private boolean grabAudioFocus() {
-		if (_onPhone)
-			return false;
-
-		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		int result = am.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-		if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
-			stop();
-			return false;
-		}
-
-		// grab the media button when we have audio focus
-		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		audioManager.registerMediaButtonEventReceiver(new ComponentName(this, MediaButtonIntentReceiver.class));
-
-		return true;
-	}
-
-	private void grabAudioFocusAndResume() {
-		if (grabAudioFocus() && this != null)
-			resume();
 	}
 
 	private void prepareMediaPlayer(PodcastCursor p) throws IOException {
@@ -551,16 +541,20 @@ public class PlayerService extends Service {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY);
 	}
 
-	public static void pause(Context context) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PAUSE);
+	public static void pause(Context context, int pause_reason) {
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PAUSE, pause_reason);
+	}
+
+	public static void resume(Context context, int pause_reason) {
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_RESUME, pause_reason);
 	}
 
 	public static void stop(Context context) {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_STOP);
 	}
 
-	public static void playpause(Context context) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAYPAUSE);
+	public static void playpause(Context context, int pause_reason) {
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAYPAUSE, pause_reason);
 	}
 
 	public static void playstop(Context context) {
