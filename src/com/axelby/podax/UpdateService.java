@@ -82,7 +82,6 @@ public class UpdateService extends Service {
 					if (_service.get() == null)
 						return;
 					if (!hasMessages(0)) {
-						Log.d("Podax", "stopping the update service");
 						_service.get().removeNotification();
 						_service.get().stopSelf();
 					}
