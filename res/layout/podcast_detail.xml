@@ -61,7 +61,9 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="8" >
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:weightSum="9" >
 
             <ImageButton
                 android:id="@+id/restart_btn"
@@ -71,6 +73,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/restart"
                 android:padding="10dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_media_previous" />
 
             <ImageButton
@@ -81,6 +84,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/rewind"
                 android:padding="10dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_media_rew" />
 
             <ImageButton
@@ -91,6 +95,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/pause"
                 android:padding="10dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_media_play" />
 
             <ImageButton
@@ -101,7 +106,13 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/fast_forward"
                 android:padding="10dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_media_ff" />
+
+            <View
+                android:layout_width="30dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <ImageButton
                 android:id="@+id/skiptoend_btn"
@@ -111,6 +122,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/skip_to_end"
                 android:padding="10dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_media_next" />
         </LinearLayout>
 
@@ -128,25 +140,23 @@
 
             <TextView
                 android:id="@+id/queue_position"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="fill_parent"
-            	android:layout_weight="1"
+                android:layout_weight="1"
                 android:gravity="center_vertical" />
 
             <Button
                 android:id="@+id/payment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/donate"
-                android:contentDescription="@string/payment" />
-
+                android:contentDescription="@string/payment"
+                android:text="@string/donate" />
         </LinearLayout>
 
         <WebView
             android:id="@+id/description"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" />
-
     </LinearLayout>
 
 </ScrollView>
