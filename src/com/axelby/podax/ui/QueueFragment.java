@@ -78,16 +78,14 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 		super.onActivityCreated(savedInstanceState);
 
 		getListView().setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View view, int position,
-					long id) {
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Intent intent = new Intent(getActivity(), PodcastDetailActivity.class);
 				intent.putExtra(Constants.EXTRA_PODCAST_ID, id);
 				startActivity(intent);
 			}
 		});
 		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
-			public void onCreateContextMenu(ContextMenu menu, View v,
-					ContextMenuInfo menuInfo) {
+			public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 				AdapterContextMenuInfo mi = (AdapterContextMenuInfo) menuInfo;
 				Cursor c = (Cursor) getListAdapter().getItem(mi.position);
 				PodcastCursor podcast = new PodcastCursor(c);
@@ -122,8 +120,6 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
 		Cursor cursor = (Cursor)getListAdapter().getItem(info.position);
-		if (!cursor.moveToNext())
-			return false;
 		PodcastCursor podcast = new PodcastCursor(cursor);
 
 		switch (item.getItemId()) {
