@@ -126,6 +126,11 @@
 	<string name="changelog">Changelog</string>
 	<string name="changelog_content">
 <![CDATA[
+<p><strong>Version 5.5</strong></p>
+<ul>
+	<li>Fixed Queue operations</li>
+	<li>Fixed bug where podcast would resume playing after a random notification</li>
+</ul>
 <p><strong>Version 5.4</strong></p>
 <ul>
 	<li>Added data usage explanation to About</li>
