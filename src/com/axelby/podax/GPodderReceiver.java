@@ -20,8 +20,7 @@ public class GPodderReceiver extends BroadcastReceiver {
 			Vector<String> in_podax = getPodaxUrls(contentResolver);
 			for (String url : in_podax)
 				contentResolver.insert(Constants.GPODDER_URI, makeUrlValues(url));
-		} else if (intent.getAction().equals(
-				"com.axelby.gpodder.SUBSCRIPTION_UPDATE")) {
+		} else if (intent.getAction().equals("com.axelby.gpodder.SUBSCRIPTION_UPDATE")) {
 			syncWithProvider(context);
 		}
 	}

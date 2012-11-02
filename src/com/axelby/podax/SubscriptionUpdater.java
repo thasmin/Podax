@@ -6,10 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -31,22 +29,11 @@ import android.util.Xml;
 import com.axelby.podax.R.drawable;
 import com.axelby.podax.ui.MainActivity;
 import com.axelby.podax.ui.PodcastDetailActivity;
+import com.axelby.riasel.Feed;
+import com.axelby.riasel.FeedItem;
+import com.axelby.riasel.FeedParser;
 
 public class SubscriptionUpdater {
-	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
-	private static final String NAMESPACE_MEDIA = "http://search.yahoo.com/mrss/";
-
-	public static final SimpleDateFormat rfc822DateFormats[] = new SimpleDateFormat[] {
-			new SimpleDateFormat("EEE, d MMM yy HH:mm:ss z"),
-			new SimpleDateFormat("EEE, d MMM yy HH:mm z"),
-			new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z"),
-			new SimpleDateFormat("EEE, d MMM yyyy HH:mm z"),
-			new SimpleDateFormat("d MMM yy HH:mm z"),
-			new SimpleDateFormat("d MMM yy HH:mm:ss z"),
-			new SimpleDateFormat("d MMM yyyy HH:mm z"),
-			new SimpleDateFormat("d MMM yyyy HH:mm:ss z"), };
-	public static SimpleDateFormat rssDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
-
 	private Context _context;
 
 	public SubscriptionUpdater(Context context) {
@@ -113,10 +100,33 @@ public class SubscriptionUpdater {
 			try {
 				XmlPullParser parser = Xml.newPullParser();
 				parser.setInput(connection.getInputStream(), encoding);
-				if (!processSubscriptionXML(subscriptionId, subscriptionValues, parser))
+				Feed feed = FeedParser.parseFeed(parser);
+				if (feed == null)
 					return;
-				// parseSubscriptionXML stops when it finds an item tag
-				processPodcastXML(subscriptionId, subscription, parser);
+
+				subscriptionValues.putAll(feed.getContentValues());
+				for (FeedItem item : feed.getItems()) {
+					if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
+						continue;
+
+					ContentValues podcastValues = item.getContentValues();
+					podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
+
+					// translate Riasel keys to old Podax keys
+					podcastValues.put(PodcastProvider.COLUMN_MEDIA_URL, podcastValues.getAsString("mediaURL"));
+					podcastValues.remove("mediaURL");
+					podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, podcastValues.getAsString("mediaSize"));
+					podcastValues.remove("mediaSize");
+					podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, podcastValues.getAsLong("publicationDate") / 1000);
+					podcastValues.remove("publicationDate");
+					try {
+						_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
+					} catch (IllegalArgumentException e) {
+						Log.w("Podax", "error while inserting podcast: " + e.getMessage());
+					}
+				}
+				if (feed.getThumbnail() != null)
+					downloadThumbnail(subscriptionId, feed.getThumbnail());
 			} catch (XmlPullParserException e) {
 				// not much we can do about this
 				Log.w("Podax", "error in subscription xml: " + e.getMessage());
@@ -204,77 +214,6 @@ public class SubscriptionUpdater {
 		}
 	}
 
-	private SimpleDateFormat findMatchingDateFormat(SimpleDateFormat[] choices, String date) {
-		for (SimpleDateFormat format : choices) {
-			try {
-				format.parse(date);
-				return format;
-			} catch (ParseException e) {
-			}
-		}
-
-		// try it again in english
-		for (SimpleDateFormat format : choices) {
-			try {
-				SimpleDateFormat enUSFormat = new SimpleDateFormat(format.toPattern(), Locale.US);
-				enUSFormat.parse(date);
-				return enUSFormat;
-			} catch (ParseException e) {
-			}
-		}
-		return null;
-	}
-
-	private void processPodcastXML(long subscriptionId, SubscriptionCursor subscription, XmlPullParser parser)
-			throws XmlPullParserException, IOException, ParseException {
-		// grab podcasts from item tags
-		ContentValues podcastValues = null;
-		for (int eventType = parser.getEventType(); eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
-			if (eventType == XmlPullParser.START_TAG) {
-				String name = parser.getName();
-				String namespace = parser.getNamespace();
-				if (name.equalsIgnoreCase("item")) {
-					podcastValues = new ContentValues();
-					podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
-				} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
-					String text = parser.nextText();
-					podcastValues.put(PodcastProvider.COLUMN_TITLE, text);
-				} else if (name.equalsIgnoreCase("link")) {
-					String rel = parser.getAttributeValue(null, "rel");
-					if(rel != null && rel.equalsIgnoreCase("payment")) {
-						String payment_url = parser.getAttributeValue(null, "href");
-						podcastValues.put(PodcastProvider.COLUMN_PAYMENT, payment_url);
-					} else {
-						podcastValues.put(PodcastProvider.COLUMN_LINK, parser.nextText());
-					}
-				} else if (namespace.equals("") && name.equalsIgnoreCase("description")) {
-					podcastValues.put(PodcastProvider.COLUMN_DESCRIPTION, parser.nextText());
-				} else if (name.equalsIgnoreCase("pubDate")) {
-					String dateText = parser.nextText();
-					SimpleDateFormat format = findMatchingDateFormat(rfc822DateFormats, dateText);
-					Date pubDate = format.parse(dateText);
-					podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, pubDate.getTime() / 1000);
-				} else if (name.equalsIgnoreCase("enclosure")) {
-					podcastValues.put(PodcastProvider.COLUMN_MEDIA_URL, parser.getAttributeValue(null, "url"));
-					String length = parser.getAttributeValue(null, "length");
-					try {
-						podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, Long.valueOf(length));
-					} catch (Exception e) {
-						podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, 0L);
-					}
-				}
-			} else if (eventType == XmlPullParser.END_TAG) {
-				String name = parser.getName();
-				if (name.equalsIgnoreCase("item")) {
-					String mediaUrl = podcastValues.getAsString(PodcastProvider.COLUMN_MEDIA_URL);
-					if (mediaUrl != null && mediaUrl.length() > 0)
-						_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
-					podcastValues = null;
-				}
-			}
-		}
-	}
-
 	private void downloadThumbnail(long subscriptionId, String thumbnailUrl) {
 		File thumbnailFile = new File(SubscriptionProvider.getThumbnailFilename(subscriptionId));
 		if (thumbnailFile.exists())
@@ -294,73 +233,6 @@ public class SubscriptionUpdater {
 			if (thumbnailFile.exists())
 				thumbnailFile.delete();
 		}
-	}
-
-	private boolean processSubscriptionXML(long subscriptionId, ContentValues subscriptionValues, XmlPullParser parser)
-			throws XmlPullParserException, IOException, ParseException {
-		boolean in_image = false;
-
-		// make sure this is an RSS document
-		int eventType = parser.getEventType();
-		while (eventType != XmlPullParser.START_TAG)
-			eventType = parser.next();
-		if (!parser.getName().equals("rss")) {
-			Log.w("Podax", "got a document that isn't RSS");
-			return false;
-		}
-
-		// look for subscription details, stop at item tag
-		for (eventType = parser.getEventType();
-				eventType != XmlPullParser.END_DOCUMENT;
-				eventType = parser.next()) {
-			// check for an ending image tag
-			if (in_image && eventType == XmlPullParser.END_TAG && parser.getName().equals("image")) {
-				in_image = false;
-				continue;
-			}
-			if (eventType != XmlPullParser.START_TAG)
-				continue;
-
-			String name = parser.getName();
-			// these are elements about the thumbnail
-			if (in_image) {
-				if (name.equals("url")) {
-					String thumbnail = parser.nextText();
-					subscriptionValues.put(SubscriptionProvider.COLUMN_THUMBNAIL, thumbnail);
-					downloadThumbnail(subscriptionId, thumbnail);
-				}
-				continue;
-			}
-
-			// if we're starting an item, move past the subscription details section
-			if (name.equals("item")) {
-				break;
-			} else if (name.equals("image")) {
-				in_image = true;
-				continue;
-			} else if (name.equalsIgnoreCase("lastBuildDate")) {
-				String date = parser.nextText();
-				SimpleDateFormat format = findMatchingDateFormat(rfc822DateFormats, date);
-				if (format != null) {
-					Date lastBuildDate = format.parse(date);
-					subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_MODIFIED, lastBuildDate.getTime() / 1000);
-				}
-			} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
-				subscriptionValues.put(SubscriptionProvider.COLUMN_TITLE, parser.nextText());
-			} else if (name.equalsIgnoreCase("thumbnail") &&
-					parser.getNamespace() == NAMESPACE_MEDIA) {
-				String thumbnail = parser.getAttributeValue(null, "url");
-				subscriptionValues.put(SubscriptionProvider.COLUMN_THUMBNAIL, thumbnail);
-				downloadThumbnail(subscriptionId, thumbnail);
-			} else if (name.equalsIgnoreCase("image") &&
-					parser.getNamespace() == NAMESPACE_ITUNES) {
-				String thumbnail = parser.getAttributeValue(null, "href");
-				subscriptionValues.put(SubscriptionProvider.COLUMN_THUMBNAIL, thumbnail);
-				downloadThumbnail(subscriptionId, thumbnail);
-			}
-		}
-
-		return true;
 	}
 
 	void showNotification(SubscriptionCursor subscription) {

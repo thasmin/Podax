@@ -1,9 +1,6 @@
 package com.axelby.podax.ui;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -27,7 +24,6 @@ import android.widget.TextView;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.SubscriptionUpdater;
 import com.axelby.podax.UpdateService;
 
 public class PopularSubscriptionActivity extends PodaxActivity {
@@ -35,7 +31,6 @@ public class PopularSubscriptionActivity extends PodaxActivity {
 	private class FeedDetails {
 		private String title;
 		private String description;
-		private Date oldestPodcastDate;
 
 		private FeedDetails() {
 		}
@@ -87,15 +82,6 @@ public class PopularSubscriptionActivity extends PodaxActivity {
 						details.description = body;
 					}
 				});
-				channel.getChild("item").getChild("pubDate").setEndTextElementListener(new EndTextElementListener() {
-					public void end(String body) {
-						Date pubDate = parseRFC822Date(body);
-						if (pubDate == null)
-							return;
-						if (details.oldestPodcastDate == null || pubDate.before(details.oldestPodcastDate))
-							details.oldestPodcastDate = pubDate;
-					}
-				});
 
 				HttpGet get = new HttpGet(urls[0]);
 				HttpClient client = new DefaultHttpClient();
@@ -125,15 +111,5 @@ public class PopularSubscriptionActivity extends PodaxActivity {
 			}
 
 		}.execute(url);
-	}
-
-	public static Date parseRFC822Date(String date) {
-		for (SimpleDateFormat format : SubscriptionUpdater.rfc822DateFormats) {
-			try {
-				return format.parse(date);
-			} catch (ParseException e) {
-			}
-		}
-		return null;
 	}
 }
