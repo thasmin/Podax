@@ -105,6 +105,7 @@ public class SubscriptionUpdater {
 					return;
 
 				subscriptionValues.putAll(feed.getContentValues());
+				changeKeyString(subscriptionValues, "lastBuildDate", SubscriptionProvider.COLUMN_LAST_UPDATE);
 				for (FeedItem item : feed.getItems()) {
 					if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
 						continue;
@@ -113,12 +114,10 @@ public class SubscriptionUpdater {
 					podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
 
 					// translate Riasel keys to old Podax keys
-					podcastValues.put(PodcastProvider.COLUMN_MEDIA_URL, podcastValues.getAsString("mediaURL"));
-					podcastValues.remove("mediaURL");
-					podcastValues.put(PodcastProvider.COLUMN_FILE_SIZE, podcastValues.getAsString("mediaSize"));
-					podcastValues.remove("mediaSize");
-					podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, podcastValues.getAsLong("publicationDate") / 1000);
-					podcastValues.remove("publicationDate");
+					changeKeyString(subscriptionValues, "mediaURL", PodcastProvider.COLUMN_MEDIA_URL);
+					changeKeyString(subscriptionValues, "mediaSize", PodcastProvider.COLUMN_FILE_SIZE);
+					if (changeKeyLong(subscriptionValues, "publicationDate", PodcastProvider.COLUMN_PUB_DATE))
+						podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, podcastValues.getAsLong(PodcastProvider.COLUMN_PUB_DATE) / 1000);
 					try {
 						_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
 					} catch (IllegalArgumentException e) {
@@ -145,6 +144,24 @@ public class SubscriptionUpdater {
 				cursor.close();
 			UpdateService.downloadPodcastsSilently(_context);
 		}
+	}
+
+	private boolean changeKeyString(ContentValues values, String oldKey, String newKey) {
+		if (values.containsKey(oldKey)) {
+			values.put(newKey, values.getAsString(oldKey));
+			values.remove(oldKey);
+			return true;
+		}
+		return false;
+	};
+
+	private boolean changeKeyLong(ContentValues values, String oldKey, String newKey) {
+		if (values.containsKey(oldKey)) {
+			values.put(newKey, values.getAsLong(oldKey));
+			values.remove(oldKey);
+			return true;
+		}
+		return false;
 	};
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
