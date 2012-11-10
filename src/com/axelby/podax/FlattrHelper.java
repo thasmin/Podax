@@ -61,6 +61,9 @@ public class FlattrHelper {
 	}
 	
 	public static void handleResumeActivityObtainToken(Activity context) {
+		if (context.getIntent() == null)
+			return;
+
 		Uri uri = context.getIntent().getData();
 	    if (uri != null) {
 			try {
