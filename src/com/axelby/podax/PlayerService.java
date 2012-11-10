@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.acra.ACRA;
+
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -106,7 +108,7 @@ public class PlayerService extends Service {
 		safeUnregisterReceiver(_bluetoothConnectionReceiver);
 	}
 
-	private void setupMediaPlayer() {
+	private void setup() {
 		if (_player == null) {
 			_player = new MediaPlayer();
 			_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -114,9 +116,13 @@ public class PlayerService extends Service {
 			// handle errors so the onCompletionListener doens't get called
 			_player.setOnErrorListener(new OnErrorListener() {
 				public boolean onError(MediaPlayer mp, int what, int extra) {
-					PodaxLog.log(PlayerService.this, "mediaplayer error - what: %d, extra: %d", what, extra);
+					String message = String.format("mediaplayer error - what: %d, extra: %d", what, extra);
+					PodaxLog.log(PlayerService.this, message);
+					ACRA.getErrorReporter().handleSilentException(new Exception(message));
+
 					stopUpdateTimer();
-					_player = null;
+					_player.reset();
+					_isPlayerPrepared = false;
 					return true;
 				}
 			});
@@ -128,12 +134,6 @@ public class PlayerService extends Service {
 			});
 
 			_isPlayerPrepared = false;
-		}
-	}
-
-	private void setup() {
-		if (_player == null) {
-			setupMediaPlayer();
 		}
 
 		if (_headsetConnectionReceiver == null) {
