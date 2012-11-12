@@ -349,28 +349,29 @@ public class PlayerService extends Service {
 				PodcastProvider.COLUMN_FILE_SIZE,
 		};
 		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
-		try {
-			if (c.isAfterLast())
-				return;
+		if (c.isAfterLast())
+			return;
 
-			PodcastCursor p = new PodcastCursor(c);
-			if (!p.isDownloaded()) {
-				Toast.makeText(this, R.string.podcast_not_downloaded, Toast.LENGTH_SHORT).show();
-				return;
-			}
-
-			prepareMediaPlayer(p);
-
-			// set this podcast as active -- it may not have been first in queue
-			QueueManager.changeActivePodcast(this, p.getId());
-
-			_lockscreenManager = new LockscreenManager();
-			_lockscreenManager.setupLockscreenControls(this, p);
-		} catch (IOException ex) {
-			stop();
-		} finally {
-			c.close();
+		PodcastCursor p = new PodcastCursor(c);
+		if (!p.isDownloaded()) {
+			Toast.makeText(this, R.string.podcast_not_downloaded, Toast.LENGTH_SHORT).show();
+			return;
 		}
+
+		boolean prepared = prepareMediaPlayer(p);
+		if (!prepared) {
+			Toast.makeText(this, "Podax is unable to play '" + p.getTitle() + "'. Skipping...", Toast.LENGTH_LONG).show();
+			playNextPodcast();
+			return;
+		}
+
+		// set this podcast as active -- it may not have been first in queue
+		QueueManager.changeActivePodcast(this, p.getId());
+
+		_lockscreenManager = new LockscreenManager();
+		_lockscreenManager.setupLockscreenControls(this, p);
+
+		c.close();
 
 		// the user will probably try this if the podcast is over and the next one didn't start
 		if (_player.getCurrentPosition() >= _player.getDuration() - 1000) {
@@ -386,12 +387,24 @@ public class PlayerService extends Service {
 		Helper.updateWidgets(this);
 	}
 
-	private void prepareMediaPlayer(PodcastCursor p) throws IOException {
-		_player.reset();
-		_player.setDataSource(p.getFilename());
-		_player.prepare();
-		_player.seekTo(p.getLastPosition());
-		_isPlayerPrepared = true;
+	private boolean prepareMediaPlayer(PodcastCursor p) {
+		try {
+			_player.reset();
+			_player.setDataSource(p.getFilename());
+			_player.prepare();
+			_player.seekTo(p.getLastPosition());
+			_isPlayerPrepared = true;
+			return true;
+		} catch (IllegalStateException e) {
+			// called if player is not in idle state
+			return false;
+		} catch (IllegalArgumentException e) {
+			return false;
+		} catch (SecurityException e) {
+			return false;
+		} catch (IOException e) {
+			return false;
+		}
 	}
 
 	private void play(long podcastId) {
