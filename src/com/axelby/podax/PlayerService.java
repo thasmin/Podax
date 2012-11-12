@@ -360,7 +360,7 @@ public class PlayerService extends Service {
 
 		boolean prepared = prepareMediaPlayer(p);
 		if (!prepared) {
-			Toast.makeText(this, "Podax is unable to play '" + p.getTitle() + "'. Skipping...", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getResources().getString(R.string.cannot_play_podcast, p.getTitle()), Toast.LENGTH_LONG).show();
 			playNextPodcast();
 			return;
 		}

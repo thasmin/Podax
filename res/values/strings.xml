@@ -139,4 +139,5 @@
 </ul>
 ]]>
 	</string>
+	<string name="cannot_play_podcast">Podax is unable to play \"%s\". Skipping…</string>
 </resources>
