@@ -24,8 +24,12 @@ This assumes both git and the Android SDK are installed and in the path.
 4. git submodule update
 5. android update project -n Podax -p . --subprojects -t <id>
 6. android update lib-project -p ViewPagerIndicator\library -t <id>
-7. android update lib-project -p ActionBarSherlock\library -t <id>
-8. ant debug
+7. [ the same for any other submodule ... e.g., currently also
+   ActionBarSherlock, drag-sort-listview, and Riasel ]
+8. ant clean debug
+
+Steps 4, 5, and 8 are required for each new pull from the github repo;
+steps 6, and 7, if the are any changes in the step 4.
 
 Eclipse
 -------
