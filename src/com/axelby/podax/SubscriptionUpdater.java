@@ -114,14 +114,17 @@ public class SubscriptionUpdater {
 					podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
 
 					// translate Riasel keys to old Podax keys
-					changeKeyString(subscriptionValues, "mediaURL", PodcastProvider.COLUMN_MEDIA_URL);
-					changeKeyString(subscriptionValues, "mediaSize", PodcastProvider.COLUMN_FILE_SIZE);
-					if (changeKeyLong(subscriptionValues, "publicationDate", PodcastProvider.COLUMN_PUB_DATE))
+					changeKeyString(podcastValues, "mediaURL", PodcastProvider.COLUMN_MEDIA_URL);
+					changeKeyString(podcastValues, "mediaSize", PodcastProvider.COLUMN_FILE_SIZE);
+					if (changeKeyLong(podcastValues, "publicationDate", PodcastProvider.COLUMN_PUB_DATE))
 						podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, podcastValues.getAsLong(PodcastProvider.COLUMN_PUB_DATE) / 1000);
-					try {
-						_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
-					} catch (IllegalArgumentException e) {
-						Log.w("Podax", "error while inserting podcast: " + e.getMessage());
+
+					if (podcastValues.containsKey(PodcastProvider.COLUMN_MEDIA_URL)) {
+						try {
+							_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
+						} catch (IllegalArgumentException e) {
+							Log.w("Podax", "error while inserting podcast: " + e.getMessage());
+						}
 					}
 				}
 				if (feed.getThumbnail() != null)
