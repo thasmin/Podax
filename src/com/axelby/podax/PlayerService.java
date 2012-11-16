@@ -55,9 +55,14 @@ public class PlayerService extends Service {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
 			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
 			PodaxLog.log(PlayerService.this, "audio focus change event");
-			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && PlayerStatus.getCurrentState(PlayerService.this).isPaused())
+			if (PlayerStatus.getCurrentState(PlayerService.this).isPaused() &&
+					(focusChange == AudioManager.AUDIOFOCUS_GAIN ||
+					focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT ||
+					focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK))
 				PlayerService.resume(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
-			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
+			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS ||
+					focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
+					focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
 				PlayerService.pause(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
 		}
 	};
