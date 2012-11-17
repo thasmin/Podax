@@ -55,6 +55,7 @@ public class PlayerService extends Service {
 			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
 			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
 			PodaxLog.log(PlayerService.this, "audio focus change event");
+
 			if (PlayerStatus.getCurrentState(PlayerService.this).isPaused() &&
 					(focusChange == AudioManager.AUDIOFOCUS_GAIN ||
 					focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT ||
@@ -255,15 +256,12 @@ public class PlayerService extends Service {
 		if (reason == -1)
 			return;
 
-		Log.d("Podax", "no longer pausing for " + (reason == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
+		PodaxLog.log(this, "no longer pausing for " + (reason == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
 		_pausingFor[reason] = false;
-
-		Log.d("Podax", "paused for audio focus: " + String.valueOf(_pausingFor[Constants.PAUSE_AUDIOFOCUS]));
-		Log.d("Podax", "paused for media button: " + String.valueOf(_pausingFor[Constants.PAUSE_MEDIABUTTON]));
 
 		// make sure all of our pause reasons are OK
 		for (int i = 0; i < Constants.PAUSE_COUNT; ++i)
-			if (!_pausingFor[reason])
+			if (_pausingFor[reason])
 				return;
 
 		grabAudioFocusAndResume();
@@ -274,7 +272,7 @@ public class PlayerService extends Service {
 			return;
 
 		PodaxLog.log(this, "PlayerService pausing");
-		Log.d("Podax", "pausing for " + (reason == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
+		PodaxLog.log(this, "pausing for " + (reason == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
 
 		_pausingFor[reason] = true;
 		_player.pause();
@@ -318,6 +316,7 @@ public class PlayerService extends Service {
 
 		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		int result = am.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+
 		if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
 			stop();
 			return false;
