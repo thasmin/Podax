@@ -11,7 +11,6 @@ import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
-import android.util.Log;
 
 public class PodcastCursor {
 
@@ -226,7 +225,7 @@ public class PodcastCursor {
 			values.put(PodcastProvider.COLUMN_DURATION, mp.getDuration());
 			context.getContentResolver().update(getContentUri(), values, null, null);
 		} catch (IOException ex) {
-			Log.e("Podax", "Unable to determine length of " + this.getFilename());
+			PodaxLog.log(context, "Unable to determine length of " + this.getFilename() + ": " + ex.getMessage());
 		} finally {
 			if (mp != null)
 				mp.release();
