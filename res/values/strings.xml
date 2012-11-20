@@ -2,7 +2,7 @@
 <resources>
 	<string name="app_name">Podax</string>
 	<string name="app_long_name">Podax Podcaster</string>
-	<string name="app_version">5.5</string>
+	<string name="app_version">5.6</string>
 	<string name="pause">Pause</string>
 	<string name="play">Play</string>
 	<string name="add_to_queue">Add To Queue</string>
@@ -126,6 +126,12 @@
 	<string name="changelog">Changelog</string>
 	<string name="changelog_content">
 <![CDATA[
+<p><strong>Version 5.6</strong></p>
+<ul>
+	<li>Atom feeds</li>
+	<li>Properly stops during phone calls</li>
+	<li>Fixed crashes when the phone can\'t play the podcast file</li>
+</ul>
 <p><strong>Version 5.5</strong></p>
 <ul>
 	<li>Fixed Queue operations</li>
