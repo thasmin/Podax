@@ -2,6 +2,7 @@ package com.axelby.podax;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -10,7 +11,6 @@ import org.acra.ACRA;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -25,6 +25,7 @@ import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
@@ -52,17 +53,19 @@ public class PlayerService extends Service {
 
 	private final OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
-			// focusChange could be AUDIOFOCUS_GAIN, AUDIOFOCUS_LOSS,
-			// _LOSS_TRANSIENT or _LOSS_TRANSIENT_CAN_DUCK
 			PodaxLog.log(PlayerService.this, "audio focus change event");
 
+			if (focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT ||
+					focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+					PodaxLog.log(PlayerService.this, "got a transient audio focus gain event somehow");
+
+			if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
+				PlayerService.stop(PlayerService.this);
+
 			if (PlayerStatus.getCurrentState(PlayerService.this).isPaused() &&
-					(focusChange == AudioManager.AUDIOFOCUS_GAIN ||
-					focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT ||
-					focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK))
+					focusChange == AudioManager.AUDIOFOCUS_GAIN)
 				PlayerService.resume(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
-			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS ||
-					focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
+			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
 					focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
 				PlayerService.pause(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
 		}
@@ -74,8 +77,13 @@ public class PlayerService extends Service {
 	protected Timer _updateTimer;
 	private boolean _pausingFor[] = new boolean[] {false, false};
 
-	private HeadsetConnectionReceiver _headsetConnectionReceiver = null;
-	private BluetoothConnectionReceiver _bluetoothConnectionReceiver = null;
+	private BroadcastReceiver _noisyReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (PlayerStatus.getCurrentState(context).isPlaying())
+				PlayerService.stop(context);
+		}
+	};
 	private LockscreenManager _lockscreenManager = null;
 
 	@Override
@@ -104,14 +112,15 @@ public class PlayerService extends Service {
 		super.onCreate();
 
 		setup();
+
+		setupReceiver(_noisyReceiver, AudioManager.ACTION_AUDIO_BECOMING_NOISY);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 
-		safeUnregisterReceiver(_headsetConnectionReceiver);
-		safeUnregisterReceiver(_bluetoothConnectionReceiver);
+		safeUnregisterReceiver(_noisyReceiver);
 	}
 
 	private void setup() {
@@ -121,34 +130,34 @@ public class PlayerService extends Service {
 
 			// handle errors so the onCompletionListener doens't get called
 			_player.setOnErrorListener(new OnErrorListener() {
-				public boolean onError(MediaPlayer mp, int what, int extra) {
-					String message = String.format("mediaplayer error - what: %d, extra: %d", what, extra);
+				@Override
+				public boolean onError(MediaPlayer player, int what, int extra) {
+					String message = String.format(Locale.US, "mediaplayer error - what: %d, extra: %d", what, extra);
 					PodaxLog.log(PlayerService.this, message);
 					ACRA.getErrorReporter().handleSilentException(new Exception(message));
 
 					stopUpdateTimer();
-					_player.reset();
+					player.reset();
 					_isPlayerPrepared = false;
 					return true;
 				}
 			});
 
 			_player.setOnCompletionListener(new OnCompletionListener() {
+				@Override
 				public void onCompletion(MediaPlayer player) {
 					playNextPodcast();
 				}
 			});
 
-			_isPlayerPrepared = false;
-		}
+			_player.setOnPreparedListener(new OnPreparedListener() {
+				@Override
+				public void onPrepared(MediaPlayer player) {
+					player.start();
+				}				
+			});
 
-		if (_headsetConnectionReceiver == null) {
-			_headsetConnectionReceiver = new HeadsetConnectionReceiver();
-			setupReceiver(_headsetConnectionReceiver, Intent.ACTION_HEADSET_PLUG);
-		}
-		if (_bluetoothConnectionReceiver == null) {
-			_bluetoothConnectionReceiver = new BluetoothConnectionReceiver();
-			setupReceiver(_bluetoothConnectionReceiver, BluetoothDevice.ACTION_ACL_DISCONNECTED);
+			_isPlayerPrepared = false;
 		}
 
 		if (_lockscreenManager == null)
@@ -260,9 +269,12 @@ public class PlayerService extends Service {
 		_pausingFor[reason] = false;
 
 		// make sure all of our pause reasons are OK
-		for (int i = 0; i < Constants.PAUSE_COUNT; ++i)
-			if (_pausingFor[reason])
+		for (int i = 0; i < Constants.PAUSE_COUNT; ++i) {
+			if (_pausingFor[i]) {
+				PodaxLog.log(this, "still pausing for " + (i == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
 				return;
+			}
+		}
 
 		grabAudioFocusAndResume();
 	}
@@ -314,8 +326,8 @@ public class PlayerService extends Service {
 		if (_onPhone)
 			return false;
 
-		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-		int result = am.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		int result = audioManager.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
 		if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
 			stop();
@@ -323,7 +335,6 @@ public class PlayerService extends Service {
 		}
 
 		// grab the media button when we have audio focus
-		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		audioManager.registerMediaButtonEventReceiver(new ComponentName(this, MediaButtonIntentReceiver.class));
 
 		return true;
@@ -377,13 +388,6 @@ public class PlayerService extends Service {
 
 		c.close();
 
-		// the user will probably try this if the podcast is over and the next one didn't start
-		if (_player.getCurrentPosition() >= _player.getDuration() - 1000) {
-			playNextPodcast();
-			return;
-		}
-
-		_player.start();
 		PlayerStatus.updateState(this, PlayerStates.PLAYING);
 
 		showNotification();

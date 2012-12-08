@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -71,7 +72,7 @@ public class SubscriptionUpdater {
 			if (subscription.getETag() != null)
 				connection.setRequestProperty("If-None-Match", subscription.getETag());
 			if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
-				SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+				SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 				connection.setRequestProperty("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
 			}
 

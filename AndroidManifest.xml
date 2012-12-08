@@ -129,7 +129,6 @@
             android:name=".ui.AboutActivity"
             android:label="@string/about_podax"
             android:theme="@style/Theme.Podax" />
-        <activity android:name=".ui.PopularSubscriptionListActivity" />
         <activity
             android:name=".ui.PopularSubscriptionActivity"
             android:label="@string/popular_subscription_title"

@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="16dp" />
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/subscription_title"

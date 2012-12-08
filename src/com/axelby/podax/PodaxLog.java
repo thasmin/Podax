@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -27,7 +28,7 @@ public class PodaxLog {
 				return;
 	
 			String message = String.format(format, args);
-			message = new SimpleDateFormat().format(new Date()) + " " + message;
+			message = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date()) + " " + message;
 			message += "\n";
 			File file = new File(context.getExternalFilesDir(null), "podax.log");
 			FileWriter out = new FileWriter(file, true);
