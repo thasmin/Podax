@@ -47,7 +47,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 				String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
 				if (new File(imageFilename).exists()) {
 					Bitmap origBitmap = BitmapFactory.decodeFile(imageFilename);
-					if (origBitmap != null) {
+					if (origBitmap != null && origBitmap.getWidth() > 0 && origBitmap.getHeight() > 0) {
 						// scale bitmap down to save memory (needs to be smaller then display size)
 						float density = context.getResources().getDisplayMetrics().density;
 						Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, (int)density*83, (int)density*83, false);
