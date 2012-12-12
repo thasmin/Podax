@@ -376,7 +376,6 @@ public class PlayerService extends Service {
 		boolean prepared = prepareMediaPlayer(p);
 		if (!prepared) {
 			Toast.makeText(this, getResources().getString(R.string.cannot_play_podcast, p.getTitle()), Toast.LENGTH_LONG).show();
-			playNextPodcast();
 			return;
 		}
 
