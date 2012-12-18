@@ -198,27 +198,27 @@ public class PlayerService extends Service {
 		case -1:
 			return;
 		case Constants.PLAYER_COMMAND_SKIPTO:
-			PodaxLog.log(this, "PlayerService got a command: skip to");
+			//PodaxLog.log(this, "PlayerService got a command: skip to");
 			skipTo(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, 0));
 			break;
 		case Constants.PLAYER_COMMAND_SKIPTOEND:
-			PodaxLog.log(this, "PlayerService got a command: skip to end");
+			//PodaxLog.log(this, "PlayerService got a command: skip to end");
 			playNextPodcast();
 			break;
 		case Constants.PLAYER_COMMAND_RESTART:
-			PodaxLog.log(this, "PlayerService got a command: restart");
+			//PodaxLog.log(this, "PlayerService got a command: restart");
 			restart();
 			break;
 		case Constants.PLAYER_COMMAND_SKIPBACK:
-			PodaxLog.log(this, "PlayerService got a command: skip back");
+			//PodaxLog.log(this, "PlayerService got a command: skip back");
 			skip(-15);
 			break;
 		case Constants.PLAYER_COMMAND_SKIPFORWARD:
-			PodaxLog.log(this, "PlayerService got a command: skip forward");
+			//PodaxLog.log(this, "PlayerService got a command: skip forward");
 			skip(30);
 			break;
 		case Constants.PLAYER_COMMAND_PLAYPAUSE:
-			PodaxLog.log(this, "PlayerService got a command: playpause");
+			//PodaxLog.log(this, "PlayerService got a command: playpause");
 			if (_player.isPlaying()) {
 				PodaxLog.log(this, "  pausing");
 				pause(pauseReason);
@@ -228,33 +228,33 @@ public class PlayerService extends Service {
 			}
 			break;
 		case Constants.PLAYER_COMMAND_PLAYSTOP:
-			PodaxLog.log(this, "PlayerService got a command: playstop");
+			//PodaxLog.log(this, "PlayerService got a command: playstop");
 			if (_player.isPlaying()) {
-				PodaxLog.log(this, "  stopping");
+				//PodaxLog.log(this, "  stopping");
 				stop();
 			} else {
-				PodaxLog.log(this, "  resuming");
+				//PodaxLog.log(this, "  resuming");
 				grabAudioFocusAndResume();
 			}
 			break;
 		case Constants.PLAYER_COMMAND_PLAY:
-			PodaxLog.log(this, "PlayerService got a command: play");
+			//PodaxLog.log(this, "PlayerService got a command: play");
 			grabAudioFocusAndResume();
 			break;
 		case Constants.PLAYER_COMMAND_PAUSE:
-			PodaxLog.log(this, "PlayerService got a command: pause");
+			//PodaxLog.log(this, "PlayerService got a command: pause");
 			pause(pauseReason);
 			break;
 		case Constants.PLAYER_COMMAND_RESUME:
-			PodaxLog.log(this, "PlayerService got a command: resume");
+			//PodaxLog.log(this, "PlayerService got a command: resume");
 			resume(pauseReason);
 			break;
 		case Constants.PLAYER_COMMAND_STOP:
-			PodaxLog.log(this, "PlayerService got a command: stop");
+			//PodaxLog.log(this, "PlayerService got a command: stop");
 			stop();
 			break;
 		case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
-			PodaxLog.log(this, "PlayerService got a command: play specific podcast");
+			//PodaxLog.log(this, "PlayerService got a command: play specific podcast");
 			long podcastId = intent.getLongExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
 			play(podcastId);
 			break;

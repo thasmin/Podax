@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -17,10 +16,6 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 
 		if (event.getAction() != KeyEvent.ACTION_DOWN)
 			return;
-
-		PodaxLog.log(context, "got media button down event");
-		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD && event.getDevice() != null)
-			PodaxLog.log(context, "  from %s", event.getDevice().getName());
 
 		switch(event.getKeyCode()) {
 		// Simple headsets only send KEYCODE_HEADSETHOOK
