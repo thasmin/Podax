@@ -9,24 +9,8 @@
 	<string name="remove_from_queue">Remove From Queue</string>
 	<string name="queue">Queue</string>
 	<string name="subscriptions">Subscriptions</string>
-	<string name="clear_subscriptions">Remove All</string>
-	<string name="reader_import">Import from Google Reader</string>
-	<string-array name="main_list">
-		<item>Queue</item>
-		<item>Subscriptions</item>
-	</string-array>
-	<string-array name="queue_groups">
-		<item>Queue</item>
-		<!-- <item>Recent Podcasts</item> -->
-	</string-array>
-	<string-array name="search_groups">
-		<item>Subscriptions</item>
-		<item>Podcasts</item>
-	</string-array>
 	<string name="search_hint">Search within Podax</string>
 	<string name="refresh_subscription">Refresh Subscription</string>
-	<string name="refresh_subscriptions">Refresh Subscriptions</string>
-	<string name="active_downloads">Active Downloads</string>
 	<string name="podcast_not_downloaded">This podcast has not been downloaded.</string>
 	<string name="import_subscriptions">Add Subscriptions</string>
 	<string name="search">Search</string>
@@ -67,11 +51,9 @@
 	</string>
 	<string name="about_podax">About Podax</string>
 	<string name="download_only_on_wifi">Podax is set to only download podcasts when on Wi-fi.</string>
-	<string name="download_anytime">Podax is set to download podcasts when connected to any network.</string>
 	<string name="no_downloads">There are no podcasts in the queue that were not downloaded.</string>
 	<string name="add_rss_feed">Add RSS feed</string>
 	<string name="add_from_opml_file">Add from OPML file</string>
-	<string name="discover_subscriptions">Discover Subscriptions</string>
 	<string name="popular_subscription_title">Popular Subscription</string>
 	<string name="add_subscription">Add Subscription</string>
 	<string name="rss_not_valid">RSS not valid</string>
@@ -87,12 +69,9 @@
 	<string name="update_request_no_wifi">Podax will not update because there is no Wi-Fi connection. This can be changed in the preferences.</string>
 	<string name="no_podcasts_in_queue">There are no podcasts in the queue.</string>
 	<string name="add">Add</string>
-	<string name="discover">Discover</string>
 	<string name="restart">Restart</string>
 	<string name="about">About</string>
-	<string name="refresh_subscription_to_find_podcasts">Refresh the subscription to find the podcasts.</string>
 	<string name="refresh">Refresh</string>
-	<string name="downloads">Downloads</string>
 	<string name="welcome">Welcome</string>
 	<string name="welcome_intro">Thanks for using Podax! You\'re almost ready to enter the blossoming world of podcasts. All you need to do is subscribe to a podcast and Podax will do the rest. Visit the RSS link in the browser, type the RSS feed URL below, or choose one of our favorite podcasts below.</string>
 	<string name="welcome_american_life">This American Life</string>
@@ -108,12 +87,6 @@
 	<string name="pref_update_wifi_title">Wi-Fi Only</string>
 	<string name="pref_auto_delete">Delete podcasts automatically when playback finishes or you skip to the next podcast. If disabled, the podcast will be added to the bottom of the queue.</string>
 	<string name="pref_auto_delete_title">Delete Podcasts Automatically</string>
-	<string name="pref_headset_disconnect">When checked, playback will stop when headphones are disconnected.</string>
-	<string name="pref_headset_disconnect_title">Stop When Wired Headphones Are Unplugged</string>
-	<string name="pref_bluetooth_disconnect">When checked, playback will stop when bluetooth headphones are disconnected.</string>
-	<string name="pref_bluetooth_disconnect_title">Stop When Bluetooth Headphones Are Unplugged</string>
-	<string name="pref_bluetooth_connect">When checked, Podax will resume playing when a bluetooth device connects.</string>
-	<string name="pref_bluetooth_connect_title">Resume Playing When Bluetooth Connects</string>
 	<string name="pref_anon_usage">Send anonymous usage data to improve Podax.</string>
 	<string name="pref_anon_usage_title">Send Usage Data</string>
 	<string name="pref_crash_reports">Send error reports to the developers if Podax crashes.</string>
