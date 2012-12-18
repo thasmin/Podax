@@ -36,23 +36,20 @@ public class BottomBar extends LinearLayout {
 		super(context);
 
 		LayoutInflater.from(context).inflate(R.layout.player, this);
-
-		if (isInEditMode())
-			return;
 	}
 
 	public BottomBar(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		LayoutInflater.from(context).inflate(R.layout.player, this);
-		
-		if (isInEditMode())
-			return;
 	}
 
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
+
+		if (isInEditMode())
+			return;
 
 		loadViews(getContext());
 		updateUI(PlayerStatus.getCurrentState(getContext()));

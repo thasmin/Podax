@@ -1,5 +1,7 @@
 package com.axelby.podax.ui;
 
+import java.util.Locale;
+
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
@@ -18,6 +20,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
+import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
@@ -110,6 +113,10 @@ public class MainActivity extends PodaxFragmentActivity {
 			inflater.inflate(R.menu.base, menu);
 		}
 
+		if (PodaxLog.isDebuggable(this)) {
+			menu.add(Menu.NONE, R.id.text, 0, R.string.log_viewer);
+		}
+
 		return true;
 	}
 
@@ -134,6 +141,8 @@ public class MainActivity extends PodaxFragmentActivity {
 		case R.id.refresh_subscriptions:
 			UpdateService.updateSubscriptions(this);
 			return true;
+		case R.id.text:
+			startActivity(new Intent(this, LogViewer.class));
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
@@ -180,7 +189,7 @@ public class MainActivity extends PodaxFragmentActivity {
 
 		@Override
 		public String getPageTitle(int position) {
-			return _titles[position].toUpperCase();
+			return _titles[position].toUpperCase(Locale.getDefault());
 		}
 
 		@Override

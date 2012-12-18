@@ -146,4 +146,5 @@
 ]]>
 	</string>
 	<string name="cannot_play_podcast">Podax is unable to play \"%s\". Skipping…</string>
+	<string name="log_viewer">Log Viewer</string>
 </resources>
