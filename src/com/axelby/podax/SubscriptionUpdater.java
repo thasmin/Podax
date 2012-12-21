@@ -117,6 +117,7 @@ public class SubscriptionUpdater {
 					// translate Riasel keys to old Podax keys
 					changeKeyString(podcastValues, "mediaURL", PodcastProvider.COLUMN_MEDIA_URL);
 					changeKeyString(podcastValues, "mediaSize", PodcastProvider.COLUMN_FILE_SIZE);
+					changeKeyString(podcastValues, "paymentURL", PodcastProvider.COLUMN_PAYMENT);
 					if (changeKeyLong(podcastValues, "publicationDate", PodcastProvider.COLUMN_PUB_DATE))
 						podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, podcastValues.getAsLong(PodcastProvider.COLUMN_PUB_DATE) / 1000);
 
