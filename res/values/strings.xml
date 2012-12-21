@@ -99,6 +99,15 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_content">
 <![CDATA[
+<p><strong>Version 5.8</strong></p>
+<ul>
+	<li>Added configuration options to subscriptions</li>
+	<ul>
+		<li>Rename subscriptions</li>
+		<li>Do not automatically put new podcasts in the queue</li>
+		<li>Automatically remove podcasts from queue after 7 or 14 days</li>
+	</ul>
+</ul>
 <p><strong>Version 5.7</strong></p>
 <ul>
 	<li>Fixed automatic pausing and resuming</li>
