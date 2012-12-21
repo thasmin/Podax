@@ -6,8 +6,6 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.acra.ACRA;
-
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -134,7 +132,6 @@ public class PlayerService extends Service {
 				public boolean onError(MediaPlayer player, int what, int extra) {
 					String message = String.format(Locale.US, "mediaplayer error - what: %d, extra: %d", what, extra);
 					PodaxLog.log(PlayerService.this, message);
-					ACRA.getErrorReporter().handleSilentException(new Exception(message));
 
 					stopUpdateTimer();
 					player.reset();
