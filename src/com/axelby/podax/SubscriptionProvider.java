@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -31,6 +32,9 @@ public class SubscriptionProvider extends ContentProvider {
 	public static final String COLUMN_LAST_UPDATE = "lastUpdate";
 	public static final String COLUMN_ETAG = "eTag";
 	public static final String COLUMN_THUMBNAIL = "thumbnail";
+	public static final String COLUMN_TITLE_OVERRIDE = "titleOverride";
+	public static final String COLUMN_QUEUE_NEW = "queueNew";
+	public static final String COLUMN_EXPIRATION = "expirationDays";
 
 	private static final int SUBSCRIPTIONS = 1;
 	private static final int SUBSCRIPTION_ID = 2;
@@ -57,6 +61,9 @@ public class SubscriptionProvider extends ContentProvider {
 		_columnMap.put(COLUMN_LAST_UPDATE, "lastUpdate");
 		_columnMap.put(COLUMN_ETAG, "eTag");
 		_columnMap.put(COLUMN_THUMBNAIL, "thumbnail");
+		_columnMap.put(COLUMN_TITLE_OVERRIDE, "titleOverride");
+		_columnMap.put(COLUMN_QUEUE_NEW, "queueNew");
+		_columnMap.put(COLUMN_EXPIRATION, "expirationDays");
 	}
 
 	DBAdapter _dbAdapter;
@@ -93,6 +100,22 @@ public class SubscriptionProvider extends ContentProvider {
 					PodcastProvider.COLUMN_PUB_DATE + " DESC");
 		}
 
+		// make sure that title_override is in the query set if title is in there
+		if (projection != null) {
+			boolean hasTitle = false, hasOverride = false;
+			for (String p : projection) {
+				if (p.equals(COLUMN_TITLE))
+					hasTitle = true;
+				if (p.equals(COLUMN_TITLE_OVERRIDE))
+					hasOverride = true;
+			}
+			if (hasTitle && !hasOverride) {
+				Vector<String> list = new Vector<String>(Arrays.asList(projection));
+				list.add(COLUMN_TITLE_OVERRIDE);
+				projection = list.toArray(new String[0]);
+			}
+		}
+
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(_columnMap);
 		sqlBuilder.setTables("subscriptions");
@@ -100,17 +123,18 @@ public class SubscriptionProvider extends ContentProvider {
 		switch (uriMatch) {
 		case SUBSCRIPTIONS:
 			if (sortOrder == null)
-				sortOrder = "title IS NULL, title";
+				sortOrder = "title IS NULL, COALESCE(titleOverride, title)";
 			break;
 		case SUBSCRIPTION_ID:
 			sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
 			break;
 		case SUBSCRIPTIONS_SEARCH:
-			sqlBuilder.appendWhere("LOWER(title) LIKE ?");
+			sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(titleOverride) LIKE ?");
 			if (!selectionArgs[0].startsWith("%"))
 				selectionArgs[0] = "%" + selectionArgs[0] + "%";
+			selectionArgs = new String[] { selectionArgs[0], selectionArgs[0] };
 			if (sortOrder == null)
-				sortOrder = "title";
+				sortOrder = "COALESCE(titleOverride, title)";
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");

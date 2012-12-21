@@ -134,6 +134,10 @@
             android:label="@string/popular_subscription_title"
             android:theme="@style/Theme.Podax" />
         <activity
+            android:name="com.axelby.podax.ui.SubscriptionSettingsActivity"
+            android:label="@string/settings"
+            android:theme="@style/Theme.Podax" />
+        <activity
             android:name=".ui.LogViewer"
             android:label="@string/log_viewer"
             android:theme="@style/Theme.Podax" />

@@ -19,6 +19,9 @@ public class SubscriptionCursor {
 	private Integer _lastUpdateColumn = null;
 	private Integer _etagColumn = null;
 	private Integer _thumbnailColumn = null;
+	private Integer _titleOverrideColumn = null;
+	private Integer _queueNewColumn = null;
+	private Integer _expirationDaysColumn = null;
 
 	public SubscriptionCursor(Cursor cursor) {
 		if (cursor.isAfterLast())
@@ -45,6 +48,10 @@ public class SubscriptionCursor {
 	}
 
 	public String getTitle() {
+		if (_titleOverrideColumn == null)
+			_titleOverrideColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
+		if (_titleOverrideColumn != -1 && !_cursor.isNull(_titleOverrideColumn))
+			return _cursor.getString(_titleOverrideColumn);
 		if (_titleColumn == null)
 			_titleColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE);
 		if (_cursor.isNull(_titleColumn))
@@ -90,6 +97,30 @@ public class SubscriptionCursor {
 		if (_cursor.isNull(_thumbnailColumn))
 			return null;
 		return _cursor.getString(_thumbnailColumn);
+	}
+
+	public boolean getQueueNew() {
+		if (_queueNewColumn == null)
+			_queueNewColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_QUEUE_NEW);
+		if (_cursor.isNull(_queueNewColumn))
+			return true;
+		return _cursor.getInt(_queueNewColumn) != 0;
+	}
+
+	public String getTitleOverride() {
+		if (_titleOverrideColumn == null)
+			_titleOverrideColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
+		if (_cursor.isNull(_titleOverrideColumn))
+			return null;
+		return _cursor.getString(_titleOverrideColumn);
+	}
+
+	public Integer getExpirationDays() {
+		if (_expirationDaysColumn == null)
+			_expirationDaysColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_EXPIRATION);
+		if (_cursor.isNull(_thumbnailColumn))
+			return null;
+		return _cursor.getInt(_expirationDaysColumn);
 	}
 
 	public String getThumbnailFilename() {

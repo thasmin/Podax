@@ -2,7 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/settings"
+        android:showAsAction="always"
+        android:title="@string/settings"
+        android:icon="@drawable/ic_menu_settings"/>
+    <item
         android:id="@+id/refresh_subscription"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_menu_refresh"
         android:title="@string/refresh_subscription"/>
     <item
         android:id="@+id/preferences"

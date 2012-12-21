@@ -164,6 +164,7 @@ public class UpdateService extends Service {
 			new SubscriptionUpdater(this).update(subscriptionId);
 		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCASTS)) {
 			verifyDownloadedFiles();
+			expireDownloadedFiles();
 
 			String[] projection = { PodcastProvider.COLUMN_ID };
 			Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
@@ -269,6 +270,20 @@ public class UpdateService extends Service {
 				f.delete();
 			}
 		}
+	}
+
+	private void expireDownloadedFiles() {
+		String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_MEDIA_URL,
+		};
+		Cursor c = getContentResolver().query(PodcastProvider.EXPIRED_URI, projection, null, null, null);
+		while (c.moveToNext()) {
+			PodcastCursor p = new PodcastCursor(c);
+			new File(p.getFilename()).delete();
+			p.removeFromQueue(this);
+		}
+		c.close();
 	}
 
 	private void removeNotification() {

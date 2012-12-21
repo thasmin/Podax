@@ -28,6 +28,7 @@ public class PodcastProvider extends ContentProvider {
 	public static final Uri ACTIVE_PODCAST_URI = Uri.withAppendedPath(PodcastProvider.URI, "active");
 	public static final Uri QUEUE_URI = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(PodcastProvider.URI, "search");
+	public static final Uri EXPIRED_URI = Uri.withAppendedPath(PodcastProvider.URI, "expired");
 
 	private final static int PODCASTS = 1;
 	private final static int PODCASTS_QUEUE = 2;
@@ -35,6 +36,7 @@ public class PodcastProvider extends ContentProvider {
 	private final static int PODCASTS_TO_DOWNLOAD = 4;
 	private final static int PODCASTS_ACTIVE = 5;
 	private final static int PODCASTS_SEARCH = 6;
+	private final static int PODCASTS_EXPIRED = 7;
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -63,6 +65,7 @@ public class PodcastProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "podcasts/to_download", PODCASTS_TO_DOWNLOAD);
 		uriMatcher.addURI(AUTHORITY, "podcasts/active", PODCASTS_ACTIVE);
 		uriMatcher.addURI(AUTHORITY, "podcasts/search", PODCASTS_SEARCH);
+		uriMatcher.addURI(AUTHORITY, "podcasts/expired", PODCASTS_EXPIRED);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
@@ -113,7 +116,7 @@ public class PodcastProvider extends ContentProvider {
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(_columnMap);
 		if (Arrays.asList(projection).contains(COLUMN_SUBSCRIPTION_TITLE))
-			sqlBuilder.setTables("podcasts JOIN subscriptions on podcasts.subscriptionId = subscriptions._id");
+			sqlBuilder.setTables("podcasts JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id");
 		else
 			sqlBuilder.setTables("podcasts");
 
@@ -147,6 +150,13 @@ public class PodcastProvider extends ContentProvider {
 				selectionArgs[0] = "%" + selectionArgs[0] + "%";
 			if (sortOrder == null)
 				sortOrder = "pubDate DESC";
+			break;
+		case PODCASTS_EXPIRED:
+			String inWhere = "SELECT podcasts._id FROM podcasts " +
+					"JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id " +
+					"WHERE expirationDays IS NOT NULL AND queuePosition IS NOT NULL AND " +
+					"date(pubDate, 'unixepoch', expirationDays || ' days') < date('now')";
+			sqlBuilder.appendWhere("podcasts._id IN (" + inWhere + ")");
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -372,17 +382,25 @@ public class PodcastProvider extends ContentProvider {
 						String.valueOf(podcastId) + "." +
 						PodcastCursor.getExtension(values.getAsString(COLUMN_MEDIA_URL));
 				// possible bug: file size shrinks for some reason -- don't use new one
-				if (new File(file).length() > values.getAsInteger(COLUMN_FILE_SIZE)) {
-					PodaxLog.log(getContext(), "podcast id " + podcastId + ": new file size (" + values.getAsInteger(COLUMN_FILE_SIZE) + " is less than existing file" + new File(file).length());
+				if (new File(file).length() > values.getAsInteger(COLUMN_FILE_SIZE))
 					values.remove(COLUMN_FILE_SIZE);
-				}
 			}
-			db.update("podcasts", values, COLUMN_ID + " = ?",
-					new String[] { String.valueOf(podcastId) });
+			db.update("podcasts", values, COLUMN_ID + " = ?", new String[] { String.valueOf(podcastId) });
 		} else {
 			podcastId = db.insert("podcasts", null, values);
-			// if the new podcast is less than 5 days old, add it to the queue
-			if (values.containsKey(COLUMN_PUB_DATE)) {
+
+			// find out if we should download new podcasts
+			Cursor queueNewCursor = db.query("subscriptions",
+					new String[] { SubscriptionProvider.COLUMN_QUEUE_NEW },
+					"_id = ?",
+					new String[] { String.valueOf(values.getAsLong(COLUMN_SUBSCRIPTION_ID)) },
+					null, null, null);
+			queueNewCursor.moveToFirst();
+			boolean queueNew = queueNewCursor.getInt(0) != 0;
+			queueNewCursor.close();
+
+			// if the new podcast is less than 5 days old , and add it to the queue
+			if (queueNew && values.containsKey(COLUMN_PUB_DATE)) {
 				Calendar c = Calendar.getInstance();
 				c.add(Calendar.DATE, -5);
 				if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {

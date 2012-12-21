@@ -47,6 +47,8 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		setHasOptionsMenu(true);
+
 		_subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, 0);
 		getLoaderManager().initLoader(0, null, this);
 		_adapter = new PodcastAdapter(getActivity(), null);
@@ -83,6 +85,12 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
 			}
 		});
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		setTitle();
 	}
 
 	CharSequence _originalTitle = null;
@@ -147,6 +155,12 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 		switch (item.getItemId()) {
 		case R.id.refresh_subscription:
 			UpdateService.updateSubscription(getActivity(), _subscriptionId);
+			return true;
+		case R.id.settings:
+			Intent intent = new Intent(getActivity(), SubscriptionSettingsActivity.class);
+			intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, _subscriptionId);
+			startActivity(intent);
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
