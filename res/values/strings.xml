@@ -101,6 +101,7 @@
 <![CDATA[
 <p><strong>Version 5.8</strong></p>
 <ul>
+	<li>Fixed podcasts that have donate links</li>
 	<li>Added configuration options to subscriptions</li>
 	<ul>
 		<li>Rename subscriptions</li>
