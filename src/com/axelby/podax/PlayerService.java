@@ -346,6 +346,10 @@ public class PlayerService extends Service {
 
 		PodaxLog.log(this, "PlayerService grabbed audio focus so resuming");
 
+		// make sure we don't pause for media button when audio focus event happens
+		for (int i = 0; i < Constants.PAUSE_COUNT; ++i)
+			_pausingFor[i] = false;
+
 		if (PlayerStatus.getCurrentState(this).isPaused() && _isPlayerPrepared) {
 			_player.start();
 			PlayerStatus.updateState(this, PlayerStates.PLAYING);
