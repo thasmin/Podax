@@ -8,10 +8,9 @@ import java.io.IOException;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockActivity;
 import com.axelby.podax.R;
 
-public class LogViewer extends SherlockActivity {
+public class LogViewer extends PodaxActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

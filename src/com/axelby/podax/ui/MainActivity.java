@@ -143,6 +143,7 @@ public class MainActivity extends PodaxFragmentActivity {
 			return true;
 		case R.id.text:
 			startActivity(new Intent(this, LogViewer.class));
+			return true;
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
