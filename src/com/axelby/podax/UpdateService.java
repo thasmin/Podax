@@ -278,11 +278,8 @@ public class UpdateService extends Service {
 				PodcastProvider.COLUMN_MEDIA_URL,
 		};
 		Cursor c = getContentResolver().query(PodcastProvider.EXPIRED_URI, projection, null, null, null);
-		while (c.moveToNext()) {
-			PodcastCursor p = new PodcastCursor(c);
-			new File(p.getFilename()).delete();
-			p.removeFromQueue(this);
-		}
+		while (c.moveToNext())
+			new PodcastCursor(c).removeFromQueue(this);
 		c.close();
 	}
 
