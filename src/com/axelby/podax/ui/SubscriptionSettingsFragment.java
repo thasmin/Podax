@@ -1,5 +1,7 @@
 package com.axelby.podax.ui;
 
+import org.acra.ACRA;
+
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -41,9 +43,14 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        _subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+		_subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+		if (_subscriptionId == -1)
+			ACRA.getErrorReporter().handleSilentException(new Exception("subscription settings got a -1"));
 		_subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI,  _subscriptionId);
-        getLoaderManager().initLoader(0, null, this);
+
+		Bundle bundle = new Bundle();
+		bundle.putLong("id", _subscriptionId);
+        getLoaderManager().initLoader(0, bundle, this);
 	}
 
 	@Override
@@ -142,7 +149,11 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 				SubscriptionProvider.COLUMN_QUEUE_NEW,
 				SubscriptionProvider.COLUMN_EXPIRATION,
 		};
-		return new CursorLoader(getActivity(), _subscriptionUri, projection, null, null, null);
+		long subscriptionId = bundle.getLong("id");
+		if (subscriptionId == -1)
+			return null;
+		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
+		return new CursorLoader(getActivity(), uri, projection, null, null, null);
 	}
 
 	boolean init = false;
@@ -155,8 +166,10 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 			return;
 		init = true;
 
-		if (cursor.isBeforeFirst())
-			cursor.moveToFirst();
+		if (getActivity() == null)
+			return;
+		if (!cursor.moveToFirst())
+			getActivity().finish();
 
 		_feedTitle = cursor.getString(0);
 		if (!cursor.isNull(1)) {
