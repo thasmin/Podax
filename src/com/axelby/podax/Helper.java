@@ -66,9 +66,12 @@ public class Helper {
 	}
 
 	public static boolean isGPodderInstalled(Context context) {
+		if (context == null)
+			return false;
+
 		List<ProviderInfo> providerList = context.getPackageManager().queryContentProviders(null, 0, 0);
 		for (ProviderInfo provider : providerList)
-			if (provider.authority.equals("com.axelby.gpodder.podcasts"))
+			if (provider.authority != null && provider.authority.equals("com.axelby.gpodder.podcasts"))
 				return true;
 		return false;
 	}

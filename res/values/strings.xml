@@ -101,7 +101,7 @@
 <![CDATA[
 <p><strong>Version 5.9</strong></p>
 <ul>
-	<li>Possibly fixed crash in subscription settings</li>
+	<li>Fixed a few minor crash bugs</li>
 	<li>Updated Riasel RSS parser library</li>
 	<li>Hopefully fixed bug where podcast duration was not detected properly</li>
 </ul>
