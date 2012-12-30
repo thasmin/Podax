@@ -41,7 +41,7 @@ public class SubscriptionUpdater {
 		_context = context;
 	}
 	
-	public void update(long subscriptionId) {
+	public void update(final long subscriptionId) {
 		Cursor cursor = null;
 		try {
 			if (!Helper.ensureWifi(_context))
@@ -56,7 +56,7 @@ public class SubscriptionUpdater {
 					SubscriptionProvider.COLUMN_LAST_MODIFIED,
 			};
 
-			ContentValues subscriptionValues = new ContentValues();
+			final ContentValues subscriptionValues = new ContentValues();
 
 			cursor = _context.getContentResolver().query(subscriptionUri, projection,
 					SubscriptionProvider.COLUMN_ID + " = ?",
@@ -101,36 +101,45 @@ public class SubscriptionUpdater {
 			try {
 				XmlPullParser parser = Xml.newPullParser();
 				parser.setInput(connection.getInputStream(), encoding);
-				Feed feed = FeedParser.parseFeed(parser);
-				if (feed == null)
-					return;
 
-				subscriptionValues.putAll(feed.getContentValues());
-				changeKeyString(subscriptionValues, "lastBuildDate", SubscriptionProvider.COLUMN_LAST_UPDATE);
-				for (FeedItem item : feed.getItems()) {
-					if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
-						continue;
+				FeedParser feedParser = new FeedParser();
+				feedParser.setOnFeedInfoHandler(new FeedParser.FeedInfoHandler() {
+					@Override
+					public void OnFeedInfo(Feed feed) {
+						subscriptionValues.putAll(feed.getContentValues());
+						changeKeyString(subscriptionValues, "lastBuildDate", SubscriptionProvider.COLUMN_LAST_UPDATE);
 
-					ContentValues podcastValues = item.getContentValues();
-					podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
+						if (feed.getThumbnail() != null)
+							downloadThumbnail(subscriptionId, feed.getThumbnail());
+					}
+				});
+				feedParser.setOnFeedItemHandler(new FeedParser.FeedItemHandler() {
+					@Override
+					public void OnFeedItem(FeedItem item) {
+						if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
+							return;
 
-					// translate Riasel keys to old Podax keys
-					changeKeyString(podcastValues, "mediaURL", PodcastProvider.COLUMN_MEDIA_URL);
-					changeKeyString(podcastValues, "mediaSize", PodcastProvider.COLUMN_FILE_SIZE);
-					changeKeyString(podcastValues, "paymentURL", PodcastProvider.COLUMN_PAYMENT);
-					if (changeKeyLong(podcastValues, "publicationDate", PodcastProvider.COLUMN_PUB_DATE))
-						podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, podcastValues.getAsLong(PodcastProvider.COLUMN_PUB_DATE) / 1000);
+						ContentValues podcastValues = item.getContentValues();
+						podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
 
-					if (podcastValues.containsKey(PodcastProvider.COLUMN_MEDIA_URL)) {
-						try {
-							_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
-						} catch (IllegalArgumentException e) {
-							Log.w("Podax", "error while inserting podcast: " + e.getMessage());
+						// translate Riasel keys to old Podax keys
+						changeKeyString(podcastValues, "mediaURL", PodcastProvider.COLUMN_MEDIA_URL);
+						changeKeyString(podcastValues, "mediaSize", PodcastProvider.COLUMN_FILE_SIZE);
+						changeKeyString(podcastValues, "paymentURL", PodcastProvider.COLUMN_PAYMENT);
+						if (changeKeyLong(podcastValues, "publicationDate", PodcastProvider.COLUMN_PUB_DATE))
+							podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, podcastValues.getAsLong(PodcastProvider.COLUMN_PUB_DATE) / 1000);
+
+						if (podcastValues.containsKey(PodcastProvider.COLUMN_MEDIA_URL)) {
+							try {
+								_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
+							} catch (IllegalArgumentException e) {
+								Log.w("Podax", "error while inserting podcast: " + e.getMessage());
+							}
 						}
 					}
-				}
-				if (feed.getThumbnail() != null)
-					downloadThumbnail(subscriptionId, feed.getThumbnail());
+				});
+				feedParser.parseFeed(parser);
+
 			} catch (XmlPullParserException e) {
 				// not much we can do about this
 				Log.w("Podax", "error in subscription xml: " + e.getMessage());
