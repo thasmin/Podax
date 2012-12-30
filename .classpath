@@ -3,15 +3,16 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="libs/google-gson-stream-2.0.jar"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="lib" path="libs/google-gson-stream-2.0.jar"/>
 	<classpathentry kind="lib" path="libs/android-support-v4.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ActionBarSherlock"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ViewPagerIndicator"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/drag-sort-listview"/>
 	<classpathentry kind="lib" path="libs/google-api-client-1.9.0-beta.jar"/>
 	<classpathentry kind="lib" path="libs/google-http-client-1.9.0-beta.jar"/>
 	<classpathentry kind="lib" path="libs/flattr4j-core-2.4.jar" sourcepath="/Users/dan/.m2/repository/org/shredzone/flattr4j/flattr4j-core/2.4/flattr4j-core-2.4-sources.jar"/>
 	<classpathentry kind="lib" path="libs/acra-4.4.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ActionBarSherlock"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ViewPagerIndicator"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/drag-sort-listview"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Riasel"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
