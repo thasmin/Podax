@@ -9,6 +9,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.os.Environment;
 
@@ -216,17 +217,23 @@ public class PodcastCursor {
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
-	public void determineDuration(Context context) {
+	public void determineDuration(final Context context) {
+		final Uri uri = Uri.parse(getContentUri().toString());
 		MediaPlayer mp = new MediaPlayer();
+		mp.setOnPreparedListener(new OnPreparedListener() {
+			@Override
+			public void onPrepared(MediaPlayer mp) {
+				ContentValues values = new ContentValues();
+				values.put(PodcastProvider.COLUMN_DURATION, mp.getDuration());
+				context.getContentResolver().update(uri, values, null, null);
+				mp.release();
+			}
+		});
 		try {
 			mp.setDataSource(this.getFilename());
 			mp.prepare();
-			ContentValues values = new ContentValues();
-			values.put(PodcastProvider.COLUMN_DURATION, mp.getDuration());
-			context.getContentResolver().update(getContentUri(), values, null, null);
 		} catch (IOException ex) {
 			PodaxLog.log(context, "Unable to determine length of " + this.getFilename() + ": " + ex.getMessage());
-		} finally {
 			if (mp != null)
 				mp.release();
 		}
