@@ -288,6 +288,7 @@ public class PlayerService extends Service {
 		updateActivePodcastPosition(_player.getCurrentPosition());
 		PlayerStatus.updateState(this, PlayerStates.PAUSED);
 		_lockscreenManager.setLockscreenPaused();
+		showNotification();
 	}
 
 	private void stop() {
@@ -351,6 +352,8 @@ public class PlayerService extends Service {
 			_player.start();
 			PlayerStatus.updateState(this, PlayerStates.PLAYING);
 			_lockscreenManager.setLockscreenPlaying();
+			showNotification();
+
 			return;
 		}
 
@@ -495,10 +498,16 @@ public class PlayerService extends Service {
 			// set up pause intent
 			Intent pauseIntent = new Intent(this, PlayerService.class);
 			// use data to make intent unique
-			pauseIntent.setData(Uri.parse("podax://playercommand/stop"));
-			pauseIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_STOP);
+			pauseIntent.setData(Uri.parse("podax://playercommand/playpause"));
+			pauseIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_PLAYPAUSE);
+			pauseIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, Constants.PAUSE_MEDIABUTTON);
 			PendingIntent pausePendingIntent = PendingIntent.getService(this, 0, pauseIntent, 0);
 			contentView.setOnClickPendingIntent(R.id.pause, pausePendingIntent);
+			Log.d("Podax", PlayerStatus.getCurrentState(this).isPlaying() ? "playing" : "not playing");
+			contentView.setImageViewResource(R.id.pause,
+					PlayerStatus.getCurrentState(this).isPlaying() ?
+						R.drawable.ic_media_pause_normal :
+						R.drawable.ic_media_play_normal);
 
 			// set up forward intent
 			Intent forwardIntent = new Intent(this, PlayerService.class);
