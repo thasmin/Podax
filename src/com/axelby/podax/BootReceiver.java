@@ -23,7 +23,7 @@ public class BootReceiver extends BroadcastReceiver {
 		PendingIntent pendingRefreshIntent = PendingIntent.getService(context, 0, refreshIntent, 0);
 		alarmManager.cancel(pendingRefreshIntent);
 		alarmManager.setInexactRepeating(AlarmManager.RTC,
-				System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR, pendingRefreshIntent);
+				System.currentTimeMillis(), AlarmManager.INTERVAL_HOUR * 6, pendingRefreshIntent);
 	}
 
 }
