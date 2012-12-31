@@ -39,8 +39,14 @@ public class PlayerStatus {
 		prefs.edit().putInt("playingState", state.toInt()).commit();
 	}
 
+	public static PlayerStates getPlayerState(Context context) {
+		SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
+		return PlayerStates.fromInt(prefs.getInt("playingState", -1));
+	}
+
 	// instance variables
 	public enum PlayerStates {
+		INVALID(-1),
 		QUEUEEMPTY(0), 
 		STOPPED(1), 
 		PAUSED(2), 

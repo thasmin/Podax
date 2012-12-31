@@ -25,11 +25,8 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
-import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
@@ -489,66 +486,47 @@ public class PlayerService extends Service {
 		Intent showIntent = new Intent(this, PodcastDetailActivity.class);
 		PendingIntent showPendingIntent = PendingIntent.getActivity(this, 0, showIntent, 0);
 
-		Notification notification = null;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.player_notification);
-			contentView.setTextViewText(R.id.podcast, podcast.getTitle());
-			contentView.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+			.setSmallIcon(R.drawable.icon)
+			.setWhen(0)
+			.setContentTitle(podcast.getTitle())
+			.setContentText(podcast.getSubscriptionTitle())
+			.setContentIntent(showPendingIntent)
+			.setOngoing(true)
+			.setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-			// set up pause intent
-			Intent pauseIntent = new Intent(this, PlayerService.class);
-			// use data to make intent unique
-			pauseIntent.setData(Uri.parse("podax://playercommand/playpause"));
-			pauseIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_PLAYPAUSE);
-			pauseIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, Constants.PAUSE_MEDIABUTTON);
-			PendingIntent pausePendingIntent = PendingIntent.getService(this, 0, pauseIntent, 0);
-			contentView.setOnClickPendingIntent(R.id.pause, pausePendingIntent);
-			Log.d("Podax", PlayerStatus.getCurrentState(this).isPlaying() ? "playing" : "not playing");
-			contentView.setImageViewResource(R.id.pause,
-					PlayerStatus.getCurrentState(this).isPlaying() ?
-						R.drawable.ic_media_pause_normal :
-						R.drawable.ic_media_play_normal);
+		// set up pause intent
+		Intent pauseIntent = new Intent(this, PlayerService.class);
+		// use data to make intent unique
+		pauseIntent.setData(Uri.parse("podax://playercommand/playpause"));
+		pauseIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_PLAYPAUSE);
+		pauseIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, Constants.PAUSE_MEDIABUTTON);
+		PendingIntent pausePendingIntent = PendingIntent.getService(this, 0, pauseIntent, 0);
 
-			// set up forward intent
-			Intent forwardIntent = new Intent(this, PlayerService.class);
-			// use data to make intent unique
-			forwardIntent.setData(Uri.parse("podax://playercommand/forward"));
-			forwardIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_SKIPFORWARD);
-			PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
-			contentView.setOnClickPendingIntent(R.id.forward, forwardPendingIntent);
+		// set up forward intent
+		Intent forwardIntent = new Intent(this, PlayerService.class);
+		// use data to make intent unique
+		forwardIntent.setData(Uri.parse("podax://playercommand/forward"));
+		forwardIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_SKIPFORWARD);
+		PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
 
-			// set subscription image
-			try {
-				long subscriptionId = podcast.getSubscriptionId();
-				String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
-				if (new File(imageFilename).exists()) {
-					Bitmap bitmap = BitmapFactory.decodeFile(imageFilename);
-					contentView.setImageViewBitmap(R.id.show_btn, bitmap);
-				} else {
-					Log.d("Podax", "file doesn't exist: " + imageFilename);
-					contentView.setImageViewResource(R.id.show_btn, R.drawable.icon);
-				}
-			} catch (OutOfMemoryError e) {
-				Log.d("Podax", "out of memory error");
-				contentView.setImageViewResource(R.id.show_btn, R.drawable.icon);
+		try {
+			long subscriptionId = podcast.getSubscriptionId();
+			String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
+			if (new File(imageFilename).exists()) {
+				Bitmap subscriptionBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeFile(imageFilename), 128, 128, false);
+				builder.setLargeIcon(subscriptionBitmap);
 			}
-	
-			notification = new NotificationCompat.Builder(this)
-				.setSmallIcon(R.drawable.icon)
-				.setContent(contentView)
-				.setOngoing(true)
-				.getNotification();
-		} else {
-			notification = new NotificationCompat.Builder(this)
-				.setSmallIcon(R.drawable.icon)
-				.setWhen(System.currentTimeMillis())
-				.setContentTitle(podcast.getTitle())
-				.setContentText(podcast.getSubscriptionTitle())
-				.setContentIntent(showPendingIntent)
-				.setOngoing(true)
-				.getNotification();
+		} catch (OutOfMemoryError e) {
 		}
 
+		if (PlayerStatus.getPlayerState(this) == PlayerStates.PLAYING)
+			builder.addAction(R.drawable.ic_media_pause_normal, getString(R.string.pause), pausePendingIntent);
+		else
+			builder.addAction(R.drawable.ic_media_play_normal, getString(R.string.play), pausePendingIntent);
+		builder.addAction(R.drawable.ic_media_ff_normal, getString(R.string.fast_forward), forwardPendingIntent);
+
+		Notification notification = builder.build();
 		startForeground(Constants.NOTIFICATION_PLAYING, notification);
 
 		c.close();
