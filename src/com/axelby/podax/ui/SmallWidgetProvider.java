@@ -38,9 +38,15 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
 			setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
 
-			Intent showIntent = new Intent(context, PodcastDetailActivity.class);
-			PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
-			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+			if (playerState.hasActivePodcast()) {
+				Intent showIntent = new Intent(context, PodcastDetailActivity.class);
+				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
+				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+			} else {
+				Intent showIntent = new Intent(context, MainActivity.class);
+				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
+				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+			}
 
 			try {
 				long subscriptionId = playerState.getSubscriptionId();

@@ -59,9 +59,15 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 				views.setImageViewResource(R.id.show_btn, R.drawable.icon);
 			}
 
-			Intent showIntent = new Intent(context, PodcastDetailActivity.class);
-			PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
-			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+			if (playerState.hasActivePodcast()) {
+				Intent showIntent = new Intent(context, PodcastDetailActivity.class);
+				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
+				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+			} else {
+				Intent showIntent = new Intent(context, MainActivity.class);
+				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
+				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
+			}
 
 			Intent queueIntent = new Intent(context, MainActivity.class);
 			queueIntent.putExtra(Constants.EXTRA_TAB, MainActivity.TAB_QUEUE);
