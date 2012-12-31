@@ -147,6 +147,12 @@ public class PlayerService extends Service {
 			_player.setOnPreparedListener(new OnPreparedListener() {
 				@Override
 				public void onPrepared(MediaPlayer player) {
+					if (player.getDuration() > 0) {
+						ContentValues values = new ContentValues();
+						values.put(PodcastProvider.COLUMN_DURATION, player.getDuration());
+						PlayerService.this.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+					}
+
 					player.start();
 				}				
 			});
