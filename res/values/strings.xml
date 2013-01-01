@@ -101,9 +101,11 @@
 <![CDATA[
 <p><strong>Version 5.9</strong></p>
 <ul>
+	<li>Changed notification so it has actions</li>
+	<li>Fixed widget action when queue is empty</li>
+	<li>Fixed bug where time left in podcast was negative</li>
 	<li>Fixed a few minor crash bugs</li>
 	<li>Updated Riasel RSS parser library</li>
-	<li>Hopefully fixed bug where podcast duration was not detected properly</li>
 </ul>
 <p><strong>Version 5.8</strong></p>
 <ul>
