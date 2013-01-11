@@ -2,10 +2,14 @@ package com.axelby.podax.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.axelby.podax.Helper;
+import com.axelby.podax.R;
 
 public class PodaxFragmentActivity extends SherlockFragmentActivity {
 
@@ -15,11 +19,6 @@ public class PodaxFragmentActivity extends SherlockFragmentActivity {
 
 		if (!(this instanceof MainActivity))
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
 	}
 
 	@Override
@@ -41,6 +40,16 @@ public class PodaxFragmentActivity extends SherlockFragmentActivity {
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
+	}
+
+	protected void setupPodaxFragment(Class<? extends Fragment> fragmentClass) {
+        setContentView(R.layout.podax_fragment_activity);
+
+		Fragment fragment = Fragment.instantiate(this, fragmentClass.getName());
+	    FragmentManager fm = getSupportFragmentManager();
+	    FragmentTransaction ft = fm.beginTransaction();
+	    ft.add(R.id.fragment, fragment);
+	    ft.commit();
 	}
 
 }
