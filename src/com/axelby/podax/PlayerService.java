@@ -9,6 +9,7 @@ import java.util.TimerTask;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -79,6 +80,13 @@ public class PlayerService extends Service {
 				PlayerService.stop(context);
 		}
 	};
+	private BroadcastReceiver _bluetoothReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (PlayerStatus.getCurrentState(context).isPlaying())
+				PlayerService.stop(context);
+		}
+	};
 	private LockscreenManager _lockscreenManager = null;
 
 	@Override
@@ -109,6 +117,7 @@ public class PlayerService extends Service {
 		setup();
 
 		setupReceiver(_noisyReceiver, AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+		setupReceiver(_bluetoothReceiver, BluetoothDevice.ACTION_ACL_DISCONNECTED);
 	}
 
 	@Override
@@ -116,6 +125,7 @@ public class PlayerService extends Service {
 		super.onDestroy();
 
 		safeUnregisterReceiver(_noisyReceiver);
+		safeUnregisterReceiver(_bluetoothReceiver);
 	}
 
 	private void setup() {
@@ -473,6 +483,9 @@ public class PlayerService extends Service {
 
 		QueueManager.moveToNextInQueue(this);
 
+		if (!PlayerStatus.getCurrentState(this).hasActivePodcast())
+			stop();
+
 		grabAudioFocusAndResume();
 	}
 
@@ -545,7 +558,7 @@ public class PlayerService extends Service {
 	private void updateActivePodcastPosition(int position) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
-		PlayerService.this.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
 		Helper.updateWidgets(this);
 	}
