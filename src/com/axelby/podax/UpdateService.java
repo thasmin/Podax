@@ -1,13 +1,7 @@
 package com.axelby.podax;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -23,7 +17,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -144,9 +137,6 @@ public class UpdateService extends Service {
 			return;
 
 		if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
-			// when updating all subscriptions, send the list to the podax server
-			sendSubscriptionsToPodaxServer();
-
 			// sync with gpodder if it's installed and there's a linked account
 			AccountManager am = AccountManager.get(this);
 			if (Helper.isGPodderInstalled(this) && am.getAccountsByType("com.axelby.gpodder.account").length > 0)
@@ -191,54 +181,6 @@ public class UpdateService extends Service {
 		intent.setAction(Constants.ACTION_DOWNLOAD_PODCAST);
 		intent.putExtra(Constants.EXTRA_PODCAST_ID, subscriptionId);
 		return intent;
-	}
-
-	public void sendSubscriptionsToPodaxServer() {
-		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("usageDataPref", true) == false)
-			return;
-
-		// errors are acceptible
-		try {
-			URL podaxServer = new URL("http://www.axelby.com/podax.php");
-			HttpURLConnection conn = (HttpURLConnection)podaxServer.openConnection();
-			conn.setRequestMethod("POST");
-			conn.setDoOutput(true);
-			conn.setDoInput(true);
-			conn.connect();
-
-			String[] projection = new String[] {
-					SubscriptionProvider.COLUMN_URL,
-			};
-			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
-
-			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-			wr.write("inst=");
-			wr.write(Installation.id(this));
-			while (c.moveToNext()) {
-				SubscriptionCursor subscription = new SubscriptionCursor(c);
-				String url = subscription.getUrl();
-				wr.write("&sub[");
-				wr.write(String.valueOf(c.getPosition()));
-				wr.write("]=");
-				wr.write(URLEncoder.encode(url, "UTF-8"));
-			}
-			wr.flush();
-
-			c.close();
-
-			BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-			Vector<String> response = new Vector<String>();
-			String line;
-			while ((line = rd.readLine()) != null)
-				response.add(line);
-			if (response.size() > 1 || !response.get(0).equals("OK")) {
-				Log.w("Podax", "Podax server error");
-				Log.w("Podax", "------------------");
-				for (String s : response)
-					Log.w("Podax", s);
-			}
-		} catch (Exception ex) {
-		}
 	}
 
 	// make sure all media files in the folder are for existing podcasts

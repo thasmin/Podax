@@ -16,11 +16,6 @@
     <PreferenceCategory android:title="Debug" >
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="usageDataPref"
-            android:summary="@string/pref_anon_usage"
-            android:title="@string/pref_anon_usage_title" />
-        <CheckBoxPreference
-            android:defaultValue="true"
             android:key="acra.enable"
             android:summary="@string/pref_crash_reports"
             android:title="@string/pref_crash_reports_title" />
