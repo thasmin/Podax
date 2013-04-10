@@ -190,7 +190,7 @@ public class SubscriptionUpdater {
 			.setContentText(reason)
 			.setContentIntent(contentIntent)
 			.setOngoing(false)
-			.getNotification();
+			.build();
 
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
@@ -275,7 +275,7 @@ public class SubscriptionUpdater {
 			.setWhen(System.currentTimeMillis())
 			.setContentTitle("Updating " + subscription.getTitle())
 			.setContentIntent(contentIntent)
-			.getNotification();
+			.build();
 
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(Constants.NOTIFICATION_UPDATE, notification);

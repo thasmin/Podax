@@ -151,7 +151,7 @@ class PodcastDownloader {
 			.setContentTitle("Downloading " + podcast.getTitle())
 			.setContentText(podcast.getSubscriptionTitle())
 			.setContentIntent(contentIntent)
-			.getNotification();
+			.build();
 
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(Constants.NOTIFICATION_UPDATE, notification);
