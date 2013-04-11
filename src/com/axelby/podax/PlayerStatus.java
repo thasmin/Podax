@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -34,9 +35,16 @@ public class PlayerStatus {
 		return status;
 	}
 
+	private static void notifyStateChanged(Context context, PlayerStates state) {
+		Intent intent = new Intent("com.axelby.podax.player.statechanged");
+		intent.putExtra("com.axelby.podax.player.state", state);
+		context.sendBroadcast(intent, "com.axelby.podax.playerchanges");
+	}
+
 	public static void updateState(Context context, PlayerStates state) {
 		SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
 		prefs.edit().putInt("playingState", state.toInt()).commit();
+		notifyStateChanged(context, state);
 	}
 
 	public static PlayerStates getPlayerState(Context context) {

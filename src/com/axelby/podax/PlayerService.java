@@ -9,13 +9,10 @@ import java.util.TimerTask;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -38,12 +35,14 @@ public class PlayerService extends Service {
 	private class UpdatePositionTimerTask extends TimerTask {
 		protected int _lastPosition = 0;
 		public void run() {
-			if (_player != null && !_player.isPlaying())
+			if (_player == null || !_player.isPlaying())
 				return;
-			int oldPosition = _lastPosition;
-			_lastPosition = _player.getCurrentPosition();
-			if (oldPosition / 1000 != _lastPosition / 1000)
-				updateActivePodcastPosition(_lastPosition);
+
+			int currentPosition = _player.getCurrentPosition();
+			if (_lastPosition / 1000 != currentPosition / 1000) {
+				updateActivePodcastPosition(currentPosition);
+			}
+			_lastPosition = currentPosition;
 		}
 	};
 
@@ -68,25 +67,10 @@ public class PlayerService extends Service {
 	};
 
 	protected MediaPlayer _player;
-	private boolean _isPlayerPrepared;
 	protected boolean _onPhone;
 	protected Timer _updateTimer;
 	private boolean _pausingFor[] = new boolean[] {false, false};
 
-	private BroadcastReceiver _noisyReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (PlayerStatus.getCurrentState(context).isPlaying())
-				PlayerService.stop(context);
-		}
-	};
-	private BroadcastReceiver _bluetoothReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (PlayerStatus.getCurrentState(context).isPlaying())
-				PlayerService.stop(context);
-		}
-	};
 	private LockscreenManager _lockscreenManager = null;
 
 	@Override
@@ -96,8 +80,7 @@ public class PlayerService extends Service {
 
 	private void createUpdateTimer() {
 		if (_updateTimer != null)
-			return;
-
+			_updateTimer.cancel();
 		_updateTimer = new Timer();
 		_updateTimer.schedule(new UpdatePositionTimerTask(), 250, 250);
 	}
@@ -110,25 +93,7 @@ public class PlayerService extends Service {
 		_updateTimer = null;
 	}
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-
-		setup();
-
-		setupReceiver(_noisyReceiver, AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-		setupReceiver(_bluetoothReceiver, BluetoothDevice.ACTION_ACL_DISCONNECTED);
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-
-		safeUnregisterReceiver(_noisyReceiver);
-		safeUnregisterReceiver(_bluetoothReceiver);
-	}
-
-	private void setup() {
+	private void createPlayer() {
 		if (_player == null) {
 			_player = new MediaPlayer();
 			_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -142,7 +107,6 @@ public class PlayerService extends Service {
 
 					stopUpdateTimer();
 					player.reset();
-					_isPlayerPrepared = false;
 					return true;
 				}
 			});
@@ -167,144 +131,110 @@ public class PlayerService extends Service {
 				}				
 			});
 
-			_isPlayerPrepared = false;
 		}
 
 		if (_lockscreenManager == null)
 			_lockscreenManager = new LockscreenManager();
 	}
 
-	private void setupReceiver(BroadcastReceiver receiver, String action) {
-		safeUnregisterReceiver(receiver);
-		registerReceiver(receiver, new IntentFilter(action));
-	}
-
-	private void safeUnregisterReceiver(BroadcastReceiver receiver) {
-		if (receiver == null)
-			return;
-		try {
-			unregisterReceiver(receiver);
-		} catch (IllegalArgumentException ex) { }
-	}
-
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		handleIntent(intent);
-		return START_STICKY;
-	}
-
-	private void handleIntent(Intent intent) {
 		if (intent == null || intent.getExtras() == null)
-			return;
+			return START_NOT_STICKY;
 
 		if (!intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND)) 
-			return;
-
-		setup();
+			return START_NOT_STICKY;
 
 		int pauseReason = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
 
 		switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
 		case -1:
-			return;
+			break;
 		case Constants.PLAYER_COMMAND_SKIPTO:
-			//PodaxLog.log(this, "PlayerService got a command: skip to");
 			skipTo(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, 0));
 			break;
 		case Constants.PLAYER_COMMAND_SKIPTOEND:
-			//PodaxLog.log(this, "PlayerService got a command: skip to end");
 			playNextPodcast();
 			break;
 		case Constants.PLAYER_COMMAND_RESTART:
-			//PodaxLog.log(this, "PlayerService got a command: restart");
 			restart();
 			break;
 		case Constants.PLAYER_COMMAND_SKIPBACK:
-			//PodaxLog.log(this, "PlayerService got a command: skip back");
 			skip(-15);
 			break;
 		case Constants.PLAYER_COMMAND_SKIPFORWARD:
-			//PodaxLog.log(this, "PlayerService got a command: skip forward");
 			skip(30);
 			break;
 		case Constants.PLAYER_COMMAND_PLAYPAUSE:
-			//PodaxLog.log(this, "PlayerService got a command: playpause");
-			if (_player.isPlaying()) {
-				PodaxLog.log(this, "  pausing");
-				pause(pauseReason);
-			} else {
-				PodaxLog.log(this, "  resuming");
+			if (_player.isPlaying())
+				pauseForReason(pauseReason);
+			else
 				grabAudioFocusAndResume();
-			}
 			break;
 		case Constants.PLAYER_COMMAND_PLAYSTOP:
-			//PodaxLog.log(this, "PlayerService got a command: playstop");
-			if (_player.isPlaying()) {
-				//PodaxLog.log(this, "  stopping");
+			if (_player != null && _player.isPlaying())
 				stop();
-			} else {
-				//PodaxLog.log(this, "  resuming");
+			else
 				grabAudioFocusAndResume();
-			}
 			break;
 		case Constants.PLAYER_COMMAND_PLAY:
-			//PodaxLog.log(this, "PlayerService got a command: play");
 			grabAudioFocusAndResume();
 			break;
 		case Constants.PLAYER_COMMAND_PAUSE:
-			//PodaxLog.log(this, "PlayerService got a command: pause");
-			pause(pauseReason);
+			pauseForReason(pauseReason);
 			break;
 		case Constants.PLAYER_COMMAND_RESUME:
-			//PodaxLog.log(this, "PlayerService got a command: resume");
-			resume(pauseReason);
+			if (unpauseForReason(pauseReason))
+				grabAudioFocusAndResume();
 			break;
 		case Constants.PLAYER_COMMAND_STOP:
-			//PodaxLog.log(this, "PlayerService got a command: stop");
 			stop();
 			break;
 		case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
-			//PodaxLog.log(this, "PlayerService got a command: play specific podcast");
 			long podcastId = intent.getLongExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
 			play(podcastId);
 			break;
 		}
+		
+		return START_NOT_STICKY;
 	}
 
-	private void resume(int reason) {
-		if (reason == -1)
-			return;
-
-		PodaxLog.log(this, "no longer pausing for " + (reason == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
-		_pausingFor[reason] = false;
-
+	public boolean isPausedForAnyReason() {
 		// make sure all of our pause reasons are OK
 		for (int i = 0; i < Constants.PAUSE_COUNT; ++i) {
-			if (_pausingFor[i]) {
-				PodaxLog.log(this, "still pausing for " + (i == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
-				return;
-			}
+			if (_pausingFor[i])
+				return false;
 		}
 
-		grabAudioFocusAndResume();
+		return true;
 	}
 
-	private void pause(int reason) {
+	private boolean unpauseForReason(int reason) {
+		if (reason == -1)
+			return false;
+
+		_pausingFor[reason] = false;
+
+		return isPausedForAnyReason();
+	}
+
+	private void pauseForReason(int reason) {
 		if (reason == -1)
 			return;
 
-		PodaxLog.log(this, "PlayerService pausing");
-		PodaxLog.log(this, "pausing for " + (reason == Constants.PAUSE_AUDIOFOCUS ? "audio focus" : "media button"));
-
 		_pausingFor[reason] = true;
-		_player.pause();
-		updateActivePodcastPosition(_player.getCurrentPosition());
-		PlayerStatus.updateState(this, PlayerStates.PAUSED);
-		_lockscreenManager.setLockscreenPaused();
-		showNotification();
+		if (_player != null && _player.isPlaying()) {
+			_player.pause();
+			updateActivePodcastPosition(_player.getCurrentPosition());
+			PlayerStatus.updateState(this, PlayerStates.PAUSED);
+			_lockscreenManager.setLockscreenPaused();
+			showNotification();
+		}
 	}
 
 	private void stop() {
+		PlayerStatus.updateState(this, PlayerStates.STOPPED);
+
 		PodaxLog.log(this, "PlayerService stopping");
 
 		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -322,15 +252,13 @@ public class PlayerService extends Service {
 			_player.stop();
 		}
 
-		PlayerStatus.updateState(this, PlayerStates.STOPPED);
 		_player = null;
-		stopSelf();
 
 		// tell anything listening to the active podcast to refresh now that we're stopped
 		ContentValues values = new ContentValues();
 		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
-		Helper.updateWidgets(this);
+		stopSelf();
 	}
 
 	private boolean grabAudioFocus() {
@@ -339,7 +267,6 @@ public class PlayerService extends Service {
 
 		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		int result = audioManager.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-
 		if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
 			stop();
 			return false;
@@ -352,24 +279,14 @@ public class PlayerService extends Service {
 	}
 
 	private void grabAudioFocusAndResume() {
-		if (!grabAudioFocus() || this == null)
+		if (!grabAudioFocus())
 			return;
-
-		PodaxLog.log(this, "PlayerService grabbed audio focus so resuming");
 
 		// make sure we don't pause for media button when audio focus event happens
 		for (int i = 0; i < Constants.PAUSE_COUNT; ++i)
 			_pausingFor[i] = false;
 
-		if (PlayerStatus.getCurrentState(this).isPaused() && _isPlayerPrepared) {
-			_player.start();
-			PlayerStatus.updateState(this, PlayerStates.PLAYING);
-			_lockscreenManager.setLockscreenPlaying();
-			showNotification();
-
-			return;
-		}
-
+		// find out where to start playing
 		String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
@@ -383,32 +300,32 @@ public class PlayerService extends Service {
 		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 		if (c.isAfterLast())
 			return;
-
 		PodcastCursor p = new PodcastCursor(c);
+		
+		// make sure the podcast is downloaded
 		if (!p.isDownloaded()) {
 			Toast.makeText(this, R.string.podcast_not_downloaded, Toast.LENGTH_SHORT).show();
 			return;
 		}
 
-		boolean prepared = prepareMediaPlayer(p);
-		if (!prepared) {
+		// create and prepare the media player
+		createPlayer();
+		if (!prepareMediaPlayer(p)) {
 			Toast.makeText(this, getResources().getString(R.string.cannot_play_podcast, p.getTitle()), Toast.LENGTH_LONG).show();
 			return;
 		}
 
 		// set this podcast as active -- it may not have been first in queue
 		QueueManager.changeActivePodcast(this, p.getId());
+		PlayerStatus.updateState(this, PlayerStates.PLAYING);
 
 		_lockscreenManager = new LockscreenManager();
 		_lockscreenManager.setupLockscreenControls(this, p);
 
 		c.close();
 
-		PlayerStatus.updateState(this, PlayerStates.PLAYING);
-
-		showNotification();
 		createUpdateTimer();
-		Helper.updateWidgets(this);
+		showNotification();
 	}
 
 	private boolean prepareMediaPlayer(PodcastCursor p) {
@@ -417,7 +334,6 @@ public class PlayerService extends Service {
 			_player.setDataSource(p.getFilename());
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
-			_isPlayerPrepared = true;
 			return true;
 		} catch (IllegalStateException e) {
 			// called if player is not in idle state
@@ -560,7 +476,13 @@ public class PlayerService extends Service {
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
-		Helper.updateWidgets(this);
+		notifyPositionChanged(position);
+	}
+
+	private void notifyPositionChanged(int currentPosition) {
+		Intent intent = new Intent("com.axelby.podax.player.positionchanged");
+		intent.putExtra("com.axelby.podax.player.position", currentPosition);
+		sendBroadcast(intent, "com.axelby.podax.playerchanges");
 	}
 
 	// static functions for easier controls

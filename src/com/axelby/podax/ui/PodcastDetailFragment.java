@@ -35,7 +35,6 @@ import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -116,10 +115,8 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());
 				if (playerState.isPlaying() && playerState.getId() == _podcastId)
 					PlayerService.stop(getActivity());
-				else {
-					PodaxLog.log(getActivity(), "playing a specific podcast from podcastdetailfragment");
+				else
 					PlayerService.play(getActivity(), _podcastId);
-				}
 			}
 		});
 

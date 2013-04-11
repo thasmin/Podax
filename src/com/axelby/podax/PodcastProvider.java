@@ -12,6 +12,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.UriMatcher;
@@ -233,8 +234,7 @@ public class PodcastProvider extends ContentProvider {
 					editor.remove(PREF_ACTIVE);
 				editor.commit();
 
-				// tell everyone that there's a new active podcast
-				Helper.updateWidgets(getContext());
+				notifyActivePodcastChanged(activePodcastId);
 
 				// if we're clearing the active podcast or updating just the ID, don't go to the DB
 				if (activePodcastId == null || values.size() == 1)
@@ -351,12 +351,18 @@ public class PodcastProvider extends ContentProvider {
 		long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
 		if (String.valueOf(activePodcastId).equals(podcastId)) {
 			prefs.edit().remove(PREF_ACTIVE).commit();
-			Helper.updateWidgets(getContext());
+			notifyActivePodcastChanged(activePodcastId);
 		} else if (activePodcastId == -1 &&
 				((oldPosition != null && oldPosition == 0) ||
 				  newPosition != null && newPosition == 0)) {
-			Helper.updateWidgets(getContext());
+			notifyActivePodcastChanged(activePodcastId);
 		}
+	}
+
+	private void notifyActivePodcastChanged(long podcastId) {
+		Intent intent = new Intent("com.axelby.podax.player.activepodcastchanged");
+		intent.putExtra("com.axelby.podax.player.activepodcastid", podcastId);
+		getContext().sendBroadcast(intent, "com.axelby.podax.playerchanges");
 	}
 
 	@Override

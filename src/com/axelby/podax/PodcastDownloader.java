@@ -66,9 +66,6 @@ class PodcastDownloader {
 			if (mediaFile.length() == c.getContentLength())
 				podcast.determineDuration(_context);
 
-			// if there's no active podcast, this becomes active so tell the status to refresh
-			Helper.updateWidgets(_context);
-
 			Log.d("Podax", "Done downloading " + podcast.getTitle());
 		} catch (Exception e) {
 			Log.e("Podax", "error while downloading", e);
