@@ -36,9 +36,9 @@ public class PlayerStatus {
 	}
 
 	private static void notifyStateChanged(Context context, PlayerStates state) {
-		Intent intent = new Intent("com.axelby.podax.player.statechanged");
-		intent.putExtra("com.axelby.podax.player.state", state);
-		context.sendBroadcast(intent, "com.axelby.podax.playerchanges");
+		Intent intent = new Intent(Constants.ACTION_PLAYER_STATECHANGED);
+		intent.putExtra(Constants.EXTRA_PLAYERSTATE, state);
+		context.sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 
 	public static void updateState(Context context, PlayerStates state) {

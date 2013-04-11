@@ -480,9 +480,9 @@ public class PlayerService extends Service {
 	}
 
 	private void notifyPositionChanged(int currentPosition) {
-		Intent intent = new Intent("com.axelby.podax.player.positionchanged");
-		intent.putExtra("com.axelby.podax.player.position", currentPosition);
-		sendBroadcast(intent, "com.axelby.podax.playerchanges");
+		Intent intent = new Intent(Constants.ACTION_PLAYER_POSITIONCHANGED);
+		intent.putExtra(Constants.EXTRA_POSITION, currentPosition);
+		sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 
 	// static functions for easier controls

@@ -360,9 +360,9 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	private void notifyActivePodcastChanged(long podcastId) {
-		Intent intent = new Intent("com.axelby.podax.player.activepodcastchanged");
-		intent.putExtra("com.axelby.podax.player.activepodcastid", podcastId);
-		getContext().sendBroadcast(intent, "com.axelby.podax.playerchanges");
+		Intent intent = new Intent(Constants.ACTION_PLAYER_ACTIVEPODCASTCHANGED);
+		intent.putExtra(Constants.EXTRA_PODCAST_ID, podcastId);
+		getContext().sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 
 	@Override

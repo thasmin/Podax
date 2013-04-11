@@ -21,11 +21,13 @@ public class PlayStateReceiver extends BroadcastReceiver {
 		} else if (intent.getAction().equals(AudioManager.ACTION_AUDIO_BECOMING_NOISY)) {
 			if (PlayerStatus.getCurrentState(context).isPlaying())
 				PlayerService.stop(context);
-		} else if (intent.getAction().equals("com.axelby.podax.player.positionchanged")) {
+		} else if (intent.getAction().equals(Constants.ACTION_PLAYER_POSITIONCHANGED)) {
 			updateWidgets(context);
-		} else if (intent.getAction().equals("com.axelby.podax.player.statechanged")) {
+		} else if (intent.getAction().equals(Constants.ACTION_PLAYER_STATECHANGED)) {
 			updateWidgets(context);
-		} else if (intent.getAction().equals("com.axelby.podax.player.activepodcastchanged")) {
+		} else if (intent.getAction().equals(Constants.ACTION_PLAYER_ACTIVEPODCASTCHANGED)) {
+			updateWidgets(context);
+		} else if (intent.getAction().equals(Constants.ACTION_PODCAST_DOWNLOADED)) {
 			updateWidgets(context);
 		}
 	}

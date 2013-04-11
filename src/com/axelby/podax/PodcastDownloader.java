@@ -66,6 +66,8 @@ class PodcastDownloader {
 			if (mediaFile.length() == c.getContentLength())
 				podcast.determineDuration(_context);
 
+			notifyPodcastDownloaded(podcastId);
+
 			Log.d("Podax", "Done downloading " + podcast.getTitle());
 		} catch (Exception e) {
 			Log.e("Podax", "error while downloading", e);
@@ -73,6 +75,12 @@ class PodcastDownloader {
 			if (cursor != null)
 				cursor.close();
 		}
+	}
+
+	private void notifyPodcastDownloaded(long podcastId) {
+		Intent intent = new Intent(Constants.ACTION_PODCAST_DOWNLOADED);
+		intent.putExtra(Constants.EXTRA_PODCAST_ID, podcastId);
+		_context.sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 
 	// returns null if connection should not be used (404, already downloaded, etc)

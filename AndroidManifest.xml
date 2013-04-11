@@ -18,9 +18,9 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <permission
-        android:name="com.axelby.podax.playerchanges"
+        android:name="com.axelby.podax.player.CHANGES"
         android:protectionLevel="signature" />
-    <uses-permission android:name="com.axelby.podax.playerchanges" />
+    <uses-permission android:name="com.axelby.podax.player.CHANGES" />
     
     <supports-screens
         android:anyDensity="true"
@@ -168,7 +168,6 @@
             android:label="Podax 4x2" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.axelby.podax.player.positionchanged" />
             </intent-filter>
 
             <meta-data
@@ -203,9 +202,10 @@
             <intent-filter>
                 <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />
-                <action android:name="com.axelby.podax.player.positionchanged" />
-                <action android:name="com.axelby.podax.player.statechanged" />
-                <action android:name="com.axelby.podax.player.activepodcastchanged" />
+                <action android:name="com.axelby.podax.player.POSITIONCHANGED" />
+                <action android:name="com.axelby.podax.player.STATECHANGED" />
+                <action android:name="com.axelby.podax.player.ACTIVEPODCASTCHANGED" />
+                <action android:name="com.axelby.podax.PODCAST_DOWNLOADED" />
             </intent-filter>
         </receiver>
 
