@@ -1,7 +1,5 @@
 package com.axelby.podax.ui;
 
-import java.io.File;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -10,18 +8,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionCursor;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
 	Context _context = null;
@@ -77,24 +73,11 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
 		setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
 
-		try {
-			long subscriptionId = playerState.getSubscriptionId();
-			String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
-			if (new File(imageFilename).exists()) {
-				Bitmap origBitmap = BitmapFactory.decodeFile(imageFilename);
-				if (origBitmap != null) {
-					// scale bitmap down to save memory (needs to be smaller then display size)
-					float density = context.getResources().getDisplayMetrics().density;
-					Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, (int)density*92, (int)density*92, false);
-					views.setImageViewBitmap(R.id.show_btn, bitmap);
-				}
-			} else {
-				views.setImageViewResource(R.id.show_btn, R.drawable.icon);
-			}
-		} catch (OutOfMemoryError e) {
-			Log.d("Podax", "out of memory error");
+		Bitmap bitmap = new AQuery(context).getCachedImage(playerState.getSubscriptionThumbnailUrl(), 92);
+		if (bitmap != null)
+			views.setImageViewBitmap(R.id.show_btn, bitmap);
+		else
 			views.setImageViewResource(R.id.show_btn, R.drawable.icon);
-		}
 
 		if (playerState.hasActivePodcast()) {
 			Intent showIntent = new Intent(context, PodcastDetailActivity.class);

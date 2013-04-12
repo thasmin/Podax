@@ -1,11 +1,8 @@
 package com.axelby.podax.ui;
 
-import java.io.File;
-
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -16,14 +13,13 @@ import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
-import android.widget.TextView;
 
+import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
@@ -97,7 +93,8 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		String[] projection = {
 				SubscriptionProvider.COLUMN_ID,
 				SubscriptionProvider.COLUMN_TITLE,
-				SubscriptionProvider.COLUMN_URL
+				SubscriptionProvider.COLUMN_URL,
+				SubscriptionProvider.COLUMN_THUMBNAIL,
 		};
 		return new CursorLoader(getActivity(), SubscriptionProvider.URI, projection, null, null, null);
 	}
@@ -124,26 +121,10 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		public void bindView(View view, Context context, Cursor cursor) {
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
-			TextView text = (TextView)view.findViewById(R.id.text);
-			ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
-
-			text.setText(subscription.getTitle());
-
-			File thumbnailFile = new File(subscription.getThumbnailFilename());
-			if (!thumbnailFile.exists())
-				thumbnail.setImageDrawable(null);
-			else
-			{
-				try {
-					thumbnail.setImageBitmap(BitmapFactory.decodeFile(subscription.getThumbnailFilename()));
-					thumbnail.setVisibility(1);
-				} catch (OutOfMemoryError ex) {
-					thumbnail.setImageDrawable(null);
-				}
-			}
-
-			// more button handler
-			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+			AQuery aq = new AQuery(view);
+			aq.find(R.id.text).text(subscription.getTitle());
+			aq.find(R.id.thumbnail).image(subscription.getThumbnail(), new QueueFragment.ImageOptions());
+			aq.find(R.id.more).clicked(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
 					getActivity().openContextMenu((View)(view.getParent()));

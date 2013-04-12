@@ -1,7 +1,5 @@
 package com.axelby.podax.ui;
 
-import java.io.File;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -10,18 +8,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionCursor;
 
 public class SmallWidgetProvider extends AppWidgetProvider {
 	Context _context = null;
@@ -86,24 +82,11 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 			}
 
-			try {
-				long subscriptionId = playerState.getSubscriptionId();
-				String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
-				if (new File(imageFilename).exists()) {
-					Bitmap origBitmap = BitmapFactory.decodeFile(imageFilename);
-					if (origBitmap != null && origBitmap.getWidth() > 0 && origBitmap.getHeight() > 0) {
-						// scale bitmap down to save memory (needs to be smaller then display size)
-						float density = context.getResources().getDisplayMetrics().density;
-						Bitmap bitmap = Bitmap.createScaledBitmap(origBitmap, (int)density*83, (int)density*83, false);
-						views.setImageViewBitmap(R.id.show_btn, bitmap);
-					}
-				} else {
-					views.setImageViewResource(R.id.show_btn, R.drawable.icon);
-				}
-			} catch (OutOfMemoryError e) {
-				Log.d("Podax", "out of memory error");
+			Bitmap bitmap = new AQuery(context).getCachedImage(playerState.getSubscriptionThumbnailUrl(), 83);
+			if (bitmap != null)
+				views.setImageViewBitmap(R.id.show_btn, bitmap);
+			else
 				views.setImageViewResource(R.id.show_btn, R.drawable.icon);
-			}
 	
 			appWidgetManager.updateAppWidget(widgetId, views);
 		}

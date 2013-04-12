@@ -1,12 +1,10 @@
 package com.axelby.podax;
 
-import java.io.File;
 import java.util.Date;
 
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Environment;
 
 public class SubscriptionCursor {
 
@@ -122,18 +120,4 @@ public class SubscriptionCursor {
 			return null;
 		return _cursor.getInt(_expirationDaysColumn);
 	}
-
-	public String getThumbnailFilename() {
-		return getThumbnailFilename(getId());
-	}
-
-	public static String getThumbnailFilename(long id) {
-		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
-		File podaxFile = new File(podaxDir);
-		if (!podaxFile.exists())
-			podaxFile.mkdirs();
-		return podaxDir + "/" + id + ".jpg";
-	}
-
 }

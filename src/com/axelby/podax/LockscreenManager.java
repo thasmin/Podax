@@ -1,20 +1,19 @@
 package com.axelby.podax;
 
-import java.io.File;
-
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.media.RemoteControlClient.MetadataEditor;
 import android.os.Build;
 import android.util.Log;
+
+import com.androidquery.AQuery;
 
 public class LockscreenManager {
 
@@ -50,12 +49,12 @@ public class LockscreenManager {
 					.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, podcast.getSubscriptionTitle())
 					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, podcast.getTitle())
 					.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, podcast.getDuration());
-			if (new File(podcast.getThumbnailFilename()).exists()) {
-				try {
-					Bitmap subscriptionThumbnail = BitmapFactory.decodeFile(podcast.getThumbnailFilename());
-					metadataEditor.putBitmap(METADATA_KEY_ARTWORK, subscriptionThumbnail);
-				} catch (OutOfMemoryError ex) {
-				}
+			// only uses thumbnails that have already been cached by aquery -- should not be a problem
+			try {
+				Bitmap thumbnail = new AQuery(context).getCachedImage(podcast.getSubscriptionThumbnailUrl());
+				if (thumbnail != null)
+					metadataEditor.putBitmap(METADATA_KEY_ARTWORK, thumbnail);
+			} catch (OutOfMemoryError ex) {
 			}
 			metadataEditor.apply();
 		} catch (Exception e) {

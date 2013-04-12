@@ -7,7 +7,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,12 +25,12 @@ import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListFragment;
+import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodaxLog;
@@ -143,6 +142,7 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 			PodcastProvider.COLUMN_ID,
 			PodcastProvider.COLUMN_TITLE,
 			PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+			PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 			PodcastProvider.COLUMN_QUEUE_POSITION,
 			PodcastProvider.COLUMN_MEDIA_URL,
 			PodcastProvider.COLUMN_FILE_SIZE,
@@ -172,44 +172,27 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 		public void bindView(View view, Context context, Cursor cursor) {
 			PodcastCursor podcast = new PodcastCursor(cursor);
 
-			view.setTag(podcast.getId());
+			AQuery aq = new AQuery(view);
+			aq.tag(podcast.getId());
 
 			// more button handler
-			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+			aq.find(R.id.more).clicked(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
 					getActivity().openContextMenu((View)(view.getParent()));
 				}
 			});
 
-			// set the title
-			TextView queueText = (TextView) view.findViewById(R.id.title);
-			queueText.setText(podcast.getTitle());
-			// set the subscription title
-			TextView subscriptionText = (TextView) view.findViewById(R.id.subscription);
-			subscriptionText.setText(podcast.getSubscriptionTitle());
-
-			// set the thumbnail
-			ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
-			File thumbnailFile = new File(podcast.getThumbnailFilename());
-			if (!thumbnailFile.exists())
-				thumbnail.setImageDrawable(null);
-			else
-			{
-				try {
-					thumbnail.setImageBitmap(BitmapFactory.decodeFile(podcast.getThumbnailFilename()));
-					thumbnail.setVisibility(View.VISIBLE);
-				} catch (OutOfMemoryError e) {
-					thumbnail.setVisibility(View.INVISIBLE);
-				}
-			}
+			aq.find(R.id.title).text(podcast.getTitle());
+			aq.find(R.id.subscription).text(podcast.getSubscriptionTitle());
+			aq.find(R.id.thumbnail).image(podcast.getSubscriptionThumbnailUrl(), new QueueFragment.ImageOptions());
 
 			// if the podcast is not downloaded, add the download indicator
-			ViewStub dlprogressStub = (ViewStub)view.findViewById(R.id.dlprogress_stub);
 			long downloaded = new File(podcast.getFilename()).length();
 			if (podcast.getFileSize() != null && downloaded != podcast.getFileSize())
 			{
 				View dlprogress;
+				ViewStub dlprogressStub = (ViewStub)view.findViewById(R.id.dlprogress_stub);
 				if (dlprogressStub != null)
 					dlprogress = dlprogressStub.inflate();
 				else
@@ -227,11 +210,8 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 			}
 			else
 			{
-				View dlprogress = view.findViewById(R.id.dlprogress);
-				if (dlprogress != null)
-					dlprogress.setVisibility(View.GONE);
+				aq.find(R.id.dlprogress).gone();
 			}
-
 		}
 
 	}
@@ -244,5 +224,11 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, to);
 		Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
 		getActivity().getContentResolver().update(podcastUri, values, null, null);
+	}
+
+	static class ImageOptions extends com.androidquery.callback.ImageOptions {
+		public ImageOptions() {
+			this.targetWidth = 50;
+		}
 	}
 }

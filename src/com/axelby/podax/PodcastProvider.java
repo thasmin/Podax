@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -42,6 +43,7 @@ public class PodcastProvider extends ContentProvider {
 	public static final String COLUMN_TITLE = "title";
 	public static final String COLUMN_SUBSCRIPTION_ID = "subscriptionId";
 	public static final String COLUMN_SUBSCRIPTION_TITLE = "subscriptionTitle";
+	public static final String COLUMN_SUBSCRIPTION_THUMBNAIL = "subscriptionThumbnail";
 	public static final String COLUMN_QUEUE_POSITION = "queuePosition";
 	public static final String COLUMN_MEDIA_URL = "mediaUrl";
 	public static final String COLUMN_LINK = "link";
@@ -72,6 +74,7 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
 		_columnMap.put(COLUMN_SUBSCRIPTION_ID, "subscriptionId");
 		_columnMap.put(COLUMN_SUBSCRIPTION_TITLE, "subscriptions.title AS subscriptionTitle");
+		_columnMap.put(COLUMN_SUBSCRIPTION_THUMBNAIL, "subscriptions.thumbnail as subscriptionThumbnail");
 		_columnMap.put(COLUMN_QUEUE_POSITION, "queuePosition");
 		_columnMap.put(COLUMN_MEDIA_URL, "mediaUrl");
 		_columnMap.put(COLUMN_LINK, "link");
@@ -115,7 +118,8 @@ public class PodcastProvider extends ContentProvider {
 	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(_columnMap);
-		if (Arrays.asList(projection).contains(COLUMN_SUBSCRIPTION_TITLE))
+		List<String> projectionList = Arrays.asList(projection);
+		if (projectionList.contains(COLUMN_SUBSCRIPTION_TITLE) || projectionList.contains(COLUMN_SUBSCRIPTION_THUMBNAIL))
 			sqlBuilder.setTables("podcasts JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id");
 		else
 			sqlBuilder.setTables("podcasts");
@@ -256,8 +260,9 @@ public class PodcastProvider extends ContentProvider {
 		else
 			where = extraWhere;
 
-		// subscription title is not in the table
+		// subscription title and thumbnail is not in the table
 		values.remove(COLUMN_SUBSCRIPTION_TITLE);
+		values.remove(COLUMN_SUBSCRIPTION_THUMBNAIL);
 
 		// update queuePosition separately
 		if (values.containsKey(COLUMN_QUEUE_POSITION)) {

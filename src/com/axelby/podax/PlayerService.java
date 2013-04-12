@@ -1,6 +1,5 @@
 package com.axelby.podax;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Timer;
@@ -15,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer;
@@ -27,6 +25,7 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
+import com.androidquery.AQuery;
 import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.ui.PodcastDetailActivity;
 
@@ -394,6 +393,7 @@ public class PlayerService extends Service {
 				PodcastProvider.COLUMN_TITLE,
 				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 		};
 		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 		if (c.isAfterLast())
@@ -428,15 +428,9 @@ public class PlayerService extends Service {
 		forwardIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_SKIPFORWARD);
 		PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
 
-		try {
-			long subscriptionId = podcast.getSubscriptionId();
-			String imageFilename = SubscriptionCursor.getThumbnailFilename(subscriptionId);
-			if (new File(imageFilename).exists()) {
-				Bitmap subscriptionBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeFile(imageFilename), 128, 128, false);
-				builder.setLargeIcon(subscriptionBitmap);
-			}
-		} catch (OutOfMemoryError e) {
-		}
+		Bitmap subscriptionBitmap = new AQuery(this).getCachedImage(podcast.getSubscriptionThumbnailUrl(), 128);
+		if (subscriptionBitmap != null)
+			builder.setLargeIcon(subscriptionBitmap);
 
 		if (PlayerStatus.getPlayerState(this) == PlayerStates.PLAYING)
 			builder.addAction(R.drawable.ic_media_pause_normal, getString(R.string.pause), pausePendingIntent);

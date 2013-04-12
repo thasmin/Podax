@@ -18,8 +18,9 @@ public class PodcastCursor {
 	
 	private Integer _idColumn = null;
 	private Integer _titleColumn = null;
-	private Integer _subscriptionTitleColumn = null;
 	private Integer _subscriptionIdColumn = null;
+	private Integer _subscriptionTitleColumn = null;
+	private Integer _subscriptionThumbnailColumn = null;
 	private Integer _queuePositionColumn = null;
 	private Integer _mediaUrlColumn = null;
 	private Integer _fileSizeColumn = null;
@@ -73,6 +74,14 @@ public class PodcastCursor {
 		if (_cursor.isNull(_subscriptionTitleColumn))
 			return null;
 		return _cursor.getString(_subscriptionTitleColumn);
+	}
+
+	public String getSubscriptionThumbnailUrl() {
+		if (_subscriptionThumbnailColumn == null)
+			_subscriptionThumbnailColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL);
+		if (_cursor.isNull(_subscriptionThumbnailColumn))
+			return null;
+		return _cursor.getString(_subscriptionThumbnailColumn);
 	}
 
 	public String getMediaUrl() {
@@ -166,17 +175,7 @@ public class PodcastCursor {
 		return podaxDir;
 	}
 
-	public String getThumbnailFilename() {
-		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
-		File podaxFile = new File(podaxDir);
-		if (!podaxFile.exists())
-			podaxFile.mkdirs();
-		return podaxDir + "/" + getSubscriptionId() + ".jpg";
-	}
-
 	public String getPaymentUrl() {
-
 		if (_paymentColumn == null)
 			_paymentColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_PAYMENT);
 		if (_cursor.isNull(_paymentColumn))

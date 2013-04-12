@@ -1,13 +1,10 @@
 package com.axelby.podax.ui;
 
-import java.io.File;
-
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -29,11 +26,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListFragment;
+import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodaxLog;
@@ -241,6 +238,7 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 					PodcastProvider.COLUMN_ID,
 					PodcastProvider.COLUMN_TITLE,
 					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+					PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 					PodcastProvider.COLUMN_QUEUE_POSITION,
 					PodcastProvider.COLUMN_MEDIA_URL,
 					PodcastProvider.COLUMN_FILE_SIZE,
@@ -409,12 +407,11 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View view;
-			ImageView thumbnail;
-			File thumbnailFile;
 
 			TextView textView = (TextView) _inflater.inflate(R.layout.list_item, null);
 
 			Object o = getItem(position);
+			AQuery aq;
 
 			switch (getType(position)) {
 			case SUBSCRIPTION_HEADER:
@@ -430,26 +427,10 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 				SubscriptionCursor subscription = new SubscriptionCursor((Cursor)o);
 				
 				view = _inflater.inflate(R.layout.subscription_list_item, null);
-
-				TextView text = (TextView)view.findViewById(R.id.text);
-				text.setText(subscription.getTitle());
-
-				thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
-				thumbnailFile = new File(subscription.getThumbnailFilename());
-				if (!thumbnailFile.exists())
-					thumbnail.setImageDrawable(null);
-				else
-				{
-					try {
-						thumbnail.setImageBitmap(BitmapFactory.decodeFile(subscription.getThumbnailFilename()));
-						thumbnail.setVisibility(1);
-					} catch (OutOfMemoryError ex) {
-						thumbnail.setImageDrawable(null);
-					}
-				}
-
-				// more button handler
-				view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+				aq = new AQuery(view);
+				aq.find(R.id.text).text(subscription.getTitle());
+				aq.find(R.id.thumbnail).image(subscription.getThumbnail(), new QueueFragment.ImageOptions());
+				aq.find(R.id.more).clicked(new OnClickListener() {
 					@Override
 					public void onClick(View view) {
 						if (getActivity() == null)
@@ -466,10 +447,11 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 				PodcastCursor podcast = new PodcastCursor((Cursor)o);
 				
 				view = _inflater.inflate(R.layout.queue_list_item, null);
-				view.findViewById(R.id.drag).setVisibility(View.INVISIBLE);
+				aq = new AQuery(view);
+				aq.find(R.id.drag).invisible();
 
 				// more button handler
-				view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+				aq.find(R.id.more).clicked(new OnClickListener() {
 					@Override
 					public void onClick(View view) {
 						if (getActivity() == null)
@@ -478,27 +460,9 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 					}
 				});
 
-				// set the title
-				TextView queueText = (TextView) view.findViewById(R.id.title);
-				queueText.setText(podcast.getTitle());
-				// set the subscription title
-				TextView subscriptionText = (TextView) view.findViewById(R.id.subscription);
-				subscriptionText.setText(podcast.getSubscriptionTitle());
-
-				// set the thumbnail
-				thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
-				thumbnailFile = new File(podcast.getThumbnailFilename());
-				if (!thumbnailFile.exists())
-					thumbnail.setImageDrawable(null);
-				else
-				{
-					try {
-						thumbnail.setImageBitmap(BitmapFactory.decodeFile(podcast.getThumbnailFilename()));
-						thumbnail.setVisibility(View.VISIBLE);
-					} catch (OutOfMemoryError e) {
-						thumbnail.setVisibility(View.INVISIBLE);
-					}
-				}
+				aq.find(R.id.title).text(podcast.getTitle());
+				aq.find(R.id.subscription).text(podcast.getSubscriptionTitle());
+				aq.find(R.id.thumbnail).image(podcast.getSubscriptionThumbnailUrl(), new QueueFragment.ImageOptions());
 				return view;
 			default:
 				return textView;
