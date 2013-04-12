@@ -30,6 +30,7 @@ public class Constants {
 	public static final String EXTRA_MANUAL_REFRESH = "com.axelby.podax.manual_refresh";
 	public static final String EXTRA_TAB = "com.axelby.podax.tab";
 	public static final String EXTRA_POSITION = "com.axelby.podax.position";
+	public static final String EXTRA_DURATION = "com.axelby.podax.duration";
 	public static final String EXTRA_PLAYERSTATE = "com.axelby.podax.playerstate";
 
 	public static final String EXTRA_PLAYER_COMMAND = "com.axelby.podax.player_command";

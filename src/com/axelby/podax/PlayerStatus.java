@@ -37,7 +37,7 @@ public class PlayerStatus {
 
 	private static void notifyStateChanged(Context context, PlayerStates state) {
 		Intent intent = new Intent(Constants.ACTION_PLAYER_STATECHANGED);
-		intent.putExtra(Constants.EXTRA_PLAYERSTATE, state);
+		intent.putExtra(Constants.EXTRA_PLAYERSTATE, state.toInt());
 		context.sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 

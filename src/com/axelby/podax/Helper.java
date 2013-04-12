@@ -2,8 +2,10 @@ package com.axelby.podax;
 
 import java.util.List;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.pm.ProviderInfo;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
@@ -79,5 +81,10 @@ public class Helper {
 	public static void unregisterMediaButtons(Context context) {
 		AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
 		audioManager.unregisterMediaButtonEventReceiver(new ComponentName(context, MediaButtonIntentReceiver.class));
+	}
+
+	public static void registerReceiver(Context context, String action, BroadcastReceiver receiver) {
+		IntentFilter filter = new IntentFilter(action);
+		context.registerReceiver(receiver, filter);
 	}
 }

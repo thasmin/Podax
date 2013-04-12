@@ -40,7 +40,7 @@ public class PlayerService extends Service {
 
 			int currentPosition = _player.getCurrentPosition();
 			if (_lastPosition / 1000 != currentPosition / 1000) {
-				updateActivePodcastPosition(currentPosition);
+				updateActivePodcastPosition(currentPosition, _player.getDuration());
 			}
 			_lastPosition = currentPosition;
 		}
@@ -225,7 +225,7 @@ public class PlayerService extends Service {
 		_pausingFor[reason] = true;
 		if (_player != null && _player.isPlaying()) {
 			_player.pause();
-			updateActivePodcastPosition(_player.getCurrentPosition());
+			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
 			PlayerStatus.updateState(this, PlayerStates.PAUSED);
 			_lockscreenManager.setLockscreenPaused();
 			showNotification();
@@ -248,7 +248,7 @@ public class PlayerService extends Service {
 
 		if (_player != null && _player.isPlaying()) {
 			_player.pause();
-			updateActivePodcastPosition(_player.getCurrentPosition());
+			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
 			_player.stop();
 		}
 
@@ -353,48 +353,32 @@ public class PlayerService extends Service {
 	}
 
 	private void skip(int secs) {
-		if (_player.isPlaying()) {
+		if (_player != null) {
 			_player.seekTo(_player.getCurrentPosition() + secs * 1000);
-			updateActivePodcastPosition(_player.getCurrentPosition());
-		} else {
-			String[] projection = { PodcastProvider.COLUMN_LAST_POSITION };
-			Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
-			try {
-				if (c.moveToNext()) {
-					updateActivePodcastPosition(c.getInt(0) + secs * 1000);
-				}
-			} finally {
-				c.close();
-			}
+			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
 		}
 	}
 
 	private void skipTo(int secs) {
-		if (_player.isPlaying()) {
+		if (_player != null) {
 			_player.seekTo(secs * 1000);
-			updateActivePodcastPosition(_player.getCurrentPosition());
-		} else {
-			updateActivePodcastPosition(secs * 1000);
+			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
 		}
 	}
 
 	private void restart() {
-		if (_player.isPlaying()) {
+		if (_player != null) {
 			_player.seekTo(0);
-			updateActivePodcastPosition(_player.getCurrentPosition());
-		} else {
-			updateActivePodcastPosition(0);
+			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
 		}
 	}
 
 	private void playNextPodcast() {
-		PodaxLog.log(this, "moving to next podcast");
-
 		if (_player != null) {
 			// stop the player and the updating while we do some administrative stuff
 			_player.pause();
 			stopUpdateTimer();
-			updateActivePodcastPosition(_player.getCurrentPosition());
+			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
 		}
 
 		QueueManager.moveToNextInQueue(this);
@@ -471,17 +455,18 @@ public class PlayerService extends Service {
 		stopForeground(true);
 	}
 
-	private void updateActivePodcastPosition(int position) {
+	private void updateActivePodcastPosition(int position, int duration) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
-		notifyPositionChanged(position);
+		notifyPositionChanged(position, duration);
 	}
 
-	private void notifyPositionChanged(int currentPosition) {
+	private void notifyPositionChanged(int currentPosition, int duration) {
 		Intent intent = new Intent(Constants.ACTION_PLAYER_POSITIONCHANGED);
 		intent.putExtra(Constants.EXTRA_POSITION, currentPosition);
+		intent.putExtra(Constants.EXTRA_DURATION, duration);
 		sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 

@@ -20,8 +20,9 @@
     <permission
         android:name="com.axelby.podax.player.CHANGES"
         android:protectionLevel="signature" />
+
     <uses-permission android:name="com.axelby.podax.player.CHANGES" />
-    
+
     <supports-screens
         android:anyDensity="true"
         android:largeScreens="true"

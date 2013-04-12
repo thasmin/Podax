@@ -170,12 +170,12 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	private long getFirstDownloadedId() {
-		String[] innerProjection = {
+		String[] projection = {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_FILE_SIZE,
 				PodcastProvider.COLUMN_MEDIA_URL,
 		};
-		Cursor c = query(QUEUE_URI, innerProjection, null, null, null);
+		Cursor c = query(QUEUE_URI, projection, null, null, null);
 		long podcastId = -1;
 		try {
 			while (c.moveToNext()) {
@@ -189,6 +189,21 @@ public class PodcastProvider extends ContentProvider {
 			c.close();
 		}
 		return podcastId;
+	}
+
+	private boolean isDownloaded(long podcastId) {
+		String[] projection = {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_FILE_SIZE,
+				PodcastProvider.COLUMN_MEDIA_URL,
+		};
+		Cursor c = query(getContentUri(podcastId), projection, null, null, null);
+		if (!c.moveToFirst())
+			return false;
+		PodcastCursor podcast = new PodcastCursor(c);
+		boolean downloaded = podcast.isDownloaded();
+		c.close();
+		return downloaded;
 	}
 
 	private String getNeedsDownloadIds() {
@@ -217,12 +232,12 @@ public class PodcastProvider extends ContentProvider {
 	public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
 		int count = 0;
 
-		String podcastId;
+		long podcastId;
 		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		Long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
 		switch (uriMatcher.match(uri)) {
 		case PODCAST_ID:
-			podcastId = uri.getLastPathSegment();
+			podcastId = ContentUris.parseId(uri);
 			break;
 		case PODCASTS_ACTIVE:
 			if (values.containsKey(COLUMN_ID)) {
@@ -245,7 +260,7 @@ public class PodcastProvider extends ContentProvider {
 			if (activePodcastId == -1)
 				return 0;
 
-			podcastId = String.valueOf(activePodcastId);
+			podcastId = activePodcastId;
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -274,7 +289,7 @@ public class PodcastProvider extends ContentProvider {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		if (values.size() > 0)
 			count += db.update("podcasts", values, where, whereArgs);
-		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, podcastId), null);
+		getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, podcastId), null);
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
 		if (Long.valueOf(podcastId).equals(activePodcastId))
@@ -282,12 +297,12 @@ public class PodcastProvider extends ContentProvider {
 		return count;
 	}
 
-	public void updateQueuePosition(String podcastId, Integer newPosition) {
+	public void updateQueuePosition(long podcastId, Integer newPosition) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// get the old position
 		Cursor c = db.query("podcasts", new String[] { "queuePosition" },
-				"_id = ?", new String[] { podcastId }, null, null, null);
+				"_id = ?", new String[] { String.valueOf(podcastId) }, null, null, null);
 		c.moveToFirst();
 		Integer oldPosition = null;
 		if (!c.isNull(0))
@@ -297,8 +312,6 @@ public class PodcastProvider extends ContentProvider {
 		// no need to remove from queue if it's not in queue
 		if (oldPosition == null && newPosition == null)
 			return;
-
-		PodaxLog.log(getContext(), "podcast id " + podcastId + " moving from queue position " + oldPosition + " to " + newPosition);
 
 		if (oldPosition == null && newPosition != null) {
 			// new at 3: 1 2 3 4 5 do: 3++ 4++ 5++
@@ -346,15 +359,14 @@ public class PodcastProvider extends ContentProvider {
 		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "queue"), null);
 
 		// figure out if the active podcast changed
-		// explicitly set as active or there is no active and first in queue changed
 		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
-		if (String.valueOf(activePodcastId).equals(podcastId)) {
+		// if this was the active podcast and it's no longer in the queue, pick the first downloaded in the queue
+		// if there was no active podcast and this is the new first in the queue and it's downloaded then this becomes active
+		if (String.valueOf(activePodcastId).equals(podcastId) && newPosition == null) {
 			prefs.edit().remove(PREF_ACTIVE).commit();
-			notifyActivePodcastChanged(activePodcastId);
-		} else if (activePodcastId == -1 &&
-				((oldPosition != null && oldPosition == 0) ||
-				  newPosition != null && newPosition == 0)) {
+			notifyActivePodcastChanged(getFirstDownloadedId());
+		} else if (activePodcastId == -1 && newPosition != null && newPosition == 0 && isDownloaded(podcastId)) {
 			notifyActivePodcastChanged(activePodcastId);
 		}
 	}
@@ -410,7 +422,7 @@ public class PodcastProvider extends ContentProvider {
 				Calendar c = Calendar.getInstance();
 				c.add(Calendar.DATE, -5);
 				if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {
-					updateQueuePosition(String.valueOf(podcastId), Integer.MAX_VALUE);
+					updateQueuePosition(podcastId, Integer.MAX_VALUE);
 				}
 			}
 		}
@@ -443,7 +455,7 @@ public class PodcastProvider extends ContentProvider {
 			podcastsWhere = where + " AND " + podcastsWhere;
 		Cursor c = db.query("podcasts", columns, podcastsWhere, whereArgs, null, null, null);
 		while (c.moveToNext()) {
-			updateQueuePosition(String.valueOf(c.getLong(0)), null);
+			updateQueuePosition(c.getLong(0), null);
 			deleteDownload(c.getLong(0));
 		}
 		c.close();
