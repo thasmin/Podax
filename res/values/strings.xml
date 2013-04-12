@@ -3,7 +3,7 @@
 
     <string name="app_name">Podax</string>
     <string name="app_long_name">Podax Podcaster</string>
-    <string name="app_version">5.9</string>
+    <string name="app_version">6.0</string>
     <string name="pause">Pause</string>
     <string name="play">Play</string>
     <string name="add_to_queue">Add To Queue</string>
@@ -99,6 +99,12 @@
     <string name="changelog">Changelog</string>
     <string name="changelog_content">
 <![CDATA[
+<p><strong>Version 6.0</strong></p>
+<ul>
+	<li>Integrated GPodder Provider app</li>
+	<li>No more sending subscriptions to server</li>
+	<li>Player stability</li>
+</ul>
 <p><strong>Version 5.9</strong></p>
 <ul>
 	<li>Changed notification so it has actions</li>
