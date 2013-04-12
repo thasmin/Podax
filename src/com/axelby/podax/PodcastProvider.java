@@ -270,10 +270,14 @@ public class PodcastProvider extends ContentProvider {
 			updateQueuePosition(podcastId, newPosition);
 
 			// if this was the active podcast and it's no longer in the queue, pick the first downloaded in the queue
-			if (String.valueOf(activePodcastId).equals(podcastId) && newPosition == null) {
+			if (activePodcastId == podcastId && newPosition == null) {
 				prefs.edit().remove(PREF_ACTIVE).commit();
 				activePodcastId = podcastId; // make sure the active podcast notification is sent
 			}
+
+			// if there is no active podcast, the active podcast may have changed
+			if (activePodcastId == -1)
+				activePodcastId = podcastId;
 		}
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
