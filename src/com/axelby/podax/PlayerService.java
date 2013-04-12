@@ -39,9 +39,8 @@ public class PlayerService extends Service {
 				return;
 
 			int currentPosition = _player.getCurrentPosition();
-			if (_lastPosition / 1000 != currentPosition / 1000) {
+			if (_lastPosition / 1000 != currentPosition / 1000)
 				updateActivePodcastPosition(currentPosition, _player.getDuration());
-			}
 			_lastPosition = currentPosition;
 		}
 	};
@@ -459,15 +458,6 @@ public class PlayerService extends Service {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-
-		notifyPositionChanged(position, duration);
-	}
-
-	private void notifyPositionChanged(int currentPosition, int duration) {
-		Intent intent = new Intent(Constants.ACTION_PLAYER_POSITIONCHANGED);
-		intent.putExtra(Constants.EXTRA_POSITION, currentPosition);
-		intent.putExtra(Constants.EXTRA_DURATION, duration);
-		sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 
 	// static functions for easier controls

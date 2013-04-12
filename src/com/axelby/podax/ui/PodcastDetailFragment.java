@@ -5,13 +5,10 @@ import org.shredzone.flattr4j.exception.ForbiddenException;
 import org.shredzone.flattr4j.model.AutoSubmission;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -38,17 +35,15 @@ import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PlayerStatus.PlayerStates;
+import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 
 public class PodcastDetailFragment extends SherlockFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	long _podcastId;
+	boolean _controlsEnabled = true;
 	Long _initializedPodcastId = null;
-
-	long _activePodcastId;
-	boolean _isPlaying;
 
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
@@ -116,6 +111,46 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		_duration = (TextView) getActivity().findViewById(R.id.duration);
 		_paymentButton = (Button) getActivity().findViewById(R.id.payment);
 
+		_playButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());
+				if (playerState.isPlaying() && playerState.getId() == _podcastId)
+					PlayerService.stop(getActivity());
+				else {
+					PodaxLog.log(getActivity(), "playing a specific podcast from podcastdetailfragment");
+					PlayerService.play(getActivity(), _podcastId);
+				}
+			}
+		});
+
+		_forwardButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				PlayerService.skipForward(getActivity());
+			}
+		});
+
+		_skipToEndButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				PlayerService.skipToEnd(getActivity());
+			}
+		});
+
+		_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+				_position.setText(Helper.getTimeString(progress));
+			}
+
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				_seekbar_dragging = true;
+			}
+
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				_seekbar_dragging = false;
+				PlayerService.skipTo(getActivity(), seekBar.getProgress() / 1000);
+			}
+		});
+
 		_queueButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				new AsyncTask<Long, Void, Void>() {
@@ -124,7 +159,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 						Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
 						String[] projection = new String[] { PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_QUEUE_POSITION };
 						Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
-
+						
 						if (c.moveToNext()) {
 							PodcastCursor podcast = new PodcastCursor(c);
 							if (podcast.getQueuePosition() == null)
@@ -142,67 +177,15 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_restartButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (_podcastId == _activePodcastId)
-					PlayerService.restart(getActivity());
-				else
-					setPosition(0);
+				PlayerService.restart(getActivity());
 			}
 		});
 
 		_rewindButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				if (_podcastId == _activePodcastId)
-					PlayerService.skipBack(getActivity());
-				else
-					setPosition(_seekbar.getProgress() / 1000 - 15);
+				PlayerService.skipBack(getActivity());
 			}
 		});
-
-		_playButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());
-				if (playerState.isPlaying() && playerState.getId() == _podcastId)
-					PlayerService.stop(getActivity());
-				else
-					PlayerService.play(getActivity(), _podcastId);
-			}
-		});
-
-		_forwardButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				if (_podcastId == _activePodcastId)
-					PlayerService.skipForward(getActivity());
-				else
-					setPosition(_seekbar.getProgress() / 1000 + 30);
-			}
-		});
-
-		_skipToEndButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				// this can only happen if this podcast is active
-				PlayerService.skipToEnd(getActivity());
-			}
-		});
-
-		_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				_position.setText(Helper.getTimeString(progress));
-			}
-
-			public void onStartTrackingTouch(SeekBar seekBar) {
-				_seekbar_dragging = true;
-			}
-
-			public void onStopTrackingTouch(SeekBar seekBar) {
-				_seekbar_dragging = false;
-				if (_podcastId == _activePodcastId)
-					PlayerService.skipTo(getActivity(), seekBar.getProgress() / 1000);
-				else
-					setPosition(seekBar.getProgress() / 1000);
-			}
-		});
-
 		_paymentButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				new AsyncTask<Long, Void, Void>() {
@@ -258,12 +241,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				}.execute(_podcastId);
 			}
 		});
-	}
 
-	protected void setPosition(int newPosition) {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_LAST_POSITION, newPosition);
-		getActivity().getContentResolver().update(PodcastProvider.getContentUri(_podcastId), values, null, null);
 	}
 
 	private void initializeUI(PodcastCursor podcast) {
@@ -273,9 +251,9 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		String html = "<html><head><style type=\"text/css\">" +
 				"a { color: #E59F39 }" +
 				"</style></head>" +
-				"<body style=\"background:transparent;color:white\">" + podcast.getDescription() + "</body></html>"; 
+				"<body style=\"background:transprent;color:white\">" + podcast.getDescription() + "</body></html>"; 
 		_descriptionView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
-		_descriptionView.setBackgroundColor(0x00000000);
+		_descriptionView.setBackgroundColor(Color.TRANSPARENT);
 
 		_seekbar.setMax(podcast.getDuration());
 		_seekbar.setProgress(podcast.getLastPosition());
@@ -308,10 +286,29 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 			int playResource = playerState.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			_playButton.setImageResource(playResource);
+
+			if (_controlsEnabled == true)
+				return;
+
+			_restartButton.setEnabled(true);
+			_rewindButton.setEnabled(true);
+			_forwardButton.setEnabled(true);
 			_skipToEndButton.setEnabled(true);
+			_seekbar.setEnabled(true);
+
+			_controlsEnabled = true;
 		} else {
+			if (!_controlsEnabled)
+				return;
+
 			_playButton.setImageResource(R.drawable.ic_media_play);
+			_restartButton.setEnabled(false);
+			_rewindButton.setEnabled(false);
+			_forwardButton.setEnabled(false);
 			_skipToEndButton.setEnabled(false);
+			_seekbar.setEnabled(false);
+
+			_controlsEnabled = false;
 		}
 	}
 
@@ -324,34 +321,6 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 			_queuePosition.setText("#"
 					+ String.valueOf(podcast.getQueuePosition() + 1)
 					+ " in queue");
-		}
-	}
-
-	private void updateActivePodcast(long activePodcastId) {
-		_activePodcastId = activePodcastId;
-		if (activePodcastId == _podcastId) {
-			int playResource = _isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
-			_playButton.setImageResource(playResource);
-			_skipToEndButton.setEnabled(true);
-		} else {
-			_playButton.setImageResource(R.drawable.ic_media_play);
-			_skipToEndButton.setEnabled(false);
-		}
-	}
-
-	private void updatePlayerState(PlayerStates playerState) {
-		_isPlaying = (playerState == PlayerStates.PLAYING);
-		if (_activePodcastId == _podcastId) {
-			int playResource = _isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
-			_playButton.setImageResource(playResource);
-		}
-	}
-
-	private void updatePlayerPosition(int position, int duration) {
-		if (_activePodcastId == _podcastId && !_seekbar_dragging) {
-			_position.setText(Helper.getTimeString(position));
-			_duration.setText("-" + Helper.getTimeString(duration - position));
-			_seekbar.setProgress(position);
 		}
 	}
 
@@ -385,7 +354,6 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		if (getActivity() == null)
 			return;
 
-		// check for no active podcast
 		if (!cursor.moveToNext()) {
 			getActivity().finish();
 			return;
@@ -398,47 +366,11 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 			_initializedPodcastId = _podcastId;
 		}
 		updateQueueViews(podcast);
-		PlayerStatus currentState = PlayerStatus.getCurrentState(getActivity());
-		_activePodcastId = currentState.getId();
-		updatePlayerControls(currentState, podcast);
+		updatePlayerControls(PlayerStatus.getCurrentState(getActivity()), podcast);
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
-	}
-
-	BroadcastReceiver _activePodcastChangedReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			long activePodcastId = intent.getExtras().getLong(Constants.EXTRA_PODCAST_ID, -1);
-			updateActivePodcast(activePodcastId);
-		}
-	};
-
-	BroadcastReceiver _playerStateChangedReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			PlayerStates state = PlayerStates.fromInt(intent.getExtras().getInt(Constants.EXTRA_PLAYERSTATE));
-			updatePlayerState(state);
-		}
-	};
-
-	BroadcastReceiver _playerPositionChangedReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			int position = intent.getExtras().getInt(Constants.EXTRA_POSITION);
-			int duration = intent.getExtras().getInt(Constants.EXTRA_DURATION);
-			updatePlayerPosition(position, duration);
-		}
-	};
-
-	@Override
-	public void onPause() {
-		super.onPause();
-
-		getActivity().unregisterReceiver(_activePodcastChangedReceiver);
-		getActivity().unregisterReceiver(_playerStateChangedReceiver);
-		getActivity().unregisterReceiver(_playerPositionChangedReceiver);
 	}
 	
 	@Override
@@ -452,12 +384,5 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				return null;
 			}
 		}.execute();
-
-		IntentFilter filter = new IntentFilter(Constants.ACTION_PLAYER_ACTIVEPODCASTCHANGED);
-		getActivity().registerReceiver(_activePodcastChangedReceiver, filter);
-		filter = new IntentFilter(Constants.ACTION_PLAYER_STATECHANGED);
-		getActivity().registerReceiver(_playerStateChangedReceiver, filter);
-		filter = new IntentFilter(Constants.ACTION_PLAYER_POSITIONCHANGED);
-		getActivity().registerReceiver(_playerPositionChangedReceiver, filter);
 	}
 }

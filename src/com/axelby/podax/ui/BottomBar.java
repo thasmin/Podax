@@ -1,6 +1,5 @@
 package com.axelby.podax.ui;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.ContentObserver;
@@ -8,18 +7,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -30,39 +25,23 @@ public class BottomBar extends LinearLayout {
 	private ImageButton _pausebtn;
 	private ImageButton _showplayerbtn;
 
-	private BroadcastReceiver _positionUpdateReceiver = new BroadcastReceiver() {
+	private ContentObserver _activePodcastObserver = new ContentObserver(new Handler()) {
 		@Override
-		public void onReceive(Context context, Intent intent) {
-			int position = intent.getExtras().getInt(Constants.EXTRA_POSITION);
-			int duration = intent.getExtras().getInt(Constants.EXTRA_DURATION);
-			_podcastProgress.set(position, duration);
-		}
-	};
-
-	BroadcastReceiver _activePodcastChangedReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			long activePodcastId = intent.getExtras().getLong(Constants.EXTRA_PODCAST_ID, -1);
-			if (activePodcastId == -1) {
+		public void onChange(boolean selfChange, Uri uri) {
+			PlayerStatus status = PlayerStatus.getCurrentState(getContext());
+			_pausebtn.setImageResource(status.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
+			if (status.hasActivePodcast()) {
+				_podcastProgress.set(status.getPosition(), status.getDuration());
+				_podcastTitle.setText(status.getTitle());
+			} else {
 				_podcastProgress.clear();
 				_podcastTitle.setText("Queue empty");
-			} else {
-				Uri uri = PodcastProvider.getContentUri(activePodcastId);
-				String[] projection = new String[] { PodcastProvider.COLUMN_TITLE };
-				Cursor c = getContext().getContentResolver().query(uri, projection, null, null, null);
-				if (c.moveToFirst())
-					_podcastTitle.setText(c.getString(0));
-				c.close();
 			}
 		}
-	};
 
-	BroadcastReceiver _stateChangedReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
-			PlayerStates state = PlayerStates.fromInt(intent.getExtras().getInt(Constants.EXTRA_PLAYERSTATE));
-			Log.d("Podax", state.toString());
-			_pausebtn.setImageResource(state == PlayerStates.PLAYING ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
+		public void onChange(boolean selfChange) {
+			this.onChange(selfChange, null);
 		}
 	};
 
@@ -86,35 +65,19 @@ public class BottomBar extends LinearLayout {
 			return;
 
 		loadViews(getContext());
-		getContext().getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
 		updateUI(PlayerStatus.getCurrentState(getContext()));
 
-		Helper.registerReceiver(getContext(), Constants.ACTION_PLAYER_POSITIONCHANGED, _positionUpdateReceiver);
-		Helper.registerReceiver(getContext(), Constants.ACTION_PLAYER_STATECHANGED, _stateChangedReceiver);
-		Helper.registerReceiver(getContext(), Constants.ACTION_PLAYER_ACTIVEPODCASTCHANGED, _activePodcastChangedReceiver);
+		getContext().getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
 	}
 
 	@Override
 	protected void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
 
-		getContext().unregisterReceiver(_positionUpdateReceiver);
-		getContext().unregisterReceiver(_stateChangedReceiver);
-		getContext().unregisterReceiver(_activePodcastChangedReceiver);
+		getContext().getContentResolver().unregisterContentObserver(_activePodcastObserver);
 	}
 
 	Uri _activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-	private ContentObserver _activePodcastObserver = new ContentObserver(new Handler()) {
-		@Override
-		public void onChange(boolean selfChange, Uri uri) {
-			Log.d("Podax", "bottombar got a content changed message");
-		}
-
-		@Override
-		public void onChange(boolean selfChange) {
-			this.onChange(selfChange, null);
-		}
-	};
 
 	private void loadViews(final Context context) {
 		_podcastTitle = (TextView) findViewById(R.id.podcasttitle);

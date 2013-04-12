@@ -9,10 +9,6 @@ public class Constants {
 	
 	public static final String PERMISSION_PLAYERCHANGES = "com.axelby.podax.player.CHANGES";
 
-	public static final String ACTION_PLAYER_POSITIONCHANGED = "com.axelby.podax.player.POSITIONCHANGED";
-	public static final String ACTION_PLAYER_STATECHANGED = "com.axelby.podax.player.STATECHANGED";
-	public static final String ACTION_PLAYER_ACTIVEPODCASTCHANGED = "com.axelby.podax.player.ACTIVEPODCASTCHANGED";
-	public static final String ACTION_PODCAST_DOWNLOADED = "com.axelby.podax.PODCAST_DOWNLOADED";
 	public static final String ACTION_REFRESH_ALL_SUBSCRIPTIONS = "com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS";
 	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";
 	public static final String ACTION_DOWNLOAD_PODCAST = "com.axelby.podax.DOWNLOAD_PODCAST";
@@ -31,7 +27,6 @@ public class Constants {
 	public static final String EXTRA_TAB = "com.axelby.podax.tab";
 	public static final String EXTRA_POSITION = "com.axelby.podax.position";
 	public static final String EXTRA_DURATION = "com.axelby.podax.duration";
-	public static final String EXTRA_PLAYERSTATE = "com.axelby.podax.playerstate";
 
 	public static final String EXTRA_PLAYER_COMMAND = "com.axelby.podax.player_command";
 	public static final String EXTRA_PLAYER_COMMAND_ARG = "com.axelby.podax.player_command_arg";

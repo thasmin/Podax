@@ -12,7 +12,6 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.UriMatcher;
@@ -191,21 +190,6 @@ public class PodcastProvider extends ContentProvider {
 		return podcastId;
 	}
 
-	private boolean isDownloaded(long podcastId) {
-		String[] projection = {
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_FILE_SIZE,
-				PodcastProvider.COLUMN_MEDIA_URL,
-		};
-		Cursor c = query(getContentUri(podcastId), projection, null, null, null);
-		if (!c.moveToFirst())
-			return false;
-		PodcastCursor podcast = new PodcastCursor(c);
-		boolean downloaded = podcast.isDownloaded();
-		c.close();
-		return downloaded;
-	}
-
 	private String getNeedsDownloadIds() {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 		SQLiteQueryBuilder queueBuilder = new SQLiteQueryBuilder();
@@ -249,11 +233,11 @@ public class PodcastProvider extends ContentProvider {
 					editor.remove(PREF_ACTIVE);
 				editor.commit();
 
-				notifyActivePodcastChanged(activePodcastId);
-
 				// if we're clearing the active podcast or updating just the ID, don't go to the DB
-				if (activePodcastId == null || values.size() == 1)
+				if (activePodcastId == null || values.size() == 1) {
+					getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 					return 0;
+				}
 			}
 			
 			// if we don't have an active podcast, don't update it
@@ -284,6 +268,12 @@ public class PodcastProvider extends ContentProvider {
 			// no way to get changed record count until
 			// SQLiteStatement.executeUpdateDelete in API level 11
 			updateQueuePosition(podcastId, newPosition);
+
+			// if this was the active podcast and it's no longer in the queue, pick the first downloaded in the queue
+			if (String.valueOf(activePodcastId).equals(podcastId) && newPosition == null) {
+				prefs.edit().remove(PREF_ACTIVE).commit();
+				activePodcastId = podcastId; // make sure the active podcast notification is sent
+			}
 		}
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
@@ -292,7 +282,7 @@ public class PodcastProvider extends ContentProvider {
 		getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, podcastId), null);
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
-		if (Long.valueOf(podcastId).equals(activePodcastId))
+		if (podcastId == activePodcastId)
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 		return count;
 	}
@@ -357,24 +347,6 @@ public class PodcastProvider extends ContentProvider {
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
 				new Object[] { newPosition, podcastId });
 		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "queue"), null);
-
-		// figure out if the active podcast changed
-		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
-		long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
-		// if this was the active podcast and it's no longer in the queue, pick the first downloaded in the queue
-		// if there was no active podcast and this is the new first in the queue and it's downloaded then this becomes active
-		if (String.valueOf(activePodcastId).equals(podcastId) && newPosition == null) {
-			prefs.edit().remove(PREF_ACTIVE).commit();
-			notifyActivePodcastChanged(getFirstDownloadedId());
-		} else if (activePodcastId == -1 && newPosition != null && newPosition == 0 && isDownloaded(podcastId)) {
-			notifyActivePodcastChanged(activePodcastId);
-		}
-	}
-
-	private void notifyActivePodcastChanged(long podcastId) {
-		Intent intent = new Intent(Constants.ACTION_PLAYER_ACTIVEPODCASTCHANGED);
-		intent.putExtra(Constants.EXTRA_PODCAST_ID, podcastId);
-		getContext().sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 
 	@Override

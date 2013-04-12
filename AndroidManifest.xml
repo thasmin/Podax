@@ -17,12 +17,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
 
-    <permission
-        android:name="com.axelby.podax.player.CHANGES"
-        android:protectionLevel="signature" />
-
-    <uses-permission android:name="com.axelby.podax.player.CHANGES" />
-
     <supports-screens
         android:anyDensity="true"
         android:largeScreens="true"
@@ -153,10 +147,12 @@
 
         <receiver
             android:name=".ui.SmallWidgetProvider"
-            android:exported="false"
+            android:exported="true"
             android:label="Podax 4x1" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
             </intent-filter>
 
             <meta-data
@@ -165,10 +161,12 @@
         </receiver>
         <receiver
             android:name=".ui.LargeWidgetProvider"
-            android:exported="false"
+            android:exported="true"
             android:label="Podax 4x2" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
             </intent-filter>
 
             <meta-data
@@ -203,10 +201,6 @@
             <intent-filter>
                 <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />
-                <action android:name="com.axelby.podax.player.POSITIONCHANGED" />
-                <action android:name="com.axelby.podax.player.STATECHANGED" />
-                <action android:name="com.axelby.podax.player.ACTIVEPODCASTCHANGED" />
-                <action android:name="com.axelby.podax.PODCAST_DOWNLOADED" />
             </intent-filter>
         </receiver>
 

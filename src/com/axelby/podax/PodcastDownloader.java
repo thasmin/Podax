@@ -66,7 +66,9 @@ class PodcastDownloader {
 			if (mediaFile.length() == c.getContentLength())
 				podcast.determineDuration(_context);
 
-			notifyPodcastDownloaded(podcastId);
+			// the active podcast may have changed
+			// if there's no active and this is the first downloaded in the queue
+			_context.getContentResolver().notifyChange(PodcastProvider.ACTIVE_PODCAST_URI, null);
 
 			Log.d("Podax", "Done downloading " + podcast.getTitle());
 		} catch (Exception e) {
@@ -75,12 +77,6 @@ class PodcastDownloader {
 			if (cursor != null)
 				cursor.close();
 		}
-	}
-
-	private void notifyPodcastDownloaded(long podcastId) {
-		Intent intent = new Intent(Constants.ACTION_PODCAST_DOWNLOADED);
-		intent.putExtra(Constants.EXTRA_PODCAST_ID, podcastId);
-		_context.sendBroadcast(intent, Constants.PERMISSION_PLAYERCHANGES);
 	}
 
 	// returns null if connection should not be used (404, already downloaded, etc)
