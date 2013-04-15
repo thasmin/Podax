@@ -40,9 +40,17 @@ public class PodcastProgress extends RelativeLayout {
 	}
 
 	public void clear() {
-		_position.setText("");
-		_progressbar.setVisibility(INVISIBLE);
-		_remaining.setText("");
+		if (isInEditMode()) {
+			_position.setText("12:34");
+			_progressbar.setVisibility(VISIBLE);
+			_progressbar.setMax(100);
+			_progressbar.setProgress(50);
+			_remaining.setText("-43:21");
+		} else {
+			_position.setText("");
+			_progressbar.setVisibility(INVISIBLE);
+			_remaining.setText("");
+		}
 	}
 
 	public boolean isEmpty() { 

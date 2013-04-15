@@ -169,5 +169,7 @@
         <item>14</item>
     </string-array>
         <string name="username">Username</string>
+        <string name="podcast_picture">podcast picture</string>
+        <string name="playlist">Playlist</string>
 
 </resources>
