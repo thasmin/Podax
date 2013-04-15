@@ -1,12 +1,9 @@
 package com.axelby.podax;
 
-import java.util.List;
-
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentFilter;
-import android.content.pm.ProviderInfo;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -60,17 +57,6 @@ public class Helper {
 			builder.append("0");
 		builder.append(seconds);
 		return builder.toString();
-	}
-
-	public static boolean isGPodderInstalled(Context context) {
-		if (context == null)
-			return false;
-
-		List<ProviderInfo> providerList = context.getPackageManager().queryContentProviders(null, 0, 0);
-		for (ProviderInfo provider : providerList)
-			if (provider.authority != null && provider.authority.equals("com.axelby.gpodder.podcasts"))
-				return true;
-		return false;
 	}
 
 	public static void registerMediaButtons(Context context) {

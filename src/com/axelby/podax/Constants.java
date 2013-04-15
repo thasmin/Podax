@@ -47,4 +47,9 @@ public class Constants {
 	public static final int PAUSE_AUDIOFOCUS = 0;
 	public static final int PAUSE_MEDIABUTTON = 1;
 	public static final int PAUSE_COUNT = 2;
+
+	// gpodder constants
+	public static final String GPODDER_ACCOUNT_TYPE = "com.axelby.gpodder.account";
+	public static final String GPODDER_AUTHORITY = "com.axelby.gpodder.podcasts";
+
 }

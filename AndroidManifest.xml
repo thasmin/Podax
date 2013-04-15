@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -219,6 +223,53 @@
             android:authorities="com.axelby.podax.subscriptionprovider"
             android:exported="false"
             android:label="Podcast Subscriptions" />
+
+        <!-- GPodder section -->
+        <activity
+            android:name="com.axelby.gpodder.AuthenticatorActivity"
+            android:exported="true"
+            android:label="@string/gpodder_authenticator_activity_title" />
+        <activity
+            android:name="com.axelby.gpodder.ConfigurationActivity"
+            android:exported="false"
+            android:label="@string/configuration" >
+            <intent-filter>
+                <action android:name="com.axelby.gpodder.configuration" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="com.axelby.gpodder.AuthenticationService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/gpodder_authenticator" />
+        </service>
+        <service
+            android:name="com.axelby.gpodder.SyncService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/gpodder_syncadapter" />
+        </service>
+
+        <provider
+            android:name="com.axelby.gpodder.Provider"
+            android:authorities="com.axelby.gpodder.podcasts"
+            android:exported="false"
+            android:label="@string/podcasts" />
+        <!-- end GPodder section -->
+
     </application>
 
 </manifest>

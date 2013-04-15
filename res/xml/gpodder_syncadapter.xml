@@ -1,0 +1,5 @@
+<sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
+    android:contentAuthority="com.axelby.gpodder.podcasts"
+    android:accountType="com.axelby.gpodder.account"
+    android:supportsUploading="false"
+/>

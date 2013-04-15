@@ -183,11 +183,9 @@ public class SubscriptionProvider extends ContentProvider {
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
-		if (Helper.isGPodderInstalled(getContext())) {
-			ContentValues gpodderValues = new ContentValues();
-			gpodderValues.put("url", values.getAsString(COLUMN_URL));
-			getContext().getContentResolver().insert(Constants.GPODDER_URI, gpodderValues);
-		}
+		ContentValues gpodderValues = new ContentValues();
+		gpodderValues.put("url", values.getAsString(COLUMN_URL));
+		getContext().getContentResolver().insert(Constants.GPODDER_URI, gpodderValues);
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		long id = db.insert("subscriptions", null, values);
@@ -216,15 +214,13 @@ public class SubscriptionProvider extends ContentProvider {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// delete from gpodder
-		if (Helper.isGPodderInstalled(getContext())) {
-			Cursor c = db.query("subscriptions", new String[] { "url" }, where, whereArgs, null, null, null);
-			while (c.moveToNext())
-				contentResolver.delete(Constants.GPODDER_URI, "url = ?", new String[] { c.getString(0) });
-			c.close();
-		}
+		Cursor c = db.query("subscriptions", new String[] { "url" }, where, whereArgs, null, null, null);
+		while (c.moveToNext())
+			contentResolver.delete(Constants.GPODDER_URI, "url = ?", new String[] { c.getString(0) });
+		c.close();
 
 		// go through subscriptions about to be deleted and remove podcasts
-		Cursor c = db.query("subscriptions", new String[] { COLUMN_ID }, where, whereArgs, null, null, null);
+		c = db.query("subscriptions", new String[] { COLUMN_ID }, where, whereArgs, null, null, null);
 		Vector<String> subIds = new Vector<String>();
 		String in = "";
 		while (c.moveToNext()) {

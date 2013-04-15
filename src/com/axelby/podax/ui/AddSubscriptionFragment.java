@@ -37,7 +37,6 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.axelby.podax.GoogleReaderImporter;
-import com.axelby.podax.Helper;
 import com.axelby.podax.OPMLImporter;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
@@ -280,15 +279,9 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 		if (position == ADD_GPODDER) {
 			if (_gpodderAccounts.length > 0) {
 				return;
-			} else if (!Helper.isGPodderInstalled(getActivity())) {
-				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.axelby.gpodder"));
-				intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-				startActivity(intent);
-			} else {
-				Intent intent = new Intent();
-				intent.setClassName("com.axelby.gpodder", "com.axelby.gpodder.AuthenticatorActivity");
-				startActivity(intent);
 			}
+			Intent intent = new Intent(getActivity(), com.axelby.gpodder.AuthenticatorActivity.class);
+			startActivity(intent);
 		}
 
 		if (position >= GOOGLE_ACCOUNT_START) {

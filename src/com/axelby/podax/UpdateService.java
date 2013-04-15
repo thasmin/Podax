@@ -139,7 +139,7 @@ public class UpdateService extends Service {
 		if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
 			// sync with gpodder if it's installed and there's a linked account
 			AccountManager am = AccountManager.get(this);
-			if (Helper.isGPodderInstalled(this) && am.getAccountsByType("com.axelby.gpodder.account").length > 0)
+			if (am.getAccountsByType("com.axelby.gpodder.account").length > 0)
 				GPodderReceiver.syncWithProvider(this);
 
 			String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
