@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -67,7 +68,7 @@ public class MainActivity extends PodaxFragmentActivity {
 			@Override
 			public void onPageSelected(int position) {
 				_focusedPage = position;
-				invalidateOptionsMenu();
+				ActivityCompat.invalidateOptionsMenu(MainActivity.this);
 			}
 		});
 
