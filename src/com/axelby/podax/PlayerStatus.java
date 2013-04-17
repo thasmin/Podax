@@ -130,4 +130,7 @@ public class PlayerStatus {
 		return getState() != PlayerStates.QUEUEEMPTY;
 	}
 
+	public boolean isPlayerServiceActive() {
+		return getState() == PlayerStates.PLAYING || getState() == PlayerStates.PAUSED;
+	}
 }

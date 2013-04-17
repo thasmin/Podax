@@ -7,27 +7,24 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.v4.app.FragmentTransaction;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
-import com.axelby.podax.PodaxLog;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
-import com.viewpagerindicator.TitlePageIndicator;
 
-public class MainActivity extends PodaxFragmentActivity {
+public class MainActivity extends SherlockFragmentActivity {
 
 	public static final int TAB_WELCOME = 0;
 	public static final int TAB_QUEUE = 1;
@@ -35,14 +32,9 @@ public class MainActivity extends PodaxFragmentActivity {
 	public static final int TAB_SEARCH = 3;
 	private static final int TAB_COUNT = 4;
 
-	protected int _focusedPage;
-	protected FreezableViewPager _viewPager;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		setContentView(R.layout.main);
 
 		// check if this was opened by android to save an RSS feed
 		Intent intent = getIntent();
@@ -58,62 +50,29 @@ public class MainActivity extends PodaxFragmentActivity {
 		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
 		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
 
-		_viewPager = (FreezableViewPager) findViewById(R.id.pager);
-		TabsAdapter tabsAdapter = new TabsAdapter(getSupportFragmentManager());
-		_viewPager.setAdapter(tabsAdapter);
-
-		TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
-		titleIndicator.setViewPager(_viewPager);
-		titleIndicator.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-			@Override
-			public void onPageSelected(int position) {
-				_focusedPage = position;
-				ActivityCompat.invalidateOptionsMenu(MainActivity.this);
-			}
-		});
-
-		if (intent.hasExtra(Constants.EXTRA_TAB)) {
-			_focusedPage = intent.getIntExtra(Constants.EXTRA_TAB, TAB_QUEUE);
-			titleIndicator.setCurrentItem(_focusedPage);
-		} else if (savedInstanceState != null) {
-			_focusedPage = savedInstanceState.getInt("focusedPage", 0);
-			titleIndicator.setCurrentItem(_focusedPage);
-		} else {
-			Cursor c = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
-			try {
-				if (c.getCount() > 0) {
-					_focusedPage = intent.getIntExtra(Constants.EXTRA_TAB, TAB_QUEUE);
-					titleIndicator.setCurrentItem(_focusedPage);
-				}
-			} catch (Exception ex) {
-			} finally {
-				c.close();
-			}
-		}
-
 		BootReceiver.setupAlarms(getApplicationContext());
+		
+        FrameLayout frame = new FrameLayout(this);
+        frame.setId(R.id.fragment);
+        setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+		Fragment fragment = Fragment.instantiate(this, MainFragment.class.getName());
+	    FragmentManager fm = getSupportFragmentManager();
+	    FragmentTransaction ft = fm.beginTransaction();
+	    ft.add(R.id.fragment, fragment);
+	    ft.commit();
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putInt("focusedPage", _focusedPage);
+	protected void onResume() {
+		super.onResume();
+
+		Helper.registerMediaButtons(this);
 	}
 
+	/*
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getSupportMenuInflater();
-		switch (_focusedPage) {
-		case TAB_QUEUE:
-			inflater.inflate(R.menu.queue_fragment, menu);
-			break;
-		case TAB_SUBSCRIPTIONS:
-			inflater.inflate(R.menu.subscriptionlist, menu);
-			break;
-		default:
-			inflater.inflate(R.menu.base, menu);
-		}
-
 		if (PodaxLog.isDebuggable(this)) {
 			menu.add(Menu.NONE, R.id.text, 0, R.string.log_viewer);
 		}
@@ -148,14 +107,7 @@ public class MainActivity extends PodaxFragmentActivity {
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
-
-	public void freezeViewPager() {
-		_viewPager.freeze();
-	}
-
-	public void unfreezeViewPager() {
-		_viewPager.unfreeze();
-	}
+	*/
 
 	public class TabsAdapter extends FragmentStatePagerAdapter
 	{

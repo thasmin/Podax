@@ -12,6 +12,7 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
@@ -21,6 +22,7 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
@@ -61,6 +63,36 @@ public class PlayerService extends Service {
 			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
 					focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
 				PlayerService.pause(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
+		}
+	};
+	
+	private ContentObserver _podcastChangeObserver = new ContentObserver(new Handler()) {
+		@Override
+		public boolean deliverSelfNotifications() {
+			return false;
+		}
+		
+		@Override
+		public void onChange(boolean selfChange) {
+			onChange(selfChange, null);
+		}
+
+		@Override
+		public void onChange(boolean selfChange, Uri uri) {
+			if (_player == null)
+				return;
+			Cursor c = getContentResolver().query(uri, new String[] { PodcastProvider.COLUMN_LAST_POSITION }, null, null, null);
+			if (!c.moveToFirst()) {
+				c.close();
+				return;
+			}
+			int newPosition = c.getInt(0);
+			int currentPosition = _player.getCurrentPosition();
+			// if they're too close, don't move
+			if (Math.abs(newPosition - currentPosition) < 3000)
+				return;
+			_player.seekTo(newPosition);
+			c.close();
 		}
 	};
 
@@ -164,26 +196,26 @@ public class PlayerService extends Service {
 			skip(30);
 			break;
 		case Constants.PLAYER_COMMAND_PLAYPAUSE:
-			if (_player.isPlaying())
+			if (_player != null && _player.isPlaying())
 				pauseForReason(pauseReason);
 			else
-				grabAudioFocusAndResume();
+				resume();
 			break;
 		case Constants.PLAYER_COMMAND_PLAYSTOP:
 			if (_player != null && _player.isPlaying())
 				stop();
 			else
-				grabAudioFocusAndResume();
+				resume();
 			break;
 		case Constants.PLAYER_COMMAND_PLAY:
-			grabAudioFocusAndResume();
+			resume();
 			break;
 		case Constants.PLAYER_COMMAND_PAUSE:
 			pauseForReason(pauseReason);
 			break;
 		case Constants.PLAYER_COMMAND_RESUME:
 			if (unpauseForReason(pauseReason))
-				grabAudioFocusAndResume();
+				resume();
 			break;
 		case Constants.PLAYER_COMMAND_STOP:
 			stop();
@@ -199,20 +231,15 @@ public class PlayerService extends Service {
 
 	public boolean isPausedForAnyReason() {
 		// make sure all of our pause reasons are OK
-		for (int i = 0; i < Constants.PAUSE_COUNT; ++i) {
+		for (int i = 0; i < Constants.PAUSE_COUNT; ++i)
 			if (_pausingFor[i])
 				return false;
-		}
-
 		return true;
 	}
 
 	private boolean unpauseForReason(int reason) {
-		if (reason == -1)
-			return false;
-
-		_pausingFor[reason] = false;
-
+		if (reason != -1)
+			_pausingFor[reason] = false;
 		return isPausedForAnyReason();
 	}
 
@@ -255,6 +282,7 @@ public class PlayerService extends Service {
 		// tell anything listening to the active podcast to refresh now that we're stopped
 		ContentValues values = new ContentValues();
 		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+		getContentResolver().unregisterContentObserver(_podcastChangeObserver);
 
 		stopSelf();
 	}
@@ -276,7 +304,7 @@ public class PlayerService extends Service {
 		return true;
 	}
 
-	private void grabAudioFocusAndResume() {
+	private void resume() {
 		if (!grabAudioFocus())
 			return;
 
@@ -290,6 +318,7 @@ public class PlayerService extends Service {
 				PodcastProvider.COLUMN_TITLE,
 				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 				PodcastProvider.COLUMN_MEDIA_URL,
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_DURATION,
@@ -315,6 +344,7 @@ public class PlayerService extends Service {
 
 		// set this podcast as active -- it may not have been first in queue
 		QueueManager.changeActivePodcast(this, p.getId());
+		getContentResolver().registerContentObserver(p.getContentUri(), false, _podcastChangeObserver);
 		PlayerStatus.updateState(this, PlayerStates.PLAYING);
 
 		_lockscreenManager = new LockscreenManager();
@@ -347,7 +377,7 @@ public class PlayerService extends Service {
 
 	private void play(long podcastId) {
 		QueueManager.changeActivePodcast(this, podcastId);
-		grabAudioFocusAndResume();
+		resume();
 	}
 
 	private void skip(int secs) {
@@ -384,7 +414,7 @@ public class PlayerService extends Service {
 		if (!PlayerStatus.getCurrentState(this).hasActivePodcast())
 			stop();
 
-		grabAudioFocusAndResume();
+		resume();
 	}
 
 	private void showNotification() {

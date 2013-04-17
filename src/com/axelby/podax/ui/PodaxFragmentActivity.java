@@ -17,8 +17,10 @@ public class PodaxFragmentActivity extends SherlockFragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		/*
 		if (!(this instanceof MainActivity))
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		*/
 	}
 
 	@Override

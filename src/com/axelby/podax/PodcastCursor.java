@@ -215,7 +215,7 @@ public class PodcastCursor {
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
-	public void determineDuration(Context context) {
+	public int determineDuration(Context context) {
 		MediaPlayer mp = new MediaPlayer();
 		try {
 			mp.setDataSource(this.getFilename());
@@ -223,8 +223,10 @@ public class PodcastCursor {
 			ContentValues values = new ContentValues();
 			values.put(PodcastProvider.COLUMN_DURATION, mp.getDuration());
 			context.getContentResolver().update(getContentUri(), values, null, null);
+			return mp.getDuration();
 		} catch (IOException ex) {
 			PodaxLog.log(context, "Unable to determine length of " + this.getFilename() + ": " + ex.getMessage());
+			return 0;
 		} finally {
 			if (mp != null)
 				mp.release();

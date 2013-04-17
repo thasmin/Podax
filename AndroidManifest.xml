@@ -32,11 +32,11 @@
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:icon="@drawable/icon"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Podax" >
         <activity
             android:name=".ui.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Podax"
             android:windowSoftInputMode="stateUnchanged" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -84,12 +84,19 @@
                 android:name="android.app.default_searchable"
                 android:value=".SearchActivity" />
         </activity>
+        <activity android:name=".ui.SimpleFragmentActivity" >
+        </activity>
+        <activity
+            android:name=".ui.QueueActivity"
+            android:label="@string/playlist" />
+        <activity
+            android:name=".ui.SubscriptionActivity"
+            android:label="@string/podcasts" />
         <activity
             android:name=".ui.SearchFragment"
             android:exported="false"
             android:label="@string/search"
-            android:launchMode="singleTop"
-            android:theme="@style/Theme.Podax" >
+            android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
 
@@ -100,12 +107,8 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
-        <activity
-            android:name=".ui.PodcastListActivity"
-            android:theme="@style/Theme.Podax" />
-        <activity
-            android:name=".ui.PodcastDetailActivity"
-            android:theme="@style/Theme.Podax" >
+        <activity android:name=".ui.PodcastListActivity" />
+        <activity android:name=".ui.PodcastDetailActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -119,32 +122,25 @@
         </activity>
         <activity
             android:name=".ui.Preferences"
-            android:label="@string/preferences"
-            android:theme="@style/Theme.Podax" />
+            android:label="@string/preferences" />
         <activity
             android:name=".ui.AddSubscriptionActivity"
-            android:label="@string/import_subscriptions"
-            android:theme="@style/Theme.Podax" />
+            android:label="@string/import_subscriptions" />
         <activity
             android:name=".ui.ChangelogActivity"
-            android:label="@string/changelog"
-            android:theme="@style/Theme.Podax" />
+            android:label="@string/changelog" />
         <activity
             android:name=".ui.AboutActivity"
-            android:label="@string/about_podax"
-            android:theme="@style/Theme.Podax" />
+            android:label="@string/about_podax" />
         <activity
             android:name=".ui.PopularSubscriptionActivity"
-            android:label="@string/popular_subscription_title"
-            android:theme="@style/Theme.Podax" />
+            android:label="@string/popular_subscription_title" />
         <activity
             android:name="com.axelby.podax.ui.SubscriptionSettingsActivity"
-            android:label="@string/settings"
-            android:theme="@style/Theme.Podax" />
+            android:label="@string/settings" />
         <activity
             android:name=".ui.LogViewer"
-            android:label="@string/log_viewer"
-            android:theme="@style/Theme.Podax" />
+            android:label="@string/log_viewer" />
 
         <service android:name=".UpdateService" />
         <service android:name=".PlayerService" />

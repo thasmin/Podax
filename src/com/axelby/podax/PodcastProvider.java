@@ -459,4 +459,52 @@ public class PodcastProvider extends ContentProvider {
 		for (File f : files)
 			f.delete();
 	}
+
+	public static void restart(Context context, long podcastId) {
+		Uri uri = PodcastProvider.getContentUri(podcastId);
+		ContentValues values = new ContentValues(1);
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, 0);
+		context.getContentResolver().update(uri, values, null, null);
+	}
+
+	public static void movePositionBy(Context context, long podcastId, int delta) {
+		Uri uri = PodcastProvider.getContentUri(podcastId);
+		String[] projection = new String[] { PodcastProvider.COLUMN_LAST_POSITION, PodcastProvider.COLUMN_DURATION };
+		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
+		if (!c.moveToFirst()) {
+			c.close();
+			return;
+		}
+		int position = c.getInt(0);
+		int duration = c.getInt(1);
+		int newPosition = position + delta * 1000;
+		if (newPosition < 0)
+			newPosition = 0;
+		if (duration != 0 && newPosition > duration)
+			newPosition = duration;
+
+		ContentValues values = new ContentValues(1);
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, newPosition);
+		context.getContentResolver().update(uri, values, null, null);
+		c.close();
+	}
+
+	public static void skipToEnd(Context context, long podcastId) {
+		Uri uri = PodcastProvider.getContentUri(podcastId);
+		String[] projection = new String[] { PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_DURATION };
+		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
+		if (!c.moveToFirst()) {
+			c.close();
+			return;
+		}
+		int duration = c.getInt(0);
+		if (duration == 0)
+			duration = new PodcastCursor(c).determineDuration(context);
+
+		ContentValues values = new ContentValues(1);
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, duration);
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
+		context.getContentResolver().update(uri, values, null, null);
+		c.close();
+	}
 }
