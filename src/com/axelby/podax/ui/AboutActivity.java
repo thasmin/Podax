@@ -4,11 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebView;
-import android.widget.Button;
 
+import com.androidquery.AQuery;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 
@@ -29,17 +27,14 @@ public class AboutActivity extends PodaxActivity {
 		webview.setBackgroundColor(0x00000000);
 
 		if (PodaxLog.isDebuggable(this)) {
-			ViewGroup parent = (ViewGroup) webview.getParent();
-			Button button = new Button(this);
-			button.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-			button.setText("Log Viewer");
-			button.setOnClickListener(new OnClickListener() {
+			new AQuery(this).find(R.id.log_viewer).clicked(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					startActivity(new Intent(AboutActivity.this, LogViewer.class));
+					startActivity(new Intent(view.getContext(), LogViewer.class));
 				}
 			});
-			parent.addView(button, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		} else {
+			new AQuery(this).find(R.id.log_viewer).gone();
 		}
 	}
 
