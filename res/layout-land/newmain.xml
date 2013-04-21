@@ -3,11 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
+    <View
+        android:id="@+id/center"
+        android:layout_width="0dip"
+        android:layout_height="0dip"
+        android:layout_centerHorizontal="true" />
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/buttons"
-        android:layout_alignParentTop="true"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@id/center"
         android:gravity="center_horizontal"
         android:orientation="vertical" >
 
@@ -116,8 +121,8 @@
     <LinearLayout
         android:id="@+id/buttons"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@id/center"
         android:orientation="vertical" >
 
         <Button
@@ -159,38 +164,31 @@
             android:text="@string/search"
             android:textColor="@android:color/white" />
 
-        <LinearLayout
+        <Button
+            android:id="@+id/btn_prefs"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="#ffaa66cc"
+            android:drawablePadding="20dp"
+            android:drawableRight="@drawable/ic_media_ff_normal"
+            android:gravity="left|center_vertical"
+            android:padding="5dp"
+            android:text="@string/preferences"
+            android:textColor="@android:color/white" />
 
-            <Button
-                android:id="@+id/btn_prefs"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:background="#ffaa66cc"
-                android:drawablePadding="20dp"
-                android:drawableRight="@drawable/ic_media_ff_normal"
-                android:gravity="left|center_vertical"
-                android:padding="5dp"
-                android:text="@string/preferences"
-                android:textColor="@android:color/white" />
-
-            <Button
-                android:id="@+id/btn_about"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:background="#ffff8800"
-                android:drawablePadding="20dp"
-                android:drawableRight="@drawable/ic_media_ff_normal"
-                android:gravity="left|center_vertical"
-                android:padding="5dp"
-                android:text="@string/about"
-                android:textColor="@android:color/white" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/btn_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="#ffff8800"
+            android:drawablePadding="20dp"
+            android:drawableRight="@drawable/ic_media_ff_normal"
+            android:gravity="left|center_vertical"
+            android:padding="5dp"
+            android:text="@string/about"
+            android:textColor="@android:color/white" />
     </LinearLayout>
 
 </RelativeLayout>

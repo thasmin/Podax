@@ -14,7 +14,6 @@ import android.widget.RemoteViews;
 
 import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
-import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -67,20 +66,15 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			updatePodcastDetails(playerState, views);
 	
 			// set up pending intents
-			setClickIntent(context, views, R.id.rewind_btn, Constants.PLAYER_COMMAND_SKIPBACK);
-			setClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYSTOP);
-			setClickIntent(context, views, R.id.skip_btn, Constants.PLAYER_COMMAND_SKIPFORWARD);
-			setClickIntent(context, views, R.id.next_btn, Constants.PLAYER_COMMAND_SKIPTOEND);
+			LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.restart_btn, Constants.ACTIVE_PODCAST_DATA_RESTART);
+			LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.rewind_btn, Constants.ACTIVE_PODCAST_DATA_BACK);
+			LargeWidgetProvider.setPlayerServiceClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYSTOP);
+			LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_PODCAST_DATA_FORWARD);
+			LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_PODCAST_DATA_END);
 
-			if (playerState.hasActivePodcast()) {
-				Intent showIntent = new Intent(context, PodcastDetailActivity.class);
-				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
-				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
-			} else {
-				Intent showIntent = new Intent(context, MainActivity.class);
-				PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
-				views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
-			}
+			Intent showIntent = new Intent(context, MainActivity.class);
+			PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
+			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
 			Bitmap bitmap = new AQuery(context).getCachedImage(playerState.getSubscriptionThumbnailUrl(), 83);
 			if (bitmap != null)
@@ -106,14 +100,5 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			PodcastProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		}
-	}
-
-	public static void setClickIntent(Context context, RemoteViews views, int resourceId, int command) {
-		Intent intent = new Intent(context, PlayerService.class);
-		// pendingintent will reuse intent if possible, does not look at extras so datauri makes this unique to command
-		intent.setData(Uri.parse("podax://playercommand/" + command));
-		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
-		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
-		views.setOnClickPendingIntent(resourceId, pendingIntent);
 	}
 }

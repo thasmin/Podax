@@ -1,17 +1,13 @@
 package com.axelby.podax.ui;
 
-import java.util.Locale;
-
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
@@ -25,12 +21,6 @@ import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
 public class MainActivity extends SherlockFragmentActivity {
-
-	public static final int TAB_WELCOME = 0;
-	public static final int TAB_QUEUE = 1;
-	public static final int TAB_SUBSCRIPTIONS = 2;
-	public static final int TAB_SEARCH = 3;
-	private static final int TAB_COUNT = 4;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,16 +41,18 @@ public class MainActivity extends SherlockFragmentActivity {
 		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
 
 		BootReceiver.setupAlarms(getApplicationContext());
-		
+
         FrameLayout frame = new FrameLayout(this);
         frame.setId(R.id.fragment);
         setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-		Fragment fragment = Fragment.instantiate(this, MainFragment.class.getName());
-	    FragmentManager fm = getSupportFragmentManager();
-	    FragmentTransaction ft = fm.beginTransaction();
-	    ft.add(R.id.fragment, fragment);
-	    ft.commit();
+        if (savedInstanceState == null) {
+			Fragment fragment = Fragment.instantiate(this, MainFragment.class.getName());
+		    FragmentManager fm = getSupportFragmentManager();
+		    FragmentTransaction ft = fm.beginTransaction();
+		    ft.add(R.id.fragment, fragment);
+		    ft.commit();
+        }
 	}
 
 	@Override
@@ -92,9 +84,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		case R.id.preferences:
 			startActivity(new Intent(this, Preferences.class));
 			return true;
-		case R.id.changelog:
-			startActivity(new Intent(this, ChangelogActivity.class));
-			return true;
 		case R.id.about:
 			startActivity(new Intent(this, AboutActivity.class));
 			return true;
@@ -108,53 +97,4 @@ public class MainActivity extends SherlockFragmentActivity {
 		return super.onMenuItemSelected(featureId, item);
 	}
 	*/
-
-	public class TabsAdapter extends FragmentStatePagerAdapter
-	{
-
-		private String[] _titles;
-
-		public TabsAdapter(FragmentManager fm) {
-			super(fm);
-
-			Resources resources = getResources();
-			_titles = new String[] {
-					resources.getString(R.string.welcome),
-					resources.getString(R.string.queue),
-					resources.getString(R.string.subscriptions),
-					resources.getString(R.string.search),
-			};
-		}
-
-		@Override
-		public Fragment getItem(int item) {
-			switch (item) {
-			case TAB_WELCOME:
-				return new WelcomeFragment();
-			case TAB_QUEUE:
-				return new QueueFragment();
-			case TAB_SUBSCRIPTIONS:
-				return new SubscriptionFragment();
-			case TAB_SEARCH:
-				return new SearchFragment();
-			}
-			throw new IllegalArgumentException();
-		}
-
-		@Override
-		public String getPageTitle(int position) {
-			return _titles[position].toUpperCase(Locale.getDefault());
-		}
-
-		@Override
-		public int getCount() {
-			return TAB_COUNT;
-		}
-	}
-
-	public static Intent getSubscriptionIntent(Context context) {
-		Intent intent = new Intent(context, MainActivity.class);
-		intent.putExtra(Constants.EXTRA_TAB, MainActivity.TAB_SUBSCRIPTIONS);
-		return intent;
-	}
 }

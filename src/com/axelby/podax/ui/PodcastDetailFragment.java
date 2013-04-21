@@ -6,6 +6,7 @@ import org.shredzone.flattr4j.model.AutoSubmission;
 
 import android.app.Activity;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -35,7 +36,6 @@ import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -117,21 +117,23 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				if (playerState.isPlaying() && playerState.getId() == _podcastId)
 					PlayerService.stop(getActivity());
 				else {
-					PodaxLog.log(getActivity(), "playing a specific podcast from podcastdetailfragment");
-					PlayerService.play(getActivity(), _podcastId);
+					ContentValues values = new ContentValues();
+					values.put(PodcastProvider.COLUMN_ID, _podcastId);
+					getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+					PlayerService.play(getActivity());
 				}
 			}
 		});
 
 		_forwardButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PlayerService.skipForward(getActivity());
+				PodcastProvider.movePositionBy(getActivity(), _podcastId, 30);
 			}
 		});
 
 		_skipToEndButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PlayerService.skipToEnd(getActivity());
+				PodcastProvider.skipToEnd(getActivity(), _podcastId);
 			}
 		});
 
@@ -147,7 +149,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				_seekbar_dragging = false;
-				PlayerService.skipTo(getActivity(), seekBar.getProgress() / 1000);
+				PodcastProvider.movePositionTo(getActivity(), _podcastId, seekBar.getProgress() / 1000);
 			}
 		});
 
@@ -177,13 +179,13 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_restartButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PlayerService.restart(getActivity());
+				PodcastProvider.restart(getActivity(), _podcastId);
 			}
 		});
 
 		_rewindButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PlayerService.skipBack(getActivity());
+				PodcastProvider.movePositionBy(getActivity(), _podcastId, -15);
 			}
 		});
 		_paymentButton.setOnClickListener(new OnClickListener() {

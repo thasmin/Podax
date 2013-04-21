@@ -39,29 +39,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="1dp"
-                android:textColor="#cccccc" />
+                android:textColor="#cccccc"
+                android:textIsSelectable="true" />
 
             <TextView
                 android:id="@+id/podcast"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="1dp"
-                android:textColor="#cccccc" />
+                android:textColor="#cccccc"
+                android:textIsSelectable="true" />
 
             <include
                 android:id="@+id/positionstring"
                 android:layout_margin="1dp"
                 layout="@layout/podcast_progress" />
         </LinearLayout>
-
-        <ImageButton
-            android:id="@+id/queue_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/go_to_queue"
-            android:src="@drawable/ic_widget_q" />
     </LinearLayout>
 
     <FrameLayout

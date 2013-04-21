@@ -40,7 +40,8 @@
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:singleLine="true"
-                android:textColor="#cccccc" />
+                android:textColor="#cccccc"
+                android:textIsSelectable="true" />
 
             <include
                 android:id="@+id/positionstring"

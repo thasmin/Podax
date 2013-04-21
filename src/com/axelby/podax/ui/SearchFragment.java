@@ -2,6 +2,7 @@ package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.app.SearchManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -33,7 +34,6 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
-import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
@@ -203,8 +203,10 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 				podcast.removeFromQueue(getActivity());
 				break;
 			case OPTION_PLAY:
-				PodaxLog.log(getActivity(), "playing a specific podcast from podcastlistfragment");
-				PlayerService.play(getActivity(), podcast);
+				ContentValues values = new ContentValues();
+				values.put(PodcastProvider.COLUMN_ID, podcast.getId());
+				getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+				PlayerService.play(getActivity());
 				break;
 			}
 			break;

@@ -142,7 +142,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 												"Google Reader subscriptions imported",
 												Toast.LENGTH_LONG).show();
 										getActivity().finish();
-										getActivity().startActivity(MainActivity.getSubscriptionIntent(getActivity()));
+										getActivity().startActivity(new Intent(getActivity(), SubscriptionActivity.class));
 									}
 								});
 						builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -265,7 +265,7 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 				String message = "Found " + newSubscriptions + " subscriptions.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
 				getActivity().finish();
-				getActivity().startActivity(MainActivity.getSubscriptionIntent(getActivity()));
+				getActivity().startActivity(new Intent(getActivity(), SubscriptionActivity.class));
 			} catch (IOException e) {
 				String message = "There was an error while reading the OPML file.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();

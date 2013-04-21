@@ -6,8 +6,13 @@ public class Constants {
 	public static final int NOTIFICATION_UPDATE = 1;
 	public static final int SUBSCRIPTION_UPDATE_ERROR = 2;
 	public static final int NOTIFICATION_PLAYING = 3;
-	
-	public static final String PERMISSION_PLAYERCHANGES = "com.axelby.podax.player.CHANGES";
+
+	// active podcast related
+	public static final String ACTION_ACTIVE_PODCAST = "com.axelby.podax.ACTIVE_PODCAST";
+	public static final Uri ACTIVE_PODCAST_DATA_RESTART = Uri.parse("podax://activepodcast/restart");
+	public static final Uri ACTIVE_PODCAST_DATA_BACK = Uri.parse("podax://activepodcast/back");
+	public static final Uri ACTIVE_PODCAST_DATA_FORWARD = Uri.parse("podax://activepodcast/forward");
+	public static final Uri ACTIVE_PODCAST_DATA_END = Uri.parse("podax://activepodcast/end");
 
 	public static final String ACTION_REFRESH_ALL_SUBSCRIPTIONS = "com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS";
 	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";
@@ -30,18 +35,12 @@ public class Constants {
 
 	public static final String EXTRA_PLAYER_COMMAND = "com.axelby.podax.player_command";
 	public static final String EXTRA_PLAYER_COMMAND_ARG = "com.axelby.podax.player_command_arg";
-	public static final int PLAYER_COMMAND_SKIPTOEND = 0;
-	public static final int PLAYER_COMMAND_RESTART = 1;
-	public static final int PLAYER_COMMAND_SKIPBACK = 2;
-	public static final int PLAYER_COMMAND_SKIPFORWARD = 3;
-	public static final int PLAYER_COMMAND_PLAYPAUSE = 4;
-	public static final int PLAYER_COMMAND_PLAY = 5;
-	public static final int PLAYER_COMMAND_PAUSE = 6;
-	public static final int PLAYER_COMMAND_SKIPTO = 7;
-	public static final int PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST = 8;
-	public static final int PLAYER_COMMAND_STOP = 9;
-	public static final int PLAYER_COMMAND_PLAYSTOP = 10;
-	public static final int PLAYER_COMMAND_RESUME = 11;
+	public static final int PLAYER_COMMAND_PLAYPAUSE = 0;
+	public static final int PLAYER_COMMAND_PLAY = 1;
+	public static final int PLAYER_COMMAND_PAUSE = 2;
+	public static final int PLAYER_COMMAND_STOP = 3;
+	public static final int PLAYER_COMMAND_PLAYSTOP = 4;
+	public static final int PLAYER_COMMAND_RESUME = 5;
 
 	// reasons for pausing
 	public static final int PAUSE_AUDIOFOCUS = 0;

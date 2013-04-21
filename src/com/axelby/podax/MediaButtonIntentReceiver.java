@@ -23,10 +23,9 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		case KeyEvent.KEYCODE_MEDIA_PLAY:
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 			if  (event.getRepeatCount() == 0) {
-				PodaxLog.log(context, "playpausing because of media button intent");
 				PlayerService.playpause(context, Constants.PAUSE_MEDIABUTTON);
 			} else if (event.getRepeatCount() == 2) {
-				PlayerService.skipForward(context);
+				PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, 30);
 				PlayerService.play(context);
 			}
 			break;
@@ -40,13 +39,11 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 			break;
 		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
 		case KeyEvent.KEYCODE_MEDIA_NEXT:
-			PodaxLog.log(context, "skipping forard because of media button intent");
-			PlayerService.skipForward(context);
+			PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, 30);
 			break;
 		case KeyEvent.KEYCODE_MEDIA_REWIND:
 		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-			PodaxLog.log(context, "skipping back because of media button intent");
-			PlayerService.skipBack(context);
+			PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, -15);
 			break;
 		default:
 			Log.d("Podax", "No matched event: " + event.getKeyCode());

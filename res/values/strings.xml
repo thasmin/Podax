@@ -28,12 +28,15 @@
 			<a href="www.viewpagerindicator">ViewPagerIndicator</a> and
 			<a href="https://github.com/bauerca/drag-sort-listview">drag-sort-listview</a>.
 		</p>
-		<p>
-			Podax collects your subscription list to create the list of popular subscriptions from Podax users.
-			No personal information of any kind is stored.
-			The technique used can be found under &quot;Tracking Installations&quot;
-			<a href="http://android-developers.blogspot.com/2011/03/identifying-app-installations.html">on this web page</a>.
-		</p>
+
+		<h4>Changelog</h4>
+		<p><strong>Version 6.0</strong></p>
+		<ul>
+			<li>Integrated GPodder Provider app</li>
+			<li>No more sending subscriptions to server</li>
+			<li>Player stability</li>
+		</ul>
+
 		<p>Special thanks to everyone who\'s helped on Github:</p>
 		<ul>
 			<li><a href="https://github.com/f1ori">Florian Richter"</a></li>
@@ -97,55 +100,6 @@
     <string name="donate">Donate</string>
     <string name="flattr">Flattr</string>
     <string name="changelog">Changelog</string>
-    <string name="changelog_content">
-<![CDATA[
-<p><strong>Version 6.0</strong></p>
-<ul>
-	<li>Integrated GPodder Provider app</li>
-	<li>No more sending subscriptions to server</li>
-	<li>Player stability</li>
-</ul>
-<p><strong>Version 5.9</strong></p>
-<ul>
-	<li>Changed notification so it has actions</li>
-	<li>Fixed widget action when queue is empty</li>
-	<li>Fixed bug where time left in podcast was negative</li>
-	<li>Fixed a few minor crash bugs</li>
-	<li>Updated Riasel RSS parser library</li>
-</ul>
-<p><strong>Version 5.8</strong></p>
-<ul>
-	<li>Fixed podcasts that have donate links</li>
-	<li>Added configuration options to subscriptions</li>
-	<ul>
-		<li>Rename subscriptions</li>
-		<li>Do not automatically put new podcasts in the queue</li>
-		<li>Automatically remove podcasts from queue after 7 or 14 days</li>
-	</ul>
-</ul>
-<p><strong>Version 5.7</strong></p>
-<ul>
-	<li>Fixed automatic pausing and resuming</li>
-</ul>
-<p><strong>Version 5.6</strong></p>
-<ul>
-	<li>Atom feeds</li>
-	<li>Properly stops during phone calls</li>
-	<li>Fixed crashes when the phone can\'t play the podcast file</li>
-</ul>
-<p><strong>Version 5.5</strong></p>
-<ul>
-	<li>Fixed Queue operations</li>
-	<li>Fixed bug where podcast would resume playing after a random notification</li>
-</ul>
-<p><strong>Version 5.4</strong></p>
-<ul>
-	<li>Added data usage explanation to About</li>
-	<li>Added changelog</li>
-	<li>Fixed bugs that were causing crashes</li>
-</ul>
-]]>
-    </string>
     <string name="cannot_play_podcast">Podax is unable to play \"%s\". Skipping…</string>
     <string name="log_viewer">Log Viewer</string>
     <string name="settings">Settings</string>

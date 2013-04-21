@@ -48,20 +48,12 @@ public class PlayerService extends Service {
 
 	private final OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
-			PodaxLog.log(PlayerService.this, "audio focus change event");
-
-			if (focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT ||
-					focusChange == AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
-					PodaxLog.log(PlayerService.this, "got a transient audio focus gain event somehow");
-
 			if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
 				PlayerService.stop(PlayerService.this);
 
-			if (PlayerStatus.getCurrentState(PlayerService.this).isPaused() &&
-					focusChange == AudioManager.AUDIOFOCUS_GAIN)
+			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && PlayerStatus.getCurrentState(PlayerService.this).isPaused())
 				PlayerService.resume(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
-			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT ||
-					focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
+			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
 				PlayerService.pause(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
 		}
 	};
@@ -81,17 +73,27 @@ public class PlayerService extends Service {
 		public void onChange(boolean selfChange, Uri uri) {
 			if (_player == null)
 				return;
-			Cursor c = getContentResolver().query(uri, new String[] { PodcastProvider.COLUMN_LAST_POSITION }, null, null, null);
+			String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_LAST_POSITION
+			};
+			Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 			if (!c.moveToFirst()) {
 				c.close();
 				return;
 			}
-			int newPosition = c.getInt(0);
-			int currentPosition = _player.getCurrentPosition();
-			// if they're too close, don't move
-			if (Math.abs(newPosition - currentPosition) < 3000)
-				return;
-			_player.seekTo(newPosition);
+			long newPodcastId = c.getLong(0);
+			int newPosition = c.getInt(2);
+			if (newPodcastId != _currentPodcastId) {
+				prepareMediaPlayer(new PodcastCursor(c));
+			} else {
+				int currentPosition = _player.getCurrentPosition();
+				// if they're too close, don't move
+				if (Math.abs(newPosition - currentPosition) < 3000)
+					return;
+				_player.seekTo(newPosition);
+			}
 			c.close();
 		}
 	};
@@ -102,6 +104,8 @@ public class PlayerService extends Service {
 	private boolean _pausingFor[] = new boolean[] {false, false};
 
 	private LockscreenManager _lockscreenManager = null;
+
+	private long _currentPodcastId;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -180,21 +184,6 @@ public class PlayerService extends Service {
 		switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
 		case -1:
 			break;
-		case Constants.PLAYER_COMMAND_SKIPTO:
-			skipTo(intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, 0));
-			break;
-		case Constants.PLAYER_COMMAND_SKIPTOEND:
-			playNextPodcast();
-			break;
-		case Constants.PLAYER_COMMAND_RESTART:
-			restart();
-			break;
-		case Constants.PLAYER_COMMAND_SKIPBACK:
-			skip(-15);
-			break;
-		case Constants.PLAYER_COMMAND_SKIPFORWARD:
-			skip(30);
-			break;
 		case Constants.PLAYER_COMMAND_PLAYPAUSE:
 			if (_player != null && _player.isPlaying())
 				pauseForReason(pauseReason);
@@ -219,10 +208,6 @@ public class PlayerService extends Service {
 			break;
 		case Constants.PLAYER_COMMAND_STOP:
 			stop();
-			break;
-		case Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST:
-			long podcastId = intent.getLongExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
-			play(podcastId);
 			break;
 		}
 		
@@ -344,7 +329,7 @@ public class PlayerService extends Service {
 
 		// set this podcast as active -- it may not have been first in queue
 		QueueManager.changeActivePodcast(this, p.getId());
-		getContentResolver().registerContentObserver(p.getContentUri(), false, _podcastChangeObserver);
+		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _podcastChangeObserver);
 		PlayerStatus.updateState(this, PlayerStates.PLAYING);
 
 		_lockscreenManager = new LockscreenManager();
@@ -356,8 +341,10 @@ public class PlayerService extends Service {
 		showNotification();
 	}
 
+	// needs id, media_url, and last_position
 	private boolean prepareMediaPlayer(PodcastCursor p) {
 		try {
+			_currentPodcastId = p.getId();
 			_player.reset();
 			_player.setDataSource(p.getFilename());
 			_player.prepare();
@@ -372,32 +359,6 @@ public class PlayerService extends Service {
 			return false;
 		} catch (IOException e) {
 			return false;
-		}
-	}
-
-	private void play(long podcastId) {
-		QueueManager.changeActivePodcast(this, podcastId);
-		resume();
-	}
-
-	private void skip(int secs) {
-		if (_player != null) {
-			_player.seekTo(_player.getCurrentPosition() + secs * 1000);
-			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
-		}
-	}
-
-	private void skipTo(int secs) {
-		if (_player != null) {
-			_player.seekTo(secs * 1000);
-			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
-		}
-	}
-
-	private void restart() {
-		if (_player != null) {
-			_player.seekTo(0);
-			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
 		}
 	}
 
@@ -452,10 +413,8 @@ public class PlayerService extends Service {
 		PendingIntent pausePendingIntent = PendingIntent.getService(this, 0, pauseIntent, 0);
 
 		// set up forward intent
-		Intent forwardIntent = new Intent(this, PlayerService.class);
-		// use data to make intent unique
-		forwardIntent.setData(Uri.parse("podax://playercommand/forward"));
-		forwardIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_SKIPFORWARD);
+		Intent forwardIntent = new Intent(this, ActivePodcastReceiver.class);
+		forwardIntent.setData(Constants.ACTIVE_PODCAST_DATA_FORWARD);
 		PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
 
 		Bitmap subscriptionBitmap = new AQuery(this).getCachedImage(podcast.getSubscriptionThumbnailUrl(), 128);
@@ -509,36 +468,6 @@ public class PlayerService extends Service {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAYSTOP);
 	}
 
-	public static void skipForward(Context context) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_SKIPFORWARD);
-	}
-
-	public static void skipBack(Context context) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_SKIPBACK);
-	}
-
-	public static void restart(Context context) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_RESTART);
-	}
-
-	public static void skipToEnd(Context context) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_SKIPTOEND);
-	}
-
-	public static void skipTo(Context context, int secs) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_SKIPTO, secs);
-	}
-
-	public static void play(Context context, long podcastId) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcastId);
-	}
-
-	public static void play(Context context, PodcastCursor podcast) {
-		if (podcast == null)
-			return;
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY_SPECIFIC_PODCAST, podcast.getId());
-	}
-
 	private static void sendCommand(Context context, int command) {
 		Intent intent = new Intent(context, PlayerService.class);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
@@ -546,13 +475,6 @@ public class PlayerService extends Service {
 	}
 
 	private static void sendCommand(Context context, int command, int arg) {
-		Intent intent = new Intent(context, PlayerService.class);
-		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
-		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, arg);
-		context.startService(intent);
-	}
-
-	private static void sendCommand(Context context, int command, long arg) {
 		Intent intent = new Intent(context, PlayerService.class);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
 		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, arg);

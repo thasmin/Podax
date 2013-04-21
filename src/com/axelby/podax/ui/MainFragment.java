@@ -35,11 +35,11 @@ public class MainFragment extends SherlockFragment implements LoaderManager.Load
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.newmain, null);
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
+
 		AQuery aq = new AQuery(getActivity());
 		aq.find(R.id.restart_btn).clicked(new OnClickListener() {
 			@Override
@@ -59,7 +59,7 @@ public class MainFragment extends SherlockFragment implements LoaderManager.Load
 				PlayerService.playstop(getActivity());
 			}
 		});
-		aq.find(R.id.skip_btn).clicked(new OnClickListener() {
+		aq.find(R.id.forward_btn).clicked(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				PodcastProvider.movePositionBy(getActivity(), _podcastId, 30);
@@ -128,6 +128,7 @@ public class MainFragment extends SherlockFragment implements LoaderManager.Load
 			ImageOptions opts = new ImageOptions();
 			AQuery pic = aq.find(R.id.podcast_pic);
 			opts.targetWidth = pic.getImageView().getWidth();
+			opts.fallback = R.drawable.icon;
 			pic.image(podcast.getSubscriptionThumbnailUrl(), opts);
 	
 			PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());

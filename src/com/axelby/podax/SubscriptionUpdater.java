@@ -28,8 +28,8 @@ import android.util.Log;
 import android.util.Xml;
 
 import com.axelby.podax.R.drawable;
-import com.axelby.podax.ui.MainActivity;
 import com.axelby.podax.ui.PodcastDetailActivity;
+import com.axelby.podax.ui.SubscriptionActivity;
 import com.axelby.riasel.Feed;
 import com.axelby.riasel.FeedItem;
 import com.axelby.riasel.FeedParser;
@@ -179,7 +179,7 @@ public class SubscriptionUpdater {
 	};
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
-		Intent notificationIntent = MainActivity.getSubscriptionIntent(_context);
+		Intent notificationIntent = new Intent(_context, SubscriptionActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)
