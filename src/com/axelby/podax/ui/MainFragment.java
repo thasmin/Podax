@@ -33,7 +33,7 @@ public class MainFragment extends SherlockFragment implements LoaderManager.Load
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.newmain, null);
+		return inflater.inflate(R.layout.main, null);
 	}
 
 	@Override

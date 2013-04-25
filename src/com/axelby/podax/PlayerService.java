@@ -76,7 +76,10 @@ public class PlayerService extends Service {
 			String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_MEDIA_URL,
-				PodcastProvider.COLUMN_LAST_POSITION
+				PodcastProvider.COLUMN_LAST_POSITION,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 			};
 			Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 			if (!c.moveToFirst()) {
@@ -86,7 +89,10 @@ public class PlayerService extends Service {
 			long newPodcastId = c.getLong(0);
 			int newPosition = c.getInt(2);
 			if (newPodcastId != _currentPodcastId) {
-				prepareMediaPlayer(new PodcastCursor(c));
+				PodcastCursor p = new PodcastCursor(c);
+				prepareMediaPlayer(p);
+				QueueManager.changeActivePodcast(PlayerService.this, _currentPodcastId);
+				_lockscreenManager.setupLockscreenControls(PlayerService.this, p);
 			} else {
 				int currentPosition = _player.getCurrentPosition();
 				// if they're too close, don't move
