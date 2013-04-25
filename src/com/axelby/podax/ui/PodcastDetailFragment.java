@@ -149,7 +149,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				_seekbar_dragging = false;
-				PodcastProvider.movePositionTo(getActivity(), _podcastId, seekBar.getProgress() / 1000);
+				PodcastProvider.movePositionTo(getActivity(), _podcastId, seekBar.getProgress());
 			}
 		});
 

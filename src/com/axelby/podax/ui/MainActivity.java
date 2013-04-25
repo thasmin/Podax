@@ -64,15 +64,6 @@ public class MainActivity extends SherlockFragmentActivity {
 
 	/*
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		if (PodaxLog.isDebuggable(this)) {
-			menu.add(Menu.NONE, R.id.text, 0, R.string.log_viewer);
-		}
-
-		return true;
-	}
-
-	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.add_subscription:

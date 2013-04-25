@@ -41,6 +41,24 @@ public class MainFragment extends SherlockFragment implements LoaderManager.Load
 		super.onActivityCreated(savedInstanceState);
 
 		AQuery aq = new AQuery(getActivity());
+		aq.find(R.id.podcast_pic).clicked(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getActivity(), PodcastDetailActivity.class));
+			}
+		});
+		aq.find(R.id.episode).clicked(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getActivity(), PodcastDetailActivity.class));
+			}
+		});
+		aq.find(R.id.podcast).clicked(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(getActivity(), PodcastDetailActivity.class));
+			}
+		});
 		aq.find(R.id.restart_btn).clicked(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -76,6 +94,12 @@ public class MainFragment extends SherlockFragment implements LoaderManager.Load
 		aq.find(R.id.btn_search).clicked(new StartActivityOnClickListener(SearchActivity.class));
 		aq.find(R.id.btn_prefs).clicked(new StartActivityOnClickListener(Preferences.class));
 		aq.find(R.id.btn_about).clicked(new StartActivityOnClickListener(AboutActivity.class));
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		getLoaderManager().restartLoader(0, null, this);
 	}
 
 	public class StartActivityOnClickListener implements OnClickListener {

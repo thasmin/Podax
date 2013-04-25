@@ -291,8 +291,10 @@ public class PodcastProvider extends ContentProvider {
 		getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, podcastId), null);
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
-		if (podcastId == activePodcastId)
+		if (podcastId == activePodcastId) {
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
+			ActivePodcastReceiver.NotifyExternal(getContext());
+		}
 		return count;
 	}
 

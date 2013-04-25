@@ -51,7 +51,6 @@
 
             <include
                 android:id="@+id/positionstring"
-                android:layout_margin="1dp"
                 layout="@layout/podcast_progress" />
         </LinearLayout>
     </LinearLayout>

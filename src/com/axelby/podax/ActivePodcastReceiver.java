@@ -1,9 +1,14 @@
 package com.axelby.podax;
 
+import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+
+import com.axelby.podax.ui.LargeWidgetProvider;
+import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class ActivePodcastReceiver extends BroadcastReceiver {
 
@@ -21,4 +26,17 @@ public class ActivePodcastReceiver extends BroadcastReceiver {
 			PodcastProvider.skipToEnd(context, activePodcastUri);
 	}
 
+	public static void NotifyExternal(Context context) {
+		AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
+
+		int[] widgetIds;
+
+		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(context, LargeWidgetProvider.class));
+		if (widgetIds.length > 0)
+			new LargeWidgetProvider().onUpdate(context, widgetManager, widgetIds);
+
+		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(context, SmallWidgetProvider.class));
+		if (widgetIds.length > 0)
+			new SmallWidgetProvider().onUpdate(context, widgetManager, widgetIds);
+	}
 }

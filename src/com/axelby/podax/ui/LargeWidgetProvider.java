@@ -3,13 +3,10 @@ package com.axelby.podax.ui;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Handler;
 import android.widget.RemoteViews;
 
 import com.androidquery.AQuery;
@@ -17,47 +14,11 @@ import com.axelby.podax.ActivePodcastReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
-	Context _context = null;
-
-	private ContentObserver _activeObserver = new ContentObserver(new Handler()) {
-		@Override
-		public void onChange(boolean selfChange, Uri uri) {
-			AppWidgetManager widgetManager = AppWidgetManager.getInstance(_context);
-			int[] widgetIds = widgetManager.getAppWidgetIds(new ComponentName(_context, LargeWidgetProvider.class));
-			onUpdate(_context, widgetManager, widgetIds);
-		}
-
-		@Override
-		public void onChange(boolean selfChange) {
-			onChange(selfChange, null);
-		}
-	};
-
-	@Override
-	public void onEnabled(Context context) {
-		super.onEnabled(context);
-		_context = context;
-		context.getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activeObserver);
-	}
-
-	@Override
-	public void onDisabled(Context context) {
-		super.onDisabled(context);
-		context.getContentResolver().unregisterContentObserver(_activeObserver);
-	}
-
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-		// set up the content observer if it isn't set up already
-		if (_context == null) {
-			_context = context;
-			context.getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activeObserver);
-		}
-
 		if (appWidgetIds.length == 0)
 			return;
 
