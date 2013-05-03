@@ -2,7 +2,7 @@ package com.axelby.podax.ui;
 
 import android.os.Bundle;
 
-public class QueueActivity extends SimpleFragmentActivity {
+public class QueueActivity extends PodaxFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

@@ -6,7 +6,6 @@ public class SubscriptionSettingsActivity extends PodaxFragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		setupPodaxFragment(SubscriptionSettingsFragment.class);
+		this.createFragment(SubscriptionSettingsFragment.class);
 	}
 }

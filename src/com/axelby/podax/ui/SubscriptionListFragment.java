@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -19,18 +18,23 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 
+import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
-public class SubscriptionListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class SubscriptionListFragment extends SherlockListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		setHasOptionsMenu(true);
 
 		getLoaderManager().initLoader(0, null, this);
 		_adapter = new SubscriptionAdapter(getActivity(), null);
@@ -48,6 +52,11 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		super.onActivityCreated(savedInstanceState);
 
 		registerForContextMenu(getListView());
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.subscription_list, menu);
 	}
 
 	@Override

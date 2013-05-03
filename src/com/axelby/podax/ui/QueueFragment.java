@@ -30,6 +30,8 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
@@ -59,6 +61,8 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		setHasOptionsMenu(true);
+
 		getLoaderManager().initLoader(0, null, this);
 
 		_adapter = new QueueListAdapter(getActivity(), null);
@@ -66,14 +70,15 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	        Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.queue, null, false);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
+		getActivity().registerForContextMenu(getListView());
 
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -101,6 +106,11 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
         DragSortListView lv = (DragSortListView) getListView(); 
         lv.setDropListener(this);
     }
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.queue_fragment, menu);
+	}
 
 	@Override
 	public void onPause() {
