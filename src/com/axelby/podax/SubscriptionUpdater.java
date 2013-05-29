@@ -105,7 +105,7 @@ public class SubscriptionUpdater {
 				FeedParser feedParser = new FeedParser();
 				feedParser.setOnFeedInfoHandler(new FeedParser.FeedInfoHandler() {
 					@Override
-					public void OnFeedInfo(Feed feed) {
+					public void OnFeedInfo(FeedParser feedParser, Feed feed) {
 						subscriptionValues.putAll(feed.getContentValues());
 						changeKeyString(subscriptionValues, "lastBuildDate", SubscriptionProvider.COLUMN_LAST_UPDATE);
 
@@ -115,7 +115,7 @@ public class SubscriptionUpdater {
 				});
 				feedParser.setOnFeedItemHandler(new FeedParser.FeedItemHandler() {
 					@Override
-					public void OnFeedItem(FeedItem item) {
+					public void OnFeedItem(FeedParser feedParser, FeedItem item) {
 						if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
 							return;
 

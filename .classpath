@@ -13,5 +13,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ActionBarSherlock"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/drag-sort-listview"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Riasel"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
