@@ -120,76 +120,9 @@
         android:layout_alignParentBottom="true"
         android:orientation="vertical" >
 
-        <Button
-            android:id="@+id/btn_playlist"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="#ff33b5e5"
-            android:drawablePadding="20dp"
-            android:drawableRight="@drawable/ic_media_ff_normal"
-            android:gravity="left|center_vertical"
-            android:padding="5dp"
-            android:text="@string/playlist"
-            android:textColor="@android:color/white" />
-
-        <Button
-            android:id="@+id/btn_podcasts"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="#ff99cc00"
-            android:drawablePadding="20dp"
-            android:drawableRight="@drawable/ic_media_ff_normal"
-            android:gravity="left|center_vertical"
-            android:padding="5dp"
-            android:text="@string/podcasts"
-            android:textColor="@android:color/white" />
-
-        <Button
-            android:id="@+id/btn_search"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="#ffff4444"
-            android:drawablePadding="20dp"
-            android:drawableRight="@drawable/ic_media_ff_normal"
-            android:gravity="left|center_vertical"
-            android:padding="5dp"
-            android:text="@string/search"
-            android:textColor="@android:color/white" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
-
-            <Button
-                android:id="@+id/btn_prefs"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:background="#ffaa66cc"
-                android:drawablePadding="20dp"
-                android:drawableRight="@drawable/ic_media_ff_normal"
-                android:gravity="left|center_vertical"
-                android:padding="5dp"
-                android:text="@string/preferences"
-                android:textColor="@android:color/white" />
-
-            <Button
-                android:id="@+id/btn_about"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:background="#ffff8800"
-                android:drawablePadding="20dp"
-                android:drawableRight="@drawable/ic_media_ff_normal"
-                android:gravity="left|center_vertical"
-                android:padding="5dp"
-                android:text="@string/about"
-                android:textColor="@android:color/white" />
         </LinearLayout>
     </LinearLayout>
 

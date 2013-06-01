@@ -112,6 +112,7 @@
     <string name="podcasts">Podcasts</string>
     <string name="password">Password</string>
     <string name="login">Login</string>
+    <string name="subscription">Subscription</string>
 
     <string-array name="expiration_options">
         <item>Never</item>

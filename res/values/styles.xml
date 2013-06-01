@@ -16,6 +16,9 @@
 
         <item name="actionBarTabStyle">@style/Widget.Podax.ActionBar.TabView</item>
         <item name="android:actionBarTabStyle">@style/Widget.Podax.ActionBar.TabView</item>
+
+		<item name="android:homeAsUpIndicator">@drawable/ic_drawer</item>
+		<item name="homeAsUpIndicator">@drawable/ic_drawer</item>
     </style>
 
 	<color name="podaxColor">#FFE59F39</color>

@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -24,12 +25,14 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
@@ -48,6 +51,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
 
+	ImageView _subscriptionImage;
 	TextView _titleView;
 	TextView _subscriptionTitleView;
 	WebView _descriptionView;
@@ -96,44 +100,46 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		_titleView = (TextView) getActivity().findViewById(R.id.title);
-		_subscriptionTitleView = (TextView) getActivity().findViewById(R.id.subscription_title);
-		_descriptionView = (WebView) getActivity().findViewById(R.id.description);
-		_queuePosition = (TextView) getActivity().findViewById(R.id.queue_position);
-		_queueButton = (Button) getActivity().findViewById(R.id.queue_btn);
-		_restartButton = (ImageButton) getActivity().findViewById(R.id.restart_btn);
-		_rewindButton = (ImageButton) getActivity().findViewById(R.id.rewind_btn);
-		_playButton = (ImageButton) getActivity().findViewById(R.id.play_btn);
-		_forwardButton = (ImageButton) getActivity().findViewById(R.id.forward_btn);
-		_skipToEndButton = (ImageButton) getActivity().findViewById(R.id.skiptoend_btn);
-		_seekbar = (SeekBar) getActivity().findViewById(R.id.seekbar);
-		_position = (TextView) getActivity().findViewById(R.id.position);
-		_duration = (TextView) getActivity().findViewById(R.id.duration);
-		_paymentButton = (Button) getActivity().findViewById(R.id.payment);
+		final FragmentActivity activity = getActivity();
+		_subscriptionImage = (ImageView) activity.findViewById(R.id.subscription_img);
+		_titleView = (TextView) activity.findViewById(R.id.title);
+		_subscriptionTitleView = (TextView) activity.findViewById(R.id.subscription_title);
+		_descriptionView = (WebView) activity.findViewById(R.id.description);
+		_queuePosition = (TextView) activity.findViewById(R.id.queue_position);
+		_queueButton = (Button) activity.findViewById(R.id.queue_btn);
+		_restartButton = (ImageButton) activity.findViewById(R.id.restart_btn);
+		_rewindButton = (ImageButton) activity.findViewById(R.id.rewind_btn);
+		_playButton = (ImageButton) activity.findViewById(R.id.play_btn);
+		_forwardButton = (ImageButton) activity.findViewById(R.id.forward_btn);
+		_skipToEndButton = (ImageButton) activity.findViewById(R.id.skiptoend_btn);
+		_seekbar = (SeekBar) activity.findViewById(R.id.seekbar);
+		_position = (TextView) activity.findViewById(R.id.position);
+		_duration = (TextView) activity.findViewById(R.id.duration);
+		_paymentButton = (Button) activity.findViewById(R.id.payment);
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());
+				PlayerStatus playerState = PlayerStatus.getCurrentState(activity);
 				if (playerState.isPlaying() && playerState.getId() == _podcastId)
-					PlayerService.stop(getActivity());
+					PlayerService.stop(activity);
 				else {
 					ContentValues values = new ContentValues();
 					values.put(PodcastProvider.COLUMN_ID, _podcastId);
-					getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-					PlayerService.play(getActivity());
+					activity.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+					PlayerService.play(activity);
 				}
 			}
 		});
 
 		_forwardButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PodcastProvider.movePositionBy(getActivity(), _podcastId, 30);
+				PodcastProvider.movePositionBy(activity, _podcastId, 30);
 			}
 		});
 
 		_skipToEndButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PodcastProvider.skipToEnd(getActivity(), _podcastId);
+				PodcastProvider.skipToEnd(activity, _podcastId);
 			}
 		});
 
@@ -149,7 +155,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				_seekbar_dragging = false;
-				PodcastProvider.movePositionTo(getActivity(), _podcastId, seekBar.getProgress());
+				PodcastProvider.movePositionTo(activity, _podcastId, seekBar.getProgress());
 			}
 		});
 
@@ -160,14 +166,14 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 					protected Void doInBackground(Long... params) {
 						Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
 						String[] projection = new String[] { PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_QUEUE_POSITION };
-						Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
+						Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
 						
 						if (c.moveToNext()) {
 							PodcastCursor podcast = new PodcastCursor(c);
 							if (podcast.getQueuePosition() == null)
-								podcast.addToQueue(getActivity());
+								podcast.addToQueue(activity);
 							else
-								podcast.removeFromQueue(getActivity());
+								podcast.removeFromQueue(activity);
 						}
 						c.close();
 
@@ -179,13 +185,13 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 
 		_restartButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PodcastProvider.restart(getActivity(), _podcastId);
+				PodcastProvider.restart(activity, _podcastId);
 			}
 		});
 
 		_rewindButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PodcastProvider.movePositionBy(getActivity(), _podcastId, -15);
+				PodcastProvider.movePositionBy(activity, _podcastId, -15);
 			}
 		});
 		_paymentButton.setOnClickListener(new OnClickListener() {
@@ -199,7 +205,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 								PodcastProvider.COLUMN_TITLE,
 								PodcastProvider.COLUMN_PAYMENT,
 						};
-						Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
+						Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
 						if (c.moveToNext()) {
 							PodcastCursor podcast = new PodcastCursor(c);
 							String payment_url = podcast.getPaymentUrl();
@@ -208,24 +214,24 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 								if (sub != null) {
 									// it's a flattr link
 									try {
-										FlattrHelper.flattr(getActivity(), sub);
+										FlattrHelper.flattr(activity, sub);
 										String message = "You flattred " + podcast.getTitle() + "!";
-										showToast(getActivity(), message);
+										showToast(activity, message);
 									} catch (ForbiddenException e) {
 										if (e.getCode().equals("flattr_once")) {
 											String message = "Podcast was already flattred";
-											showToast(getActivity(), message);
+											showToast(activity, message);
 										} else {
 											try {
-												FlattrHelper.obtainToken(getActivity());
+												FlattrHelper.obtainToken(activity);
 											} catch (NoAppSecretFlattrException e1) {
 												String message = "No flattr app secret in this build.";
-												showToast(getActivity(), message);
+												showToast(activity, message);
 											}
 										}
 									} catch (FlattrException e) {
 										String message = "Could not flattr: " + e.getMessage();
-										showToast(getActivity(), message);
+										showToast(activity, message);
 									}
 
 								} else {
@@ -247,6 +253,10 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	}
 
 	private void initializeUI(PodcastCursor podcast) {
+		String url = podcast.getSubscriptionThumbnailUrl();
+		if (url == null)
+			url = "";
+		new AQuery(_subscriptionImage).image(url, true, true, 200, AQuery.GONE);
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
 
@@ -332,6 +342,7 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 				PodcastProvider.COLUMN_DESCRIPTION,
 				PodcastProvider.COLUMN_DURATION,
 				PodcastProvider.COLUMN_LAST_POSITION,

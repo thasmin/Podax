@@ -2,22 +2,29 @@ package com.axelby.podax.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 
+import com.actionbarsherlock.app.SherlockFragment;
 import com.androidquery.AQuery;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 
-public class AboutActivity extends PodaxActivity {
+public class AboutFragment extends SherlockFragment {
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.about, null, false);
+	}
 
-		setContentView(R.layout.about);
-		WebView webview = (WebView) findViewById(R.id.webview);
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		WebView webview = (WebView) getActivity().findViewById(R.id.webview);
 		String content = getString(R.string.about_content);
 		String html = "<html><head><style type=\"text/css\">" +
 				"a { color: #E59F39 }" +
@@ -26,15 +33,15 @@ public class AboutActivity extends PodaxActivity {
 		webview.loadData(html, "text/html", "utf-8");
 		webview.setBackgroundColor(0x00000000);
 
-		if (PodaxLog.isDebuggable(this)) {
-			new AQuery(this).find(R.id.log_viewer).clicked(new OnClickListener() {
+		if (PodaxLog.isDebuggable(getActivity())) {
+			new AQuery(getActivity()).find(R.id.log_viewer).clicked(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
 					startActivity(new Intent(view.getContext(), LogViewer.class));
 				}
 			});
 		} else {
-			new AQuery(this).find(R.id.log_viewer).gone();
+			new AQuery(getActivity()).find(R.id.log_viewer).gone();
 		}
 	}
 

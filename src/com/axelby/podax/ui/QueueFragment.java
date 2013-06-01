@@ -38,14 +38,15 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
-import com.mobeta.android.dslv.DragSortListView;
+import com.mobeta.android.dslv.DragSortListView.DragListener;
 import com.mobeta.android.dslv.DragSortListView.DropListener;
 
-public class QueueFragment extends SherlockListFragment implements DropListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class QueueFragment extends SherlockListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
 	static final int OPTION_MOVETOFIRSTINQUEUE = 3;
 
+	// make sure list is refreshed to update downloading files
 	Runnable _refresher = new Runnable() {
 		public void run() {
 			if (getActivity() == null)
@@ -102,9 +103,6 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
 			}
 		});
-
-        DragSortListView lv = (DragSortListView) getListView(); 
-        lv.setDropListener(this);
     }
 
 	@Override
@@ -173,7 +171,7 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 		_adapter.changeCursor(null);
 	}
 
-	private class QueueListAdapter extends ResourceCursorAdapter {
+	private class QueueListAdapter extends ResourceCursorAdapter implements DragListener, DropListener {
 
 		public QueueListAdapter(Context context, Cursor cursor) {
 			super(context, R.layout.queue_list_item, cursor, true);
@@ -196,7 +194,7 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 
 			aq.find(R.id.title).text(podcast.getTitle());
 			aq.find(R.id.subscription).text(podcast.getSubscriptionTitle());
-			aq.find(R.id.thumbnail).image(podcast.getSubscriptionThumbnailUrl(), new QueueFragment.ImageOptions());
+			aq.find(R.id.thumbnail).image(podcast.getSubscriptionThumbnailUrl(), true, true, 50, R.drawable.icon);
 
 			// if the podcast is not downloaded, add the download indicator
 			long downloaded = new File(podcast.getFilename()).length();
@@ -225,21 +223,25 @@ public class QueueFragment extends SherlockListFragment implements DropListener,
 			}
 		}
 
-	}
+		@Override
+		public void drop(int from, int to) {
+			Long podcastId = _adapter.getItemId(from);
+			ContentValues values = new ContentValues();
+			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, to);
+			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
+			getActivity().getContentResolver().update(podcastUri, values, null, null);
+		}
 
-	@Override
-	public void drop(int from, int to) {
-		Long podcastId = _adapter.getItemId(from);
-		// update position
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, to);
-		Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
-		getActivity().getContentResolver().update(podcastUri, values, null, null);
+		@Override
+		public void drag(int from, int to) {
+		}
+
 	}
 
 	static class ImageOptions extends com.androidquery.callback.ImageOptions {
 		public ImageOptions() {
 			this.targetWidth = 50;
+			this.fallback = R.drawable.icon;
 		}
 	}
 }

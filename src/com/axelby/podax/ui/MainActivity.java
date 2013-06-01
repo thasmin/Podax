@@ -4,23 +4,45 @@ import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceScreen;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
+import com.androidquery.AQuery;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
+import com.axelby.podax.PlayerService;
+import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.ui.PreferenceListFragment.OnPreferenceAttachedListener;
 
-public class MainActivity extends SherlockFragmentActivity {
+public class MainActivity extends SherlockFragmentActivity implements OnPreferenceAttachedListener {
+
+	private DrawerLayout _drawerLayout;
+	private PodaxDrawerAdapter _drawerAdapter;
+	private int _fragmentId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,56 +58,162 @@ public class MainActivity extends SherlockFragmentActivity {
 		}
 
 		// clear RSS error notification
-		String ns = Context.NOTIFICATION_SERVICE;
-		NotificationManager notificationManager = (NotificationManager) getSystemService(ns);
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
 
 		BootReceiver.setupAlarms(getApplicationContext());
 
-        FrameLayout frame = new FrameLayout(this);
-        frame.setId(R.id.fragment);
-        setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		// ui initialization
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		setContentView(R.layout.app);
+		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
+		updateDrawerControls();
 
-        if (savedInstanceState == null) {
-			Fragment fragment = Fragment.instantiate(this, MainFragment.class.getName());
-		    FragmentManager fm = getSupportFragmentManager();
-		    FragmentTransaction ft = fm.beginTransaction();
-		    ft.add(R.id.fragment, fragment);
-		    ft.commit();
-        }
+		AQuery aq = new AQuery(this);
+		_drawerLayout = (DrawerLayout) aq.find(R.id.drawer_layout).getView();
+		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+
+		ListView drawer = aq.find(R.id.drawer_list).getListView();
+		_drawerAdapter = new PodaxDrawerAdapter(this);
+		drawer.setAdapter(_drawerAdapter);
+		drawer.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+				_drawerLayout.closeDrawer(GravityCompat.START);
+
+				if (_fragmentId == position)
+					return;
+				_fragmentId = position;
+
+				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+				switch (position) {
+				case 0: ft.replace(R.id.fragment, new WelcomeFragment()); break;
+				case 1: ft.replace(R.id.fragment, new PodcastDetailFragment()); break;
+				case 2: ft.replace(R.id.fragment, new QueueFragment()); break;
+				case 3: ft.replace(R.id.fragment, new SubscriptionListFragment()); break;
+				case 4: ft.replace(R.id.fragment, new SearchFragment()); break;
+				case 5: ft.replace(R.id.fragment, new PodaxPreferenceFragment()); break;
+				case 6: ft.replace(R.id.fragment, new AboutFragment()); break;
+				}
+				ft.addToBackStack(null);
+				ft.commit();
+			}
+		});
+		aq.id(R.id.pause).clicked(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				PlayerService.playstop(MainActivity.this);
+			}
+		});
+
+		if (intent.hasExtra("fragmentId")) {
+			_fragmentId = intent.getIntExtra("fragmentId", 1);
+		} else if (savedInstanceState == null) {
+			Fragment fragment = new PodcastDetailFragment();
+			FragmentManager fm = getSupportFragmentManager();
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.add(R.id.fragment, fragment);
+			ft.commit();
+			_fragmentId = 1;
+		} else {
+			_fragmentId = savedInstanceState.getInt("fragmentId");
+		}
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt("fragmentId", _fragmentId);
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		getContentResolver().unregisterContentObserver(_activePodcastObserver);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-
+		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
 		Helper.registerMediaButtons(this);
 	}
 
-	/*
 	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.add_subscription:
-			startActivity(new Intent(this, AddSubscriptionActivity.class));
+		case android.R.id.home:
+			if (!_drawerLayout.isDrawerOpen(GravityCompat.START))
+				_drawerLayout.openDrawer(GravityCompat.START);
+			else
+				_drawerLayout.closeDrawer(GravityCompat.START);
 			return true;
-		case R.id.download:
-			UpdateService.downloadPodcasts(this);
-			return true;
-		case R.id.preferences:
-			startActivity(new Intent(this, Preferences.class));
-			return true;
-		case R.id.about:
-			startActivity(new Intent(this, AboutActivity.class));
-			return true;
-		case R.id.refresh_subscriptions:
-			UpdateService.updateSubscriptions(this);
-			return true;
-		case R.id.text:
-			startActivity(new Intent(this, LogViewer.class));
-			return true;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onMenuItemSelected(featureId, item);
 	}
-	*/
+
+	class PodaxDrawerAdapter extends BaseAdapter {
+		public String[] _items = { "Welcome", "Now Playing", "Playlist", "Podcasts", "Search", "Preferences", "About" };
+		private Context _context;
+
+		public PodaxDrawerAdapter(Context context) {
+			_context = context;
+		}
+
+		@Override
+		public int getCount() {
+			return _items.length;
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return _items[position];
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			TextView tv;
+			if (convertView != null)
+				tv = (TextView) convertView;
+			else
+				tv = (TextView) LayoutInflater.from(_context).inflate(R.layout.drawer_listitem, null);
+			tv.setText(_items[position]);
+			return tv;
+		}
+	}
+
+	private ContentObserver _activePodcastObserver = new ContentObserver(new Handler()) {
+		@Override
+		public void onChange(boolean selfChange, Uri uri) {
+			updateDrawerControls();
+		}
+
+		@Override
+		public void onChange(boolean selfChange) {
+			this.onChange(selfChange, null);
+		}
+	};
+
+	private void updateDrawerControls() {
+		// we could put the db call in a thread
+		AQuery aq = new AQuery(this);
+		PlayerStatus status = PlayerStatus.getCurrentState(MainActivity.this);
+		aq.id(R.id.pause).image(status.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
+		if (status.hasActivePodcast())
+			aq.id(R.id.podcast_title).text(status.getTitle());
+		else
+			aq.id(R.id.podcast_title).text("Queue empty");
+	}
+
+	@Override
+	public void onPreferenceAttached(PreferenceScreen root, int xmlId) {
+		if (root == null)
+			return;
+	}
 }

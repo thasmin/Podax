@@ -103,6 +103,8 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 						menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
 
 					break;
+				default:
+					break;
 				}
 			}
 		});
@@ -182,6 +184,8 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 			intent.putExtra(Constants.EXTRA_PODCAST_ID, id);
 			startActivity(intent);
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -219,6 +223,8 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 				requery();
 				break;
 			}
+			break;
+		default:
 			break;
 		}
 
