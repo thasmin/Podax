@@ -60,6 +60,15 @@ public class SubscriptionListFragment extends SherlockListFragment implements Lo
 	}
 
 	@Override
+	public boolean onOptionsItemSelected(com.actionbarsherlock.view.MenuItem item) {
+		if (item.getItemId() == R.id.add_subscription) {
+			getActivity().startActivity(new Intent(getActivity(), AddSubscriptionActivity.class));
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		menu.add(0, 0, 0, R.string.unsubscribe);
 	}
