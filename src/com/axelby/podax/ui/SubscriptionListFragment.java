@@ -148,12 +148,6 @@ public class SubscriptionListFragment extends SherlockFragment implements Loader
 			AQuery aq = new AQuery(view);
 			aq.find(R.id.text).text(subscription.getTitle());
 			aq.find(R.id.thumbnail).image(subscription.getThumbnail(), new QueueFragment.ImageOptions());
-			aq.find(R.id.more).clicked(new OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					getActivity().openContextMenu((View)(view.getParent()));
-				}
-			});
 		}
 	}
 }
