@@ -1,6 +1,5 @@
 package com.axelby.podax;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
@@ -14,7 +13,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.os.Environment;
 
 public class SubscriptionProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.subscriptionprovider";
@@ -238,15 +236,6 @@ public class SubscriptionProvider extends ContentProvider {
 		db.close();
 
 		return count;
-	}
-
-	public static String getThumbnailFilename(long id) {
-		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
-		File podaxFile = new File(podaxDir);
-		if (!podaxFile.exists())
-			podaxFile.mkdirs();
-		return podaxDir + "/" + id + ".jpg";
 	}
 
 }

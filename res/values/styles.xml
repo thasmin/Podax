@@ -13,15 +13,13 @@
     <style name="Theme.Podax" parent="@style/Theme.Sherlock">
         <item name="actionBarStyle">@style/Widget.Podax.ActionBar</item>
         <item name="android:actionBarStyle">@style/Widget.Podax.ActionBar</item>
-
         <item name="actionBarTabStyle">@style/Widget.Podax.ActionBar.TabView</item>
         <item name="android:actionBarTabStyle">@style/Widget.Podax.ActionBar.TabView</item>
-
-		<item name="android:homeAsUpIndicator">@drawable/ic_drawer</item>
-		<item name="homeAsUpIndicator">@drawable/ic_drawer</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_drawer</item>
+        <item name="homeAsUpIndicator">@drawable/ic_drawer</item>
     </style>
 
-	<color name="podaxColor">#FFE59F39</color>
+    <color name="podaxColor">#FFE59F39</color>
 
     <style name="mainText" parent="@android:style/TextAppearance.Large">
         <item name="android:layout_width">fill_parent</item>
@@ -31,5 +29,22 @@
     </style>
 
     <dimen name="titleIndicatorTextSize">12dp</dimen>
+
+    <style name="drawerTextBase">
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:background">#111</item>
+    </style>
+
+    <style name="drawerTextHeader" parent="@style/drawerTextBase">
+        <item name="android:textSize">20sp</item>
+        <item name="android:paddingLeft">10dip</item>
+        <item name="android:minHeight">46dp</item>
+    </style>
+
+    <style name="drawerText" parent="@style/drawerTextBase">
+        <item name="android:textSize">16sp</item>
+        <item name="android:paddingLeft">20dip</item>
+        <item name="android:minHeight">36dp</item>
+    </style>
 
 </resources>

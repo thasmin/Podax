@@ -50,6 +50,8 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 		setHasOptionsMenu(true);
 
 		_subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, 0);
+		if (_subscriptionId == 0)
+			_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, 0);
 		getLoaderManager().initLoader(0, null, this);
 		_adapter = new PodcastAdapter(getActivity(), null);
 		setListAdapter(_adapter);

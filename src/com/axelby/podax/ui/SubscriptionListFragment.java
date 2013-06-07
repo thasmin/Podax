@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -15,10 +16,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ListView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.GridView;
 import android.widget.ResourceCursorAdapter;
 
-import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.androidquery.AQuery;
@@ -27,8 +29,9 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
-public class SubscriptionListFragment extends SherlockListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class SubscriptionListFragment extends SherlockFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;
+	private GridView _grid;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -38,7 +41,6 @@ public class SubscriptionListFragment extends SherlockListFragment implements Lo
 
 		getLoaderManager().initLoader(0, null, this);
 		_adapter = new SubscriptionAdapter(getActivity(), null);
-		setListAdapter(_adapter);
 	}
 
 	@Override
@@ -51,7 +53,29 @@ public class SubscriptionListFragment extends SherlockListFragment implements Lo
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		registerForContextMenu(getListView());
+		_grid = (GridView) getActivity().findViewById(R.id.grid);
+		_grid.setAdapter(_adapter);
+		_grid.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> grid, View view, int position, long id) {
+				Fragment existingFragment = getFragmentManager().findFragmentById(R.id.about);
+				SubscriptionCursor sub = new SubscriptionCursor((Cursor)grid.getItemAtPosition(position));
+				long subscriptionId = sub.getId();
+
+				PodcastListFragment podcastListFragment = new PodcastListFragment();
+				Bundle args = new Bundle();
+				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
+				podcastListFragment.setArguments(args);
+				FragmentTransaction ft = getFragmentManager().beginTransaction();
+
+				if (existingFragment == null) {
+					ft.replace(R.id.fragment, podcastListFragment).addToBackStack(null).commit();
+				} else {
+					ft.replace(R.id.about, podcastListFragment).addToBackStack(null).commit();
+				}
+			}
+		});
+		registerForContextMenu(_grid);
 	}
 
 	@Override
@@ -78,7 +102,7 @@ public class SubscriptionListFragment extends SherlockListFragment implements Lo
 		switch (item.getItemId()) {
 		case 0:
 			AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-			Cursor cursor = (Cursor) getListAdapter().getItem(menuInfo.position);
+			Cursor cursor = (Cursor) _adapter.getItem(menuInfo.position);
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 			getActivity().getContentResolver().delete(subscription.getContentUri(), null, null);
 			break;
@@ -86,24 +110,6 @@ public class SubscriptionListFragment extends SherlockListFragment implements Lo
 			return super.onContextItemSelected(item);
 		}
 		return true;
-	}
-
-	@Override
-	public void onListItemClick(ListView list, View view, int position, long id) {
-		Fragment podcastList = getFragmentManager().findFragmentById(R.id.podcastlist_fragment);
-		SubscriptionCursor sub = new SubscriptionCursor((Cursor)list.getItemAtPosition(position));
-		long subscriptionId = sub.getId();
-		if (podcastList == null) {
-			// no need to check the item if it's not side by side
-			list.clearChoices();
-
-			Intent intent = new Intent(getActivity(), PodcastListActivity.class);
-			intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
-			startActivity(intent);
-		} else {
-			PodcastListFragment podcastListFragment = (PodcastListFragment) podcastList;
-			podcastListFragment.setSubscriptionId(subscriptionId);
-		}
 	}
 
 	@Override

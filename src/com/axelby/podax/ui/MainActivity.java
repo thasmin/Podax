@@ -9,8 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceScreen;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -87,13 +85,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 				switch (position) {
-				case 0: ft.replace(R.id.fragment, new WelcomeFragment()); break;
-				case 1: ft.replace(R.id.fragment, new PodcastDetailFragment()); break;
-				case 2: ft.replace(R.id.fragment, new QueueFragment()); break;
-				case 3: ft.replace(R.id.fragment, new SubscriptionListFragment()); break;
-				case 4: ft.replace(R.id.fragment, new SearchFragment()); break;
-				case 5: ft.replace(R.id.fragment, new PodaxPreferenceFragment()); break;
-				case 6: ft.replace(R.id.fragment, new AboutFragment()); break;
+				case 1 : ft.replace(R.id.fragment, new WelcomeFragment()); break;
+				case 2 : ft.replace(R.id.fragment, new PodcastDetailFragment()); break;
+				case 3 : ft.replace(R.id.fragment, new QueueFragment()); break;
+				case 4 : ft.replace(R.id.fragment, new SubscriptionListFragment()); break;
+				case 5 : ft.replace(R.id.fragment, new SearchFragment()); break;
+				case 8 : ft.replace(R.id.fragment, new ITunesPopularListFragment()); break;
+				case 9 : ft.replace(R.id.fragment, new PodaxPreferenceFragment()); break;
+				case 10: ft.replace(R.id.fragment, new AboutFragment()); break;
 				}
 				ft.addToBackStack(null);
 				ft.commit();
@@ -107,14 +106,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 		});
 
 		if (intent.hasExtra("fragmentId")) {
-			_fragmentId = intent.getIntExtra("fragmentId", 1);
+			_fragmentId = intent.getIntExtra("fragmentId", 2);
 		} else if (savedInstanceState == null) {
-			Fragment fragment = new PodcastDetailFragment();
-			FragmentManager fm = getSupportFragmentManager();
-			FragmentTransaction ft = fm.beginTransaction();
-			ft.add(R.id.fragment, fragment);
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+			ft.add(R.id.fragment, new PodcastDetailFragment());
 			ft.commit();
-			_fragmentId = 1;
+			_fragmentId = 2;
 		} else {
 			_fragmentId = savedInstanceState.getInt("fragmentId");
 		}
@@ -154,7 +151,12 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 	}
 
 	class PodaxDrawerAdapter extends BaseAdapter {
-		public String[] _items = { "Welcome", "Now Playing", "Playlist", "Podcasts", "Search", "Preferences", "About" };
+		public String[] _items = {
+			"Podax Screens", "Welcome", "Now Playing", "Playlist", "Podcasts", "Search", 
+			"Subscribe to Podcast", "Add RSS Feed", "Top iTunes Podcasts",
+			"Preferences", 
+			"About",
+		};
 		private Context _context;
 
 		public PodaxDrawerAdapter(Context context) {
@@ -178,13 +180,27 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			TextView tv;
-			if (convertView != null)
-				tv = (TextView) convertView;
-			else
-				tv = (TextView) LayoutInflater.from(_context).inflate(R.layout.drawer_listitem, null);
+			// should reuse convertView if possible
+			int layoutId;
+			switch (position) {
+			case 0:
+			case 6:
+			case 9:
+			case 10:
+				layoutId = R.layout.drawer_header_listitem;
+				break;
+			default:
+				layoutId = R.layout.drawer_listitem;
+				break;
+			}
+			TextView tv = (TextView) LayoutInflater.from(_context).inflate(layoutId, null);
 			tv.setText(_items[position]);
 			return tv;
+		}
+
+		@Override
+		public boolean isEnabled(int position) {
+			return position != 0 && position != 6;
 		}
 	}
 

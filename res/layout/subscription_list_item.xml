@@ -1,32 +1,19 @@
-<com.axelby.podax.ui.CheckedLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@color/podaxColor"
-    android:paddingLeft="6dip"
-    android:gravity="center_vertical" >
+    android:orientation="vertical" >
 
-    <ImageView
+    <com.axelby.podax.ui.SquareImageView
         android:id="@+id/thumbnail"
-        android:layout_width="50dip"
-        android:layout_height="50dip"
-        android:contentDescription="@string/subscription_thumbnail"
-        android:paddingRight="5dip" >
-    </ImageView>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="fitStart"
+        android:contentDescription="@string/subscription_thumbnail" />
 
     <TextView
         android:id="@+id/text"
-        android:layout_width="0dip"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:minHeight="?android:attr/listPreferredItemHeight"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <ImageView
-        android:id="@+id/more"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/more_options"
-        android:src="@drawable/ic_list_more" />
-
-</com.axelby.podax.ui.CheckedLinearLayout>
+</LinearLayout>
