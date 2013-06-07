@@ -1,7 +1,6 @@
 package com.axelby.podax.ui;
 
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,7 +12,6 @@ import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -81,15 +79,6 @@ public class SubscriptionListFragment extends SherlockFragment implements Loader
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.subscription_list, menu);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(com.actionbarsherlock.view.MenuItem item) {
-		if (item.getItemId() == R.id.add_subscription) {
-			getActivity().startActivity(new Intent(getActivity(), AddSubscriptionActivity.class));
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	@Override

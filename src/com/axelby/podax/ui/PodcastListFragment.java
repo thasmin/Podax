@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -63,8 +64,7 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	        Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.podcastlist_fragment, null, false);
 	}
 
@@ -161,9 +161,13 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 			UpdateService.updateSubscription(getActivity(), _subscriptionId);
 			return true;
 		case R.id.settings:
-			Intent intent = new Intent(getActivity(), SubscriptionSettingsActivity.class);
-			intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, _subscriptionId);
-			startActivity(intent);
+			SubscriptionSettingsFragment fragment = new SubscriptionSettingsFragment();
+			Bundle args = new Bundle();
+			args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, _subscriptionId);
+			fragment.setArguments(args);
+
+			FragmentTransaction ft = getFragmentManager().beginTransaction();
+			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

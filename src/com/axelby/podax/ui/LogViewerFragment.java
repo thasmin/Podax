@@ -6,19 +6,32 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockFragment;
 import com.axelby.podax.R;
 
-public class LogViewer extends PodaxActivity {
+public class LogViewerFragment extends SherlockFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+	}
+	
 
-		setContentView(R.layout.logviewer);
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.logviewer, null, false);
+	}
 
-		File file = new File(getExternalFilesDir(null), "podax.log");
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		File file = new File(getActivity().getExternalFilesDir(null), "podax.log");
 		StringBuilder text = new StringBuilder();
 		BufferedReader br = null;
 		try {
@@ -40,7 +53,7 @@ public class LogViewer extends PodaxActivity {
 			}
 		}
 
-		TextView tv = (TextView) findViewById(R.id.textView);
+		TextView tv = (TextView) getActivity().findViewById(R.id.textView);
 		tv.setText(text);
 	}
 }

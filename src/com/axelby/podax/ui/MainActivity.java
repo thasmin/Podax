@@ -30,6 +30,7 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.PodaxLog;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
@@ -93,6 +94,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 				case 8 : ft.replace(R.id.fragment, new ITunesPopularListFragment()); break;
 				case 9 : ft.replace(R.id.fragment, new PodaxPreferenceFragment()); break;
 				case 10: ft.replace(R.id.fragment, new AboutFragment()); break;
+				case 11: ft.replace(R.id.fragment, new LogViewerFragment()); break;
 				}
 				ft.addToBackStack(null);
 				ft.commit();
@@ -156,6 +158,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 			"Subscribe to Podcast", "Add RSS Feed", "Top iTunes Podcasts",
 			"Preferences", 
 			"About",
+			"Log Viewer",
 		};
 		private Context _context;
 
@@ -165,7 +168,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 		@Override
 		public int getCount() {
-			return _items.length;
+			// log viewer is only available when debugging
+			if (PodaxLog.isDebuggable(MainActivity.this))
+				return _items.length;
+			return _items.length - 1;
 		}
 
 		@Override
@@ -180,13 +186,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			// should reuse convertView if possible
+			// TODO: should reuse convertView if possible
 			int layoutId;
 			switch (position) {
 			case 0:
 			case 6:
 			case 9:
 			case 10:
+			case 11:
 				layoutId = R.layout.drawer_header_listitem;
 				break;
 			default:

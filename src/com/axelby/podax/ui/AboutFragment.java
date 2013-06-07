@@ -1,16 +1,12 @@
 package com.axelby.podax.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
 import com.actionbarsherlock.app.SherlockFragment;
-import com.androidquery.AQuery;
-import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 
 public class AboutFragment extends SherlockFragment {
@@ -32,17 +28,6 @@ public class AboutFragment extends SherlockFragment {
 				"<body style=\"background:transparent;color:white\">" + content + "</body></html>";
 		webview.loadData(html, "text/html", "utf-8");
 		webview.setBackgroundColor(0x00000000);
-
-		if (PodaxLog.isDebuggable(getActivity())) {
-			new AQuery(getActivity()).find(R.id.log_viewer).clicked(new OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					startActivity(new Intent(view.getContext(), LogViewer.class));
-				}
-			});
-		} else {
-			new AQuery(getActivity()).find(R.id.log_viewer).gone();
-		}
 	}
 
 }

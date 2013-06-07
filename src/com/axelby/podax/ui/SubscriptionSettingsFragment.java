@@ -45,6 +45,8 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 
 		_subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 		if (_subscriptionId == -1)
+			_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+		if (_subscriptionId == -1)
 			ACRA.getErrorReporter().handleSilentException(new Exception("subscription settings got a -1"));
 		_subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI,  _subscriptionId);
 

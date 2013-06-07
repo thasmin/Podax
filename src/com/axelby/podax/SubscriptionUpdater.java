@@ -5,7 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -66,14 +68,12 @@ public class SubscriptionUpdater {
 
 			URL url = new URL(subscription.getUrl());
 			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-			/*
 			if (subscription.getETag() != null)
 				connection.setRequestProperty("If-None-Match", subscription.getETag());
 			if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
 				SimpleDateFormat imsFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 				connection.setRequestProperty("If-Modified-Since", imsFormat.format(subscription.getLastModified()));
 			}
-			*/
 
 			int code = connection.getResponseCode();
 			// only valid response code is 200
@@ -85,8 +85,8 @@ public class SubscriptionUpdater {
 			String eTag = connection.getHeaderField("ETag");
 			if (eTag != null) {
 				subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
-				//if (eTag.equals(subscription.getETag()))
-				//	return;
+				if (eTag.equals(subscription.getETag()))
+					return;
 			}
 
 			String encoding = connection.getContentEncoding();

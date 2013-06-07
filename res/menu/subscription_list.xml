@@ -2,11 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/add_subscription"
-        android:icon="@android:drawable/ic_menu_add"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/add"/>
-    <item
         android:id="@+id/refresh_subscriptions"
         android:icon="@drawable/ic_menu_refresh"
         android:showAsAction="ifRoom|withText"
