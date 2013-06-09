@@ -1,8 +1,10 @@
 package com.axelby.podax.ui;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.net.Uri;
@@ -12,6 +14,7 @@ import android.preference.PreferenceScreen;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -84,20 +88,24 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 					return;
 				_fragmentId = position;
 
-				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-				switch (position) {
-				case 1 : ft.replace(R.id.fragment, new WelcomeFragment()); break;
-				case 2 : ft.replace(R.id.fragment, new PodcastDetailFragment()); break;
-				case 3 : ft.replace(R.id.fragment, new QueueFragment()); break;
-				case 4 : ft.replace(R.id.fragment, new SubscriptionListFragment()); break;
-				case 5 : ft.replace(R.id.fragment, new SearchFragment()); break;
-				case 8 : ft.replace(R.id.fragment, new ITunesPopularListFragment()); break;
-				case 9 : ft.replace(R.id.fragment, new PodaxPreferenceFragment()); break;
-				case 10: ft.replace(R.id.fragment, new AboutFragment()); break;
-				case 11: ft.replace(R.id.fragment, new LogViewerFragment()); break;
+				if (position == 7)
+					askForRSSUrl();
+				else {
+					FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+					switch (position) {
+						case 1 : ft.replace(R.id.fragment, new WelcomeFragment()); break;
+						case 2 : ft.replace(R.id.fragment, new PodcastDetailFragment()); break;
+						case 3 : ft.replace(R.id.fragment, new QueueFragment()); break;
+						case 4 : ft.replace(R.id.fragment, new SubscriptionListFragment()); break;
+						case 5 : ft.replace(R.id.fragment, new SearchFragment()); break;
+						case 8 : ft.replace(R.id.fragment, new ITunesPopularListFragment()); break;
+						case 9 : ft.replace(R.id.fragment, new PodaxPreferenceFragment()); break;
+						case 10: ft.replace(R.id.fragment, new AboutFragment()); break;
+						case 11: ft.replace(R.id.fragment, new LogViewerFragment()); break;
+					}
+					ft.addToBackStack(null);
+					ft.commit();
 				}
-				ft.addToBackStack(null);
-				ft.commit();
 			}
 		});
 		aq.id(R.id.pause).clicked(new OnClickListener() {
@@ -117,6 +125,34 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 		} else {
 			_fragmentId = savedInstanceState.getInt("fragmentId");
 		}
+	}
+
+	protected void askForRSSUrl() {
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		alert.setTitle("Podcast URL");
+		alert.setMessage("Type the URL of the podcast RSS");
+		final EditText input = new EditText(this);
+		//input.setText("http://blog.axelby.com/podcast.xml");
+		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+		alert.setView(input);
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				String subscriptionUrl = input.getText().toString();
+				if (!subscriptionUrl.contains("://"))
+					subscriptionUrl = "http://" + subscriptionUrl;
+				ContentValues values = new ContentValues();
+				values.put(SubscriptionProvider.COLUMN_URL, subscriptionUrl);
+				values.put(SubscriptionProvider.COLUMN_TITLE, subscriptionUrl);
+				Uri subscriptionUri = getContentResolver().insert(SubscriptionProvider.URI, values);
+				UpdateService.updateSubscription(MainActivity.this, subscriptionUri);
+			}
+		});
+		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				// do nothing
+			}
+		});
+		alert.show();
 	}
 
 	@Override

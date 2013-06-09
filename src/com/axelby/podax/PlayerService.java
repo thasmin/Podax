@@ -251,8 +251,6 @@ public class PlayerService extends Service {
 	private void stop() {
 		PlayerStatus.updateState(this, PlayerStates.STOPPED);
 
-		PodaxLog.log(this, "PlayerService stopping");
-
 		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		am.abandonAudioFocus(_afChangeListener);
 

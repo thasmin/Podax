@@ -16,17 +16,20 @@ import android.sax.Element;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.util.Xml;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockFragment;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
-public class PopularSubscriptionActivity extends PodaxActivity {
+public class PopularSubscriptionFragment extends SherlockFragment {
 
 	private class FeedDetails {
 		private String title;
@@ -39,29 +42,39 @@ public class PopularSubscriptionActivity extends PodaxActivity {
 	ProgressDialog _dialog;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+	}
 
-		setContentView(R.layout.popularsubscription);
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.popularsubscription, null, false);
+	}
 
-		String title = getIntent().getExtras().getString(Constants.EXTRA_TITLE);
-		TextView titleView = (TextView) findViewById(R.id.title);
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		String title = getArguments().getString(Constants.EXTRA_TITLE);
+		TextView titleView = (TextView) getActivity().findViewById(R.id.title);
 		titleView.setText(title);
 
-		Button add_subscription = (Button) findViewById(R.id.add_subscription);
+		Button add_subscription = (Button) getActivity().findViewById(R.id.add_subscription);
 		add_subscription.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				ContentValues values = new ContentValues();
-				values.put(SubscriptionProvider.COLUMN_URL, getIntent().getExtras().getString(Constants.EXTRA_URL));
-				getContentResolver().insert(SubscriptionProvider.URI, values);
-				UpdateService.updateSubscriptions(PopularSubscriptionActivity.this);
-				finish();
+				values.put(SubscriptionProvider.COLUMN_URL, getArguments().getString(Constants.EXTRA_URL));
+				getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
+				UpdateService.updateSubscriptions(getActivity());
+				
+				getFragmentManager().popBackStack();
 			}			
 		});
 
-		_dialog = ProgressDialog.show(this, "", "Loading Subscription...", true, true);
+		_dialog = ProgressDialog.show(getActivity(), "", "Loading Subscription...", true, true);
 
-		String url = getIntent().getExtras().getString(Constants.EXTRA_URL);
+		String url = getArguments().getString(Constants.EXTRA_URL);
 		new AsyncTask<String, Void, FeedDetails>() {
 			@Override
 			protected FeedDetails doInBackground(String... urls) {
@@ -101,10 +114,10 @@ public class PopularSubscriptionActivity extends PodaxActivity {
 
 			@Override
 			protected void onPostExecute(FeedDetails result) {
-				TextView title = (TextView) findViewById(R.id.title);
+				TextView title = (TextView) getActivity().findViewById(R.id.title);
 				title.setText(result.title);
 
-				TextView description = (TextView) findViewById(R.id.description);
+				TextView description = (TextView) getActivity().findViewById(R.id.description);
 				description.setText(result.description);
 
 				_dialog.dismiss();
