@@ -28,8 +28,6 @@
         <item name="android:layout_centerVertical">true</item>
     </style>
 
-    <dimen name="titleIndicatorTextSize">12dp</dimen>
-
     <style name="drawerTextBase">
         <item name="android:gravity">center_vertical</item>
         <item name="android:background">#111</item>

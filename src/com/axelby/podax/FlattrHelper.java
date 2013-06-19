@@ -109,7 +109,7 @@ public class FlattrHelper {
 		// the rest is optional
 		if(url.getQueryParameter("description") != null)
 			sub.setDescription(url.getQueryParameter("description"));
-		if(url.getQueryParameter("language") != null);
+		if(url.getQueryParameter("language") != null)
 			sub.setLanguage(Language.withId(url.getQueryParameter("language")));
 		if(url.getQueryParameter("tags") != null)
 			sub.setTags(Arrays.asList(url.getQueryParameter("tags").split(",")));

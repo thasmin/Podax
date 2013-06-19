@@ -143,10 +143,20 @@ public class PodcastProvider extends ContentProvider {
 			break;
 		case PODCASTS_ACTIVE:
 			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
-			if (prefs.contains(PREF_ACTIVE))
-				sqlBuilder.appendWhere("podcasts._id = " + prefs.getLong(PREF_ACTIVE, -1));
-			else
+			if (prefs.contains(PREF_ACTIVE)) {
+				long activeId = prefs.getLong(PREF_ACTIVE, -1);
+				// make sure the active podcast wasn't deleted
+				Cursor c = _dbAdapter.getReadableDatabase().query("podcasts", new String[] { "_id" }, "_id = ?", new String[] { String.valueOf(activeId) }, null, null, null);
+				if (c.moveToFirst())
+					sqlBuilder.appendWhere("podcasts._id = " + activeId);
+				else {
+					prefs.edit().remove(PREF_ACTIVE).commit();
+					sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
+				}
+				c.close();
+			} else {
 				sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
+			}
 			break;
 		case PODCASTS_SEARCH:
 			sqlBuilder.appendWhere("LOWER(podcasts.title) LIKE ?");
@@ -357,7 +367,7 @@ public class PodcastProvider extends ContentProvider {
 		// update specified podcast
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
 				new Object[] { newPosition, podcastId });
-		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "queue"), null);
+		getContext().getContentResolver().notifyChange(QUEUE_URI, null);
 	}
 
 	@Override

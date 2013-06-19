@@ -1,5 +1,10 @@
 package com.axelby.podax.ui;
 
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.ContentValues;
@@ -11,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceScreen;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -46,6 +52,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 	private DrawerLayout _drawerLayout;
 	private PodaxDrawerAdapter _drawerAdapter;
 	private int _fragmentId;
+	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +60,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 		// check if this was opened by android to save an RSS feed
 		Intent intent = getIntent();
-		if (intent.getDataString() != null) {
+		if (intent.getDataString() != null && intent.getData().getScheme().equals("http")) {
 			ContentValues values = new ContentValues();
 			values.put(SubscriptionProvider.COLUMN_URL, intent.getDataString());
 			Uri savedSubscription = getContentResolver().insert(SubscriptionProvider.URI, values);
@@ -84,29 +91,21 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 			public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
 				_drawerLayout.closeDrawer(GravityCompat.START);
 
-				if (_fragmentId == position)
-					return;
 				_fragmentId = position;
 
-				if (position == 7)
-					askForRSSUrl();
-				else {
-					FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-					switch (position) {
-						case 1 : ft.replace(R.id.fragment, new WelcomeFragment()); break;
-						case 2 : ft.replace(R.id.fragment, new PodcastDetailFragment()); break;
-						case 3 : ft.replace(R.id.fragment, new QueueFragment()); break;
-						case 4 : ft.replace(R.id.fragment, new SubscriptionListFragment()); break;
-						case 5 : ft.replace(R.id.fragment, new SearchFragment()); break;
-						case 8 : ft.replace(R.id.fragment, new ITunesPopularListFragment()); break;
-						case 9 : ft.replace(R.id.fragment, new PodaxPreferenceFragment()); break;
-						case 10: ft.replace(R.id.fragment, new AboutFragment()); break;
-						case 11: ft.replace(R.id.fragment, new LogViewerFragment()); break;
-					}
-					ft.addToBackStack(null);
-					ft.commit();
+				switch (position) {
+					case 1 : replaceFragment(WelcomeFragment.class); break;
+					case 2 : replaceFragment(PodcastDetailFragment.class); break;
+					case 3 : replaceFragment(QueueFragment.class); break;
+					case 4 : replaceFragment(SubscriptionListFragment.class); break;
+					case 5 : replaceFragment(SearchFragment.class); break;
+					case 7 : askForRSSUrl(); break;
+					case 8 : replaceFragment(ITunesPopularListFragment.class); break;
+					case 9 : replaceFragment(PodaxPreferenceFragment.class); break;
+					case 10: replaceFragment(AboutFragment.class); break;
+					case 11: replaceFragment(LogViewerFragment.class); break;
 				}
-			}
+ 			}
 		});
 		aq.id(R.id.pause).clicked(new OnClickListener() {
 			@Override
@@ -115,8 +114,15 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 			}
 		});
 
-		if (intent.hasExtra("fragmentId")) {
+		if (intent.hasExtra(Constants.EXTRA_FRAGMENT)) {
 			_fragmentId = intent.getIntExtra("fragmentId", 2);
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+			if (_fragmentId == 2) {
+				ft.add(R.id.fragment, new PodcastDetailFragment());
+			} else if (_fragmentId == 4) {
+				ft.add(R.id.fragment, new SubscriptionListFragment());
+			}
+			ft.commit();
 		} else if (savedInstanceState == null) {
 			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 			ft.add(R.id.fragment, new PodcastDetailFragment());
@@ -186,6 +192,43 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	@Override
+	public void onAttachFragment(Fragment fragment) {
+		super.onAttachFragment(fragment);
+		_savedFragments.add(new WeakReference<Fragment>(fragment));
+	}
+	
+	public void replaceFragment(Class<? extends Fragment> clazz) {
+		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
+		if (current.getClass().equals(clazz))
+			return;
+		
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+
+		for (WeakReference<Fragment> frag : _savedFragments)
+			if (frag.get() != null && frag.get().getClass().equals(clazz)) {
+				ft.replace(R.id.fragment, frag.get());
+				return;
+			}
+
+		try {
+			ft.replace(R.id.fragment, (Fragment) clazz.getConstructor().newInstance());
+		} catch (IllegalArgumentException e) {
+			return;
+		} catch (InstantiationException e) {
+			return;
+		} catch (IllegalAccessException e) {
+			return;
+		} catch (InvocationTargetException e) {
+			return;
+		} catch (NoSuchMethodException e) {
+			return;
+		}
+		
+		ft.addToBackStack(null);
+		ft.commit();
 	}
 
 	class PodaxDrawerAdapter extends BaseAdapter {

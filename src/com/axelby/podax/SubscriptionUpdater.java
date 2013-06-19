@@ -27,8 +27,7 @@ import android.util.Log;
 import android.util.Xml;
 
 import com.axelby.podax.R.drawable;
-import com.axelby.podax.ui.PodcastDetailActivity;
-import com.axelby.podax.ui.SubscriptionActivity;
+import com.axelby.podax.ui.MainActivity;
 import com.axelby.riasel.Feed;
 import com.axelby.riasel.FeedItem;
 import com.axelby.riasel.FeedParser;
@@ -106,6 +105,7 @@ public class SubscriptionUpdater {
 					@Override
 					public void OnFeedInfo(FeedParser feedParser, Feed feed) {
 						subscriptionValues.putAll(feed.getContentValues());
+						subscriptionValues.remove("pubDate");
 						changeKeyString(subscriptionValues, "lastBuildDate", SubscriptionProvider.COLUMN_LAST_UPDATE);
 					}
 				});
@@ -175,7 +175,8 @@ public class SubscriptionUpdater {
 	};
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
-		Intent notificationIntent = new Intent(_context, SubscriptionActivity.class);
+		Intent notificationIntent = new Intent(_context, MainActivity.class);
+		notificationIntent.putExtra(Constants.EXTRA_FRAGMENT, 4);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)
@@ -242,7 +243,7 @@ public class SubscriptionUpdater {
 	}
 
 	void showNotification(SubscriptionCursor subscription) {
-		Intent notificationIntent = new Intent(_context, PodcastDetailActivity.class);
+		Intent notificationIntent = new Intent(_context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)

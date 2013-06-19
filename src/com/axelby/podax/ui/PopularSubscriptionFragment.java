@@ -48,7 +48,7 @@ public class PopularSubscriptionFragment extends SherlockFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.popularsubscription, null, false);
+		return inflater.inflate(R.layout.popularsubscription, container, false);
 	}
 
 

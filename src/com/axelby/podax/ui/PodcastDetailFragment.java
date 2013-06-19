@@ -46,7 +46,6 @@ import com.axelby.podax.R;
 public class PodcastDetailFragment extends SherlockFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	long _podcastId;
 	boolean _controlsEnabled = true;
-	Long _initializedPodcastId = null;
 
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
@@ -76,6 +75,8 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		super.onCreate(savedInstanceState);
 
 		_podcastId = getActivity().getIntent().getLongExtra(Constants.EXTRA_PODCAST_ID, 0);
+		if (_podcastId == 0 && getArguments() != null)
+			_podcastId = getArguments().getLong(Constants.EXTRA_PODCAST_ID, 0);
 		if (_podcastId != 0)
 			getLoaderManager().initLoader(CURSOR_PODCAST, null, this);
 		else
@@ -83,9 +84,8 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	        Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.podcast_detail, null, false);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.podcast_detail, container, false);
 	}
 	
 	private void showToast(final Activity activity, final String message) {
@@ -351,11 +351,9 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 				PodcastProvider.COLUMN_PAYMENT,
 		};
 
-		if (id == CURSOR_PODCAST) {
-			if (_podcastId != 0) {
-				Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
-				return new CursorLoader(getActivity(), uri, projection, null, null, null);
-			}
+		if (id == CURSOR_PODCAST && _podcastId != 0) {
+			Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
+			return new CursorLoader(getActivity(), uri, projection, null, null, null);
 		} else if (id == CURSOR_ACTIVE) {
 			return new CursorLoader(getActivity(), PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 		}
@@ -367,19 +365,15 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		if (getActivity() == null)
 			return;
 
-		if (!cursor.moveToNext()) {
-			getActivity().finish();
-			return;
-		}
-
-		PodcastCursor podcast = new PodcastCursor(cursor);
-		_podcastId = podcast.getId();
-		if (_initializedPodcastId == null || !_initializedPodcastId.equals(_podcastId)) {
+		if (cursor.moveToFirst()) {
+			PodcastCursor podcast = new PodcastCursor(cursor);
+			_podcastId = podcast.getId();
 			initializeUI(podcast);
-			_initializedPodcastId = _podcastId;
+			updateQueueViews(podcast);
+			updatePlayerControls(PlayerStatus.getCurrentState(getActivity()), podcast);
+		} else {
+			
 		}
-		updateQueueViews(podcast);
-		updatePlayerControls(PlayerStatus.getCurrentState(getActivity()), podcast);
 	}
 
 	@Override

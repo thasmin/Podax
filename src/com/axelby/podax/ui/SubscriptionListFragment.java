@@ -42,9 +42,8 @@ public class SubscriptionListFragment extends SherlockFragment implements Loader
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	        Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.subscription_list, null, false);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.subscription_list, container, false);
 	}
 
 	@Override

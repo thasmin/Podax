@@ -79,21 +79,25 @@
                 <data android:mimeType="application/atom+xml" />
                 <data android:mimeType="application/xml" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="com.axelby.podax"
+                    android:scheme="flattr4j" />
+            </intent-filter>
+
+            <!-- needed until minimum api level is 14 -->
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".SearchActivity" />
         </activity>
-        <activity android:name=".ui.SearchActivity" >
-        </activity>
+        <!-- needed until minimum api level is 14 -->
         <activity
-            android:name=".ui.QueueActivity"
-            android:label="@string/playlist" />
-        <activity
-            android:name=".ui.SubscriptionActivity"
-            android:label="@string/podcasts" />
-        <activity
-            android:name=".ui.SearchFragment"
+            android:name=".ui.SearchActivity"
             android:exported="false"
             android:label="@string/search"
             android:launchMode="singleTop" >
@@ -107,25 +111,6 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
-        <activity android:name=".ui.PodcastListActivity" />
-        <activity android:name=".ui.PodcastDetailActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="com.axelby.podax"
-                    android:scheme="flattr4j" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ui.PopularSubscriptionActivity"
-            android:label="@string/popular_subscription_title" />
-        <activity
-            android:name=".ui.LogViewer"
-            android:label="@string/log_viewer" />
 
         <service android:name=".UpdateService" />
         <service android:name=".PlayerService" />

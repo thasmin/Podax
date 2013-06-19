@@ -29,7 +29,7 @@ import android.widget.Toast;
 
 import com.androidquery.AQuery;
 import com.axelby.podax.PlayerStatus.PlayerStates;
-import com.axelby.podax.ui.PodcastDetailActivity;
+import com.axelby.podax.ui.MainActivity;
 
 public class PlayerService extends Service {
 
@@ -396,7 +396,7 @@ public class PlayerService extends Service {
 		PodcastCursor podcast = new PodcastCursor(c);
 
 		// both paths use the pendingintent
-		Intent showIntent = new Intent(this, PodcastDetailActivity.class);
+		Intent showIntent = new Intent(this, MainActivity.class);
 		PendingIntent showPendingIntent = PendingIntent.getActivity(this, 0, showIntent, 0);
 
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this)

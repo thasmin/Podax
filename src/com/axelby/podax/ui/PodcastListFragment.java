@@ -3,7 +3,6 @@ package com.axelby.podax.ui;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -65,7 +64,7 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.podcastlist_fragment, null, false);
+		return inflater.inflate(R.layout.podcastlist_fragment, container, false);
 	}
 
 	@Override
@@ -176,11 +175,15 @@ public class PodcastListFragment extends SherlockListFragment implements LoaderM
 
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
-		Intent intent = new Intent(getActivity(), PodcastDetailActivity.class);
 		Cursor cursor = (Cursor) list.getItemAtPosition(position);
 		PodcastCursor podcast = new PodcastCursor(cursor);
-		intent.putExtra(Constants.EXTRA_PODCAST_ID, podcast.getId());
-		startActivity(intent);
+		Bundle args = new Bundle();
+		args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
+
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
+		PodcastDetailFragment fragment = new PodcastDetailFragment();
+		fragment.setArguments(args);
+		ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 	}
 
 	@Override

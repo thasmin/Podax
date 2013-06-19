@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockListFragment;
+import com.axelby.podax.Constants;
 import com.axelby.podax.OPMLImporter;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
@@ -47,9 +48,8 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	        Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.subscription_list, null, false);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.subscription_list, container, false);
 	}
 
 	@Override
@@ -111,8 +111,11 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 				int newSubscriptions = OPMLImporter.read(getActivity(), opmlFiles[0]);
 				String message = "Found " + newSubscriptions + " subscriptions.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
-				getActivity().finish();
-				getActivity().startActivity(new Intent(getActivity(), SubscriptionActivity.class));
+				getFragmentManager().popBackStack();
+
+				Intent intent = new Intent(getActivity(), MainActivity.class);
+				intent.putExtra(Constants.EXTRA_FRAGMENT, 4);
+				getActivity().startActivity(intent);
 			} catch (IOException e) {
 				String message = "There was an error while reading the OPML file.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
@@ -156,19 +159,19 @@ public class AddSubscriptionFragment extends SherlockListFragment {
 
 		public View getView(int position, View convertView, ViewGroup parent) {
 			if (position == ADD_RSS) {
-				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
+				TextView view = (TextView) _inflater.inflate(R.layout.list_item, parent, false);
 				view.setText(R.string.add_rss_feed);
 				return view;
 			}
 
 			if (position == ADD_OPML) {
-				TextView view = (TextView) _inflater.inflate(R.layout.list_item, null);
+				TextView view = (TextView) _inflater.inflate(R.layout.list_item, parent, false);
 				view.setText(R.string.add_from_opml_file);
 				return view;
 			}
 
 			if (position == ADD_GPODDER) {
-				View view = _inflater.inflate(R.layout.subscription_list_item, null);
+				View view = _inflater.inflate(R.layout.subscription_list_item, parent, false);
 
 				TextView text = (TextView)view.findViewById(R.id.text);
 				ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);

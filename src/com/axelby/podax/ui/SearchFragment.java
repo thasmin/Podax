@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -172,17 +174,21 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		
-		Intent intent;
+		Bundle args = new Bundle();
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
+		Fragment fragment;
 		switch (_adapter.getType(position)) {
 		case SUBSCRIPTION:
-			intent = new Intent(getActivity(), PodcastListActivity.class);
-			intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, id);
-			startActivity(intent);
+			fragment = new PodcastListFragment();
+			args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, id);
+			fragment.setArguments(args);
+			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 			break;
 		case PODCAST:
-			intent = new Intent(getActivity(), PodcastDetailActivity.class);
-			intent.putExtra(Constants.EXTRA_PODCAST_ID, id);
-			startActivity(intent);
+			fragment = new PodcastDetailFragment();
+			args.putLong(Constants.EXTRA_PODCAST_ID, id);
+			fragment.setArguments(args);
+			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 			break;
 		default:
 			break;
@@ -238,6 +244,7 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 			String[] projection = {
 					SubscriptionProvider.COLUMN_ID,
 					SubscriptionProvider.COLUMN_TITLE,
+					SubscriptionProvider.COLUMN_THUMBNAIL,
 			};
 			return new CursorLoader(getActivity(), SubscriptionProvider.SEARCH_URI, projection,
 					null, new String[] { query }, SubscriptionProvider.COLUMN_TITLE);
@@ -268,7 +275,6 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 		} else {
 			_adapter.setPodcastCursor(cursor);
 		}
-		getListView().setSelection(0);
 		getListView().invalidate();
 	}
 
@@ -416,7 +422,7 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View view;
 
-			TextView textView = (TextView) _inflater.inflate(R.layout.list_item, null);
+			TextView textView = (TextView) _inflater.inflate(R.layout.list_item, parent, false);
 
 			Object o = getItem(position);
 			AQuery aq;
@@ -434,7 +440,7 @@ public class SearchFragment extends SherlockListFragment implements LoaderCallba
 
 				SubscriptionCursor subscription = new SubscriptionCursor((Cursor)o);
 				
-				view = _inflater.inflate(R.layout.subscription_list_item, null);
+				view = _inflater.inflate(R.layout.search_subscription_listitem, null);
 				aq = new AQuery(view);
 				aq.find(R.id.text).text(subscription.getTitle());
 				aq.find(R.id.thumbnail).image(subscription.getThumbnail(), new QueueFragment.ImageOptions());

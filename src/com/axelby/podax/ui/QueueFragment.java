@@ -5,11 +5,11 @@ import java.io.File;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -72,7 +72,7 @@ public class QueueFragment extends SherlockListFragment implements LoaderManager
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.queue, null, false);
+		return inflater.inflate(R.layout.queue, container, false);
 	}
 
 	@Override
@@ -83,9 +83,13 @@ public class QueueFragment extends SherlockListFragment implements LoaderManager
 
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Intent intent = new Intent(getActivity(), PodcastDetailActivity.class);
-				intent.putExtra(Constants.EXTRA_PODCAST_ID, id);
-				startActivity(intent);
+				Bundle args = new Bundle();
+				args.putLong(Constants.EXTRA_PODCAST_ID, id);
+
+				FragmentTransaction ft = getFragmentManager().beginTransaction();
+				PodcastDetailFragment fragment = new PodcastDetailFragment();
+				fragment.setArguments(args);
+				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 			}
 		});
 		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {

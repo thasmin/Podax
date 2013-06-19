@@ -18,7 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.axelby.podax.R.drawable;
-import com.axelby.podax.ui.PodcastDetailActivity;
+import com.axelby.podax.ui.MainActivity;
 
 class PodcastDownloader {
 	private Context _context;
@@ -142,7 +142,7 @@ class PodcastDownloader {
 	}
 
 	void showNotification(PodcastCursor podcast) {
-		Intent notificationIntent = new Intent(_context, PodcastDetailActivity.class);
+		Intent notificationIntent = new Intent(_context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)

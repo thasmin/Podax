@@ -50,7 +50,7 @@ public class ITunesPopularListFragment extends SherlockListFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.innerlist, null, false);
+		return inflater.inflate(R.layout.innerlist, container, false);
 	}
 
 	@Override
