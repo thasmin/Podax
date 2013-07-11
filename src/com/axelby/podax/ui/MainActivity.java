@@ -232,12 +232,21 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 	}
 
 	class PodaxDrawerAdapter extends BaseAdapter {
+		private final int LEVEL_1 = 0;
+		private final int LEVEL_2 = 1;
 		public String[] _items = {
-			"Podax Screens", "Welcome", "Now Playing", "Playlist", "Podcasts", "Search", 
-			"Subscribe to Podcast", "Add RSS Feed", "Top iTunes Podcasts",
+			"Podax", "Welcome", "Now Playing", "Playlist", "Podcasts", "Search",
+			"Subscribe to Podcasts", "Add RSS Feed", "Top iTunes Podcasts",
 			"Preferences", 
 			"About",
 			"Log Viewer",
+		};
+		public int[] _leftDrawables = {
+				0, android.R.drawable.ic_menu_compass, android.R.drawable.ic_input_get, android.R.drawable.ic_menu_agenda, android.R.drawable.ic_menu_slideshow, android.R.drawable.ic_menu_search,
+				0, android.R.drawable.ic_menu_add, android.R.drawable.ic_menu_recent_history,
+				android.R.drawable.ic_menu_preferences,
+				R.drawable.ic_menu_podax,
+				android.R.drawable.ic_menu_info_details,
 		};
 		private Context _context;
 
@@ -265,28 +274,42 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			// TODO: should reuse convertView if possible
-			int layoutId;
+			int layoutId = getItemViewType(position) == LEVEL_1 ? R.layout.drawer_header_listitem : R.layout.drawer_listitem;
+			if (convertView == null)
+				convertView = LayoutInflater.from(_context).inflate(layoutId, null);
+			TextView tv = (TextView) convertView;
+			tv.setText(_items[position]);
+			tv.setCompoundDrawablesWithIntrinsicBounds(_leftDrawables[position], 0, 0, 0);
+			return tv;
+		}
+
+		@Override
+		public int getItemViewType(int position) {
 			switch (position) {
 			case 0:
 			case 6:
 			case 9:
 			case 10:
 			case 11:
-				layoutId = R.layout.drawer_header_listitem;
-				break;
+				return LEVEL_1;
 			default:
-				layoutId = R.layout.drawer_listitem;
-				break;
+				return LEVEL_2;
 			}
-			TextView tv = (TextView) LayoutInflater.from(_context).inflate(layoutId, null);
-			tv.setText(_items[position]);
-			return tv;
+		}
+
+		@Override
+		public int getViewTypeCount() {
+			return 2;
 		}
 
 		@Override
 		public boolean isEnabled(int position) {
 			return position != 0 && position != 6;
+		}
+
+		@Override
+		public boolean hasStableIds() {
+			return true;
 		}
 	}
 

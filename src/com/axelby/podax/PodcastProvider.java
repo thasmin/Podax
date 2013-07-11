@@ -30,14 +30,16 @@ public class PodcastProvider extends ContentProvider {
 	public static final Uri QUEUE_URI = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(PodcastProvider.URI, "search");
 	public static final Uri EXPIRED_URI = Uri.withAppendedPath(PodcastProvider.URI, "expired");
+	public static final Uri PLAYER_UPDATE_URI = Uri.withAppendedPath(PodcastProvider.URI, "player_update");
 
 	private final static int PODCASTS = 1;
 	private final static int PODCASTS_QUEUE = 2;
 	private final static int PODCAST_ID = 3;
 	private final static int PODCASTS_TO_DOWNLOAD = 4;
-	private final static int PODCASTS_ACTIVE = 5;
+	private final static int PODCAST_ACTIVE = 5;
 	private final static int PODCASTS_SEARCH = 6;
 	private final static int PODCASTS_EXPIRED = 7;
+	private final static int PODCAST_PLAYER_UPDATE = 8;
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -65,9 +67,10 @@ public class PodcastProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "podcasts/queue", PODCASTS_QUEUE);
 		uriMatcher.addURI(AUTHORITY, "podcasts/#", PODCAST_ID);
 		uriMatcher.addURI(AUTHORITY, "podcasts/to_download", PODCASTS_TO_DOWNLOAD);
-		uriMatcher.addURI(AUTHORITY, "podcasts/active", PODCASTS_ACTIVE);
+		uriMatcher.addURI(AUTHORITY, "podcasts/active", PODCAST_ACTIVE);
 		uriMatcher.addURI(AUTHORITY, "podcasts/search", PODCASTS_SEARCH);
 		uriMatcher.addURI(AUTHORITY, "podcasts/expired", PODCASTS_EXPIRED);
+		uriMatcher.addURI(AUTHORITY, "podcasts/player_update", PODCAST_PLAYER_UPDATE);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
@@ -107,7 +110,7 @@ public class PodcastProvider extends ContentProvider {
 		case PODCASTS_TO_DOWNLOAD:
 			return DIR_TYPE;
 		case PODCAST_ID:
-		case PODCASTS_ACTIVE:
+		case PODCAST_ACTIVE:
 			return ITEM_TYPE;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
@@ -141,7 +144,7 @@ public class PodcastProvider extends ContentProvider {
 				sortOrder = "queuePosition";
 			_dbAdapter.getWritableDatabase().execSQL("update podcasts set queueposition = (select count(*) from podcasts p2 where p2.queueposition is not null and p2.queueposition < podcasts.queueposition) where podcasts.queueposition is not null");
 			break;
-		case PODCASTS_ACTIVE:
+		case PODCAST_ACTIVE:
 			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 			if (prefs.contains(PREF_ACTIVE)) {
 				long activeId = prefs.getLong(PREF_ACTIVE, -1);
@@ -233,11 +236,33 @@ public class PodcastProvider extends ContentProvider {
 		long podcastId;
 		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		Long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
-		switch (uriMatcher.match(uri)) {
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+
+		int uriMatch = uriMatcher.match(uri);
+
+		// process the player update separately
+		if (uriMatch == PODCAST_PLAYER_UPDATE) {
+			if (activePodcastId == -1)
+				return 0;
+			Cursor c = db.query("podcasts", new String[] { "lastPosition" },
+					"_id = ?", new String[] { String.valueOf(activePodcastId) }, null, null, null);
+			c.moveToFirst();
+			int oldPosition = c.getInt(0);
+			int newPosition = values.getAsInteger(COLUMN_LAST_POSITION);
+			// reject changes if it's not a normal update
+			if (newPosition < oldPosition || newPosition - oldPosition > 3000)
+				return 0;
+
+			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activePodcastId) });
+			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
+			return 1;
+		}
+
+		switch (uriMatch) {
 		case PODCAST_ID:
 			podcastId = ContentUris.parseId(uri);
 			break;
-		case PODCASTS_ACTIVE:
+		case PODCAST_ACTIVE:
 			if (values.containsKey(COLUMN_ID)) {
 				activePodcastId = values.getAsLong(COLUMN_ID);
 				Editor editor = prefs.edit();
@@ -295,7 +320,6 @@ public class PodcastProvider extends ContentProvider {
 				activePodcastId = podcastId;
 		}
 
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		if (values.size() > 0)
 			count += db.update("podcasts", values, where, whereArgs);
 		getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, podcastId), null);
@@ -305,6 +329,10 @@ public class PodcastProvider extends ContentProvider {
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 			ActivePodcastReceiver.NotifyExternal(getContext());
 		}
+		// if the current podcast has updated but it's not from the player, tell the player to update
+		if (podcastId == activePodcastId && uriMatch != PODCAST_PLAYER_UPDATE)
+			getContext().getContentResolver().notifyChange(PLAYER_UPDATE_URI, null);
+
 		return count;
 	}
 

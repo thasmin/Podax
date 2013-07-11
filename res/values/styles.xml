@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Widget.Podax.ActionBar" parent="@style/Widget.Sherlock.ActionBar">
         <item name="android:background">@drawable/ab_podax</item>
@@ -31,6 +31,7 @@
     <style name="drawerTextBase">
         <item name="android:gravity">center_vertical</item>
         <item name="android:background">#111</item>
+        <item name="android:drawablePadding">6dp</item>
     </style>
 
     <style name="drawerTextHeader" parent="@style/drawerTextBase">

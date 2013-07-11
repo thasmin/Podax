@@ -40,8 +40,11 @@ public class PlayerService extends Service {
 				return;
 
 			int currentPosition = _player.getCurrentPosition();
-			if (_lastPosition / 1000 != currentPosition / 1000)
-				updateActivePodcastPosition(currentPosition, _player.getDuration());
+			if (_lastPosition / 1000 != currentPosition / 1000) {
+				ContentValues values = new ContentValues();
+				values.put(PodcastProvider.COLUMN_LAST_POSITION, currentPosition);
+				getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
+			}
 			_lastPosition = currentPosition;
 		}
 	};
@@ -93,6 +96,7 @@ public class PlayerService extends Service {
 				prepareMediaPlayer(p);
 				QueueManager.changeActivePodcast(PlayerService.this, _currentPodcastId);
 				_lockscreenManager.setupLockscreenControls(PlayerService.this, p);
+				showNotification();
 			} else {
 				int currentPosition = _player.getCurrentPosition();
 				// if they're too close, don't move
@@ -241,7 +245,7 @@ public class PlayerService extends Service {
 		_pausingFor[reason] = true;
 		if (_player != null && _player.isPlaying()) {
 			_player.pause();
-			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
+			updateActivePodcastPosition(_player.getCurrentPosition());
 			PlayerStatus.updateState(this, PlayerStates.PAUSED);
 			_lockscreenManager.setLockscreenPaused();
 			showNotification();
@@ -258,11 +262,12 @@ public class PlayerService extends Service {
 
 		removeNotification();
 
-		_lockscreenManager.removeLockscreenControls();
+		if (_lockscreenManager != null)
+			_lockscreenManager.removeLockscreenControls();
 
 		if (_player != null && _player.isPlaying()) {
 			_player.pause();
-			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
+			updateActivePodcastPosition(_player.getCurrentPosition());
 			_player.stop();
 		}
 
@@ -270,7 +275,7 @@ public class PlayerService extends Service {
 
 		// tell anything listening to the active podcast to refresh now that we're stopped
 		ContentValues values = new ContentValues();
-		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+		getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
 		getContentResolver().unregisterContentObserver(_podcastChangeObserver);
 
 		stopSelf();
@@ -333,7 +338,7 @@ public class PlayerService extends Service {
 
 		// set this podcast as active -- it may not have been first in queue
 		QueueManager.changeActivePodcast(this, p.getId());
-		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _podcastChangeObserver);
+		getContentResolver().registerContentObserver(PodcastProvider.PLAYER_UPDATE_URI, false, _podcastChangeObserver);
 		PlayerStatus.updateState(this, PlayerStates.PLAYING);
 
 		_lockscreenManager = new LockscreenManager();
@@ -371,13 +376,15 @@ public class PlayerService extends Service {
 			// stop the player and the updating while we do some administrative stuff
 			_player.pause();
 			stopUpdateTimer();
-			updateActivePodcastPosition(_player.getCurrentPosition(), _player.getDuration());
+			updateActivePodcastPosition(_player.getCurrentPosition());
 		}
 
 		QueueManager.moveToNextInQueue(this);
 
-		if (!PlayerStatus.getCurrentState(this).hasActivePodcast())
+		if (!PlayerStatus.getCurrentState(this).hasActivePodcast()) {
 			stop();
+			return;
+		}
 
 		resume();
 	}
@@ -441,7 +448,7 @@ public class PlayerService extends Service {
 		stopForeground(true);
 	}
 
-	private void updateActivePodcastPosition(int position, int duration) {
+	private void updateActivePodcastPosition(int position) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
 		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
