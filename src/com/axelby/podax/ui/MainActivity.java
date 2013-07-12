@@ -197,6 +197,9 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 	@Override
 	public void onAttachFragment(Fragment fragment) {
 		super.onAttachFragment(fragment);
+		for (WeakReference<Fragment> frag : _savedFragments)
+			if (frag.get() != null && frag.get().getClass().equals(fragment.getClass()))
+				return;
 		_savedFragments.add(new WeakReference<Fragment>(fragment));
 	}
 	
@@ -209,7 +212,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 		for (WeakReference<Fragment> frag : _savedFragments)
 			if (frag.get() != null && frag.get().getClass().equals(clazz)) {
-				ft.replace(R.id.fragment, frag.get());
+				ft.replace(R.id.fragment, frag.get()).commit();
 				return;
 			}
 
