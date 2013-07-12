@@ -51,8 +51,35 @@ public class QueueFragment extends SherlockListFragment implements LoaderManager
 		public void run() {
 			if (getActivity() == null)
 				return;
-			getLoaderManager().restartLoader(0, null, QueueFragment.this);
-			_handler.postDelayed(_refresher, 1000);
+
+			// make sure the listview is populated
+			if (getListView().getChildCount() == 0) {
+				_handler.postDelayed(_refresher, 1000);
+				return;
+			}
+
+			boolean repost = false;
+			for (int i = 0; i < getListAdapter().getCount(); ++i) {
+				View view = getListView().getChildAt(i);
+				View progress = view.findViewById(R.id.dlprogress);
+				if (progress == null || progress.getVisibility() == View.GONE)
+					continue;
+
+				PodcastCursor podcast = new PodcastCursor((Cursor)getListAdapter().getItem(i));
+				long downloaded = new File(podcast.getFilename()).length();
+				if (podcast.getFileSize() != null && downloaded == podcast.getFileSize()) {
+					progress.setVisibility(View.GONE);
+				} else {
+					repost = true;
+					ProgressBar progressBar = (ProgressBar) progress.findViewById(R.id.progressBar);
+					progressBar.setProgress((int)downloaded);
+					TextView progressText = (TextView) progress.findViewById(R.id.progressText);
+					progressText.setText(Math.round(100.0f * downloaded / podcast.getFileSize()) + "% downloaded");
+				}
+			}
+
+			if (repost)
+				_handler.postDelayed(_refresher, 1000);
 		}
 	};
 	Handler _handler = new Handler();
