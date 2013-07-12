@@ -46,6 +46,7 @@ import com.axelby.podax.R;
 public class PodcastDetailFragment extends SherlockFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	long _podcastId;
 	boolean _controlsEnabled = true;
+	boolean _initialized = false;
 
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
@@ -368,7 +369,10 @@ public class PodcastDetailFragment extends SherlockFragment implements LoaderMan
 		if (cursor.moveToFirst()) {
 			PodcastCursor podcast = new PodcastCursor(cursor);
 			_podcastId = podcast.getId();
-			initializeUI(podcast);
+			if (!_initialized ) {
+				initializeUI(podcast);
+				_initialized = true;
+			}
 			updateQueueViews(podcast);
 			updatePlayerControls(PlayerStatus.getCurrentState(getActivity()), podcast);
 		} else {
