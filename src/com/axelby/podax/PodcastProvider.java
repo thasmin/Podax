@@ -255,6 +255,7 @@ public class PodcastProvider extends ContentProvider {
 
 			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activePodcastId) });
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
+			ActivePodcastReceiver.NotifyExternal(getContext());
 			return 1;
 		}
 

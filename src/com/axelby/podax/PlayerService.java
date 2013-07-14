@@ -275,7 +275,7 @@ public class PlayerService extends Service {
 
 		// tell anything listening to the active podcast to refresh now that we're stopped
 		ContentValues values = new ContentValues();
-		getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
+		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 		getContentResolver().unregisterContentObserver(_podcastChangeObserver);
 
 		stopSelf();
