@@ -9,10 +9,10 @@
 	<classpathentry kind="lib" path="libs/google-api-client-1.9.0-beta.jar"/>
 	<classpathentry kind="lib" path="libs/google-http-client-1.9.0-beta.jar"/>
 	<classpathentry kind="lib" path="libs/acra-4.4.0.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ActionBarSherlock"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/drag-sort-listview"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Riasel"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="lib" path="libs/flattr4j-core-2.7.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/android-support-v7-appcompat"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/drag-sort-listview"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Riasel"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

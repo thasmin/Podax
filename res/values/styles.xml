@@ -1,23 +1,6 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Widget.Podax.ActionBar" parent="@style/Widget.Sherlock.ActionBar">
-        <item name="android:background">@drawable/ab_podax</item>
-        <item name="background">@drawable/ab_podax</item>
-    </style>
-
-    <style name="Widget.Podax.ActionBar.TabView" parent="@style/Widget.Sherlock.ActionBar.TabView">
-        <item name="background">@drawable/ab_tabview</item>
-        <item name="android:background">@drawable/ab_tabview</item>
-    </style>
-
-    <style name="Theme.Podax" parent="@style/Theme.Sherlock">
-        <item name="actionBarStyle">@style/Widget.Podax.ActionBar</item>
-        <item name="android:actionBarStyle">@style/Widget.Podax.ActionBar</item>
-        <item name="actionBarTabStyle">@style/Widget.Podax.ActionBar.TabView</item>
-        <item name="android:actionBarTabStyle">@style/Widget.Podax.ActionBar.TabView</item>
-        <item name="android:homeAsUpIndicator">@drawable/ic_drawer</item>
-        <item name="homeAsUpIndicator">@drawable/ic_drawer</item>
-    </style>
+    <style name="Theme.Podax" parent="@style/Theme.AppCompat"></style>
 
     <color name="podaxColor">#FFE59F39</color>
 

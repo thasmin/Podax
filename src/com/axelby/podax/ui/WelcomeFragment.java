@@ -2,6 +2,7 @@ package com.axelby.podax.ui;
 
 import android.content.ContentValues;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,12 +11,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
-public class WelcomeFragment extends SherlockFragment {
+public class WelcomeFragment extends Fragment {
 
 	private Button _americanLifeBtn;
 	private Button _techNewsTodayBtn;

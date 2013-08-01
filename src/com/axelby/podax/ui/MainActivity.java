@@ -11,17 +11,22 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.ContentObserver;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceScreen;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -32,8 +37,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.MenuItem;
 import com.androidquery.AQuery;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
@@ -47,10 +50,11 @@ import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.axelby.podax.ui.PreferenceListFragment.OnPreferenceAttachedListener;
 
-public class MainActivity extends SherlockFragmentActivity implements OnPreferenceAttachedListener {
+public class MainActivity extends ActionBarActivity implements OnPreferenceAttachedListener {
 
 	private DrawerLayout _drawerLayout;
 	private PodaxDrawerAdapter _drawerAdapter;
+	private ActionBarDrawerToggle _drawerToggle;
 	private int _fragmentId;
 	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
 
@@ -74,8 +78,16 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 		BootReceiver.setupAlarms(getApplicationContext());
 
 		// ui initialization
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		setContentView(R.layout.app);
+        _drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        _drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, R.drawable.ic_drawer,
+                R.string.open_drawer, R.string.close_drawer);
+        _drawerLayout.setDrawerListener(_drawerToggle);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
+
+		// watch active podcast for drawer
 		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
 		updateDrawerControls();
 
@@ -116,18 +128,22 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 		if (intent.hasExtra(Constants.EXTRA_FRAGMENT)) {
 			_fragmentId = intent.getIntExtra("fragmentId", 2);
-			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 			if (_fragmentId == 2) {
-				ft.add(R.id.fragment, new PodcastDetailFragment());
+				replaceFragment(PodcastDetailFragment.class);
 			} else if (_fragmentId == 4) {
-				ft.add(R.id.fragment, new SubscriptionListFragment());
+				replaceFragment(SubscriptionListFragment.class);
 			}
-			ft.commit();
 		} else if (savedInstanceState == null) {
-			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.add(R.id.fragment, new PodcastDetailFragment());
-			ft.commit();
-			_fragmentId = 2;
+			Cursor c = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
+			int subscriptionCount = c.getCount();
+			c.close();
+			if (subscriptionCount == 0) {
+				replaceFragment(WelcomeFragment.class);
+				_fragmentId = 0;
+			} else {
+				replaceFragment(PodcastDetailFragment.class);
+				_fragmentId = 2;
+			}
 		} else {
 			_fragmentId = savedInstanceState.getInt("fragmentId");
 		}
@@ -162,6 +178,25 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 	}
 
 	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		_drawerToggle.onConfigurationChanged(newConfig);
+	}
+
+	@Override
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		_drawerToggle.syncState();
+	}
+
+	@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (_drawerToggle.onOptionsItemSelected(item))
+          return true;
+        return super.onOptionsItemSelected(item);
+    }
+
+	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt("fragmentId", _fragmentId);
@@ -181,20 +216,6 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			if (!_drawerLayout.isDrawerOpen(GravityCompat.START))
-				_drawerLayout.openDrawer(GravityCompat.START);
-			else
-				_drawerLayout.closeDrawer(GravityCompat.START);
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
-
-	@Override
 	public void onAttachFragment(Fragment fragment) {
 		super.onAttachFragment(fragment);
 		for (WeakReference<Fragment> frag : _savedFragments)
@@ -205,7 +226,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 	
 	public void replaceFragment(Class<? extends Fragment> clazz) {
 		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
-		if (current.getClass().equals(clazz))
+		if (current != null && current.getClass().equals(clazz))
 			return;
 		
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -238,14 +259,14 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 		private final int LEVEL_1 = 0;
 		private final int LEVEL_2 = 1;
 		public String[] _items = {
-			"Podax", "Welcome", "Now Playing", "Playlist", "Podcasts", "Search",
+			"Welcome", "Now Playing", "Playlist", "Podcasts", "Search",
 			"Subscribe to Podcasts", "Add RSS Feed", "Top iTunes Podcasts",
 			"Preferences", 
 			"About",
 			"Log Viewer",
 		};
 		public int[] _leftDrawables = {
-				0, android.R.drawable.ic_menu_compass, android.R.drawable.ic_input_get, android.R.drawable.ic_menu_agenda, android.R.drawable.ic_menu_slideshow, android.R.drawable.ic_menu_search,
+				android.R.drawable.ic_menu_compass, android.R.drawable.ic_input_get, android.R.drawable.ic_menu_agenda, android.R.drawable.ic_menu_slideshow, android.R.drawable.ic_menu_search,
 				0, android.R.drawable.ic_menu_add, android.R.drawable.ic_menu_recent_history,
 				android.R.drawable.ic_menu_preferences,
 				R.drawable.ic_menu_podax,
@@ -289,11 +310,10 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 		@Override
 		public int getItemViewType(int position) {
 			switch (position) {
-			case 0:
-			case 6:
+			case 5:
+			case 8:
 			case 9:
 			case 10:
-			case 11:
 				return LEVEL_1;
 			default:
 				return LEVEL_2;
@@ -307,7 +327,7 @@ public class MainActivity extends SherlockFragmentActivity implements OnPreferen
 
 		@Override
 		public boolean isEnabled(int position) {
-			return position != 0 && position != 6;
+			return position != 5;
 		}
 
 		@Override

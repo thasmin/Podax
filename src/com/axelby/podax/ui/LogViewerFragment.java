@@ -6,15 +6,15 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.axelby.podax.R;
 
-public class LogViewerFragment extends SherlockFragment {
+public class LogViewerFragment extends Fragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

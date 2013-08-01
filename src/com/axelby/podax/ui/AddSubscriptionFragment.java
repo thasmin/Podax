@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.ListFragment;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,14 +28,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockListFragment;
 import com.axelby.podax.Constants;
 import com.axelby.podax.OPMLImporter;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
-public class AddSubscriptionFragment extends SherlockListFragment {
+public class AddSubscriptionFragment extends ListFragment {
 
 	private Account[] _gpodderAccounts;
 

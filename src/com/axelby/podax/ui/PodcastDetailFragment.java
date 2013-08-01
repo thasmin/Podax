@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -31,7 +32,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.FlattrHelper;
@@ -43,7 +43,7 @@ import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 
-public class PodcastDetailFragment extends SherlockFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class PodcastDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	long _podcastId;
 	boolean _controlsEnabled = true;
 	boolean _uiInitialized = false;

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -32,7 +33,6 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockListFragment;
 import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
@@ -43,7 +43,7 @@ import com.axelby.podax.SearchSuggestionProvider;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
-public class SearchFragment extends SherlockListFragment implements LoaderCallbacks<Cursor> {
+public class SearchFragment extends ListFragment implements LoaderCallbacks<Cursor> {
 	private static final int CURSOR_SUBSCRIPTIONS = 0;
 	private static final int CURSOR_PODCASTS = 1;
 

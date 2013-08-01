@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.ListFragment;
 import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +23,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.actionbarsherlock.app.SherlockListFragment;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 
-public class ITunesPopularListFragment extends SherlockListFragment {
+public class ITunesPopularListFragment extends ListFragment {
 
 	private class PodaxFeed {
 		public String title;

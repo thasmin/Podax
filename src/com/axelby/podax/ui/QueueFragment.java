@@ -10,12 +10,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,9 +32,6 @@ import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockListFragment;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
 import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
@@ -41,7 +41,7 @@ import com.axelby.podax.R;
 import com.mobeta.android.dslv.DragSortListView.DragListener;
 import com.mobeta.android.dslv.DragSortListView.DropListener;
 
-public class QueueFragment extends SherlockListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class QueueFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
 	static final int OPTION_MOVETOFIRSTINQUEUE = 3;

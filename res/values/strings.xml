@@ -124,8 +124,11 @@
         <item>7</item>
         <item>14</item>
     </string-array>
-        <string name="username">Username</string>
-        <string name="podcast_picture">podcast picture</string>
-        <string name="playlist">Playlist</string>
+
+    <string name="username">Username</string>
+    <string name="podcast_picture">podcast picture</string>
+    <string name="playlist">Playlist</string>
+    <string name="open_drawer">Open Drawer</string>
+    <string name="close_drawer">Close Drawer</string>
 
 </resources>
