@@ -22,6 +22,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		case KeyEvent.KEYCODE_HEADSETHOOK:
 		case KeyEvent.KEYCODE_MEDIA_PLAY:
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+            PodaxLog.log(context, "got a media button playpause");
 			if  (event.getRepeatCount() == 0) {
 				PlayerService.playpause(context, Constants.PAUSE_MEDIABUTTON);
 			} else if (event.getRepeatCount() == 2) {

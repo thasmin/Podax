@@ -106,16 +106,16 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 				_fragmentId = position;
 
 				switch (position) {
-					case 1 : replaceFragment(WelcomeFragment.class); break;
-					case 2 : replaceFragment(PodcastDetailFragment.class); break;
-					case 3 : replaceFragment(QueueFragment.class); break;
-					case 4 : replaceFragment(SubscriptionListFragment.class); break;
-					case 5 : replaceFragment(SearchFragment.class); break;
-					case 7 : askForRSSUrl(); break;
-					case 8 : replaceFragment(ITunesPopularListFragment.class); break;
-					case 9 : replaceFragment(PodaxPreferenceFragment.class); break;
-					case 10: replaceFragment(AboutFragment.class); break;
-					case 11: replaceFragment(LogViewerFragment.class); break;
+					case 0 : replaceFragment(WelcomeFragment.class); break;
+					case 1 : replaceFragment(PodcastDetailFragment.class); break;
+					case 2 : replaceFragment(QueueFragment.class); break;
+					case 3 : replaceFragment(SubscriptionListFragment.class); break;
+					case 4 : replaceFragment(SearchFragment.class); break;
+					case 6 : askForRSSUrl(); break;
+					case 7 : replaceFragment(ITunesPopularListFragment.class); break;
+					case 8 : replaceFragment(PodaxPreferenceFragment.class); break;
+					case 9 : replaceFragment(AboutFragment.class); break;
+					case 10: replaceFragment(LogViewerFragment.class); break;
 				}
  			}
 		});

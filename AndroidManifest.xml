@@ -166,6 +166,7 @@
             android:exported="false" >
             <intent-filter>
                 <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECT_REQUESTED" />
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />
             </intent-filter>
         </receiver>

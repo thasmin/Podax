@@ -51,13 +51,16 @@ public class PlayerService extends Service {
 
 	private final OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
-			if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
-				PlayerService.stop(PlayerService.this);
+            if (_player == null)
+                return;
+
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
+                stop();
 
 			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && PlayerStatus.getCurrentState(PlayerService.this).isPaused())
-				PlayerService.resume(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
+				unpauseForReason(Constants.PAUSE_AUDIOFOCUS);
 			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
-				PlayerService.pause(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
+				pauseForReason(Constants.PAUSE_AUDIOFOCUS);
 		}
 	};
 	
@@ -195,10 +198,12 @@ public class PlayerService extends Service {
 		case -1:
 			break;
 		case Constants.PLAYER_COMMAND_PLAYPAUSE:
+            PodaxLog.log(this, "got a playpause");
 			if (_player != null && _player.isPlaying())
 				pauseForReason(pauseReason);
 			else
 				resume();
+            PodaxLog.log(this, "done with playpause");
 			break;
 		case Constants.PLAYER_COMMAND_PLAYSTOP:
 			if (_player != null && _player.isPlaying())
@@ -217,7 +222,9 @@ public class PlayerService extends Service {
 				resume();
 			break;
 		case Constants.PLAYER_COMMAND_STOP:
+            PodaxLog.log(this, "got a stop");
 			stop();
+            PodaxLog.log(this, "done with stop");
 			break;
 		}
 		
