@@ -12,7 +12,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 	@TargetApi(9)
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		KeyEvent event = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+		KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
 
 		if (event == null || event.getAction() != KeyEvent.ACTION_DOWN)
 			return;
@@ -31,11 +31,9 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 			}
 			break;
 		case KeyEvent.KEYCODE_MEDIA_PAUSE:
-			PodaxLog.log(context, "pausing because of media button intent");
 			PlayerService.pause(context, Constants.PAUSE_MEDIABUTTON);
 			break;
 		case KeyEvent.KEYCODE_MEDIA_STOP:
-			PodaxLog.log(context, "stopping because of media button intent");
 			PlayerService.stop(context);
 			break;
 		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:

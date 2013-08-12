@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,6 +26,7 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 public class SubscriptionListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;
@@ -54,7 +56,6 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 		_grid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> grid, View view, int position, long id) {
-				Fragment existingFragment = getFragmentManager().findFragmentById(R.id.about);
 				SubscriptionCursor sub = new SubscriptionCursor((Cursor)grid.getItemAtPosition(position));
 				long subscriptionId = sub.getId();
 
@@ -63,12 +64,7 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
 				podcastListFragment.setArguments(args);
 				FragmentTransaction ft = getFragmentManager().beginTransaction();
-
-				if (existingFragment == null) {
-					ft.replace(R.id.fragment, podcastListFragment).addToBackStack(null).commit();
-				} else {
-					ft.replace(R.id.about, podcastListFragment).addToBackStack(null).commit();
-				}
+                ft.replace(R.id.fragment, podcastListFragment).addToBackStack(null).commit();
 			}
 		});
 		registerForContextMenu(_grid);
@@ -79,7 +75,16 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 		inflater.inflate(R.menu.subscription_list, menu);
 	}
 
-	@Override
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.refresh_subscriptions) {
+            UpdateService.updateSubscriptions(getActivity());
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		menu.add(0, 0, 0, R.string.unsubscribe);
 	}

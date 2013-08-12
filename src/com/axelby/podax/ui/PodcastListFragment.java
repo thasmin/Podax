@@ -117,7 +117,7 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 		}
 		SubscriptionCursor subscription = new SubscriptionCursor(subscriptionCursor);
 		try {
-			getActivity().setTitle(subscription.getTitle() + " Podcasts");
+			getActivity().setTitle(subscription.getTitle());
 		} finally {
 			subscriptionCursor.close();
 		}
