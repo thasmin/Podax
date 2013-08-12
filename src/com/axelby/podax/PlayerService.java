@@ -8,10 +8,13 @@ import java.util.TimerTask;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -111,7 +114,15 @@ public class PlayerService extends Service {
 		}
 	};
 
-	protected MediaPlayer _player;
+    private BroadcastReceiver _stopReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            PodaxLog.log(PlayerService.this, "stopping for intent " + intent.getAction());
+            PlayerService.stop(PlayerService.this);
+        }
+    };
+
+    protected MediaPlayer _player;
 	protected boolean _onPhone;
 	protected Timer _updateTimer;
 	private boolean _pausingFor[] = new boolean[] {false, false};
@@ -124,6 +135,16 @@ public class PlayerService extends Service {
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
+
+    @Override
+    public void onCreate() {
+        registerReceiver(_stopReceiver, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+    }
+
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(_stopReceiver);
+    }
 
 	private void createUpdateTimer() {
 		if (_updateTimer != null)
@@ -198,12 +219,10 @@ public class PlayerService extends Service {
 		case -1:
 			break;
 		case Constants.PLAYER_COMMAND_PLAYPAUSE:
-            PodaxLog.log(this, "got a playpause");
 			if (_player != null && _player.isPlaying())
 				pauseForReason(pauseReason);
 			else
 				resume();
-            PodaxLog.log(this, "done with playpause");
 			break;
 		case Constants.PLAYER_COMMAND_PLAYSTOP:
 			if (_player != null && _player.isPlaying())
@@ -222,9 +241,7 @@ public class PlayerService extends Service {
 				resume();
 			break;
 		case Constants.PLAYER_COMMAND_STOP:
-            PodaxLog.log(this, "got a stop");
 			stop();
-            PodaxLog.log(this, "done with stop");
 			break;
 		}
 		

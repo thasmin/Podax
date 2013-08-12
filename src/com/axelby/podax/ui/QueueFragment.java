@@ -38,6 +38,7 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
+import com.axelby.podax.UpdateService;
 import com.mobeta.android.dslv.DragSortListView.DragListener;
 import com.mobeta.android.dslv.DragSortListView.DropListener;
 
@@ -61,6 +62,8 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 			boolean repost = false;
 			for (int i = 0; i < getListAdapter().getCount(); ++i) {
 				View view = getListView().getChildAt(i);
+                if (view == null)
+                    continue;
 				View progress = view.findViewById(R.id.dlprogress);
 				if (progress == null || progress.getVisibility() == View.GONE)
 					continue;
@@ -140,6 +143,15 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.queue_fragment, menu);
 	}
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.download) {
+            UpdateService.downloadPodcasts(getActivity());
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 	@Override
 	public void onPause() {
