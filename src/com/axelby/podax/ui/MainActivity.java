@@ -106,18 +106,18 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 				_fragmentId = position;
 
 				switch (position) {
-					case 0 : replaceFragment(WelcomeFragment.class); break;
-					case 1 : replaceFragment(PodcastDetailFragment.class); break;
-					case 2 : replaceFragment(QueueFragment.class); break;
-					case 3 : replaceFragment(SubscriptionListFragment.class); break;
-					case 4 : replaceFragment(SearchFragment.class); break;
-					case 6 : askForRSSUrl(); break;
-					case 7 : replaceFragment(ITunesPopularListFragment.class); break;
-					case 8 : replaceFragment(PodaxPreferenceFragment.class); break;
-					case 9 : replaceFragment(AboutFragment.class); break;
-					case 10: replaceFragment(LogViewerFragment.class); break;
+					case 1 : replaceFragment(WelcomeFragment.class); break;
+					case 2 : replaceFragment(PodcastDetailFragment.class); break;
+					case 3 : replaceFragment(QueueFragment.class); break;
+					case 4 : replaceFragment(SubscriptionListFragment.class); break;
+					case 5 : replaceFragment(SearchFragment.class); break;
+					case 7 : askForRSSUrl(); break;
+					case 8 : replaceFragment(ITunesPopularListFragment.class); break;
+					case 10: replaceFragment(PodaxPreferenceFragment.class); break;
+					case 11: replaceFragment(AboutFragment.class); break;
+					case 12: replaceFragment(LogViewerFragment.class); break;
 				}
- 			}
+		}
 		});
 		aq.id(R.id.pause).clicked(new OnClickListener() {
 			@Override
@@ -139,7 +139,7 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 			c.close();
 			if (subscriptionCount == 0) {
 				replaceFragment(WelcomeFragment.class);
-				_fragmentId = 0;
+				_fragmentId = 1;
 			} else {
 				replaceFragment(PodcastDetailFragment.class);
 				_fragmentId = 2;
@@ -259,18 +259,14 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 		private final int LEVEL_1 = 0;
 		private final int LEVEL_2 = 1;
 		public String[] _items = {
-			"Welcome", "Now Playing", "Playlist", "Podcasts", "Search",
-			"Subscribe to Podcasts", "Add RSS Feed", "Top iTunes Podcasts",
-			"Preferences", 
-			"About",
-			"Log Viewer",
+			"PODAX", "Welcome", "Now Playing", "Playlist", "Podcasts", "Search",
+			"SUBSCRIBE TO PODCASTS", "Add RSS Feed", "Top iTunes Podcasts",
+			"SETTINGS", "Preferences", "About", "Log Viewer",
 		};
 		public int[] _leftDrawables = {
-				android.R.drawable.ic_menu_compass, android.R.drawable.ic_input_get, android.R.drawable.ic_menu_agenda, android.R.drawable.ic_menu_slideshow, android.R.drawable.ic_menu_search,
+				0, android.R.drawable.ic_menu_compass, android.R.drawable.ic_input_get, android.R.drawable.ic_menu_agenda, android.R.drawable.ic_menu_slideshow, android.R.drawable.ic_menu_search,
 				0, android.R.drawable.ic_menu_add, android.R.drawable.ic_menu_recent_history,
-				android.R.drawable.ic_menu_preferences,
-				R.drawable.ic_menu_podax,
-				android.R.drawable.ic_menu_info_details,
+				0, android.R.drawable.ic_menu_preferences, R.drawable.ic_menu_podax, android.R.drawable.ic_menu_info_details,
 		};
 		private Context _context;
 
@@ -310,13 +306,12 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 		@Override
 		public int getItemViewType(int position) {
 			switch (position) {
-			case 5:
-			case 8:
-			case 9:
-			case 10:
-				return LEVEL_1;
-			default:
-				return LEVEL_2;
+				case 0:
+				case 6:
+				case 9:
+					return LEVEL_1;
+				default:
+					return LEVEL_2;
 			}
 		}
 
