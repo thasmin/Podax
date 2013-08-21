@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.axelby.podax.GPodderProvider;
 import com.google.gson.stream.JsonWriter;
 
 import android.content.Context;
@@ -280,25 +281,22 @@ public class Client {
 	public void syncDiffs() {
 		verifyCurrentConfig();
 
-		SQLiteDatabase db = new DBAdapter(_context).getWritableDatabase();
 		HttpsURLConnection conn = null;
 		try {
 			Vector<String> toAdd = new Vector<String>();
-			Cursor c = db.rawQuery("SELECT url FROM pending_add", null);
+			Cursor c = _context.getContentResolver().query(GPodderProvider.TO_ADD_URI, new String[] { "url" }, null, null, null);
 			while (c.moveToNext())
 				toAdd.add(c.getString(0));
 			c.close();
 
 			Vector<String> toRemove = new Vector<String>();
-			c = db.rawQuery("SELECT url FROM pending_remove", null);
+			c = _context.getContentResolver().query(GPodderProvider.TO_REMOVE_URI, new String[]{"url"}, null, null, null);
 			while (c.moveToNext())
 				toRemove.add(c.getString(0));
 			c.close();
 
-			if (toAdd.size() == 0 && toRemove.size() == 0) {
-				db.close();
+			if (toAdd.size() == 0 && toRemove.size() == 0)
 				return;
-			}
 
 			URL url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/podax.json");
 			conn = createConnection(url);
@@ -318,8 +316,7 @@ public class Client {
 				return;
 
 			// clear out the pending tables
-			db.execSQL("DELETE FROM pending_add");
-			db.execSQL("DELETE FROM pending_remove");
+			_context.getContentResolver().delete(GPodderProvider.URI, null, null);
 		} catch (MalformedURLException e) {
 			Log.e("Podax", "error while syncing gpodder diffs", e);
 		} catch (IOException e) {
@@ -327,8 +324,6 @@ public class Client {
 		} catch (Exception e) {
 			Log.e("Podax", "error while syncing gpodder diffs", e);
 		} finally {
-			if (db != null)
-				db.close();
 			if (conn != null)
 				conn.disconnect();
 		}

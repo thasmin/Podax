@@ -1,9 +1,5 @@
 package com.axelby.podax;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Vector;
-
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -14,10 +10,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Vector;
+
 public class SubscriptionProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.subscriptionprovider";
 	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/subscriptions");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(URI, "search");
+	public static final Uri FROM_GPODDER_URI = Uri.withAppendedPath(URI, "from_gpodder");
 
 	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.subscription";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.subscription";
@@ -38,7 +39,7 @@ public class SubscriptionProvider extends ContentProvider {
 	private static final int SUBSCRIPTION_ID = 2;
 	private static final int PODCASTS = 3;
 	private static final int SUBSCRIPTIONS_SEARCH = 4;
-	private static final int SUBSCRIPTIONS_TO_UNSYNC = 5;
+	private static final int FROM_GPODDER = 5;
 
 	static UriMatcher _uriMatcher;
 	static HashMap<String, String> _columnMap;
@@ -49,7 +50,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/#", SUBSCRIPTION_ID);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/#/podcasts", PODCASTS);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/search", SUBSCRIPTIONS_SEARCH);
-		_uriMatcher.addURI(AUTHORITY, "subscriptions/to_unsync", SUBSCRIPTIONS_TO_UNSYNC);
+		_uriMatcher.addURI(AUTHORITY, "subscriptions/from_gpodder", FROM_GPODDER);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "_id");
@@ -87,8 +88,7 @@ public class SubscriptionProvider extends ContentProvider {
 	}
 
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection,
-			String[] selectionArgs, String sortOrder) {
+	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		int uriMatch = _uriMatcher.match(uri);
 
 		if (uriMatch == PODCASTS) {
@@ -110,7 +110,7 @@ public class SubscriptionProvider extends ContentProvider {
 			if (hasTitle && !hasOverride) {
 				Vector<String> list = new Vector<String>(Arrays.asList(projection));
 				list.add(COLUMN_TITLE_OVERRIDE);
-				projection = list.toArray(new String[0]);
+				projection = list.toArray(new String[list.size()]);
 			}
 		}
 
@@ -146,8 +146,11 @@ public class SubscriptionProvider extends ContentProvider {
 	}
 
 	@Override
-	public int update(Uri uri, ContentValues values, String where,
-			String[] whereArgs) {
+	public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
+		// the url is not allowed to be changed -- insert a new one instead
+		if (values.containsKey(COLUMN_URL))
+			return 0;
+
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
 			break;
@@ -172,21 +175,40 @@ public class SubscriptionProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		if (values.size() == 0)
+		// url is required
+		if (!values.containsKey(COLUMN_URL))
 			return null;
+
+		boolean from_gpodder = false;
+
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
+			break;
+		case FROM_GPODDER:
+			from_gpodder = true;
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
 
-		ContentValues gpodderValues = new ContentValues();
-		gpodderValues.put("url", values.getAsString(COLUMN_URL));
-		getContext().getContentResolver().insert(Constants.GPODDER_URI, gpodderValues);
-
+		String url = values.getAsString(COLUMN_URL);
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+
+		// don't duplicate a url
+		Cursor c = db.rawQuery("SELECT _id FROM subscriptions WHERE url = ?", new String[] { url });
+		if (c.moveToNext()) {
+			long oldId = c.getLong(0);
+			c.close();
+			return ContentUris.withAppendedId(URI, oldId);
+		}
+		c.close();
+
 		long id = db.insert("subscriptions", null, values);
+
+		// add during next gpodder sync
+		if (!from_gpodder)
+			getContext().getContentResolver().insert(GPodderProvider.URI, GPodderProvider.makeValuesToAdd(url));
+
 		getContext().getContentResolver().notifyChange(URI, null);
 		return ContentUris.withAppendedId(URI, id);
 	}
@@ -195,8 +217,13 @@ public class SubscriptionProvider extends ContentProvider {
 	public int delete(Uri uri, String where, String[] whereArgs) {
 		ContentResolver contentResolver = getContext().getContentResolver();
 
+		boolean from_gpodder = false;
+
 		switch (_uriMatcher.match(uri)) {
 		case SUBSCRIPTIONS:
+			break;
+		case FROM_GPODDER:
+			from_gpodder = true;
 			break;
 		case SUBSCRIPTION_ID:
 			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
@@ -211,30 +238,34 @@ public class SubscriptionProvider extends ContentProvider {
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
-		// delete from gpodder
-		Cursor c = db.query("subscriptions", new String[] { "url" }, where, whereArgs, null, null, null);
-		while (c.moveToNext())
-			contentResolver.delete(Constants.GPODDER_URI, "url = ?", new String[] { c.getString(0) });
-		c.close();
-
 		// go through subscriptions about to be deleted and remove podcasts
-		c = db.query("subscriptions", new String[] { COLUMN_ID }, where, whereArgs, null, null, null);
+		Cursor c = db.query("subscriptions", new String[] { COLUMN_ID }, where, whereArgs, null, null, null);
 		Vector<String> subIds = new Vector<String>();
 		String in = "";
 		while (c.moveToNext()) {
 			in += ",?";
 			subIds.add(String.valueOf(c.getInt(0)));
 		}
+		c.close();
 		if (!in.equals("")) {
 			in = "(" + in.substring(1) + ")";
-			contentResolver.delete(PodcastProvider.URI, "subscriptionId IN " + in, subIds.toArray(new String[] { }));
+			contentResolver.delete(PodcastProvider.URI, "subscriptionId IN " + in, subIds.toArray(new String[subIds.size()]));
 		}
 
+		// remove during next gpodder sync
+		if (!from_gpodder) {
+			c = db.query("subscriptions", new String[] { COLUMN_URL }, where, whereArgs, null, null, null);
+			while (c.moveToNext()) {
+				String url = c.getString(0);
+				getContext().getContentResolver().insert(GPodderProvider.URI, GPodderProvider.makeValuesToRemove(url));
+			}
+			c.close();
+		}
+
+		// delete subscription
 		int count = db.delete("subscriptions", where, whereArgs);
+
 		contentResolver.notifyChange(URI, null);
-
-		db.close();
-
 		return count;
 	}
 

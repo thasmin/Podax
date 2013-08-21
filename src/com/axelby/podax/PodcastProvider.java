@@ -550,7 +550,7 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	public static void skipToEnd(Context context, Uri uri) {
-		String[] projection = new String[] { PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_DURATION };
+		String[] projection = new String[] { PodcastProvider.COLUMN_DURATION };
 		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
 		if (!c.moveToFirst()) {
 			c.close();
@@ -561,7 +561,7 @@ public class PodcastProvider extends ContentProvider {
 			duration = new PodcastCursor(c).determineDuration(context);
 		c.close();
 
-		ContentValues values = new ContentValues(1);
+		ContentValues values = new ContentValues(2);
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, duration);
 		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
 		context.getContentResolver().update(uri, values, null, null);

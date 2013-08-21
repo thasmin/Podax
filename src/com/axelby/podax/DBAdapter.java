@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 5;
+	private static final int DATABASE_VERSION = 6;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -46,6 +46,12 @@ public class DBAdapter extends SQLiteOpenHelper {
 
 		db.execSQL("CREATE TABLE podax(lastPodcastId INTEGER, activeDownloadId INTEGER)");
 		db.execSQL("INSERT INTO podax(lastPodcastId, activeDownloadId) VALUES(NULL, NULL)");
+
+		db.execSQL("CREATE TABLE gpodder_sync(" +
+				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"url VARCHAR, " +
+				"to_remove INTEGER DEFAULT 0, " +
+				"to_add INTEGER DEFAULT 0)");
 	}
 
 	@Override
@@ -116,6 +122,15 @@ public class DBAdapter extends SQLiteOpenHelper {
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN titleOverride VARCHAR");
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN queueNew INTEGER NOT NULL DEFAULT 1");
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN expirationDays INTEGER");
+		}
+
+		if (newVersion <= 6) {
+			// add gpodder sync table
+			db.execSQL("CREATE TABLE gpodder_sync(" +
+					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"url VARCHAR, " +
+					"to_remove INTEGER DEFAULT 0, " +
+					"to_add INTEGER DEFAULT 0)");
 		}
 	}
 }

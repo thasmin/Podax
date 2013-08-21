@@ -138,14 +138,6 @@
                 android:resource="@xml/largewidget" />
         </receiver>
         <receiver
-            android:name=".GPodderReceiver"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="com.axelby.gpodder.INITIALIZE" />
-                <action android:name="com.axelby.gpodder.SUBSCRIPTION_UPDATE" />
-            </intent-filter>
-        </receiver>
-        <receiver
             android:name=".BootReceiver"
             android:exported="false" >
             <intent-filter>
@@ -182,23 +174,17 @@
             android:authorities="com.axelby.podax.subscriptionprovider"
             android:exported="false"
             android:label="Podcast Subscriptions" />
+        <provider
+            android:name=".GPodderProvider"
+            android:authorities="com.axelby.podax.gpodder_sync"
+            android:exported="false"
+            android:label="@string/podcasts" />
 
         <!-- GPodder section -->
         <activity
             android:name="com.axelby.gpodder.AuthenticatorActivity"
             android:exported="true"
             android:label="@string/gpodder_authenticator_activity_title" />
-        <activity
-            android:name="com.axelby.gpodder.ConfigurationActivity"
-            android:exported="false"
-            android:label="@string/configuration" >
-            <intent-filter>
-                <action android:name="com.axelby.gpodder.configuration" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <service
             android:name="com.axelby.gpodder.AuthenticationService"
             android:exported="false" >
@@ -221,12 +207,6 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/gpodder_syncadapter" />
         </service>
-
-        <provider
-            android:name="com.axelby.gpodder.Provider"
-            android:authorities="com.axelby.gpodder.podcasts"
-            android:exported="false"
-            android:label="@string/podcasts" />
         <!-- end GPodder section -->
 
     </application>

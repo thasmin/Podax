@@ -1,6 +1,7 @@
 package com.axelby.gpodder;
 
 import com.axelby.podax.Constants;
+import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.R;
 
 import android.accounts.Account;
@@ -153,7 +154,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 			}
 			accountManager.addAccountExplicitly(account, _password, null);
 			// Set contacts sync for this account.
-			ContentResolver.setSyncAutomatically(account, Provider.AUTHORITY, true);
+			ContentResolver.setSyncAutomatically(account, GPodderProvider.AUTHORITY, true);
 		} else {
 			accountManager.setPassword(account, _password);
 		}

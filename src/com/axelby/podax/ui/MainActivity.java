@@ -5,8 +5,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,10 +39,13 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.androidquery.AQuery;
+import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
+import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
@@ -53,7 +59,6 @@ import com.axelby.podax.ui.PreferenceListFragment.OnPreferenceAttachedListener;
 public class MainActivity extends ActionBarActivity implements OnPreferenceAttachedListener {
 
 	private DrawerLayout _drawerLayout;
-	private PodaxDrawerAdapter _drawerAdapter;
 	private ActionBarDrawerToggle _drawerToggle;
 	private int _fragmentId;
 	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
@@ -96,7 +101,7 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 
 		ListView drawer = aq.find(R.id.drawer_list).getListView();
-		_drawerAdapter = new PodaxDrawerAdapter(this);
+		PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
 		drawer.setAdapter(_drawerAdapter);
 		drawer.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -113,9 +118,10 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 					case 5 : replaceFragment(SearchFragment.class); break;
 					case 7 : askForRSSUrl(); break;
 					case 8 : replaceFragment(ITunesPopularListFragment.class); break;
-					case 10: replaceFragment(PodaxPreferenceFragment.class); break;
-					case 11: replaceFragment(AboutFragment.class); break;
-					case 12: replaceFragment(LogViewerFragment.class); break;
+					case 9 : handleGPodder(); break;
+					case 11: replaceFragment(PodaxPreferenceFragment.class); break;
+					case 12: replaceFragment(AboutFragment.class); break;
+					case 13: replaceFragment(LogViewerFragment.class); break;
 				}
 		}
 		});
@@ -146,6 +152,17 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 			}
 		} else {
 			_fragmentId = savedInstanceState.getInt("fragmentId");
+		}
+	}
+
+	private void handleGPodder() {
+		AccountManager am = AccountManager.get(this);
+		Account[] gpodder_accounts = am.getAccountsByType("com.axelby.gpodder");
+		if (gpodder_accounts == null || gpodder_accounts.length == 0)
+			startActivity(new Intent(this, AuthenticatorActivity.class));
+		else {
+			Toast.makeText(this, "Already linked to GPodder as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
+			ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
 		}
 	}
 
@@ -238,7 +255,7 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 			}
 
 		try {
-			ft.replace(R.id.fragment, (Fragment) clazz.getConstructor().newInstance());
+			ft.replace(R.id.fragment, clazz.getConstructor().newInstance());
 		} catch (IllegalArgumentException e) {
 			return;
 		} catch (InstantiationException e) {
@@ -260,12 +277,12 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 		private final int LEVEL_2 = 1;
 		public String[] _items = {
 			"PODAX", "Welcome", "Now Playing", "Playlist", "Podcasts", "Search",
-			"SUBSCRIBE TO PODCASTS", "Add RSS Feed", "Top iTunes Podcasts",
+			"SUBSCRIBE TO PODCASTS", "Add RSS Feed", "Top iTunes Podcasts", "GPodder Sync",
 			"SETTINGS", "Preferences", "About", "Log Viewer",
 		};
 		public int[] _leftDrawables = {
 				0, android.R.drawable.ic_menu_compass, android.R.drawable.ic_input_get, android.R.drawable.ic_menu_agenda, android.R.drawable.ic_menu_slideshow, android.R.drawable.ic_menu_search,
-				0, android.R.drawable.ic_menu_add, android.R.drawable.ic_menu_recent_history,
+				0, android.R.drawable.ic_menu_add, android.R.drawable.ic_menu_recent_history, R.drawable.mygpo_bw,
 				0, android.R.drawable.ic_menu_preferences, R.drawable.ic_menu_podax, android.R.drawable.ic_menu_info_details,
 		};
 		private Context _context;
@@ -297,6 +314,9 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 			int layoutId = getItemViewType(position) == LEVEL_1 ? R.layout.drawer_header_listitem : R.layout.drawer_listitem;
 			if (convertView == null)
 				convertView = LayoutInflater.from(_context).inflate(layoutId, null);
+			if (convertView == null)
+				return null;
+
 			TextView tv = (TextView) convertView;
 			tv.setText(_items[position]);
 			tv.setCompoundDrawablesWithIntrinsicBounds(_leftDrawables[position], 0, 0, 0);
@@ -308,7 +328,7 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 			switch (position) {
 				case 0:
 				case 6:
-				case 9:
+				case 10:
 					return LEVEL_1;
 				default:
 					return LEVEL_2;
@@ -356,7 +376,5 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 
 	@Override
 	public void onPreferenceAttached(PreferenceScreen root, int xmlId) {
-		if (root == null)
-			return;
 	}
 }

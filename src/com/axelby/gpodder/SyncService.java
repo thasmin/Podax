@@ -5,15 +5,22 @@ import android.accounts.AccountManager;
 import android.app.Service;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.axelby.gpodder.Client.Changes;
+import com.axelby.podax.PodcastProvider;
+import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 public class SyncService extends Service {
     private static final Object _syncAdapterLock = new Object();
@@ -65,23 +72,19 @@ public class SyncService extends Service {
 			gpodderPrefsEditor.putInt("lastTimestamp-" + account.name, changes.timestamp);
 			gpodderPrefsEditor.commit();
 
-			// broadcast to all interested apps
-			Intent intent = new Intent("com.axelby.gpodder.SUBSCRIPTION_UPDATE");
-			intent.putExtra("com.axelby.gpodder.SUBSCRIPTION_ADDED", changes.added.toArray(new String[] { }));
-			intent.putExtra("com.axelby.gpodder.SUBSCRIPTION_REMOVED", changes.removed.toArray(new String[] { }));
-			_context.sendBroadcast(intent);
+			Log.d("Podax", "done syncing");
 		}
 
 		private void updateSubscriptions(Changes changes) {
-			SQLiteDatabase db = new DBAdapter(_context).getWritableDatabase();
-
-			for (String addedUrl : changes.added)
-				db.execSQL("INSERT INTO subscriptions(url) SELECT ? WHERE 0 = (SELECT COUNT(url) FROM subscriptions WHERE url = ?)", new Object[] { addedUrl, addedUrl });
-
 			for (String removedUrl : changes.removed)
-				db.execSQL("DELETE FROM subscriptions WHERE url = ?", new Object[] { removedUrl });
+				_context.getContentResolver().delete(SubscriptionProvider.FROM_GPODDER_URI, "url = ?", new String[] { removedUrl });
 
-			db.close();
+			for (String addedUrl : changes.added) {
+				ContentValues values = new ContentValues();
+				values.put(SubscriptionProvider.COLUMN_URL, addedUrl);
+				Uri newUri = _context.getContentResolver().insert(SubscriptionProvider.FROM_GPODDER_URI, values);
+				UpdateService.updateSubscription(_context, newUri);
+			}
 		}
 	
 	}
