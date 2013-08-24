@@ -23,16 +23,11 @@ public class Helper {
 			return true;
 		// check for wifi only pref
 		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("wifiPref", true))
-		{
-			Log.d("Podax", "Not downloading because Wifi is required and not connected");
 			return false;
-		}
 		// check for 3g data turned off
-		if (!netInfo.isConnected()) {
-			Log.d("Podax", "Not downloading because background data is turned off");
+		if (!netInfo.isConnected())
 			return false;
-		}
-		
+
 		return true;
 	}
 

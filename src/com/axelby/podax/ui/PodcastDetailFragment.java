@@ -45,7 +45,6 @@ import com.axelby.podax.R;
 
 public class PodcastDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	long _podcastId;
-	boolean _controlsEnabled = true;
 	boolean _uiInitialized = false;
 
 	private static final int CURSOR_PODCAST = 1;
@@ -75,11 +74,8 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		_podcastId = getActivity().getIntent().getLongExtra(Constants.EXTRA_PODCAST_ID, 0);
-		if (_podcastId == 0 && getArguments() != null)
-			_podcastId = getArguments().getLong(Constants.EXTRA_PODCAST_ID, 0);
-		if (_podcastId != 0)
-			getLoaderManager().initLoader(CURSOR_PODCAST, null, this);
+		if (getArguments() != null && getArguments().containsKey(Constants.EXTRA_PODCAST_ID))
+			getLoaderManager().initLoader(CURSOR_PODCAST, getArguments(), this);
 		else
 			getLoaderManager().initLoader(CURSOR_ACTIVE, null, this);
 	}
@@ -121,7 +117,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				PlayerStatus playerState = PlayerStatus.getCurrentState(activity);
-				if (playerState.isPlaying() && playerState.getId() == _podcastId)
+				if (playerState.isPlaying() && playerState.getPodcastId() == _podcastId)
 					PlayerService.stop(activity);
 				else {
 					ContentValues values = new ContentValues();
@@ -283,7 +279,6 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		String payment_url = podcast.getPaymentUrl();
 		if (payment_url != null) {
 			_paymentButton.setVisibility(View.VISIBLE);
-			Log.d("Podax", payment_url);
 			AutoSubmission sub = FlattrHelper.parseAutoSubmissionLink(Uri.parse(payment_url));
 			if (sub == null) {
 				_paymentButton.setText(R.string.donate);
@@ -295,43 +290,18 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		}
 	}
 
-	private void updatePlayerControls(PlayerStatus playerState, PodcastCursor podcast) {
-		if (playerState.hasActivePodcast() && playerState.getId() == podcast.getId()) {
-			if (!_seekbar_dragging) {
-				_position.setText(Helper.getTimeString(podcast.getLastPosition()));
-				_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
-				_seekbar.setProgress(podcast.getLastPosition());
-			}
-
-			int playResource = playerState.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
-			_playButton.setImageResource(playResource);
-
-			if (_controlsEnabled == true)
-				return;
-
-			_restartButton.setEnabled(true);
-			_rewindButton.setEnabled(true);
-			_forwardButton.setEnabled(true);
-			_skipToEndButton.setEnabled(true);
-			_seekbar.setEnabled(true);
-
-			_controlsEnabled = true;
-		} else {
-			if (!_controlsEnabled)
-				return;
-
-			_playButton.setImageResource(R.drawable.ic_media_play);
-			_restartButton.setEnabled(false);
-			_rewindButton.setEnabled(false);
-			_forwardButton.setEnabled(false);
-			_skipToEndButton.setEnabled(false);
-			_seekbar.setEnabled(false);
-
-			_controlsEnabled = false;
+	private void updateControls(PodcastCursor podcast) {
+		if (!_seekbar_dragging) {
+			_position.setText(Helper.getTimeString(podcast.getLastPosition()));
+			_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
+			_seekbar.setProgress(podcast.getLastPosition());
 		}
-	}
 
-	private void updateQueueViews(PodcastCursor podcast) {
+		PlayerStatus status = PlayerStatus.getCurrentState(getActivity());
+		boolean isPlaying = status.isPlaying() && status.getPodcastId() == _podcastId;
+		int playResource = isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+		_playButton.setImageResource(playResource);
+
 		if (podcast.getQueuePosition() == null) {
 			_queueButton.setText(R.string.add_to_queue);
 			_queuePosition.setText("");
@@ -358,7 +328,8 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 				PodcastProvider.COLUMN_PAYMENT,
 		};
 
-		if (id == CURSOR_PODCAST && _podcastId != 0) {
+		if (id == CURSOR_PODCAST && args != null && args.containsKey(Constants.EXTRA_PODCAST_ID)) {
+			_podcastId = args.getLong(Constants.EXTRA_PODCAST_ID);
 			Uri uri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
 			return new CursorLoader(getActivity(), uri, projection, null, null, null);
 		} else if (id == CURSOR_ACTIVE) {
@@ -372,18 +343,16 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		if (getActivity() == null)
 			return;
 
-		if (cursor.moveToFirst()) {
-			PodcastCursor podcast = new PodcastCursor(cursor);
-			_podcastId = podcast.getId();
-			if (!_uiInitialized) {
-				initializeUI(podcast);
-				_uiInitialized = true;
-			}
-			updateQueueViews(podcast);
-			updatePlayerControls(PlayerStatus.getCurrentState(getActivity()), podcast);
-		} else {
-			
+		if (!cursor.moveToFirst())
+			return;
+
+		PodcastCursor podcast = new PodcastCursor(cursor);
+		if (podcast.getId() != _podcastId || !_uiInitialized) {
+			initializeUI(podcast);
+			_uiInitialized = true;
 		}
+		_podcastId = podcast.getId();
+		updateControls(podcast);
 	}
 
 	@Override

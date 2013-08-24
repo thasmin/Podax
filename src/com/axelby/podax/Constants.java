@@ -8,7 +8,6 @@ public class Constants {
 	public static final int NOTIFICATION_PLAYING = 3;
 
 	// active podcast related
-	public static final String ACTION_ACTIVE_PODCAST = "com.axelby.podax.ACTIVE_PODCAST";
 	public static final Uri ACTIVE_PODCAST_DATA_RESTART = Uri.parse("podax://activepodcast/restart");
 	public static final Uri ACTIVE_PODCAST_DATA_BACK = Uri.parse("podax://activepodcast/back");
 	public static final Uri ACTIVE_PODCAST_DATA_FORWARD = Uri.parse("podax://activepodcast/forward");
@@ -21,15 +20,9 @@ public class Constants {
 
 	public static final String EXTRA_PODCAST_ID = "com.axelby.podax.podcastId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
-	public static final String EXTRA_CATEGORY = "com.axelby.podax.category";
 	public static final String EXTRA_TITLE = "com.axelby.podax.title";
 	public static final String EXTRA_URL = "com.axelby.podax.url";
-	public static final String EXTRA_POPULAR_SOURCE_URL = "com.axelby.podax.popular_source_url";
-	public static final String EXTRA_POPULAR_SOURCE_NAME = "com.axelby.popular_source_name";
 	public static final String EXTRA_MANUAL_REFRESH = "com.axelby.podax.manual_refresh";
-	public static final String EXTRA_TAB = "com.axelby.podax.tab";
-	public static final String EXTRA_POSITION = "com.axelby.podax.position";
-	public static final String EXTRA_DURATION = "com.axelby.podax.duration";
 	public static final String EXTRA_FRAGMENT = "com.axelby.podax.fragmentId";
 
 	public static final String EXTRA_PLAYER_COMMAND = "com.axelby.podax.player_command";
@@ -48,6 +41,5 @@ public class Constants {
 
 	// gpodder constants
 	public static final String GPODDER_ACCOUNT_TYPE = "com.axelby.gpodder";
-	public static final String GPODDER_AUTHORITY = "com.axelby.podax.gpodder_sync";
 
 }

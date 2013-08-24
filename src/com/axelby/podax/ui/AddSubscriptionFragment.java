@@ -56,7 +56,7 @@ public class AddSubscriptionFragment extends ListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
-		_gpodderAccounts = AccountManager.get(getActivity()).getAccountsByType("com.axelby.gpodder");
+		_gpodderAccounts = AccountManager.get(getActivity()).getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
 		setListAdapter(new ImportSubscriptionAdapter());
 	}
 

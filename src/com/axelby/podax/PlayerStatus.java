@@ -24,7 +24,7 @@ public class PlayerStatus {
 			PodcastCursor podcast = new PodcastCursor(cursor);
 			SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
 			status._state = PlayerStates.fromInt(prefs.getInt("playingState", PlayerStates.STOPPED.toInt()));
-			status._id = podcast.getId();
+			status._podcastId = podcast.getId();
 			status._subscriptionId = podcast.getSubscriptionId();
 			status._title = podcast.getTitle();
 			status._subscriptionTitle = podcast.getSubscriptionTitle();
@@ -70,7 +70,7 @@ public class PlayerStatus {
 	}
 
 	private PlayerStates _state;
-	private long _id;
+	private long _podcastId;
 	private long _subscriptionId;
 	private int _position;
 	private int _duration;
@@ -80,6 +80,7 @@ public class PlayerStatus {
 
 	private PlayerStatus() {
 		_state = PlayerStates.QUEUEEMPTY;
+		_podcastId = -1;
 	}
 
 	public PlayerStates getState() {
@@ -98,8 +99,8 @@ public class PlayerStatus {
 		return _state == PlayerStates.STOPPED;
 	}
 
-	public long getId() {
-		return _id;
+	public long getPodcastId() {
+		return _podcastId;
 	}
 
 	public long getSubscriptionId() {

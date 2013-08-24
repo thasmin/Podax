@@ -3,6 +3,13 @@
     <style name="Theme.Podax" parent="@style/Theme.AppCompat"></style>
 
     <color name="podaxColor">#FFE59F39</color>
+    <color name="podaxRed">#FFFC4332</color>
+    <color name="podaxYellow">#FFFCF232</color>
+    <color name="podaxGreen">#FF28CB2F</color>
+    <color name="podaxPurple">#FFBF30F2</color>
+    <color name="podaxBright">#FFFFBC59</color>
+    <color name="podaxBlue">#FF085D99</color>
+    <color name="podaxBlueBright">#FF399FE5</color>
 
     <style name="mainText" parent="@android:style/TextAppearance.Large">
         <item name="android:layout_width">fill_parent</item>
@@ -22,6 +29,7 @@
         <item name="android:gravity">bottom</item>
         <item name="android:paddingLeft">20dip</item>
         <item name="android:minHeight">35dp</item>
+        <item name="android:textColor">@color/podaxBright</item>
     </style>
 
     <style name="drawerText" parent="@style/drawerTextBase">

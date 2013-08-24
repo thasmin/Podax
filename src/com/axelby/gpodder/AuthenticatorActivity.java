@@ -148,7 +148,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 		AccountManager accountManager = AccountManager.get(this);
 		if (_requestNewAccount) {
 			// if this is our first account, ask for everyone to tell us about their subscriptions
-			if (accountManager.getAccountsByType("com.axelby.gpodder").length == 0) {
+			if (accountManager.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE).length == 0) {
 				Intent intent = new Intent("com.axelby.gpodder.INITIALIZE");
 				sendBroadcast(intent);
 			}

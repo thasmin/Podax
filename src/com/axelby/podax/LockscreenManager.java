@@ -58,7 +58,7 @@ public class LockscreenManager {
 			}
 			metadataEditor.apply();
 		} catch (Exception e) {
-			Log.d("Podax", "Updating lockscreen: " + e.toString());
+			Log.e("Podax", "Updating lockscreen: " + e.toString());
 		}
 	}
 

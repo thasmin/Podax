@@ -71,8 +71,6 @@ public class SyncService extends Service {
 			SharedPreferences.Editor gpodderPrefsEditor = gpodderPrefs.edit();
 			gpodderPrefsEditor.putInt("lastTimestamp-" + account.name, changes.timestamp);
 			gpodderPrefsEditor.commit();
-
-			Log.d("Podax", "done syncing");
 		}
 
 		private void updateSubscriptions(Changes changes) {

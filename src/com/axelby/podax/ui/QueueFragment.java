@@ -183,6 +183,14 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 			values.put(PodcastProvider.COLUMN_ID, podcast.getId());
 			getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 			PlayerService.play(getActivity());
+
+			Bundle args = new Bundle();
+			args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
+			FragmentTransaction ft = getFragmentManager().beginTransaction();
+			PodcastDetailFragment fragment = new PodcastDetailFragment();
+			fragment.setArguments(args);
+			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
+
 			return true;
 		}
 

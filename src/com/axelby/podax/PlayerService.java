@@ -61,9 +61,9 @@ public class PlayerService extends Service {
                 stop();
 
 			if (focusChange == AudioManager.AUDIOFOCUS_GAIN && PlayerStatus.getCurrentState(PlayerService.this).isPaused())
-				unpauseForReason(Constants.PAUSE_AUDIOFOCUS);
+				PlayerService.resume(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
 			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
-				pauseForReason(Constants.PAUSE_AUDIOFOCUS);
+				PlayerService.pause(PlayerService.this, Constants.PAUSE_AUDIOFOCUS);
 		}
 	};
 	
@@ -100,14 +100,10 @@ public class PlayerService extends Service {
 			if (newPodcastId != _currentPodcastId) {
 				PodcastCursor p = new PodcastCursor(c);
 				prepareMediaPlayer(p);
-				QueueManager.changeActivePodcast(PlayerService.this, _currentPodcastId);
+				QueueManager.changeActivePodcast(PlayerService.this, newPodcastId);
 				_lockscreenManager.setupLockscreenControls(PlayerService.this, p);
 				showNotification();
 			} else {
-				int currentPosition = _player.getCurrentPosition();
-				// if they're too close, don't move
-				if (Math.abs(newPosition - currentPosition) < 3000)
-					return;
 				_player.seekTo(newPosition);
 			}
 			c.close();

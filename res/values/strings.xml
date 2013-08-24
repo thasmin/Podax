@@ -130,5 +130,9 @@
     <string name="playlist">Playlist</string>
     <string name="open_drawer">Open Drawer</string>
     <string name="close_drawer">Close Drawer</string>
+    <string name="now_playing">Now Playing</string>
+    <string name="subscribe_to_podcasts">Subscribe To Podcasts</string>
+    <string name="top_itunes_podcasts">Top iTunes Podcasts</string>
+    <string name="gpodder_sync">GPodder Sync</string>
 
 </resources>

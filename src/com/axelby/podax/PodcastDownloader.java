@@ -54,8 +54,6 @@ class PodcastDownloader {
 
 			File mediaFile = new File(podcast.getFilename());
 
-			Log.d("Podax", "Downloading " + podcast.getTitle());
-
 			HttpURLConnection c = openConnection(podcast, mediaFile);
 			if (c == null)
 				return;
@@ -69,8 +67,6 @@ class PodcastDownloader {
 			// the active podcast may have changed
 			// if there's no active and this is the first downloaded in the queue
 			_context.getContentResolver().notifyChange(PodcastProvider.ACTIVE_PODCAST_URI, null);
-
-			Log.d("Podax", "Done downloading " + podcast.getTitle());
 		} catch (Exception e) {
 			Log.e("Podax", "error while downloading", e);
 		} finally {

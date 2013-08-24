@@ -157,7 +157,7 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 
 	private void handleGPodder() {
 		AccountManager am = AccountManager.get(this);
-		Account[] gpodder_accounts = am.getAccountsByType("com.axelby.gpodder");
+		Account[] gpodder_accounts = am.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
 		if (gpodder_accounts == null || gpodder_accounts.length == 0)
 			startActivity(new Intent(this, AuthenticatorActivity.class));
 		else {
@@ -192,6 +192,37 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 			}
 		});
 		alert.show();
+	}
+
+	public void replaceFragment(Class<? extends Fragment> clazz) {
+		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
+		if (current != null && current.getClass().equals(clazz))
+			return;
+
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+
+		for (WeakReference<Fragment> frag : _savedFragments)
+			if (frag.get() != null && frag.get().getClass().equals(clazz)) {
+				ft.replace(R.id.fragment, frag.get()).commit();
+				return;
+			}
+
+		try {
+			ft.replace(R.id.fragment, clazz.getConstructor().newInstance());
+		} catch (IllegalArgumentException e) {
+			return;
+		} catch (InstantiationException e) {
+			return;
+		} catch (IllegalAccessException e) {
+			return;
+		} catch (InvocationTargetException e) {
+			return;
+		} catch (NoSuchMethodException e) {
+			return;
+		}
+
+		ft.addToBackStack(null);
+		ft.commit();
 	}
 
 	@Override
@@ -240,51 +271,51 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 				return;
 		_savedFragments.add(new WeakReference<Fragment>(fragment));
 	}
-	
-	public void replaceFragment(Class<? extends Fragment> clazz) {
-		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
-		if (current != null && current.getClass().equals(clazz))
-			return;
-		
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-		for (WeakReference<Fragment> frag : _savedFragments)
-			if (frag.get() != null && frag.get().getClass().equals(clazz)) {
-				ft.replace(R.id.fragment, frag.get()).commit();
-				return;
-			}
-
-		try {
-			ft.replace(R.id.fragment, clazz.getConstructor().newInstance());
-		} catch (IllegalArgumentException e) {
-			return;
-		} catch (InstantiationException e) {
-			return;
-		} catch (IllegalAccessException e) {
-			return;
-		} catch (InvocationTargetException e) {
-			return;
-		} catch (NoSuchMethodException e) {
-			return;
-		}
-		
-		ft.addToBackStack(null);
-		ft.commit();
-	}
+	private static int _defaultTextColor = 0;
 
 	class PodaxDrawerAdapter extends BaseAdapter {
-		private final int LEVEL_1 = 0;
-		private final int LEVEL_2 = 1;
-		public String[] _items = {
-			"PODAX", "Welcome", "Now Playing", "Playlist", "Podcasts", "Search",
-			"SUBSCRIBE TO PODCASTS", "Add RSS Feed", "Top iTunes Podcasts", "GPodder Sync",
-			"SETTINGS", "Preferences", "About", "Log Viewer",
+		class Item {
+			String label;
+			int drawable;
+			boolean isHeader;
+
+			public Item(String label, int drawable, boolean isHeader) {
+				this.drawable = drawable;
+				this.isHeader = isHeader;
+				if (this.isHeader)
+					this.label = label.toUpperCase();
+				else
+					this.label = label;
+			}
+
+			public Item(int labelId, int drawableId, boolean isHeader) {
+				this(MainActivity.this.getResources().getString(labelId), drawableId, isHeader);
+			}
+		}
+
+		Item _items[] = {
+				new Item(R.string.app_name, 0, true),
+				new Item(R.string.welcome, android.R.drawable.ic_menu_compass, false),
+				new Item(R.string.now_playing, android.R.drawable.ic_menu_sort_by_size, false),
+				new Item(R.string.playlist, android.R.drawable.ic_menu_agenda, false),
+				new Item(R.string.podcasts, android.R.drawable.ic_menu_slideshow, false),
+				new Item(R.string.search, android.R.drawable.ic_menu_search, false),
+
+				new Item(R.string.subscribe_to_podcasts, 0, true),
+				new Item(R.string.add_rss_feed, android.R.drawable.ic_menu_add, false),
+				new Item(R.string.top_itunes_podcasts, android.R.drawable.ic_menu_recent_history, false),
+				new Item(R.string.gpodder_sync, R.drawable.ic_menu_mygpo, false),
+
+				new Item(R.string.settings, 0, true),
+				new Item(R.string.preferences, android.R.drawable.ic_menu_preferences, false),
+				new Item(R.string.about, R.drawable.ic_menu_podax, false),
+				new Item(R.string.log_viewer, android.R.drawable.ic_menu_info_details, false),
 		};
-		public int[] _leftDrawables = {
-				0, android.R.drawable.ic_menu_compass, android.R.drawable.ic_input_get, android.R.drawable.ic_menu_agenda, android.R.drawable.ic_menu_slideshow, android.R.drawable.ic_menu_search,
-				0, android.R.drawable.ic_menu_add, android.R.drawable.ic_menu_recent_history, R.drawable.mygpo_bw,
-				0, android.R.drawable.ic_menu_preferences, R.drawable.ic_menu_podax, android.R.drawable.ic_menu_info_details,
-		};
+
+		private final int HEADER = 0;
+		private final int NORMAL = 1;
+
 		private Context _context;
 
 		public PodaxDrawerAdapter(Context context) {
@@ -311,28 +342,25 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			int layoutId = getItemViewType(position) == LEVEL_1 ? R.layout.drawer_header_listitem : R.layout.drawer_listitem;
+			boolean isHeader = getItemViewType(position) == HEADER;
+			int layoutId = isHeader ? R.layout.drawer_header_listitem : R.layout.drawer_listitem;
 			if (convertView == null)
 				convertView = LayoutInflater.from(_context).inflate(layoutId, null);
 			if (convertView == null)
 				return null;
 
 			TextView tv = (TextView) convertView;
-			tv.setText(_items[position]);
-			tv.setCompoundDrawablesWithIntrinsicBounds(_leftDrawables[position], 0, 0, 0);
+			if (_defaultTextColor == 0)
+				_defaultTextColor = tv.getCurrentTextColor();
+
+			tv.setText(_items[position].label);
+			tv.setCompoundDrawablesWithIntrinsicBounds(_items[position].drawable, 0, 0, 0);
 			return tv;
 		}
 
 		@Override
 		public int getItemViewType(int position) {
-			switch (position) {
-				case 0:
-				case 6:
-				case 10:
-					return LEVEL_1;
-				default:
-					return LEVEL_2;
-			}
+			return _items[position].isHeader ? HEADER : NORMAL;
 		}
 
 		@Override
@@ -342,7 +370,7 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 
 		@Override
 		public boolean isEnabled(int position) {
-			return position != 5;
+			return !_items[position].isHeader;
 		}
 
 		@Override

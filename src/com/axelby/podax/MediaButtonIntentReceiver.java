@@ -45,7 +45,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 			PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, -15);
 			break;
 		default:
-			Log.d("Podax", "No matched event: " + event.getKeyCode());
+			Log.e("Podax", "No matched event: " + event.getKeyCode());
 		}
 
 		if (this.isOrderedBroadcast()) {
