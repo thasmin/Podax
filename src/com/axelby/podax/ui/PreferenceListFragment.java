@@ -243,9 +243,4 @@ public class PreferenceListFragment extends ListFragment {
 		}
 		return mPreferenceManager.findPreference(key);
 	}
-
-	public interface OnPreferenceAttachedListener {
-		public void onPreferenceAttached(PreferenceScreen root, int xmlId);
-	}
-
 }

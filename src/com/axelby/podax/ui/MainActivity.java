@@ -1,10 +1,5 @@
 package com.axelby.podax.ui;
 
-import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
@@ -20,7 +15,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceScreen;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -54,9 +48,13 @@ import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
-import com.axelby.podax.ui.PreferenceListFragment.OnPreferenceAttachedListener;
 
-public class MainActivity extends ActionBarActivity implements OnPreferenceAttachedListener {
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends ActionBarActivity {
 
 	private DrawerLayout _drawerLayout;
 	private ActionBarDrawerToggle _drawerToggle;
@@ -400,9 +398,5 @@ public class MainActivity extends ActionBarActivity implements OnPreferenceAttac
 			aq.id(R.id.podcast_title).text(status.getTitle());
 		else
 			aq.id(R.id.podcast_title).text("Queue empty");
-	}
-
-	@Override
-	public void onPreferenceAttached(PreferenceScreen root, int xmlId) {
 	}
 }
