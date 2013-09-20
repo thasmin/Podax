@@ -1,26 +1,21 @@
 package com.axelby.podax;
 
-import java.io.File;
-import java.lang.ref.WeakReference;
-import java.util.Arrays;
-import java.util.Vector;
-
-import android.accounts.AccountManager;
+import android.app.IntentService;
 import android.app.NotificationManager;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
-public class UpdateService extends Service {
+import java.io.File;
+import java.util.Arrays;
+import java.util.Vector;
+
+public class UpdateService extends IntentService {
 	public static void updateSubscriptions(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS);
@@ -54,67 +49,27 @@ public class UpdateService extends Service {
 		context.startService(intent);
 	}
 
-	private static final class UpdateServiceHandler extends Handler {
-		private WeakReference<UpdateService> _service;
-
-		public UpdateServiceHandler(UpdateService service, Looper looper) {
-			super(looper);
-			_service = new WeakReference<UpdateService>(service);
-		}
-
-		@Override
-		public void handleMessage(Message msg) {
-			super.handleMessage(msg);
-
-			_service.get().handleIntent((Intent)msg.obj);
-
-			try {
-				if (!hasMessages(0)) {
-					Thread.sleep(1000);
-					// make sure service hasn't been garbage collected
-					if (_service.get() == null)
-						return;
-					if (!hasMessages(0)) {
-						_service.get().removeNotification();
-						_service.get().stopSelf();
-					}
-				}
-			} catch (InterruptedException e) {
-				Log.e("Podax", "interrupted before stopping updateservice", e);
-			}
-		}
+	public UpdateService() {
+		super("UpdateService");
 	}
-	private volatile UpdateServiceHandler _handler;
-	private volatile HandlerThread _handlerThread;
-
-	private static UpdateService _singleton = null;
-	public static boolean isRunning() {
-		return _singleton != null;
-	}
-
-	Handler _uiHandler = new Handler();
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
+	Handler _uiHandler = new Handler();
 
-		_handlerThread = new HandlerThread("UpdateService");
-		_handlerThread.start();
-		_handler = new UpdateServiceHandler(this, _handlerThread.getLooper());
+	@Override
+	public void onHandleIntent(Intent intent) {
+		handleIntent(intent);
 	}
 
-	@Override
-	public void onDestroy() {
-		_handlerThread.getLooper().quit();
-	}
+	public void handleIntent(Intent intent) {
+		String action = intent.getAction();
+		if (action == null)
+			return;
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
 		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && !Helper.ensureWifi(this)) {
 			_uiHandler.post(new Runnable() {
 				public void run() {
@@ -123,24 +78,14 @@ public class UpdateService extends Service {
 							Toast.LENGTH_SHORT).show();
 				}
 			});
-		} else {
-			Message msg = _handler.obtainMessage(0, intent.clone());
-			_handler.sendMessage(msg);
-		}
-
-		return START_NOT_STICKY;
-	}
-
-	protected void handleIntent(Intent intent) {
-		String action = intent.getAction();
-		if (action == null)
 			return;
+		}
 
 		if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
 			String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
 			while (c.moveToNext())
-				startService(createUpdateSubscriptionIntent(this, c.getLong(0)));
+				handleIntent(createUpdateSubscriptionIntent(this, c.getLong(0)));
 			c.close();
 		} else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
 			long subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
@@ -154,7 +99,7 @@ public class UpdateService extends Service {
 			String[] projection = { PodcastProvider.COLUMN_ID };
 			Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
 			while (c.moveToNext())
-				startService(createDownloadPodcastIntent(this, c.getLong(0)));
+				handleIntent(createDownloadPodcastIntent(this, c.getLong(0)));
 			c.close();
 		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCAST)) {
 			long podcastId = intent.getLongExtra(Constants.EXTRA_PODCAST_ID, -1L);
@@ -162,6 +107,8 @@ public class UpdateService extends Service {
 				return;
 			new PodcastDownloader(this).download(podcastId);
 		}
+
+		removeNotification();
 	}
 
 	private static Intent createUpdateSubscriptionIntent(Context context, long subscriptionId) {
