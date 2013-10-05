@@ -173,7 +173,10 @@ public class UpdateService extends Service {
 			c.close();
 		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCAST)) {
 			long podcastId = intent.getLongExtra(Constants.EXTRA_PODCAST_ID, -1L);
+			String maxPodcasts = PreferenceManager.getDefaultSharedPreferences(this).getString("queueMaxNumPodcasts", "1000");
 			if (podcastId == -1)
+				return;
+			if (getQueueNumDownloadedItems() >= Integer.valueOf(maxPodcasts))
 				return;
 			new PodcastDownloader(this).download(podcastId);
 		}
@@ -281,6 +284,25 @@ public class UpdateService extends Service {
 		while (c.moveToNext())
 			new PodcastCursor(c).removeFromQueue(this);
 		c.close();
+	}
+
+	private int getQueueNumDownloadedItems() {
+		String[] projection = {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_FILE_SIZE,
+		};
+		Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
+		int ret = 0;
+
+		while (c.moveToNext()) {
+			PodcastCursor podcast = new PodcastCursor(c);
+			if (podcast.isDownloaded())
+				ret++;
+		}
+		return ret;
 	}
 
 	private void removeNotification() {

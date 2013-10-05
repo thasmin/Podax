@@ -12,6 +12,12 @@
             android:key="autoDeletePref"
             android:summary="@string/pref_auto_delete"
             android:title="@string/pref_auto_delete_title" />
+        <EditTextPreference
+            android:defaultValue="1000"
+            android:numeric="integer"
+            android:key="queueMaxNumPodcasts"
+            android:summary="@string/pref_max_num_podcasts"
+            android:title="@string/pref_max_num_podcasts_title" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Debug" >
         <CheckBoxPreference
