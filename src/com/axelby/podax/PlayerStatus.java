@@ -17,8 +17,7 @@ public class PlayerStatus {
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_DURATION,
 		};
-		Uri activeUri = Uri.withAppendedPath(PodcastProvider.URI, "active");
-		Cursor cursor = context.getContentResolver().query(activeUri, projection, null, null, null);
+		Cursor cursor = context.getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 		PlayerStatus status = new PlayerStatus();
 		if (cursor.moveToNext()) {
 			PodcastCursor podcast = new PodcastCursor(cursor);

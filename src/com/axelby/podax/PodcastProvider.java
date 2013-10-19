@@ -26,11 +26,11 @@ public class PodcastProvider extends ContentProvider {
 	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/podcasts");
 	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podcast";
-	public static final Uri ACTIVE_PODCAST_URI = Uri.withAppendedPath(PodcastProvider.URI, "active");
 	public static final Uri QUEUE_URI = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(PodcastProvider.URI, "search");
 	public static final Uri EXPIRED_URI = Uri.withAppendedPath(PodcastProvider.URI, "expired");
-	public static final Uri PLAYER_UPDATE_URI = Uri.withAppendedPath(PodcastProvider.URI, "player_update");
+	public static final Uri ACTIVE_PODCAST_URI = Uri.parse("content://" + AUTHORITY + "/active");
+	public static final Uri PLAYER_UPDATE_URI = Uri.parse("content://" + AUTHORITY + "/player_update");
 
 	private final static int PODCASTS = 1;
 	private final static int PODCASTS_QUEUE = 2;
@@ -67,10 +67,10 @@ public class PodcastProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "podcasts/queue", PODCASTS_QUEUE);
 		uriMatcher.addURI(AUTHORITY, "podcasts/#", PODCAST_ID);
 		uriMatcher.addURI(AUTHORITY, "podcasts/to_download", PODCASTS_TO_DOWNLOAD);
-		uriMatcher.addURI(AUTHORITY, "podcasts/active", PODCAST_ACTIVE);
 		uriMatcher.addURI(AUTHORITY, "podcasts/search", PODCASTS_SEARCH);
 		uriMatcher.addURI(AUTHORITY, "podcasts/expired", PODCASTS_EXPIRED);
-		uriMatcher.addURI(AUTHORITY, "podcasts/player_update", PODCAST_PLAYER_UPDATE);
+		uriMatcher.addURI(AUTHORITY, "active", PODCAST_ACTIVE);
+		uriMatcher.addURI(AUTHORITY, "player_update", PODCAST_PLAYER_UPDATE);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");

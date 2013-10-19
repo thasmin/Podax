@@ -28,6 +28,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.androidquery.AQuery;
@@ -50,7 +51,7 @@ public class PlayerService extends Service {
 			}
 			_lastPosition = currentPosition;
 		}
-	};
+	}
 
 	private final OnAudioFocusChangeListener _afChangeListener = new OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
@@ -82,6 +83,7 @@ public class PlayerService extends Service {
 		public void onChange(boolean selfChange, Uri uri) {
 			if (_player == null)
 				return;
+
 			String[] projection = new String[] {
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_MEDIA_URL,
