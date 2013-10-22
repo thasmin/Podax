@@ -158,25 +158,17 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 
 		_queueButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				new AsyncTask<Long, Void, Void>() {
-					@Override
-					protected Void doInBackground(Long... params) {
-						Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
-						String[] projection = new String[] { PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_QUEUE_POSITION };
-						Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
-						
-						if (c.moveToNext()) {
-							PodcastCursor podcast = new PodcastCursor(c);
-							if (podcast.getQueuePosition() == null)
-								podcast.addToQueue(activity);
-							else
-								podcast.removeFromQueue(activity);
-						}
-						c.close();
-
-						return null;
-					}
-				}.execute(_podcastId);
+				Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
+				String[] projection = new String[] { PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_QUEUE_POSITION };
+				Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
+				if (c.moveToNext()) {
+					PodcastCursor podcast = new PodcastCursor(c);
+					if (podcast.getQueuePosition() == null)
+						podcast.addToQueue(activity);
+					else
+						podcast.removeFromQueue(activity);
+				}
+				c.close();
 			}
 		});
 

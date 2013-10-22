@@ -105,6 +105,9 @@ public class PlayerService extends Service {
 				QueueManager.changeActivePodcast(PlayerService.this, newPodcastId);
 				_lockscreenManager.setupLockscreenControls(PlayerService.this, p);
 				showNotification();
+			} else if (Math.abs(newPosition - _player.getCurrentPosition()) < 5) {
+				// TODO: find what is triggering this and stop it
+				PodaxLog.log(PlayerService.this, "inappropriate position change");
 			} else {
 				_player.seekTo(newPosition);
 			}

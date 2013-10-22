@@ -67,17 +67,12 @@
     <orderEntry type="jdk" jdkName="Android API 18 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="support-v4-18.0.0" level="project" />
-    <orderEntry type="library" exported="" name="jsr305-1.3.9" level="project" />
     <orderEntry type="library" exported="" name="android-query.0.25.10" level="project" />
     <orderEntry type="library" exported="" name="acra-4.4.0" level="project" />
     <orderEntry type="library" exported="" name="ComAndroidSupportAppcompatV71800.aar" level="project" />
     <orderEntry type="library" exported="" name="google-gson-stream-2.0" level="project" />
-    <orderEntry type="library" exported="" name="google-api-client-1.9.0-beta" level="project" />
     <orderEntry type="module" module-name="drag-sort-listview-library" exported="" />
     <orderEntry type="library" exported="" name="flattr4j-core-2.7" level="project" />
-    <orderEntry type="library" exported="" name="guava-11.0.1" level="project" />
-    <orderEntry type="library" exported="" name="google-http-client-1.9.0-beta" level="project" />
-    <orderEntry type="module" module-name="library" />
   </component>
 </module>
 

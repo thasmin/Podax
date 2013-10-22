@@ -31,4 +31,13 @@ android {
             assets.srcDirs = ['assets']
         }
     }
+
+	buildTypes {
+		release {
+			runProguard true
+			proguardFile getDefaultProguardFile('proguard-android.txt')
+			proguardFile './proguard.cfg'
+		}
+	}
+
 }
