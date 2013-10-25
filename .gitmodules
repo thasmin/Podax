@@ -1,6 +1,6 @@
 [submodule "drag-sort-listview"]
 	path = drag-sort-listview
-	url = https://github.com/bauerca/drag-sort-listview.git
+	url = https://github.com/thasmin/drag-sort-listview.git
 [submodule "Riasel"]
 	path = Riasel
 	url = git://github.com/thasmin/Riasel.git
