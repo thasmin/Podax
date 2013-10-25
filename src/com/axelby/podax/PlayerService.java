@@ -476,7 +476,7 @@ public class PlayerService extends Service {
 	private void updateActivePodcastPosition(int position) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
-		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+		getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
 	}
 
 	// static functions for easier controls
