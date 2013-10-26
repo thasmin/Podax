@@ -10,10 +10,15 @@ apply plugin: 'android'
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-	compile 'com.android.support:support-v4:18.0.+'
-	compile 'com.android.support:appcompat-v7:18.0.+'
-	compile project(':drag-sort-listview:library')
-	compile project(':Riasel:library')
+    compile 'com.android.support:support-v4:18.0.+'
+    compile 'com.android.support:appcompat-v7:18.0.+'
+    compile project(':drag-sort-listview:library')
+    compile project(':Riasel:library')
+}
+
+Properties props = new Properties()
+if (new File("signing.properties").exists()) {
+    props.load(new FileInputStream(file("signing.properties")))
 }
 
 android {
@@ -32,12 +37,23 @@ android {
         }
     }
 
-	buildTypes {
-		release {
-			runProguard true
-			proguardFile getDefaultProguardFile('proguard-android.txt')
-			proguardFile './proguard.cfg'
-		}
-	}
+    signingConfigs {
+        release {
+            if (new File("signing.properties").exists()) {
+                storeFile file(props['signing.release.keyStore'])
+                storePassword props['signing.release.storePassword']
+                keyAlias props['signing.release.keyAlias']
+                keyPassword props['signing.release.keyPassword']
+            }
+        }
+    }
 
+    buildTypes {
+        release {
+            runProguard true
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+            proguardFile './proguard.cfg'
+            signingConfig signingConfigs.release
+        }
+    }
 }
