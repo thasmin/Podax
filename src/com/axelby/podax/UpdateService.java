@@ -135,10 +135,10 @@ public class UpdateService extends IntentService {
 		Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
 		Cursor c = getContentResolver().query(queueUri, projection, null, null, null);
 		while (c.moveToNext())
-			validMediaFilenames.add(new PodcastCursor(c).getFilename());
+			validMediaFilenames.add(new PodcastCursor(c).getFilename(this));
 		c.close();
 
-		File dir = new File(PodcastCursor.getStoragePath());
+		File dir = new File(PodcastCursor.getStoragePath(this));
 		File[] files = dir.listFiles();
 		// this is possible if the directory does not exist
 		if (files == null)

@@ -47,12 +47,12 @@ class PodcastDownloader {
 				return;
 
 			PodcastCursor podcast = new PodcastCursor(cursor);
-			if (podcast.isDownloaded())
+			if (podcast.isDownloaded(_context))
 				return;
 
 			showNotification(podcast);
 
-			File mediaFile = new File(podcast.getFilename());
+			File mediaFile = new File(podcast.getFilename(_context));
 
 			HttpURLConnection c = openConnection(podcast, mediaFile);
 			if (c == null)

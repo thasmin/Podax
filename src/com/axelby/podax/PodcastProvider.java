@@ -196,7 +196,7 @@ public class PodcastProvider extends ContentProvider {
 		try {
 			while (c.moveToNext()) {
 				PodcastCursor podcast = new PodcastCursor(c);
-				if (podcast.isDownloaded()) {
+				if (podcast.isDownloaded(getContext())) {
 					podcastId = podcast.getId();
 					break;
 				}
@@ -219,7 +219,7 @@ public class PodcastProvider extends ContentProvider {
 		String queueIds = "";
 		while (queue.moveToNext()) {
 			PodcastCursor podcast = new PodcastCursor(queue);
-			if (!podcast.isDownloaded())
+			if (!podcast.isDownloaded(getContext()))
 				queueIds = queueIds + queue.getLong(0) + ",";
 		}
 		queue.close();
@@ -367,7 +367,7 @@ public class PodcastProvider extends ContentProvider {
 					+ "WHERE queuePosition > ?", new Object[] { oldPosition });
 
 			// delete the podcast's file
-			deleteDownload(Long.valueOf(podcastId));
+			deleteDownload(getContext(), Long.valueOf(podcastId));
 		} else if (oldPosition != newPosition) {
 			// moving up: 1 2 3 4 5 2 -> 4: 3-- 4-- 2->4
 			if (oldPosition < newPosition)
@@ -419,7 +419,7 @@ public class PodcastProvider extends ContentProvider {
 
 		if (podcastId != null) {
 			if (values.containsKey(COLUMN_MEDIA_URL) && values.containsKey(COLUMN_FILE_SIZE)) {
-				String file = PodcastCursor.getStoragePath() +
+				String file = PodcastCursor.getStoragePath(getContext()) +
 						String.valueOf(podcastId) + "." +
 						PodcastCursor.getExtension(values.getAsString(COLUMN_MEDIA_URL));
 				// possible bug: file size shrinks for some reason -- don't use new one
@@ -479,7 +479,7 @@ public class PodcastProvider extends ContentProvider {
 		Cursor c = db.query("podcasts", columns, podcastsWhere, whereArgs, null, null, null);
 		while (c.moveToNext()) {
 			updateQueuePosition(c.getLong(0), null);
-			deleteDownload(c.getLong(0));
+			deleteDownload(getContext(), c.getLong(0));
 		}
 		c.close();
 		
@@ -490,8 +490,8 @@ public class PodcastProvider extends ContentProvider {
 		return count;
 	}
 
-	public static void deleteDownload(final long podcastId) {
-		File storage = new File(PodcastCursor.getStoragePath());
+	public static void deleteDownload(Context context, final long podcastId) {
+		File storage = new File(PodcastCursor.getStoragePath(context));
 		File[] files = storage.listFiles(new FileFilter() {
 			public boolean accept(File pathname) {
 				return pathname.getName().startsWith(String.valueOf(podcastId)) &&

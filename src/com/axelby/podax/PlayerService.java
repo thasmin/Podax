@@ -349,7 +349,7 @@ public class PlayerService extends Service {
 		PodcastCursor p = new PodcastCursor(c);
 		
 		// make sure the podcast is downloaded
-		if (!p.isDownloaded()) {
+		if (!p.isDownloaded(this)) {
 			Toast.makeText(this, R.string.podcast_not_downloaded, Toast.LENGTH_SHORT).show();
 			return;
 		}
@@ -380,7 +380,7 @@ public class PlayerService extends Service {
 		try {
 			_currentPodcastId = p.getId();
 			_player.reset();
-			_player.setDataSource(p.getFilename());
+			_player.setDataSource(p.getFilename(this));
 			_player.prepare();
 			_player.seekTo(p.getLastPosition());
 			return true;

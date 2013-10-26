@@ -211,6 +211,17 @@ public class PreferenceListFragment extends ListFragment {
 		throw new RuntimeException("too lazy to include this bs");
 	}
 
+	public PreferenceScreen inflateFromResource(int preferencesResId) {
+		try {
+			Method m = PreferenceManager.class.getDeclaredMethod("inflateFromResource", Context.class, int.class, PreferenceScreen.class);
+			m.setAccessible(true);
+			return (PreferenceScreen) m.invoke(mPreferenceManager, getActivity(), preferencesResId, getPreferenceScreen());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	/**
 	 * Inflates the given XML resource and adds the preference hierarchy to the
 	 * current preference hierarchy.
@@ -220,10 +231,7 @@ public class PreferenceListFragment extends ListFragment {
 	 */
 	public void addPreferencesFromResource(int preferencesResId) {
 		try {
-			Method m = PreferenceManager.class.getDeclaredMethod("inflateFromResource", Context.class, int.class, PreferenceScreen.class);
-			m.setAccessible(true);
-			PreferenceScreen prefScreen = (PreferenceScreen) m.invoke(mPreferenceManager, getActivity(), preferencesResId, getPreferenceScreen());
-			setPreferenceScreen(prefScreen);
+			setPreferenceScreen(inflateFromResource(preferencesResId));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

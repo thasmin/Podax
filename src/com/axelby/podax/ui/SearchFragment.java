@@ -96,7 +96,7 @@ public class SearchFragment extends ListFragment implements LoaderCallbacks<Curs
 					Cursor c = (Cursor) getListAdapter().getItem(info.position);
 					PodcastCursor podcast = new PodcastCursor(c);
 
-					if (podcast.isDownloaded())
+					if (podcast.isDownloaded(getActivity()))
 						menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
 					if (podcast.getQueuePosition() == null)

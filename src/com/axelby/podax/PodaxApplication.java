@@ -5,6 +5,10 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
 import android.app.Application;
+import android.content.Context;
+import android.os.Environment;
+
+import java.io.File;
 
 @ReportsCrashes(formKey = "dFNuZ3FSYW56MXhVVEViV2tpR2xYdEE6MQ", 
 				mode = ReportingInteractionMode.TOAST,

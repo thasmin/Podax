@@ -69,7 +69,7 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 					continue;
 
 				PodcastCursor podcast = new PodcastCursor((Cursor)getListAdapter().getItem(i));
-				long downloaded = new File(podcast.getFilename()).length();
+				long downloaded = new File(podcast.getFilename(getActivity())).length();
 				if (podcast.getFileSize() != null && downloaded == podcast.getFileSize()) {
 					progress.setVisibility(View.GONE);
 				} else {
@@ -128,7 +128,7 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 				Cursor c = (Cursor) getListAdapter().getItem(mi.position);
 				PodcastCursor podcast = new PodcastCursor(c);
 
-				if (podcast.isDownloaded())
+				if (podcast.isDownloaded(getActivity()))
 					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
 				if (mi.position != 0)
@@ -248,7 +248,7 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 			aq.find(R.id.thumbnail).image(podcast.getSubscriptionThumbnailUrl(), true, true, 50, R.drawable.icon);
 
 			// if the podcast is not downloaded, add the download indicator
-			long downloaded = new File(podcast.getFilename()).length();
+			long downloaded = new File(podcast.getFilename(getActivity())).length();
 			if (podcast.getFileSize() != null && downloaded != podcast.getFileSize())
 			{
 				View dlprogress;

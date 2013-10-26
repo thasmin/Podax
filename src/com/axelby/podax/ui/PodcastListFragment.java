@@ -77,7 +77,7 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 				Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
 				PodcastCursor podcast = new PodcastCursor(cursor);
 
-				if (podcast.isDownloaded())
+				if (podcast.isDownloaded(getActivity()))
 					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
 				if (podcast.getQueuePosition() == null)

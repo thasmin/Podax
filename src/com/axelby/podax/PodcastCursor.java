@@ -140,14 +140,14 @@ public class PodcastCursor {
 		return new Date(_cursor.getLong(_durationColumn) * 1000);
 	}
 
-	public String getFilename() {
-		return PodcastCursor.getStoragePath() + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
+	public String getFilename(Context context) {
+		return PodcastCursor.getStoragePath(context) + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
 	}
 
-	public boolean isDownloaded() {
+	public boolean isDownloaded(Context context) {
 		if (getFileSize() == null)
 			return false;
-		File file = new File(getFilename());
+		File file = new File(getFilename(context));
 		return file.exists() && file.length() == getFileSize() && getFileSize() != 0;
 	}
 
@@ -166,8 +166,8 @@ public class PodcastCursor {
 		return extension;
 	}
 
-	public static String getStoragePath() {
-		String externalPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+	public static String getStoragePath(Context context) {
+		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
 		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
 		File podaxFile = new File(podaxDir);
 		if (!podaxFile.exists())
@@ -218,14 +218,14 @@ public class PodcastCursor {
 	public int determineDuration(Context context) {
 		MediaPlayer mp = new MediaPlayer();
 		try {
-			mp.setDataSource(this.getFilename());
+			mp.setDataSource(getFilename(context));
 			mp.prepare();
 			ContentValues values = new ContentValues();
 			values.put(PodcastProvider.COLUMN_DURATION, mp.getDuration());
 			context.getContentResolver().update(getContentUri(), values, null, null);
 			return mp.getDuration();
 		} catch (IOException ex) {
-			PodaxLog.log(context, "Unable to determine length of " + this.getFilename() + ": " + ex.getMessage());
+			PodaxLog.log(context, "Unable to determine length of " + getFilename(context) + ": " + ex.getMessage());
 			return 0;
 		} finally {
 			if (mp != null)

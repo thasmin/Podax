@@ -15,7 +15,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.ListFragment;
 import android.text.InputType;
 import android.view.LayoutInflater;
@@ -31,6 +30,7 @@ import android.widget.Toast;
 import com.axelby.podax.Constants;
 import com.axelby.podax.OPMLImporter;
 import com.axelby.podax.R;
+import com.axelby.podax.Storage;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
@@ -97,7 +97,7 @@ public class AddSubscriptionFragment extends ListFragment {
 					return pathname.getName().equals("podcasts.opml");
 				}
 			};
-			File externalStorageDir = Environment.getExternalStorageDirectory();
+			File externalStorageDir = Storage.getExternalStorageDirectory(getActivity());
 			File[] opmlFiles = externalStorageDir.listFiles(fileFilter);
 			if (opmlFiles!= null && opmlFiles.length == 0) {
 				String message = "The OPML file must be at " + externalStorageDir.getAbsolutePath() + "/podcasts.opml.";

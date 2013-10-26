@@ -13,6 +13,17 @@
             android:summary="@string/pref_auto_delete"
             android:title="@string/pref_auto_delete_title" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="Storage">
+        <ListPreference
+            android:defaultValue="/sdcard"
+            android:key="storageCard"
+            android:summary="@string/pref_sdcard"
+            android:title="@string/pref_sdcard_title"
+            android:entries="@array/sdcards"
+            android:entryValues="@array/sdcards" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Debug" >
         <CheckBoxPreference
             android:defaultValue="true"

@@ -135,4 +135,11 @@
     <string name="top_itunes_podcasts">Top iTunes Podcasts</string>
     <string name="gpodder_sync">GPodder Sync</string>
 
+    <string name="pref_sdcard">SD Card for podcast storage</string>
+    <string name="pref_sdcard_title">SD Card</string>
+    <string-array name="sdcards">
+        <item>/sdcard</item>
+        <item>/extsdcard</item>
+        <item>/extSdCard</item>
+    </string-array>
 </resources>
