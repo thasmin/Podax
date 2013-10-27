@@ -35,11 +35,9 @@ public class PodaxPreferenceFragment extends PreferenceListFragment implements P
 
 		String title = getString(R.string.pref_sdcard_title) + ": " + sdcard.getValue();
 		sdcard.setTitle(title);
-		/*
 		sdcard.setEntries(newEntries);
 		sdcard.setEntryValues(newEntries);
 		sdcard.setEnabled(newSize > 1);
-		*/
 
 		sdcard.setOnPreferenceChangeListener(this);
 		setPreferenceScreen(screen);
