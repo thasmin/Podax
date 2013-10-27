@@ -9,8 +9,10 @@ import android.content.Context;
 import android.os.Environment;
 
 import java.io.File;
+import java.util.EmptyStackException;
 
-@ReportsCrashes(formKey = "dFNuZ3FSYW56MXhVVEViV2tpR2xYdEE6MQ", 
+@ReportsCrashes(formKey = "",
+				formUri = "http://podax.axelby.com/error",
 				mode = ReportingInteractionMode.TOAST,
 				resToastText = R.string.crash_toast_text)
 public class PodaxApplication extends Application {
