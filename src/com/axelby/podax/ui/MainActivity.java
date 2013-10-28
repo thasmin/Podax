@@ -199,14 +199,19 @@ public class MainActivity extends ActionBarActivity {
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-		for (WeakReference<Fragment> frag : _savedFragments)
-			if (frag.get() != null && frag.get().getClass().equals(clazz)) {
-				ft.replace(R.id.fragment, frag.get()).commit();
-				return;
-			}
-
 		try {
-			ft.replace(R.id.fragment, clazz.getConstructor().newInstance());
+			Fragment f = null;
+			for (WeakReference<Fragment> frag : _savedFragments)
+				if (frag.get() != null && frag.get().getClass().equals(clazz)) {
+					f = frag.get();
+					break;
+				}
+			if (f == null)
+				f = clazz.getConstructor().newInstance();
+			ft.replace(R.id.fragment, f);
+			if (_savedFragments.size() > 0)
+				ft.addToBackStack(null);
+			ft.commit();
 		} catch (IllegalArgumentException e) {
 			return;
 		} catch (InstantiationException e) {
@@ -218,9 +223,6 @@ public class MainActivity extends ActionBarActivity {
 		} catch (NoSuchMethodException e) {
 			return;
 		}
-
-		ft.addToBackStack(null);
-		ft.commit();
 	}
 
 	@Override
