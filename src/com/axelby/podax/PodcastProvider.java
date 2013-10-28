@@ -248,6 +248,7 @@ public class PodcastProvider extends ContentProvider {
 					"_id = ?", new String[] { String.valueOf(activePodcastId) }, null, null, null);
 			c.moveToFirst();
 			int oldPosition = c.getInt(0);
+			c.close();
 			int newPosition = values.getAsInteger(COLUMN_LAST_POSITION);
 			// reject changes if it's not a normal update
 			if (newPosition < oldPosition || newPosition - oldPosition > 3000)
