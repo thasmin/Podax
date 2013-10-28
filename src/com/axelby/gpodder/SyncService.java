@@ -65,6 +65,8 @@ public class SyncService extends Service {
 
 			// get the changes since the last time we updated
 			Client.Changes changes = client.getSubscriptionChanges(lastTimestamp);
+			if (changes == null)
+				return;
 			updateSubscriptions(changes);
 
 			// remember when we last updated
