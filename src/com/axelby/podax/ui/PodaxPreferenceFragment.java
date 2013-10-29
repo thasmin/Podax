@@ -3,12 +3,14 @@ package com.axelby.podax.ui;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
 import com.axelby.podax.R;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class PodaxPreferenceFragment extends PreferenceListFragment implements Preference.OnPreferenceChangeListener {
 	@Override
@@ -19,36 +21,34 @@ public class PodaxPreferenceFragment extends PreferenceListFragment implements P
 
 		// properly trim sdcard options
 		ListPreference sdcard = (ListPreference) screen.findPreference("storageCard");
+		if (sdcard == null)
+			return;
 		CharSequence[] entries = sdcard.getEntries();
-		boolean[] exists = new boolean[entries.length];
-		int newSize = 0;
-		for (int i = 0; i < entries.length; ++i) {
-			exists[i] = new File(entries[i].toString()).exists();
-			newSize += exists[i] ? 1 : 0;
+		CharSequence[] values = sdcard.getEntryValues();
+		if (!new File(values[1].toString()).exists()) {
+			sdcard.setEntries(new CharSequence[] { entries[0] });
+			sdcard.setEntryValues(new CharSequence[] { values[0] });
+			sdcard.setEnabled(false);
 		}
 
-		CharSequence[] newEntries = new CharSequence[newSize];
-		int r = 0;
-		for (int i = 0; i < newSize; ++i)
-			if (exists[i])
-				newEntries[r++] = entries[i];
-
-		String title = getString(R.string.pref_sdcard_title) + ": " + sdcard.getValue();
+		String title = getString(R.string.pref_sdcard_title) + ": " + getEntryText(sdcard, sdcard.getValue());
 		sdcard.setTitle(title);
-		sdcard.setEntries(newEntries);
-		sdcard.setEntryValues(newEntries);
-		sdcard.setEnabled(newSize > 1);
 
 		sdcard.setOnPreferenceChangeListener(this);
 		setPreferenceScreen(screen);
 	}
 
+	private CharSequence getEntryText(ListPreference listPreference, String value) {
+		if (!value.equals("/storage/sdcard0") && !value.equals("/storage/extSdCard"))
+			return getResources().getStringArray(R.array.pref_sdcard_entries)[0];
+		return listPreference.getEntries()[listPreference.findIndexOfValue(value)];
+	}
 
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		if (preference.getKey().equals("storageCard")) {
 			ListPreference sdcard = (ListPreference) preference;
-			String title = getString(R.string.pref_sdcard_title) + ": " + newValue;
+			String title = getString(R.string.pref_sdcard_title) + ": " + getEntryText(sdcard, newValue.toString());
 			sdcard.setTitle(title);
 		}
 		return true;

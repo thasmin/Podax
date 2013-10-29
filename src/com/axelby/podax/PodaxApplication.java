@@ -13,8 +13,11 @@ import java.util.EmptyStackException;
 
 @ReportsCrashes(formKey = "",
 				formUri = "http://podax.axelby.com/error",
-				mode = ReportingInteractionMode.TOAST,
-				resToastText = R.string.crash_toast_text)
+				mode = ReportingInteractionMode.DIALOG,
+				resToastText = R.string.crash_toast_text,
+				resDialogText = R.string.crash_dialog_text,
+				resDialogCommentPrompt = R.string.crash_comment_prompt,
+				resDialogOkToast = R.string.crash_dialog_ok_text)
 public class PodaxApplication extends Application {
 
 	@Override

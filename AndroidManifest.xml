@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.axelby.podax"
-    android:versionCode="41"
-    android:versionName="6.01" >
+    android:versionCode="42"
+    android:versionName="6.02" >
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -110,6 +110,12 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
+
+        <activity android:name="org.acra.CrashReportDialog"
+                  android:theme="@android:style/Theme.Dialog"
+                  android:launchMode="singleInstance"
+                  android:excludeFromRecents="true"
+                  android:finishOnTaskLaunch="true" />
 
         <service android:name=".UpdateService" />
         <service android:name=".PlayerService" />
