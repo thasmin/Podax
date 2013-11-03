@@ -1,99 +1,34 @@
 package com.axelby.gpodder;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Scanner;
-import java.util.Vector;
-
-import javax.net.ssl.HttpsURLConnection;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import android.content.Context;
+import android.database.Cursor;
+import android.util.Base64;
+import android.util.Log;
 
 import com.axelby.podax.GPodderProvider;
 import com.google.gson.stream.JsonWriter;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.util.Base64;
-import android.util.Log;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
-public class Client {
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Vector;
 
-	private static class Config {
-		public String mygpo = "https://gpodder.net/";
-		public String mygpo_feedservice = "https://mygpo-feedservice.appspot.com/";
-		public long update_timeout = 604800L;
-	}
-	
-	private static Config _config;
-	private static Calendar _configRefresh = null;
+import javax.net.ssl.HttpsURLConnection;
 
-	public static void verifyCurrentConfig() {
-		if (_configRefresh == null || _configRefresh.before(new GregorianCalendar())) {
-			_config = retrieveGPodderConfig();
-
-			// do NOT use basic auth over HTTP without SSL
-			if (_config.mygpo.startsWith("http://"))
-				_config.mygpo = "https://" + _config.mygpo.substring(7);
-			if (_config.mygpo_feedservice.startsWith("http://"))
-				_config.mygpo_feedservice = "https://" + _config.mygpo_feedservice.substring(7);
-
-			_configRefresh = new GregorianCalendar();
-			_configRefresh.add(Calendar.MILLISECOND, (int) _config.update_timeout);
-		}
-	}
-	
-	private static String readStream(InputStream stream) {
-		Scanner scanner = new Scanner(stream, "UTF-8").useDelimiter("\\A");
-		return scanner.hasNext() ? scanner.next() : null;
-	}
-
-	private static Config retrieveGPodderConfig() {
-		Config config = new Config();
-
-		HttpURLConnection conn = null;
-		try {
-			URL url = new URL("http://gpodder.net/clientconfig.json");
-			conn = (HttpURLConnection)url.openConnection();
-			conn.addRequestProperty("User-Agent", "podax/6.0");
-			String results = readStream(conn.getInputStream());
-			if (results == null)
-				return config;
-			JSONObject json = (JSONObject) new JSONTokener(results).nextValue();
-			config.mygpo = json.getJSONObject("mygpo").getString("baseurl");
-			config.mygpo_feedservice = json.getJSONObject("mygpo-feedservice").getString("baseurl");
-			config.update_timeout = json.getLong("update_timeout");
-		} catch (IOException e) {
-			Log.e("Podax", "io exception while retrieving gpodder config", e);
-		} catch (JSONException e) {
-			Log.e("Podax", "json exception while retrieving gpodder config", e);
-		} finally {
-			if (conn != null)
-				conn.disconnect();
-		}
-
-		return config;
-	}
-
-	private Context _context;
+public class Client extends NoAuthClient {
 	private String _username;
 	private String _password;
 	private String _sessionId;
 
 	public Client(Context context, String username, String password) {
-		_context = context;
+		super(context);
 		_username = username;
 		_password = password;
 	}
@@ -106,12 +41,12 @@ public class Client {
 		     output = conn.getOutputStream();
 		     output.write(toPost.getBytes());
 		} finally {
-		     if (output != null) try { output.close(); } catch (IOException logOrIgnore) {}
+		     if (output != null) try { output.close(); } catch (IOException ignored) {}
 		}
 	}
 
-	public HttpsURLConnection createConnection(URL url) throws IOException {
-		HttpsURLConnection conn = (HttpsURLConnection)url.openConnection();
+	protected HttpsURLConnection createConnection(URL url) throws IOException {
+		HttpsURLConnection conn = super.createConnection(url);
 
 		if (_sessionId == null) {
 			// basic authentication
@@ -121,7 +56,6 @@ public class Client {
 		} else {
 			conn.setRequestProperty("Cookie", "sessionid=" + _sessionId);
 		}
-		conn.setRequestProperty("User-Agent", "podax/6.0");
 
 		return conn;
 	}

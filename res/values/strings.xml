@@ -154,6 +154,9 @@
     <string name="crash_dialog_text">Sorry about that crash earlier. Would you like to report the crash to the developer?</string>
     <string name="crash_comment_prompt">What was happening before the crash?</string>
     <string name="crash_dialog_ok_text">Thanks for sending in the report and helping to make Podax better.</string>
+    <string name="queue_empty">Queue empty</string>
+    <string name="top_gpodder_podcasts">Top GPodder Podcasts</string>
+    <string name="view_website">View Website</string>
 
 
 </resources>

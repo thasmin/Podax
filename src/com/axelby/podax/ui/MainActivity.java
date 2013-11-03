@@ -116,10 +116,11 @@ public class MainActivity extends ActionBarActivity {
 					case 5 : replaceFragment(SearchFragment.class); break;
 					case 7 : askForRSSUrl(); break;
 					case 8 : replaceFragment(ITunesPopularListFragment.class); break;
-					case 9 : handleGPodder(); break;
-					case 11: replaceFragment(PodaxPreferenceFragment.class); break;
-					case 12: replaceFragment(AboutFragment.class); break;
-					case 13: replaceFragment(LogViewerFragment.class); break;
+					case 9 : replaceFragment(GPodderPopularListFragment.class); break;
+					case 10: handleGPodder(); break;
+					case 12: replaceFragment(PodaxPreferenceFragment.class); break;
+					case 13: replaceFragment(AboutFragment.class); break;
+					case 14: replaceFragment(LogViewerFragment.class); break;
 				}
 		}
 		});
@@ -305,6 +306,7 @@ public class MainActivity extends ActionBarActivity {
 				new Item(R.string.subscribe_to_podcasts, 0, true),
 				new Item(R.string.add_rss_feed, android.R.drawable.ic_menu_add, false),
 				new Item(R.string.top_itunes_podcasts, android.R.drawable.ic_menu_recent_history, false),
+				new Item(R.string.top_gpodder_podcasts, R.drawable.ic_menu_mygpo, false),
 				new Item(R.string.gpodder_sync, R.drawable.ic_menu_mygpo, false),
 
 				new Item(R.string.settings, 0, true),
@@ -399,6 +401,6 @@ public class MainActivity extends ActionBarActivity {
 		if (status.hasActivePodcast())
 			aq.id(R.id.podcast_title).text(status.getTitle());
 		else
-			aq.id(R.id.podcast_title).text("Queue empty");
+			aq.id(R.id.podcast_title).text(R.string.queue_empty);
 	}
 }
