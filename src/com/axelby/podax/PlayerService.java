@@ -467,7 +467,7 @@ public class PlayerService extends Service {
 		forwardIntent.setData(Constants.ACTIVE_PODCAST_DATA_FORWARD);
 		PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
 
-		Bitmap subscriptionBitmap = Helper.getCachedImage(podcast.getSubscriptionThumbnailUrl(), 128, 128);
+		Bitmap subscriptionBitmap = Helper.getCachedImage(this, podcast.getSubscriptionThumbnailUrl(), 128, 128);
 		if (subscriptionBitmap != null)
 			builder.setLargeIcon(subscriptionBitmap);
 

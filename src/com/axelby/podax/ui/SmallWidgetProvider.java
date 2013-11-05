@@ -36,7 +36,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-			Bitmap thumbnail = Helper.getCachedImage(playerState.getSubscriptionThumbnailUrl());
+			Bitmap thumbnail = Helper.getCachedImage(context, playerState.getSubscriptionThumbnailUrl());
 			if (thumbnail != null)
 				views.setImageViewBitmap(R.id.show_btn, thumbnail);
 			else

@@ -51,7 +51,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_PODCAST_DATA_FORWARD);
 		setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_PODCAST_DATA_END);
 
-		Bitmap thumbnail = Helper.getCachedImage(playerState.getSubscriptionThumbnailUrl());
+		Bitmap thumbnail = Helper.getCachedImage(context, playerState.getSubscriptionThumbnailUrl());
 		if (thumbnail != null)
 			views.setImageViewBitmap(R.id.show_btn, thumbnail);
 		else
