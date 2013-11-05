@@ -10,12 +10,12 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import android.app.FragmentTransaction;
+import android.app.ListFragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
 import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;

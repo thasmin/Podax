@@ -5,20 +5,18 @@ import org.shredzone.flattr4j.exception.ForbiddenException;
 import org.shredzone.flattr4j.model.AutoSubmission;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -97,7 +95,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		final FragmentActivity activity = getActivity();
+		final Activity activity = getActivity();
 		_subscriptionImage = (ImageView) activity.findViewById(R.id.subscription_img);
 		_titleView = (TextView) activity.findViewById(R.id.title);
 		_subscriptionTitleView = (TextView) activity.findViewById(R.id.subscription_title);

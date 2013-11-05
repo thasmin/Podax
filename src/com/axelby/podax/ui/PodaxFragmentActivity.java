@@ -1,10 +1,10 @@
 package com.axelby.podax.ui;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
@@ -12,13 +12,13 @@ import android.widget.FrameLayout.LayoutParams;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
-public class PodaxFragmentActivity extends ActionBarActivity {
+public class PodaxFragmentActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class PodaxFragmentActivity extends ActionBarActivity {
 		setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
 		Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
-		FragmentManager fm = getSupportFragmentManager();
+		FragmentManager fm = getFragmentManager();
 		FragmentTransaction ft = fm.beginTransaction();
 		ft.add(R.id.fragment, fragment);
 		ft.commit();

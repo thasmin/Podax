@@ -24,9 +24,8 @@
 		<p>Podax is open source software. You can get the source code at
 			<a href="http://github.com/thasmin/Podax">http://github.com/thasmin/Podax</a>.
 			It is available under the 2 clause BSD license.
-			The libraries used are <a href="www.actionbarsherlock.com">ActionBarSherlock</a>,
-			<a href="www.viewpagerindicator">ViewPagerIndicator</a> and
-			<a href="https://github.com/bauerca/drag-sort-listview">drag-sort-listview</a>.
+			The <a href="https://github.com/bauerca/drag-sort-listview">drag-sort-listview</a> library is
+			included under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 License</a>.
 		</p>
 
 		<h4>Changelog</h4>

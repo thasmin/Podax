@@ -1,6 +1,6 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.Podax" parent="@style/Theme.AppCompat"></style>
+    <style name="Theme.Podax" parent="android:Theme.Holo"></style>
 
     <color name="podaxColor">#FFE59F39</color>
     <color name="podaxRed">#FFFC4332</color>

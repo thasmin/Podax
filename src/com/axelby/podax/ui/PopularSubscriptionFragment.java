@@ -8,6 +8,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.xml.sax.SAXException;
 
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.os.AsyncTask;
@@ -15,7 +16,6 @@ import android.os.Bundle;
 import android.sax.Element;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
-import android.support.v4.app.Fragment;
 import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;

@@ -10,10 +10,7 @@ apply plugin: 'android'
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    compile 'com.android.support:support-v4:18.0.+'
-    compile 'com.android.support:appcompat-v7:18.0.+'
-    compile project(':drag-sort-listview:library')
-    compile project(':Riasel:library')
+    compile 'com.android.support:support-v4:19.0.+'
 }
 
 Properties props = new Properties()
@@ -22,7 +19,7 @@ if (new File("signing.properties").exists()) {
 }
 
 android {
-    compileSdkVersion 18
+    compileSdkVersion 19
     buildToolsVersion "18.0.1"
 
     sourceSets {

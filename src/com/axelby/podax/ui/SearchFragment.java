@@ -1,19 +1,19 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.app.ListFragment;
+import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.ContextMenu;
@@ -43,7 +43,7 @@ import com.axelby.podax.SearchSuggestionProvider;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
-public class SearchFragment extends ListFragment implements LoaderCallbacks<Cursor> {
+public class SearchFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int CURSOR_SUBSCRIPTIONS = 0;
 	private static final int CURSOR_PODCASTS = 1;
 

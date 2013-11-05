@@ -1,9 +1,9 @@
 package com.axelby.podax.ui;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.ContentValues;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -51,7 +51,7 @@ public class WelcomeFragment extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		FragmentActivity activity = getActivity();
+		Activity activity = getActivity();
 
 		_americanLifeBtn = (Button) activity.findViewById(R.id.american_life_btn);
 		_americanLifeBtn.setOnClickListener(new AddSubscriptionClickListener("http://feeds.thisamericanlife.org/talpodcast"));

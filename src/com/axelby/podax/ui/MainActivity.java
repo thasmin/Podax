@@ -2,7 +2,10 @@ package com.axelby.podax.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -16,11 +19,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -54,7 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
 	private DrawerLayout _drawerLayout;
 	private ActionBarDrawerToggle _drawerToggle;
@@ -87,8 +87,8 @@ public class MainActivity extends ActionBarActivity {
                 R.string.open_drawer, R.string.close_drawer);
         _drawerLayout.setDrawerListener(_drawerToggle);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		getSupportActionBar().setHomeButtonEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
 
 		// watch active podcast for drawer
 		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
@@ -194,11 +194,11 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	public void replaceFragment(Class<? extends Fragment> clazz) {
-		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
+		Fragment current = getFragmentManager().findFragmentById(R.id.fragment);
 		if (current != null && current.getClass().equals(clazz))
 			return;
 
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
 
 		try {
 			Fragment f = null;

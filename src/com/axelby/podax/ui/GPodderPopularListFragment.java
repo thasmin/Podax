@@ -1,27 +1,21 @@
 package com.axelby.podax.ui;
 
+import android.app.ListFragment;
+import android.app.LoaderManager;
+import android.content.AsyncTaskLoader;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 
 import com.androidquery.AQuery;
 import com.axelby.gpodder.NoAuthClient;
 import com.axelby.gpodder.ToplistPodcast;
-import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 
@@ -120,7 +114,7 @@ public class GPodderPopularListFragment extends ListFragment {
 
 			View v = convertView;
 			if (v == null)
-				v = getLayoutInflater(null).inflate(R.layout.gpodder_toplist_item, null);
+				v = getActivity().getLayoutInflater().inflate(R.layout.gpodder_toplist_item, null);
 
 			AQuery aq = new AQuery(v);
 			aq.find(R.id.title).text(podcast.getTitle());
