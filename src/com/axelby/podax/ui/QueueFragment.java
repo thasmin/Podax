@@ -1,7 +1,5 @@
 package com.axelby.podax.ui;
 
-import java.io.File;
-
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.app.LoaderManager;
@@ -32,8 +30,9 @@ import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
-import com.androidquery.AQuery;
+import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
@@ -42,11 +41,12 @@ import com.axelby.podax.UpdateService;
 import com.mobeta.android.dslv.DragSortListView.DragListener;
 import com.mobeta.android.dslv.DragSortListView.DropListener;
 
+import java.io.File;
+
 public class QueueFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
 	static final int OPTION_MOVETOFIRSTINQUEUE = 3;
-
 	// make sure list is refreshed to update downloading files
 	Runnable _refresher = new Runnable() {
 		public void run() {
@@ -62,20 +62,20 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 			boolean repost = false;
 			for (int i = 0; i < getListAdapter().getCount(); ++i) {
 				View view = getListView().getChildAt(i);
-                if (view == null)
-                    continue;
+				if (view == null)
+					continue;
 				View progress = view.findViewById(R.id.dlprogress);
 				if (progress == null || progress.getVisibility() == View.GONE)
 					continue;
 
-				PodcastCursor podcast = new PodcastCursor((Cursor)getListAdapter().getItem(i));
+				PodcastCursor podcast = new PodcastCursor((Cursor) getListAdapter().getItem(i));
 				long downloaded = new File(podcast.getFilename(getActivity())).length();
 				if (podcast.getFileSize() != null && downloaded == podcast.getFileSize()) {
 					progress.setVisibility(View.GONE);
 				} else {
 					repost = true;
 					ProgressBar progressBar = (ProgressBar) progress.findViewById(R.id.progressBar);
-					progressBar.setProgress((int)downloaded);
+					progressBar.setProgress((int) downloaded);
 					TextView progressText = (TextView) progress.findViewById(R.id.progressText);
 					progressText.setText(Math.round(100.0f * downloaded / podcast.getFileSize()) + "% downloaded");
 				}
@@ -137,21 +137,21 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
 			}
 		});
-    }
+	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.queue_fragment, menu);
 	}
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.download) {
-            UpdateService.downloadPodcasts(getActivity());
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.download) {
+			UpdateService.downloadPodcasts(getActivity());
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 
 	@Override
 	public void onPause() {
@@ -167,46 +167,46 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
-		Cursor cursor = (Cursor)getListAdapter().getItem(info.position);
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		Cursor cursor = (Cursor) getListAdapter().getItem(info.position);
 		PodcastCursor podcast = new PodcastCursor(cursor);
 
 		switch (item.getItemId()) {
-		case OPTION_MOVETOFIRSTINQUEUE:
-			podcast.moveToFirstInQueue(getActivity());
-			return true;
-		case OPTION_REMOVEFROMQUEUE:
-			podcast.removeFromQueue(getActivity());
-			return true;
-		case OPTION_PLAY:
-			ContentValues values = new ContentValues();
-			values.put(PodcastProvider.COLUMN_ID, podcast.getId());
-			getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-			PlayerService.play(getActivity());
+			case OPTION_MOVETOFIRSTINQUEUE:
+				podcast.moveToFirstInQueue(getActivity());
+				return true;
+			case OPTION_REMOVEFROMQUEUE:
+				podcast.removeFromQueue(getActivity());
+				return true;
+			case OPTION_PLAY:
+				ContentValues values = new ContentValues();
+				values.put(PodcastProvider.COLUMN_ID, podcast.getId());
+				getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+				PlayerService.play(getActivity());
 
-			Bundle args = new Bundle();
-			args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
-			FragmentTransaction ft = getFragmentManager().beginTransaction();
-			PodcastDetailFragment fragment = new PodcastDetailFragment();
-			fragment.setArguments(args);
-			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
+				Bundle args = new Bundle();
+				args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
+				FragmentTransaction ft = getFragmentManager().beginTransaction();
+				PodcastDetailFragment fragment = new PodcastDetailFragment();
+				fragment.setArguments(args);
+				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 
-			return true;
+				return true;
 		}
 
 		return false;
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = new String[] {
-			PodcastProvider.COLUMN_ID,
-			PodcastProvider.COLUMN_TITLE,
-			PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-			PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
-			PodcastProvider.COLUMN_QUEUE_POSITION,
-			PodcastProvider.COLUMN_MEDIA_URL,
-			PodcastProvider.COLUMN_FILE_SIZE,
-			PodcastProvider.COLUMN_SUBSCRIPTION_ID,
+		String[] projection = new String[]{
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
+				PodcastProvider.COLUMN_QUEUE_POSITION,
+				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_FILE_SIZE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 		};
 		return new CursorLoader(getActivity(), PodcastProvider.QUEUE_URI, projection, null, null, null);
 	}
@@ -232,45 +232,42 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 		public void bindView(View view, Context context, Cursor cursor) {
 			PodcastCursor podcast = new PodcastCursor(cursor);
 
-			AQuery aq = new AQuery(view);
-			aq.tag(podcast.getId());
+			view.setTag(podcast.getId());
 
 			// more button handler
-			aq.find(R.id.more).clicked(new OnClickListener() {
+			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					getActivity().openContextMenu((View)(view.getParent()));
+					getActivity().openContextMenu((View) (view.getParent()));
 				}
 			});
 
-			aq.find(R.id.title).text(podcast.getTitle());
-			aq.find(R.id.subscription).text(podcast.getSubscriptionTitle());
-			aq.find(R.id.thumbnail).image(podcast.getSubscriptionThumbnailUrl(), true, true, 50, R.drawable.icon);
+			((TextView) view.findViewById(R.id.title)).setText(podcast.getTitle());
+			((TextView) view.findViewById(R.id.subscription)).setText(podcast.getSubscriptionTitle());
+			((NetworkImageView) view.findViewById(R.id.thumbnail)).setImageUrl(podcast.getSubscriptionThumbnailUrl(), Helper.getImageLoader(context));
 
 			// if the podcast is not downloaded, add the download indicator
 			long downloaded = new File(podcast.getFilename(getActivity())).length();
-			if (podcast.getFileSize() != null && downloaded != podcast.getFileSize())
-			{
+			if (podcast.getFileSize() != null && downloaded != podcast.getFileSize()) {
 				View dlprogress;
-				ViewStub dlprogressStub = (ViewStub)view.findViewById(R.id.dlprogress_stub);
+				ViewStub dlprogressStub = (ViewStub) view.findViewById(R.id.dlprogress_stub);
 				if (dlprogressStub != null)
 					dlprogress = dlprogressStub.inflate();
 				else
 					dlprogress = view.findViewById(R.id.dlprogress);
 				dlprogress.setVisibility(View.VISIBLE);
-				ProgressBar progressBar = (ProgressBar)dlprogress.findViewById(R.id.progressBar);
+				ProgressBar progressBar = (ProgressBar) dlprogress.findViewById(R.id.progressBar);
 				progressBar.setMax(podcast.getFileSize());
-				progressBar.setProgress((int)downloaded);
-				TextView progressText = (TextView)dlprogress.findViewById(R.id.progressText);
+				progressBar.setProgress((int) downloaded);
+				TextView progressText = (TextView) dlprogress.findViewById(R.id.progressText);
 				progressText.setText(Math.round(100.0f * downloaded / podcast.getFileSize()) + "% downloaded");
 
 				// make sure list is refreshed to update downloading files
 				_handler.removeCallbacks(_refresher);
 				_handler.postDelayed(_refresher, 1000);
-			}
-			else
-			{
-				aq.find(R.id.dlprogress).gone();
+			} else {
+				if (view.findViewById(R.id.dlprogress) != null)
+					view.findViewById(R.id.dlprogress).setVisibility(View.GONE);
 			}
 		}
 
@@ -287,12 +284,5 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 		public void drag(int from, int to) {
 		}
 
-	}
-
-	static class ImageOptions extends com.androidquery.callback.ImageOptions {
-		public ImageOptions() {
-			this.targetWidth = 50;
-			this.fallback = R.drawable.icon;
-		}
 	}
 }

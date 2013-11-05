@@ -9,14 +9,30 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
-import com.androidquery.AQuery;
 import com.axelby.podax.ActivePodcastReceiver;
 import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
+	public static void setPlayerServiceClickIntent(Context context, RemoteViews views, int resourceId, int command) {
+		Intent intent = new Intent(context, PlayerService.class);
+		// pendingintent will reuse intent if possible, does not look at extras so datauri makes this unique to command
+		intent.setData(Uri.parse("podax://playercommand/" + command));
+		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
+		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
+		views.setOnClickPendingIntent(resourceId, pendingIntent);
+	}
+
+	public static void setActivePodcastClickIntent(Context context, RemoteViews views, int resourceId, Uri command) {
+		Intent intent = new Intent(context, ActivePodcastReceiver.class);
+		intent.setData(command);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+		views.setOnClickPendingIntent(resourceId, pendingIntent);
+	}
+
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 		if (appWidgetIds.length == 0)
@@ -35,9 +51,9 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_PODCAST_DATA_FORWARD);
 		setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_PODCAST_DATA_END);
 
-		Bitmap bitmap = new AQuery(context).getCachedImage(playerState.getSubscriptionThumbnailUrl(), 92);
-		if (bitmap != null)
-			views.setImageViewBitmap(R.id.show_btn, bitmap);
+		Bitmap thumbnail = Helper.getCachedImage(playerState.getSubscriptionThumbnailUrl());
+		if (thumbnail != null)
+			views.setImageViewBitmap(R.id.show_btn, thumbnail);
 		else
 			views.setImageViewResource(R.id.show_btn, R.drawable.icon);
 
@@ -65,21 +81,5 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 			PodcastProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		}
-	}
-
-	public static void setPlayerServiceClickIntent(Context context, RemoteViews views, int resourceId, int command) {
-		Intent intent = new Intent(context, PlayerService.class);
-		// pendingintent will reuse intent if possible, does not look at extras so datauri makes this unique to command
-		intent.setData(Uri.parse("podax://playercommand/" + command));
-		intent.putExtra(Constants.EXTRA_PLAYER_COMMAND, command);
-		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
-		views.setOnClickPendingIntent(resourceId, pendingIntent);
-	}
-
-	public static void setActivePodcastClickIntent(Context context, RemoteViews views, int resourceId, Uri command) {
-		Intent intent = new Intent(context, ActivePodcastReceiver.class);
-		intent.setData(command);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-		views.setOnClickPendingIntent(resourceId, pendingIntent);
 	}
 }

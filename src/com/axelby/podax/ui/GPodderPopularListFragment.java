@@ -12,16 +12,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
-import com.androidquery.AQuery;
+import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.gpodder.NoAuthClient;
 import com.axelby.gpodder.ToplistPodcast;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 
 public class GPodderPopularListFragment extends ListFragment {
-
-	private boolean _loaded = false;
 
 	public GPodderPopularListFragment() {
 	}
@@ -36,36 +36,11 @@ public class GPodderPopularListFragment extends ListFragment {
 		return inflater.inflate(R.layout.innerlist, container, false);
 	}
 
-	private static class ToplistPodcastLoader extends AsyncTaskLoader<ToplistPodcast[]> {
-		ToplistPodcast[] _cached = null;
-
-		public ToplistPodcastLoader(Context context) {
-			super(context);
-		}
-
-		@Override
-		public ToplistPodcast[] loadInBackground() {
-			return new NoAuthClient(getContext()).getPodcastToplist().toArray(new ToplistPodcast[0]);
-		}
-
-		@Override
-		protected void onStartLoading() {
-			if (takeContentChanged() || _cached == null)
-				forceLoad();
-		}
-
-		@Override
-		protected void onStopLoading() {
-			cancelLoad();
-		}
-	}
-
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		_loaded = false;
-		String[] strings = { "Loading from GPodder" };
+		String[] strings = {"Loading from GPodder"};
 		setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings));
 
 		getLoaderManager().initLoader(0, null, new LoaderManager.LoaderCallbacks<ToplistPodcast[]>() {
@@ -83,6 +58,30 @@ public class GPodderPopularListFragment extends ListFragment {
 			public void onLoaderReset(Loader<ToplistPodcast[]> loader) {
 			}
 		});
+	}
+
+	private static class ToplistPodcastLoader extends AsyncTaskLoader<ToplistPodcast[]> {
+		ToplistPodcast[] _cached = null;
+
+		public ToplistPodcastLoader(Context context) {
+			super(context);
+		}
+
+		@Override
+		public ToplistPodcast[] loadInBackground() {
+			return new NoAuthClient(getContext()).getPodcastToplist().toArray(new ToplistPodcast[20]);
+		}
+
+		@Override
+		protected void onStartLoading() {
+			if (takeContentChanged() || _cached == null)
+				forceLoad();
+		}
+
+		@Override
+		protected void onStopLoading() {
+			cancelLoad();
+		}
 	}
 
 	private class ToplistAdapter extends ArrayAdapter<ToplistPodcast> {
@@ -116,12 +115,11 @@ public class GPodderPopularListFragment extends ListFragment {
 			if (v == null)
 				v = getActivity().getLayoutInflater().inflate(R.layout.gpodder_toplist_item, null);
 
-			AQuery aq = new AQuery(v);
-			aq.find(R.id.title).text(podcast.getTitle());
-			aq.find(R.id.description).text(podcast.getDescription());
-			aq.find(R.id.logo).image(podcast.getLogoUrl());
-			aq.find(R.id.add).clicked(addPodcastHandler);
-			aq.find(R.id.view_website).clicked(viewWebsiteHandler);
+			((TextView) v.findViewById(R.id.title)).setText(podcast.getTitle());
+			((TextView) v.findViewById(R.id.description)).setText(podcast.getDescription());
+			((NetworkImageView) v.findViewById(R.id.logo)).setImageUrl(podcast.getLogoUrl(), Helper.getImageLoader(getActivity()));
+			v.findViewById(R.id.add).setOnClickListener(addPodcastHandler);
+			v.findViewById(R.id.view_website).setOnClickListener(viewWebsiteHandler);
 			v.setTag(podcast);
 			return v;
 		}

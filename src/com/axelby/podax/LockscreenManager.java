@@ -13,7 +13,8 @@ import android.media.RemoteControlClient.MetadataEditor;
 import android.os.Build;
 import android.util.Log;
 
-import com.androidquery.AQuery;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 
 public class LockscreenManager {
 
@@ -44,19 +45,23 @@ public class LockscreenManager {
 			final int METADATA_KEY_ARTWORK = 100;
 
 			// Update the remote controls
-			MetadataEditor metadataEditor = _remoteControlClient
+			final MetadataEditor metadataEditor = _remoteControlClient
 					.editMetadata(true)
 					.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, podcast.getSubscriptionTitle())
 					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, podcast.getTitle())
 					.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, podcast.getDuration());
-			// only uses thumbnails that have already been cached by aquery -- should not be a problem
-			try {
-				Bitmap thumbnail = new AQuery(context).getCachedImage(podcast.getSubscriptionThumbnailUrl());
-				if (thumbnail != null)
-					metadataEditor.putBitmap(METADATA_KEY_ARTWORK, thumbnail);
-			} catch (OutOfMemoryError ex) {
-			}
-			metadataEditor.apply();
+			Helper.getImageLoader(context).get(podcast.getSubscriptionThumbnailUrl(), new ImageLoader.ImageListener() {
+				@Override
+				public void onResponse(ImageLoader.ImageContainer imageContainer, boolean isImmediate) {
+					metadataEditor.putBitmap(METADATA_KEY_ARTWORK, imageContainer.getBitmap());
+					metadataEditor.apply();
+				}
+
+				@Override
+				public void onErrorResponse(VolleyError volleyError) {
+					metadataEditor.apply();
+				}
+			});
 		} catch (Exception e) {
 			Log.e("Podax", "Updating lockscreen: " + e.toString());
 		}

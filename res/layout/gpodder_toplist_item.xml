@@ -12,13 +12,12 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-        <ImageView
+        <com.android.volley.toolbox.NetworkImageView
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:id="@+id/logo"
                 android:layout_marginRight="5dp"
-                android:contentDescription="@string/podcast_picture"
-                />
+                android:contentDescription="@string/podcast_picture"/>
 
         <LinearLayout
                 android:id="@+id/rightside"

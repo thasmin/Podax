@@ -8,8 +8,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.widget.RemoteViews;
 
-import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
 
@@ -24,7 +24,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 
 			PlayerStatus playerState = PlayerStatus.getCurrentState(context);
 			updatePodcastDetails(playerState, views);
-	
+
 			// set up pending intents
 			LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.restart_btn, Constants.ACTIVE_PODCAST_DATA_RESTART);
 			LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.rewind_btn, Constants.ACTIVE_PODCAST_DATA_BACK);
@@ -36,12 +36,12 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 			PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 			views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-			Bitmap bitmap = new AQuery(context).getCachedImage(playerState.getSubscriptionThumbnailUrl(), 83);
-			if (bitmap != null)
-				views.setImageViewBitmap(R.id.show_btn, bitmap);
+			Bitmap thumbnail = Helper.getCachedImage(playerState.getSubscriptionThumbnailUrl());
+			if (thumbnail != null)
+				views.setImageViewBitmap(R.id.show_btn, thumbnail);
 			else
 				views.setImageViewResource(R.id.show_btn, R.drawable.icon);
-	
+
 			appWidgetManager.updateAppWidget(widgetId, views);
 		}
 

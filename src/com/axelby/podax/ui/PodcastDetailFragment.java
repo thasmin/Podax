@@ -1,9 +1,5 @@
 package com.axelby.podax.ui;
 
-import org.shredzone.flattr4j.exception.FlattrException;
-import org.shredzone.flattr4j.exception.ForbiddenException;
-import org.shredzone.flattr4j.model.AutoSubmission;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
@@ -24,13 +20,12 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidquery.AQuery;
+import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.podax.Constants;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
@@ -41,21 +36,21 @@ import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 
-public class PodcastDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	long _podcastId;
-	boolean _uiInitialized = false;
+import org.shredzone.flattr4j.exception.FlattrException;
+import org.shredzone.flattr4j.exception.ForbiddenException;
+import org.shredzone.flattr4j.model.AutoSubmission;
 
+public class PodcastDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
-
-	ImageView _subscriptionImage;
+	long _podcastId;
+	boolean _uiInitialized = false;
+	NetworkImageView _subscriptionImage;
 	TextView _titleView;
 	TextView _subscriptionTitleView;
 	WebView _descriptionView;
-
 	Button _queueButton;
 	TextView _queuePosition;
-
 	ImageButton _restartButton;
 	ImageButton _rewindButton;
 	ImageButton _playButton;
@@ -64,7 +59,6 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	SeekBar _seekbar;
 	boolean _seekbar_dragging = false;
 	Button _paymentButton;
-
 	TextView _position;
 	TextView _duration;
 
@@ -82,7 +76,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.podcast_detail, container, false);
 	}
-	
+
 	private void showToast(final Activity activity, final String message) {
 		activity.runOnUiThread(new Runnable() {
 			public void run() {
@@ -96,7 +90,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		super.onActivityCreated(savedInstanceState);
 
 		final Activity activity = getActivity();
-		_subscriptionImage = (ImageView) activity.findViewById(R.id.subscription_img);
+		_subscriptionImage = (NetworkImageView) activity.findViewById(R.id.subscription_img);
 		_titleView = (TextView) activity.findViewById(R.id.title);
 		_subscriptionTitleView = (TextView) activity.findViewById(R.id.subscription_title);
 		_descriptionView = (WebView) activity.findViewById(R.id.description);
@@ -140,7 +134,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 
 		_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
+										  boolean fromUser) {
 				_position.setText(Helper.getTimeString(progress));
 			}
 
@@ -157,7 +151,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		_queueButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
-				String[] projection = new String[] { PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_QUEUE_POSITION };
+				String[] projection = new String[]{PodcastProvider.COLUMN_ID, PodcastProvider.COLUMN_QUEUE_POSITION};
 				Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
 				if (c.moveToNext()) {
 					PodcastCursor podcast = new PodcastCursor(c);
@@ -187,7 +181,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 					@Override
 					protected Void doInBackground(Long... params) {
 						Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, _podcastId);
-						String[] projection = new String[] {
+						String[] projection = new String[]{
 								PodcastProvider.COLUMN_ID,
 								PodcastProvider.COLUMN_TITLE,
 								PodcastProvider.COLUMN_PAYMENT,
@@ -248,15 +242,16 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	private void initializeUI(PodcastCursor podcast) {
 		String url = podcast.getSubscriptionThumbnailUrl();
 		if (url == null)
-			url = "";
-		new AQuery(_subscriptionImage).image(url, true, true, 200, AQuery.GONE);
+			_subscriptionImage.setVisibility(View.GONE);
+		else
+			_subscriptionImage.setImageUrl(podcast.getSubscriptionThumbnailUrl(), Helper.getImageLoader(getActivity()));
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
 
 		String html = "<html><head><style type=\"text/css\">" +
 				"a { color: #E59F39 }" +
 				"</style></head>" +
-				"<body style=\"background:transprent;color:white\">" + podcast.getDescription() + "</body></html>"; 
+				"<body style=\"background:transprent;color:white\">" + podcast.getDescription() + "</body></html>";
 		_descriptionView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
 		_descriptionView.setBackgroundColor(Color.TRANSPARENT);
 
@@ -265,7 +260,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 
 		_position.setText(Helper.getTimeString(podcast.getLastPosition()));
 		_duration.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
-		
+
 		String payment_url = podcast.getPaymentUrl();
 		if (payment_url != null) {
 			_paymentButton.setVisibility(View.VISIBLE);
@@ -305,7 +300,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = new String[] {
+		String[] projection = new String[]{
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
@@ -348,11 +343,11 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
-		
+
 		new AsyncTask<Void, Void, Void>() {
 			@Override
 			protected Void doInBackground(Void... params) {

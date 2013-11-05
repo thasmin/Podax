@@ -1,73 +1,58 @@
-<ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/info"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="6dip" >
 
-    <!-- the list item -->
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:contentDescription="@string/thumbnail" />
 
     <LinearLayout
-        android:id="@+id/info"
-        android:layout_width="fill_parent"
+        android:layout_width="0dip"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingLeft="6dip" >
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingLeft="5dip"
+        android:paddingRight="5dip" >
 
-        <ImageView
-            android:id="@+id/thumbnail"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
-            android:contentDescription="@string/thumbnail" />
-
-        <LinearLayout
-            android:layout_width="0dip"
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingLeft="5dip"
-            android:paddingRight="5dip" >
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <TextView
-                android:id="@+id/subscription"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <ViewStub
-                android:id="@+id/dlprogress_stub"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inflatedId="@+id/dlprogress"
-                android:layout="@layout/queue_dl_progress" />
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/drag"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/subscription"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/drag_to_rearrange_queue"
-            android:src="@drawable/ic_list_gripper" />
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
-        <ImageView
-            android:id="@+id/more"
-            android:layout_width="wrap_content"
+        <ViewStub
+            android:id="@+id/dlprogress_stub"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/more_options"
-            android:src="@drawable/ic_list_more" />
+            android:inflatedId="@+id/dlprogress"
+            android:layout="@layout/queue_dl_progress" />
     </LinearLayout>
 
-    <!-- the separator -->
+    <ImageView
+        android:id="@+id/drag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/drag_to_rearrange_queue"
+        android:src="@drawable/ic_list_gripper" />
 
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="6dip"
-        android:background="#FFE59F39" />
-
-</ViewSwitcher>
+    <ImageView
+        android:id="@+id/more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/more_options"
+        android:src="@drawable/ic_list_more" />
+</LinearLayout>

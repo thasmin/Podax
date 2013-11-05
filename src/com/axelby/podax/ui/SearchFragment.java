@@ -33,8 +33,9 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.androidquery.AQuery;
+import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
@@ -44,27 +45,25 @@ import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
 public class SearchFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	private static final int CURSOR_SUBSCRIPTIONS = 0;
-	private static final int CURSOR_PODCASTS = 1;
-
+	protected static final int OPTION_UNSUBSCRIBE = 4;
 	static final int OPTION_ADDTOQUEUE = 1;
 	static final int OPTION_REMOVEFROMQUEUE = 2;
 	static final int OPTION_PLAY = 3;
-	protected static final int OPTION_UNSUBSCRIBE = 4;
-
-	private SearchResultsAdapter _adapter;
+	private static final int CURSOR_SUBSCRIPTIONS = 0;
+	private static final int CURSOR_PODCASTS = 1;
 	protected String _lastQuery;
+	private SearchResultsAdapter _adapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-	    super.onCreate(savedInstanceState);
+		super.onCreate(savedInstanceState);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.search_fragment, null);
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -72,7 +71,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 		if (Intent.ACTION_SEARCH.equals(getActivity().getIntent().getAction())) {
 			String query = getActivity().getIntent().getStringExtra(SearchManager.QUERY);
 			SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
-		    		  SearchSuggestionProvider.AUTHORITY, SearchSuggestionProvider.MODE);
+					SearchSuggestionProvider.AUTHORITY, SearchSuggestionProvider.MODE);
 			suggestions.saveRecentQuery(query, null);
 
 			Bundle bundle = new Bundle();
@@ -81,7 +80,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 			getLoaderManager().initLoader(CURSOR_PODCASTS, bundle, this);
 		}
 
-	    _adapter = new SearchResultsAdapter(getActivity());
+		_adapter = new SearchResultsAdapter(getActivity());
 		setListAdapter(_adapter);
 
 		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
@@ -89,24 +88,24 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 				SearchResultType type = _adapter.getType(info.position);
 				switch (type) {
-				case SUBSCRIPTION:
-					menu.add(ContextMenu.NONE, OPTION_UNSUBSCRIBE, ContextMenu.NONE, R.string.unsubscribe);
-					break;
-				case PODCAST:
-					Cursor c = (Cursor) getListAdapter().getItem(info.position);
-					PodcastCursor podcast = new PodcastCursor(c);
+					case SUBSCRIPTION:
+						menu.add(ContextMenu.NONE, OPTION_UNSUBSCRIBE, ContextMenu.NONE, R.string.unsubscribe);
+						break;
+					case PODCAST:
+						Cursor c = (Cursor) getListAdapter().getItem(info.position);
+						PodcastCursor podcast = new PodcastCursor(c);
 
-					if (podcast.isDownloaded(getActivity()))
-						menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
+						if (podcast.isDownloaded(getActivity()))
+							menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
-					if (podcast.getQueuePosition() == null)
-						menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_queue);
-					else
-						menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
+						if (podcast.getQueuePosition() == null)
+							menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_queue);
+						else
+							menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
 
-					break;
-				default:
-					break;
+						break;
+					default:
+						break;
 				}
 			}
 		});
@@ -148,7 +147,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
-			}			
+			}
 		});
 
 		actv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -157,11 +156,11 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 				if (actionId != EditorInfo.IME_ACTION_SEARCH)
 					return false;
 				SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
-			    		  SearchSuggestionProvider.AUTHORITY, SearchSuggestionProvider.MODE);
+						SearchSuggestionProvider.AUTHORITY, SearchSuggestionProvider.MODE);
 				suggestions.saveRecentQuery(view.getEditableText().toString(), null);
-				
+
 				// hide keyboard
-				InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE); 
+				InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
 				inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
 				return true;
@@ -169,69 +168,68 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 		});
 	}
 
-
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		
+
 		Bundle args = new Bundle();
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		Fragment fragment;
 		switch (_adapter.getType(position)) {
-		case SUBSCRIPTION:
-			fragment = new PodcastListFragment();
-			args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, id);
-			fragment.setArguments(args);
-			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
-			break;
-		case PODCAST:
-			fragment = new PodcastDetailFragment();
-			args.putLong(Constants.EXTRA_PODCAST_ID, id);
-			fragment.setArguments(args);
-			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
-			break;
-		default:
-			break;
+			case SUBSCRIPTION:
+				fragment = new PodcastListFragment();
+				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, id);
+				fragment.setArguments(args);
+				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
+				break;
+			case PODCAST:
+				fragment = new PodcastDetailFragment();
+				args.putLong(Constants.EXTRA_PODCAST_ID, id);
+				fragment.setArguments(args);
+				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
+				break;
+			default:
+				break;
 		}
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		SearchResultType type = _adapter.getType(info.position);
 		Cursor cursor;
 		switch (type) {
-		case PODCAST:
-			cursor = (Cursor) getListView().getItemAtPosition(info.position);
-			PodcastCursor podcast = new PodcastCursor(cursor);
+			case PODCAST:
+				cursor = (Cursor) getListView().getItemAtPosition(info.position);
+				PodcastCursor podcast = new PodcastCursor(cursor);
 
-			switch (item.getItemId()) {
-			case OPTION_ADDTOQUEUE:
-				podcast.addToQueue(getActivity());
+				switch (item.getItemId()) {
+					case OPTION_ADDTOQUEUE:
+						podcast.addToQueue(getActivity());
+						break;
+					case OPTION_REMOVEFROMQUEUE:
+						podcast.removeFromQueue(getActivity());
+						break;
+					case OPTION_PLAY:
+						ContentValues values = new ContentValues();
+						values.put(PodcastProvider.COLUMN_ID, podcast.getId());
+						getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+						PlayerService.play(getActivity());
+						break;
+				}
 				break;
-			case OPTION_REMOVEFROMQUEUE:
-				podcast.removeFromQueue(getActivity());
+			case SUBSCRIPTION:
+				cursor = (Cursor) getListView().getItemAtPosition(info.position);
+				SubscriptionCursor subscription = new SubscriptionCursor(cursor);
+				switch (item.getItemId()) {
+					case OPTION_UNSUBSCRIBE:
+						getActivity().getContentResolver().delete(subscription.getContentUri(), null, null);
+						requery();
+						break;
+				}
 				break;
-			case OPTION_PLAY:
-				ContentValues values = new ContentValues();
-				values.put(PodcastProvider.COLUMN_ID, podcast.getId());
-				getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-				PlayerService.play(getActivity());
+			default:
 				break;
-			}
-			break;
-		case SUBSCRIPTION:
-			cursor = (Cursor) getListView().getItemAtPosition(info.position);
-			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
-			switch (item.getItemId()) {
-			case OPTION_UNSUBSCRIBE:
-				getActivity().getContentResolver().delete(subscription.getContentUri(), null, null);
-				requery();
-				break;
-			}
-			break;
-		default:
-			break;
 		}
 
 		return true;
@@ -247,7 +245,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 					SubscriptionProvider.COLUMN_THUMBNAIL,
 			};
 			return new CursorLoader(getActivity(), SubscriptionProvider.SEARCH_URI, projection,
-					null, new String[] { query }, SubscriptionProvider.COLUMN_TITLE);
+					null, new String[]{query}, SubscriptionProvider.COLUMN_TITLE);
 		} else if (id == CURSOR_PODCASTS) {
 			String[] projection = {
 					PodcastProvider.COLUMN_ID,
@@ -260,7 +258,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 					PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 			};
 			return new CursorLoader(getActivity(), PodcastProvider.SEARCH_URI, projection,
-					null, new String[] { query }, PodcastProvider.COLUMN_PUB_DATE + " DESC");
+					null, new String[]{query}, PodcastProvider.COLUMN_PUB_DATE + " DESC");
 		} else
 			throw new IllegalArgumentException("Invalid loader id");
 	}
@@ -296,11 +294,12 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 		SUBSCRIPTION,
 		PODCAST_HEADER,
 		PODCAST,
-	};
+	}
 
-    public class SearchResultsAdapter extends BaseAdapter {
+	;
+
+	public class SearchResultsAdapter extends BaseAdapter {
 		private LayoutInflater _inflater;
-
 		private Cursor _subscriptionCursor = null;
 		private Cursor _podcastCursor = null;
 
@@ -327,47 +326,60 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 		private boolean hasSubscriptionHeader() {
 			return getSubscriptionCount() > 0;
 		}
+
 		private boolean hasPodcastHeader() {
 			return getPodcastCount() > 0;
 		}
+
 		private int getSubscriptionHeaderCount() {
 			return hasSubscriptionHeader() ? 1 : 0;
 		}
+
 		private int getPodcastHeaderCount() {
 			return hasPodcastHeader() ? 1 : 0;
 		}
+
 		private boolean isSubscriptionHeader(int position) {
 			return hasSubscriptionHeader() && position == 0;
 		}
+
 		private int getSubscriptionCount() {
 			if (_subscriptionCursor == null)
 				return 0;
 			return _subscriptionCursor.getCount();
 		}
+
 		private int getSubscriptionIndex(int position) {
 			return position - 1;
 		}
+
 		private boolean isSubscription(int position) {
 			// returns false when no subscriptions because no numbers are between 0 and 1
 			return position > 0 && position < getSubscriptionCount() + 1;
 		}
+
 		private int getPodcastCount() {
 			if (_podcastCursor == null)
 				return 0;
 			return _podcastCursor.getCount();
 		}
+
 		private int getPodcastHeaderPosition() {
 			return getSubscriptionHeaderCount() + getSubscriptionCount();
 		}
+
 		private boolean isPodcastHeader(int position) {
 			return position == getPodcastHeaderPosition();
 		}
+
 		private boolean isPodcast(int position) {
 			return position > getPodcastHeaderPosition();
 		}
+
 		private int getPodcastIndex(int position) {
 			return position - getPodcastHeaderPosition() - 1;
 		}
+
 		private boolean isHeader(int position) {
 			return isSubscriptionHeader(position) || isPodcastHeader(position);
 		}
@@ -406,7 +418,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 			if (isHeader(position))
 				return -1;
 
-			Cursor cursor = (Cursor)getItem(position);
+			Cursor cursor = (Cursor) getItem(position);
 			if (cursor == null)
 				return -1;
 
@@ -425,61 +437,58 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 			TextView textView = (TextView) _inflater.inflate(R.layout.list_item, parent, false);
 
 			Object o = getItem(position);
-			AQuery aq;
 
 			switch (getType(position)) {
-			case SUBSCRIPTION_HEADER:
-				textView.setText("SUBSCRIPTIONS");
-				return textView;
-			case PODCAST_HEADER:
-				textView.setText("PODCASTS");
-				return textView;
-			case SUBSCRIPTION:
-				if (o == null)
+				case SUBSCRIPTION_HEADER:
+					textView.setText("SUBSCRIPTIONS");
 					return textView;
-
-				SubscriptionCursor subscription = new SubscriptionCursor((Cursor)o);
-				
-				view = _inflater.inflate(R.layout.search_subscription_listitem, null);
-				aq = new AQuery(view);
-				aq.find(R.id.text).text(subscription.getTitle());
-				aq.find(R.id.thumbnail).image(subscription.getThumbnail(), new QueueFragment.ImageOptions());
-				aq.find(R.id.more).clicked(new OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						if (getActivity() == null)
-							return;
-						getActivity().openContextMenu((View)(view.getParent()));
-					}
-				});
-				
-				return view;
-			case PODCAST:
-				if (o == null)
+				case PODCAST_HEADER:
+					textView.setText("PODCASTS");
 					return textView;
+				case SUBSCRIPTION:
+					if (o == null)
+						return textView;
 
-				PodcastCursor podcast = new PodcastCursor((Cursor)o);
-				
-				view = _inflater.inflate(R.layout.queue_list_item, null);
-				aq = new AQuery(view);
-				aq.find(R.id.drag).invisible();
+					SubscriptionCursor subscription = new SubscriptionCursor((Cursor) o);
 
-				// more button handler
-				aq.find(R.id.more).clicked(new OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						if (getActivity() == null)
-							return;
-						getActivity().openContextMenu((View)(view.getParent()));
-					}
-				});
+					view = _inflater.inflate(R.layout.search_subscription_listitem, null);
+					((TextView) view.findViewById(R.id.text)).setText(subscription.getTitle());
+					((NetworkImageView) view.findViewById(R.id.thumbnail)).setImageUrl(subscription.getThumbnail(), Helper.getImageLoader(getActivity()));
+					view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View view) {
+							if (getActivity() == null)
+								return;
+							getActivity().openContextMenu((View) (view.getParent()));
+						}
+					});
 
-				aq.find(R.id.title).text(podcast.getTitle());
-				aq.find(R.id.subscription).text(podcast.getSubscriptionTitle());
-				aq.find(R.id.thumbnail).image(podcast.getSubscriptionThumbnailUrl(), new QueueFragment.ImageOptions());
-				return view;
-			default:
-				return textView;
+					return view;
+				case PODCAST:
+					if (o == null)
+						return textView;
+
+					PodcastCursor podcast = new PodcastCursor((Cursor) o);
+
+					view = _inflater.inflate(R.layout.queue_list_item, null);
+					view.findViewById(R.id.drag).setVisibility(View.INVISIBLE);
+
+					// more button handler
+					view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View view) {
+							if (getActivity() == null)
+								return;
+							getActivity().openContextMenu((View) (view.getParent()));
+						}
+					});
+
+					((TextView) view.findViewById(R.id.title)).setText(podcast.getTitle());
+					((TextView) view.findViewById(R.id.subscription)).setText(podcast.getSubscriptionTitle());
+					((NetworkImageView) view.findViewById(R.id.thumbnail)).setImageUrl(podcast.getSubscriptionThumbnailUrl(), Helper.getImageLoader(getActivity()));
+					return view;
+				default:
+					return textView;
 			}
 		}
 
@@ -492,7 +501,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 		}
 
     	/*
-    	public SearchResultsAdapter(Context context, Cursor cursor, String query)
+		public SearchResultsAdapter(Context context, Cursor cursor, String query)
     	{
     		super(cursor, context);
     		_context = context;

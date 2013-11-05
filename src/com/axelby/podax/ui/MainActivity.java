@@ -31,11 +31,11 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidquery.AQuery;
 import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
@@ -56,10 +56,22 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
+	private static int _defaultTextColor = 0;
+	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
 	private DrawerLayout _drawerLayout;
 	private ActionBarDrawerToggle _drawerToggle;
 	private int _fragmentId;
-	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
+	private ContentObserver _activePodcastObserver = new ContentObserver(new Handler()) {
+		@Override
+		public void onChange(boolean selfChange, Uri uri) {
+			updateDrawerControls();
+		}
+
+		@Override
+		public void onChange(boolean selfChange) {
+			this.onChange(selfChange, null);
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,23 +94,22 @@ public class MainActivity extends Activity {
 
 		// ui initialization
 		setContentView(R.layout.app);
-        _drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        _drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, R.drawable.ic_drawer,
-                R.string.open_drawer, R.string.close_drawer);
-        _drawerLayout.setDrawerListener(_drawerToggle);
+		_drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		_drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, R.drawable.ic_drawer,
+				R.string.open_drawer, R.string.close_drawer);
+		_drawerLayout.setDrawerListener(_drawerToggle);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
 
 		// watch active podcast for drawer
 		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
 		updateDrawerControls();
 
-		AQuery aq = new AQuery(this);
-		_drawerLayout = (DrawerLayout) aq.find(R.id.drawer_layout).getView();
+		_drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 
-		ListView drawer = aq.find(R.id.drawer_list).getListView();
+		ListView drawer = (ListView) findViewById(R.id.drawer_list);
 		PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
 		drawer.setAdapter(_drawerAdapter);
 		drawer.setOnItemClickListener(new OnItemClickListener() {
@@ -109,22 +120,46 @@ public class MainActivity extends Activity {
 				_fragmentId = position;
 
 				switch (position) {
-					case 1 : replaceFragment(WelcomeFragment.class); break;
-					case 2 : replaceFragment(PodcastDetailFragment.class); break;
-					case 3 : replaceFragment(QueueFragment.class); break;
-					case 4 : replaceFragment(SubscriptionListFragment.class); break;
-					case 5 : replaceFragment(SearchFragment.class); break;
-					case 7 : askForRSSUrl(); break;
-					case 8 : replaceFragment(ITunesPopularListFragment.class); break;
-					case 9 : replaceFragment(GPodderPopularListFragment.class); break;
-					case 10: handleGPodder(); break;
-					case 12: replaceFragment(PodaxPreferenceFragment.class); break;
-					case 13: replaceFragment(AboutFragment.class); break;
-					case 14: replaceFragment(LogViewerFragment.class); break;
+					case 1:
+						replaceFragment(WelcomeFragment.class);
+						break;
+					case 2:
+						replaceFragment(PodcastDetailFragment.class);
+						break;
+					case 3:
+						replaceFragment(QueueFragment.class);
+						break;
+					case 4:
+						replaceFragment(SubscriptionListFragment.class);
+						break;
+					case 5:
+						replaceFragment(SearchFragment.class);
+						break;
+					case 7:
+						askForRSSUrl();
+						break;
+					case 8:
+						replaceFragment(ITunesPopularListFragment.class);
+						break;
+					case 9:
+						replaceFragment(GPodderPopularListFragment.class);
+						break;
+					case 10:
+						handleGPodder();
+						break;
+					case 12:
+						replaceFragment(PodaxPreferenceFragment.class);
+						break;
+					case 13:
+						replaceFragment(AboutFragment.class);
+						break;
+					case 14:
+						replaceFragment(LogViewerFragment.class);
+						break;
 				}
-		}
+			}
 		});
-		aq.id(R.id.pause).clicked(new OnClickListener() {
+		findViewById(R.id.pause).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				PlayerService.playstop(MainActivity.this);
@@ -239,18 +274,18 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (_drawerToggle.onOptionsItemSelected(item))
-          return true;
-        return super.onOptionsItemSelected(item);
-    }
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (_drawerToggle.onOptionsItemSelected(item))
+			return true;
+		return super.onOptionsItemSelected(item);
+	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt("fragmentId", _fragmentId);
 	}
-	
+
 	@Override
 	protected void onPause() {
 		super.onPause();
@@ -273,28 +308,20 @@ public class MainActivity extends Activity {
 		_savedFragments.add(new WeakReference<Fragment>(fragment));
 	}
 
-	private static int _defaultTextColor = 0;
+	private void updateDrawerControls() {
+		// we could put the db call in a thread
+		PlayerStatus status = PlayerStatus.getCurrentState(MainActivity.this);
+		int imageResId = status.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+		((ImageView) findViewById(R.id.pause)).setImageResource(imageResId);
+		if (status.hasActivePodcast())
+			((TextView) findViewById(R.id.podcast_title)).setText(status.getTitle());
+		else
+			((TextView) findViewById(R.id.podcast_title)).setText(R.string.queue_empty);
+	}
 
 	class PodaxDrawerAdapter extends BaseAdapter {
-		class Item {
-			String label;
-			int drawable;
-			boolean isHeader;
-
-			public Item(String label, int drawable, boolean isHeader) {
-				this.drawable = drawable;
-				this.isHeader = isHeader;
-				if (this.isHeader)
-					this.label = label.toUpperCase();
-				else
-					this.label = label;
-			}
-
-			public Item(int labelId, int drawableId, boolean isHeader) {
-				this(MainActivity.this.getResources().getString(labelId), drawableId, isHeader);
-			}
-		}
-
+		private final int HEADER = 0;
+		private final int NORMAL = 1;
 		Item _items[] = {
 				new Item(R.string.app_name, 0, true),
 				new Item(R.string.welcome, android.R.drawable.ic_menu_compass, false),
@@ -314,10 +341,6 @@ public class MainActivity extends Activity {
 				new Item(R.string.about, R.drawable.ic_menu_podax, false),
 				new Item(R.string.log_viewer, android.R.drawable.ic_menu_info_details, false),
 		};
-
-		private final int HEADER = 0;
-		private final int NORMAL = 1;
-
 		private Context _context;
 
 		public PodaxDrawerAdapter(Context context) {
@@ -379,28 +402,24 @@ public class MainActivity extends Activity {
 		public boolean hasStableIds() {
 			return true;
 		}
-	}
 
-	private ContentObserver _activePodcastObserver = new ContentObserver(new Handler()) {
-		@Override
-		public void onChange(boolean selfChange, Uri uri) {
-			updateDrawerControls();
+		class Item {
+			String label;
+			int drawable;
+			boolean isHeader;
+
+			public Item(String label, int drawable, boolean isHeader) {
+				this.drawable = drawable;
+				this.isHeader = isHeader;
+				if (this.isHeader)
+					this.label = label.toUpperCase();
+				else
+					this.label = label;
+			}
+
+			public Item(int labelId, int drawableId, boolean isHeader) {
+				this(MainActivity.this.getResources().getString(labelId), drawableId, isHeader);
+			}
 		}
-
-		@Override
-		public void onChange(boolean selfChange) {
-			this.onChange(selfChange, null);
-		}
-	};
-
-	private void updateDrawerControls() {
-		// we could put the db call in a thread
-		AQuery aq = new AQuery(this);
-		PlayerStatus status = PlayerStatus.getCurrentState(MainActivity.this);
-		aq.id(R.id.pause).image(status.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play);
-		if (status.hasActivePodcast())
-			aq.id(R.id.podcast_title).text(status.getTitle());
-		else
-			aq.id(R.id.podcast_title).text(R.string.queue_empty);
 	}
 }

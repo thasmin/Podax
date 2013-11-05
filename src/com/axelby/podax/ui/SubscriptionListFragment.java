@@ -19,9 +19,10 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.ResourceCursorAdapter;
+import android.widget.TextView;
 
-import com.androidquery.AQuery;
 import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
@@ -29,7 +30,6 @@ import com.axelby.podax.UpdateService;
 
 public class SubscriptionListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;
-	private GridView _grid;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -50,12 +50,12 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		_grid = (GridView) getActivity().findViewById(R.id.grid);
+		GridView _grid = (GridView) getActivity().findViewById(R.id.grid);
 		_grid.setAdapter(_adapter);
 		_grid.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> grid, View view, int position, long id) {
-				SubscriptionCursor sub = new SubscriptionCursor((Cursor)grid.getItemAtPosition(position));
+				SubscriptionCursor sub = new SubscriptionCursor((Cursor) grid.getItemAtPosition(position));
 				long subscriptionId = sub.getId();
 
 				PodcastListFragment podcastListFragment = new PodcastListFragment();
@@ -63,7 +63,7 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
 				podcastListFragment.setArguments(args);
 				FragmentTransaction ft = getFragmentManager().beginTransaction();
-                ft.replace(R.id.fragment, podcastListFragment).addToBackStack(null).commit();
+				ft.replace(R.id.fragment, podcastListFragment).addToBackStack(null).commit();
 			}
 		});
 		registerForContextMenu(_grid);
@@ -74,16 +74,16 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 		inflater.inflate(R.menu.subscription_list, menu);
 	}
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.refresh_subscriptions) {
-            UpdateService.updateSubscriptions(getActivity());
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.refresh_subscriptions) {
+			UpdateService.updateSubscriptions(getActivity());
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 
-    @Override
+	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		menu.add(0, 0, 0, R.string.unsubscribe);
 	}
@@ -91,14 +91,14 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case 0:
-			AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-			Cursor cursor = (Cursor) _adapter.getItem(menuInfo.position);
-			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
-			getActivity().getContentResolver().delete(subscription.getContentUri(), null, null);
-			break;
-		default:
-			return super.onContextItemSelected(item);
+			case 0:
+				AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+				Cursor cursor = (Cursor) _adapter.getItem(menuInfo.position);
+				SubscriptionCursor subscription = new SubscriptionCursor(cursor);
+				getActivity().getContentResolver().delete(subscription.getContentUri(), null, null);
+				break;
+			default:
+				return super.onContextItemSelected(item);
 		}
 		return true;
 	}
@@ -136,9 +136,8 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 		public void bindView(View view, Context context, Cursor cursor) {
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
-			AQuery aq = new AQuery(view);
-			aq.find(R.id.text).text(subscription.getTitle());
-			aq.find(R.id.thumbnail).image(subscription.getThumbnail(), new QueueFragment.ImageOptions());
+			((TextView) view.findViewById(R.id.text)).setText(subscription.getTitle());
+			((SquareImageView) view.findViewById(R.id.thumbnail)).setImageUrl(subscription.getThumbnail(), Helper.getImageLoader(getActivity()));
 		}
 	}
 }
