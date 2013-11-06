@@ -288,10 +288,10 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		_playButton.setImageResource(playResource);
 
 		if (podcast.getQueuePosition() == null) {
-			_queueButton.setText(R.string.add_to_queue);
+			_queueButton.setText(R.string.add);
 			_queuePosition.setText("");
 		} else {
-			_queueButton.setText(R.string.remove_from_queue);
+			_queueButton.setText(R.string.remove);
 			_queuePosition.setText("#"
 					+ String.valueOf(podcast.getQueuePosition() + 1)
 					+ " in queue");

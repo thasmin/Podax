@@ -156,6 +156,7 @@
     <string name="queue_empty">Queue empty</string>
     <string name="top_gpodder_podcasts">Top GPodder Podcasts</string>
     <string name="view_website">View Website</string>
+    <string name="remove">Remove</string>
 
 
 </resources>

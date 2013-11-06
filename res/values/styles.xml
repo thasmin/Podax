@@ -11,6 +11,14 @@
     <color name="podaxBlue">#FF085D99</color>
     <color name="podaxBlueBright">#FF399FE5</color>
 
+    <style name="podaxButtonSmall" parent="android:Widget.Button.Small">
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
     <style name="mainText" parent="@android:style/TextAppearance.Large">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
