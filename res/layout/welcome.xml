@@ -1,134 +1,134 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/scroller"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:fillViewport="true" >
+            android:id="@+id/scroller"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:fillViewport="true">
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
         <LinearLayout
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal" >
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/app_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_long_name"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
+                    android:id="@+id/app_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_long_name"
+                    android:textAppearance="?android:attr/textAppearanceLarge"/>
 
             <TextView
-                android:id="@+id/version"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="3dp"
-                android:text="@string/app_version"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                    android:id="@+id/version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="3dp"
+                    android:text="@string/app_version"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
         </LinearLayout>
 
         <TextView
-            android:id="@+id/intro"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/welcome_intro" />
-
-        <LinearLayout
-            android:id="@+id/rssurl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:id="@+id/rssurl_label"
+                android:id="@+id/intro"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/rss"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:layout_marginTop="20dp"
+                android:text="@string/welcome_intro"/>
+
+        <LinearLayout
+                android:id="@+id/rssurl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/rssurl_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/rss"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
 
             <EditText
-                android:id="@+id/rssurl_text"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="10"
-                android:inputType="textUri" >
+                    android:id="@+id/rssurl_text"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:inputType="textUri">
             </EditText>
 
             <Button
-                android:id="@+id/rssurl_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/subscribe" />
+                    android:id="@+id/rssurl_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/subscribe"/>
         </LinearLayout>
 
         <RelativeLayout
-            android:id="@+id/american_life"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+                android:id="@+id/american_life"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/american_life_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/welcome_american_life"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                    android:id="@+id/american_life_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/welcome_american_life"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
 
             <Button
-                android:id="@+id/american_life_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/american_life_title"
-                android:layout_alignParentRight="true"
-                android:text="@string/subscribe" />
+                    android:id="@+id/american_life_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/american_life_title"
+                    android:layout_alignParentRight="true"
+                    android:text="@string/subscribe"/>
 
             <TextView
-                android:id="@+id/american_life_desc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_below="@+id/american_life_title"
-                android:layout_marginTop="10dp"
-                android:text="@string/welcome_american_life_desc" />
+                    android:id="@+id/american_life_desc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/american_life_title"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/welcome_american_life_desc"/>
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/tech_news_today"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+                android:id="@+id/tech_news_today"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/tech_news_today_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/welcome_tech_news_today"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                    android:id="@+id/tech_news_today_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/welcome_tech_news_today"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
 
             <Button
-                android:id="@+id/tech_news_today_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/tech_news_today_title"
-                android:layout_alignParentRight="true"
-                android:text="@string/subscribe" />
+                    android:id="@+id/tech_news_today_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/tech_news_today_title"
+                    android:layout_alignParentRight="true"
+                    android:text="@string/subscribe"/>
 
             <TextView
-                android:id="@+id/tech_news_today_desc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_below="@+id/tech_news_today_title"
-                android:layout_marginTop="10dp"
-                android:text="@string/welcome_tech_news_today_desc" />
+                    android:id="@+id/tech_news_today_desc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/tech_news_today_title"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/welcome_tech_news_today_desc"/>
         </RelativeLayout>
     </LinearLayout>
 

@@ -1,15 +1,5 @@
 package com.axelby.podax.ui;
 
-import java.io.IOException;
-import java.util.Vector;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.os.AsyncTask;
@@ -25,6 +15,16 @@ import android.widget.ListView;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.Vector;
 
 public class ITunesPopularListFragment extends ListFragment {
 
@@ -58,7 +58,7 @@ public class ITunesPopularListFragment extends ListFragment {
 		super.onActivityCreated(savedInstanceState);
 
 		_loaded = false;
-		String[] strings = { "Loading from iTunes" };
+		String[] strings = {"Loading from iTunes"};
 		setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings));
 
 		new AsyncTask<Void, Void, Vector<PodaxFeed>>() {
@@ -99,7 +99,7 @@ public class ITunesPopularListFragment extends ListFragment {
 				}
 				super.onPostExecute(result);
 			}
-		}.execute((Void)null);
+		}.execute((Void) null);
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class ITunesPopularListFragment extends ListFragment {
 		args.putString(Constants.EXTRA_URL, feed.url);
 		PopularSubscriptionFragment fragment = new PopularSubscriptionFragment();
 		fragment.setArguments(args);
-		
+
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 	}

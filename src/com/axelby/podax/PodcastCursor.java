@@ -1,21 +1,20 @@
 package com.axelby.podax;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Environment;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 
 public class PodcastCursor {
 
 	private Cursor _cursor;
-	
+
 	private Integer _idColumn = null;
 	private Integer _titleColumn = null;
 	private Integer _subscriptionIdColumn = null;
@@ -171,7 +170,7 @@ public class PodcastCursor {
 		String extension = "";
 		int i = filename.lastIndexOf('.');
 		if (i > 0)
-		    extension = filename.substring(i+1);
+			extension = filename.substring(i + 1);
 		return extension;
 	}
 
@@ -208,7 +207,7 @@ public class PodcastCursor {
 
 	public void removeFromQueue(Context context) {
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 

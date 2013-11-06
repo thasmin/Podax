@@ -3,7 +3,6 @@ package com.axelby.podax;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 
 public class PlayerStatus {
 
@@ -48,18 +47,21 @@ public class PlayerStatus {
 	// instance variables
 	public enum PlayerStates {
 		INVALID(-1),
-		QUEUEEMPTY(0), 
-		STOPPED(1), 
-		PAUSED(2), 
+		QUEUEEMPTY(0),
+		STOPPED(1),
+		PAUSED(2),
 		PLAYING(3);
 
 		private final int _code;
+
 		PlayerStates(int code) {
 			_code = code;
 		}
+
 		public int toInt() {
 			return _code;
 		}
+
 		public static PlayerStates fromInt(int code) {
 			for (PlayerStates p : PlayerStates.values())
 				if (p.toInt() == code)

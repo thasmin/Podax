@@ -1,18 +1,5 @@
 package com.axelby.podax;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlSerializer;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -32,13 +19,26 @@ import com.axelby.riasel.Feed;
 import com.axelby.riasel.FeedItem;
 import com.axelby.riasel.FeedParser;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlSerializer;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class SubscriptionUpdater {
 	private Context _context;
 
 	public SubscriptionUpdater(Context context) {
 		_context = context;
 	}
-	
+
 	public void update(final long subscriptionId) {
 		Cursor cursor = null;
 		try {
@@ -46,7 +46,7 @@ public class SubscriptionUpdater {
 				return;
 
 			Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
-			String[] projection = new String[] {
+			String[] projection = new String[]{
 					SubscriptionProvider.COLUMN_ID,
 					SubscriptionProvider.COLUMN_TITLE,
 					SubscriptionProvider.COLUMN_URL,
@@ -58,7 +58,7 @@ public class SubscriptionUpdater {
 
 			cursor = _context.getContentResolver().query(subscriptionUri, projection,
 					SubscriptionProvider.COLUMN_ID + " = ?",
-					new String[] { String.valueOf(subscriptionId) }, null);
+					new String[]{String.valueOf(subscriptionId)}, null);
 			if (!cursor.moveToNext())
 				return;
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
@@ -66,7 +66,7 @@ public class SubscriptionUpdater {
 			showNotification(subscription);
 
 			URL url = new URL(subscription.getUrl());
-			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			if (subscription.getETag() != null)
 				connection.setRequestProperty("If-None-Match", subscription.getETag());
 			if (subscription.getLastModified() != null && subscription.getLastModified().getTime() > 0) {
@@ -163,7 +163,9 @@ public class SubscriptionUpdater {
 			return true;
 		}
 		return false;
-	};
+	}
+
+	;
 
 	private boolean changeKeyLong(ContentValues values, String oldKey, String newKey) {
 		if (values.containsKey(oldKey)) {
@@ -172,7 +174,9 @@ public class SubscriptionUpdater {
 			return true;
 		}
 		return false;
-	};
+	}
+
+	;
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
@@ -180,20 +184,20 @@ public class SubscriptionUpdater {
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)
-			.setSmallIcon(drawable.icon)
-			.setTicker("Error Updating Subscription")
-			.setWhen(System.currentTimeMillis())
-			.setContentTitle("Error updating " + subscription.getTitle())
-			.setContentText(reason)
-			.setContentIntent(contentIntent)
-			.setOngoing(false)
-			.build();
+				.setSmallIcon(drawable.icon)
+				.setTicker("Error Updating Subscription")
+				.setWhen(System.currentTimeMillis())
+				.setContentTitle("Error updating " + subscription.getTitle())
+				.setContentText(reason)
+				.setContentIntent(contentIntent)
+				.setOngoing(false)
+				.build();
 
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
 		notificationManager.notify(Constants.SUBSCRIPTION_UPDATE_ERROR, notification);
 	}
-	
+
 
 	protected void writeSubscriptionOPML() {
 		try {
@@ -220,7 +224,7 @@ public class SubscriptionUpdater {
 					SubscriptionProvider.COLUMN_TITLE,
 					SubscriptionProvider.COLUMN_URL,
 			};
-			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection , null, null, SubscriptionProvider.COLUMN_TITLE);
+			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, null, null, SubscriptionProvider.COLUMN_TITLE);
 			while (c.moveToNext()) {
 				SubscriptionCursor sub = new SubscriptionCursor(c);
 
@@ -247,11 +251,11 @@ public class SubscriptionUpdater {
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)
-			.setSmallIcon(drawable.icon)
-			.setWhen(System.currentTimeMillis())
-			.setContentTitle("Updating " + subscription.getTitle())
-			.setContentIntent(contentIntent)
-			.build();
+				.setSmallIcon(drawable.icon)
+				.setWhen(System.currentTimeMillis())
+				.setContentTitle("Updating " + subscription.getTitle())
+				.setContentIntent(contentIntent)
+				.build();
 
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(Constants.NOTIFICATION_UPDATE, notification);

@@ -1,24 +1,24 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:podax="http://schemas.android.com/apk/res/com.axelby.podax"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:layout_alignParentTop="true"
-    android:orientation="vertical" >
+              xmlns:podax="http://schemas.android.com/apk/res/com.axelby.podax"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:layout_alignParentTop="true"
+              android:orientation="vertical">
 
     <com.mobeta.android.dslv.DragSortListView
-        android:id="@+id/android:list"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        podax:drag_handle_id="@+id/drag" />
+            android:id="@+id/android:list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            podax:drag_handle_id="@+id/drag"/>
 
     <TextView
-        android:id="@+id/android:empty"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:text="@string/no_podcasts_in_queue" />
+            android:id="@+id/android:empty"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:text="@string/no_podcasts_in_queue"/>
 
     <include
-        android:id="@+id/floater"
-        layout="@layout/queue_list_item" />
+            android:id="@+id/floater"
+            layout="@layout/queue_list_item"/>
 
 </LinearLayout>

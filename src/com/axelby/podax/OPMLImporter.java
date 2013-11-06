@@ -1,12 +1,5 @@
 package com.axelby.podax;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.sax.Element;
@@ -14,9 +7,16 @@ import android.sax.ElementListener;
 import android.sax.RootElement;
 import android.util.Xml;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 public class OPMLImporter {
 	public static int read(final Context context, File file) throws IOException, SAXException {
-		final int[] count = { 0 };
+		final int[] count = {0};
 
 		ElementListener outlineHandler = new ElementListener() {
 			public void start(Attributes attrs) {
@@ -42,6 +42,7 @@ public class OPMLImporter {
 				context.getContentResolver().insert(SubscriptionProvider.URI, values);
 				count[0]++;
 			}
+
 			public void end() {
 			}
 		};

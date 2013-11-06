@@ -12,9 +12,9 @@ public class QueueManager {
 		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("autoDeletePref", true) == false) {
 			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
 		} else {
-			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);	
+			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
 		}
-		
+
 		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 	}
 

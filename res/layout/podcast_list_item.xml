@@ -1,23 +1,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:paddingLeft="6dip"
-    android:gravity="center_vertical" >
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:paddingLeft="6dip"
+              android:gravity="center_vertical">
 
     <TextView
-        android:id="@+id/text"
-        android:layout_width="0dip"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:minHeight="?android:attr/listPreferredItemHeight"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:id="@+id/text"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:minHeight="?android:attr/listPreferredItemHeight"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <ImageView
-        android:id="@+id/more"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/more_options"
-        android:src="@drawable/ic_list_more" />
+            android:id="@+id/more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/more_options"
+            android:src="@drawable/ic_list_more"/>
 
 </LinearLayout>

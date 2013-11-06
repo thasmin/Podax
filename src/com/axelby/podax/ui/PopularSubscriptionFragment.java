@@ -1,13 +1,5 @@
 package com.axelby.podax.ui;
 
-import java.io.IOException;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.xml.sax.SAXException;
-
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
@@ -28,6 +20,14 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 
 public class PopularSubscriptionFragment extends Fragment {
 
@@ -67,9 +67,9 @@ public class PopularSubscriptionFragment extends Fragment {
 				values.put(SubscriptionProvider.COLUMN_URL, getArguments().getString(Constants.EXTRA_URL));
 				getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
 				UpdateService.updateSubscriptions(getActivity());
-				
+
 				getFragmentManager().popBackStack();
-			}			
+			}
 		});
 
 		_dialog = ProgressDialog.show(getActivity(), "", "Loading Subscription...", true, true);

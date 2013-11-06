@@ -53,7 +53,7 @@ public class PodcastProgress extends RelativeLayout {
 		}
 	}
 
-	public boolean isEmpty() { 
+	public boolean isEmpty() {
 		return _position.getText().length() == 0;
 	}
 

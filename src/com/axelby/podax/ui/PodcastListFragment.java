@@ -95,6 +95,7 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 	}
 
 	CharSequence _originalTitle = null;
+
 	public boolean setTitle() {
 		if (_originalTitle == null)
 			_originalTitle = getActivity().getTitle();
@@ -126,29 +127,29 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo)item.getMenuInfo();
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
 		PodcastCursor podcast = new PodcastCursor(cursor);
 
 		switch (item.getItemId()) {
-		case OPTION_ADDTOQUEUE:
-			podcast.addToQueue(getActivity());
-			break;
-		case OPTION_REMOVEFROMQUEUE:
-			podcast.removeFromQueue(getActivity());
-			break;
-		case OPTION_PLAY:
-			ContentValues values = new ContentValues();
-			values.put(PodcastProvider.COLUMN_ID, podcast.getId());
-			getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-			PlayerService.play(getActivity());
+			case OPTION_ADDTOQUEUE:
+				podcast.addToQueue(getActivity());
+				break;
+			case OPTION_REMOVEFROMQUEUE:
+				podcast.removeFromQueue(getActivity());
+				break;
+			case OPTION_PLAY:
+				ContentValues values = new ContentValues();
+				values.put(PodcastProvider.COLUMN_ID, podcast.getId());
+				getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+				PlayerService.play(getActivity());
 
-			Bundle args = new Bundle();
-			args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
-			FragmentTransaction ft = getFragmentManager().beginTransaction();
-			PodcastDetailFragment fragment = new PodcastDetailFragment();
-			fragment.setArguments(args);
-			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
+				Bundle args = new Bundle();
+				args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
+				FragmentTransaction ft = getFragmentManager().beginTransaction();
+				PodcastDetailFragment fragment = new PodcastDetailFragment();
+				fragment.setArguments(args);
+				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 		}
 
 		return true;
@@ -163,20 +164,20 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
 		switch (item.getItemId()) {
-		case R.id.refresh_subscription:
-			UpdateService.updateSubscription(getActivity(), _subscriptionId);
-			return true;
-		case R.id.settings:
-			SubscriptionSettingsFragment fragment = new SubscriptionSettingsFragment();
-			Bundle args = new Bundle();
-			args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, _subscriptionId);
-			fragment.setArguments(args);
+			case R.id.refresh_subscription:
+				UpdateService.updateSubscription(getActivity(), _subscriptionId);
+				return true;
+			case R.id.settings:
+				SubscriptionSettingsFragment fragment = new SubscriptionSettingsFragment();
+				Bundle args = new Bundle();
+				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, _subscriptionId);
+				fragment.setArguments(args);
 
-			FragmentTransaction ft = getFragmentManager().beginTransaction();
-			ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
+				FragmentTransaction ft = getFragmentManager().beginTransaction();
+				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 	}
 
@@ -237,7 +238,7 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					getActivity().openContextMenu((View)(view.getParent()));
+					getActivity().openContextMenu((View) (view.getParent()));
 				}
 			});
 

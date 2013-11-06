@@ -1,7 +1,5 @@
 package com.axelby.podax.ui;
 
-import org.acra.ACRA;
-
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.ContentUris;
@@ -27,11 +25,13 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 
+import org.acra.ACRA;
+
 public class SubscriptionSettingsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
 	private long _subscriptionId;
 	private Uri _subscriptionUri;
-	
+
 	private String _feedTitle;
 
 	private EditText _name;
@@ -48,11 +48,11 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 			_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 		if (_subscriptionId == -1)
 			ACRA.getErrorReporter().handleSilentException(new Exception("subscription settings got a -1"));
-		_subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI,  _subscriptionId);
+		_subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
 
 		Bundle bundle = new Bundle();
 		bundle.putLong("id", _subscriptionId);
-        getLoaderManager().initLoader(0, bundle, this);
+		getLoaderManager().initLoader(0, bundle, this);
 	}
 
 	@Override
@@ -64,8 +64,8 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-        _name = (EditText) getActivity().findViewById(R.id.name);
-        _name.addTextChangedListener(new TextWatcher() {
+		_name = (EditText) getActivity().findViewById(R.id.name);
+		_name.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
 				String newTitle = s.toString();
@@ -87,11 +87,11 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 			}
-        });
+		});
 
-        _autoName = (CheckBox) getActivity().findViewById(R.id.nameAuto);
-        _autoQueue = (RadioGroup) getActivity().findViewById(R.id.autoQueueGroup);        	
-        _expiration = (RadioGroup) getActivity().findViewById(R.id.expireGroup);
+		_autoName = (CheckBox) getActivity().findViewById(R.id.nameAuto);
+		_autoQueue = (RadioGroup) getActivity().findViewById(R.id.autoQueueGroup);
+		_expiration = (RadioGroup) getActivity().findViewById(R.id.expireGroup);
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 	}
 
 	public void initializeControls() {
-        _autoName.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+		_autoName.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton button, boolean checked) {
 				ContentValues values = new ContentValues();
@@ -112,31 +112,31 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 				if (checked)
 					_name.setText(_feedTitle);
 			}
-        });
+		});
 
-        _autoQueue.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+		_autoQueue.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
 				ContentValues values = new ContentValues();
 				values.put(SubscriptionProvider.COLUMN_QUEUE_NEW, checkedId == R.id.autoQueueYes);
 				getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
 			}
-        });
+		});
 
-        _expiration.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+		_expiration.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
 				ContentValues values = new ContentValues();
 				switch (checkedId) {
-				case R.id.expire0:
-					values.putNull(SubscriptionProvider.COLUMN_EXPIRATION);
-					break;
-				case R.id.expire7:
-					values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
-					break;
-				case R.id.expire14:
-					values.put(SubscriptionProvider.COLUMN_EXPIRATION, 14);
-					break;
+					case R.id.expire0:
+						values.putNull(SubscriptionProvider.COLUMN_EXPIRATION);
+						break;
+					case R.id.expire7:
+						values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
+						break;
+					case R.id.expire14:
+						values.put(SubscriptionProvider.COLUMN_EXPIRATION, 14);
+						break;
 				}
 				getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
 			}
@@ -159,11 +159,12 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 	}
 
 	boolean init = false;
+
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		if (loader.getId() != 0)
 			return;
-		
+
 		if (init)
 			return;
 		init = true;
@@ -187,8 +188,12 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 
 		if (!cursor.isNull(3)) {
 			switch (cursor.getInt(3)) {
-			case 7: _expiration.check(R.id.expire7); break;
-			case 14: _expiration.check(R.id.expire14); break;
+				case 7:
+					_expiration.check(R.id.expire7);
+					break;
+				case 14:
+					_expiration.check(R.id.expire14);
+					break;
 			}
 		}
 

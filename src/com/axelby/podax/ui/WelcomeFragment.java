@@ -35,7 +35,7 @@ public class WelcomeFragment extends Fragment {
 			getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
 			UpdateService.updateSubscriptions(getActivity());
 		}
-	};
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

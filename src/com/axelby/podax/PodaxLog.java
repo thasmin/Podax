@@ -1,16 +1,16 @@
 package com.axelby.podax;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class PodaxLog {
 
@@ -26,7 +26,7 @@ public class PodaxLog {
 		try {
 			if (!isDebuggable(context))
 				return;
-	
+
 			String message = String.format(format, args);
 			message = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date()) + " " + message;
 			message += "\n";
@@ -44,8 +44,8 @@ public class PodaxLog {
 		PackageInfo packageInfo;
 		try {
 			packageInfo = context.getPackageManager().getPackageInfo(
-						context.getApplicationInfo().packageName,
-						PackageManager.GET_CONFIGURATIONS);
+					context.getApplicationInfo().packageName,
+					PackageManager.GET_CONFIGURATIONS);
 		} catch (NameNotFoundException e) {
 			return false;
 		}

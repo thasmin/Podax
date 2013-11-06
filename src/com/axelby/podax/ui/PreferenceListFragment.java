@@ -1,10 +1,5 @@
 package com.axelby.podax.ui;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-
-import com.axelby.podax.R;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ListFragment;
@@ -23,6 +18,11 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.ListView;
 
+import com.axelby.podax.R;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+
 public class PreferenceListFragment extends ListFragment {
 
 	private PreferenceManager mPreferenceManager;
@@ -38,9 +38,9 @@ public class PreferenceListFragment extends ListFragment {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case MSG_BIND_PREFERENCES:
-				bindPreferences();
-				break;
+				case MSG_BIND_PREFERENCES:
+					bindPreferences();
+					break;
 			}
 		}
 	};
@@ -122,7 +122,7 @@ public class PreferenceListFragment extends ListFragment {
 
 	/**
 	 * Posts a message to bind the preferences to the list view.
-	 * <p>
+	 * <p/>
 	 * Binding late is preferred as any custom preference types created in
 	 * {@link #onCreate(Bundle)} are able to have their views recycled.
 	 */
@@ -141,7 +141,7 @@ public class PreferenceListFragment extends ListFragment {
 
 	/**
 	 * Creates the {@link PreferenceManager}.
-	 * 
+	 *
 	 * @return The {@link PreferenceManager} used by this activity.
 	 */
 	private PreferenceManager onCreatePreferenceManager() {
@@ -158,7 +158,7 @@ public class PreferenceListFragment extends ListFragment {
 
 	/**
 	 * Returns the {@link PreferenceManager} used by this activity.
-	 * 
+	 *
 	 * @return The {@link PreferenceManager}.
 	 */
 	public PreferenceManager getPreferenceManager() {
@@ -167,9 +167,8 @@ public class PreferenceListFragment extends ListFragment {
 
 	/**
 	 * Sets the root of the preference hierarchy that this activity is showing.
-	 * 
-	 * @param preferenceScreen
-	 *            The root {@link PreferenceScreen} of the preference hierarchy.
+	 *
+	 * @param preferenceScreen The root {@link PreferenceScreen} of the preference hierarchy.
 	 */
 	public void setPreferenceScreen(PreferenceScreen preferenceScreen) {
 		try {
@@ -186,9 +185,9 @@ public class PreferenceListFragment extends ListFragment {
 
 	/**
 	 * Gets the root of the preference hierarchy that this activity is showing.
-	 * 
+	 *
 	 * @return The {@link PreferenceScreen} that is the root of the preference
-	 *         hierarchy.
+	 * hierarchy.
 	 */
 	public PreferenceScreen getPreferenceScreen() {
 		try {
@@ -203,9 +202,8 @@ public class PreferenceListFragment extends ListFragment {
 
 	/**
 	 * Adds preferences from activities that match the given {@link Intent}.
-	 * 
-	 * @param intent
-	 *            The {@link Intent} to query activities.
+	 *
+	 * @param intent The {@link Intent} to query activities.
 	 */
 	public void addPreferencesFromIntent(Intent intent) {
 		throw new RuntimeException("too lazy to include this bs");
@@ -225,9 +223,8 @@ public class PreferenceListFragment extends ListFragment {
 	/**
 	 * Inflates the given XML resource and adds the preference hierarchy to the
 	 * current preference hierarchy.
-	 * 
-	 * @param preferencesResId
-	 *            The XML resource ID to inflate.
+	 *
+	 * @param preferencesResId The XML resource ID to inflate.
 	 */
 	public void addPreferencesFromResource(int preferencesResId) {
 		try {
@@ -239,9 +236,8 @@ public class PreferenceListFragment extends ListFragment {
 
 	/**
 	 * Finds a {@link Preference} based on its key.
-	 * 
-	 * @param key
-	 *            The key of the preference to retrieve.
+	 *
+	 * @param key The key of the preference to retrieve.
 	 * @return The {@link Preference} with the key, or null.
 	 * @see PreferenceGroup#findPreference(CharSequence)
 	 */

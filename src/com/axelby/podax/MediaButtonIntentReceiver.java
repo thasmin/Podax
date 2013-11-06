@@ -17,35 +17,35 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		if (event == null || event.getAction() != KeyEvent.ACTION_DOWN)
 			return;
 
-		switch(event.getKeyCode()) {
-		// Simple headsets only send KEYCODE_HEADSETHOOK
-		case KeyEvent.KEYCODE_HEADSETHOOK:
-		case KeyEvent.KEYCODE_MEDIA_PLAY:
-		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-            PodaxLog.log(context, "got a media button playpause");
-			if  (event.getRepeatCount() == 0) {
-				PlayerService.playpause(context, Constants.PAUSE_MEDIABUTTON);
-			} else if (event.getRepeatCount() == 2) {
+		switch (event.getKeyCode()) {
+			// Simple headsets only send KEYCODE_HEADSETHOOK
+			case KeyEvent.KEYCODE_HEADSETHOOK:
+			case KeyEvent.KEYCODE_MEDIA_PLAY:
+			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+				PodaxLog.log(context, "got a media button playpause");
+				if (event.getRepeatCount() == 0) {
+					PlayerService.playpause(context, Constants.PAUSE_MEDIABUTTON);
+				} else if (event.getRepeatCount() == 2) {
+					PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, 30);
+					PlayerService.play(context);
+				}
+				break;
+			case KeyEvent.KEYCODE_MEDIA_PAUSE:
+				PlayerService.pause(context, Constants.PAUSE_MEDIABUTTON);
+				break;
+			case KeyEvent.KEYCODE_MEDIA_STOP:
+				PlayerService.stop(context);
+				break;
+			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+			case KeyEvent.KEYCODE_MEDIA_NEXT:
 				PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, 30);
-				PlayerService.play(context);
-			}
-			break;
-		case KeyEvent.KEYCODE_MEDIA_PAUSE:
-			PlayerService.pause(context, Constants.PAUSE_MEDIABUTTON);
-			break;
-		case KeyEvent.KEYCODE_MEDIA_STOP:
-			PlayerService.stop(context);
-			break;
-		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-		case KeyEvent.KEYCODE_MEDIA_NEXT:
-			PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, 30);
-			break;
-		case KeyEvent.KEYCODE_MEDIA_REWIND:
-		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-			PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, -15);
-			break;
-		default:
-			Log.e("Podax", "No matched event: " + event.getKeyCode());
+				break;
+			case KeyEvent.KEYCODE_MEDIA_REWIND:
+			case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+				PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, -15);
+				break;
+			default:
+				Log.e("Podax", "No matched event: " + event.getKeyCode());
 		}
 
 		if (this.isOrderedBroadcast()) {

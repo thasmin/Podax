@@ -2,7 +2,6 @@ package com.axelby.podax.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 
 import com.android.volley.toolbox.NetworkImageView;
 
@@ -21,7 +20,7 @@ public class SquareImageView extends NetworkImageView {
 	}
 
 	@Override
-	public void onMeasure(int widthMeasureSpec, int heightMeasureSpec){
+	public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		int square = getMeasuredWidth();
 		setMeasuredDimension(square, square);

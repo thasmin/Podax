@@ -1,11 +1,5 @@
 package com.axelby.podax.ui;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-
-import org.xml.sax.SAXException;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -34,6 +28,12 @@ import com.axelby.podax.Storage;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+
 public class AddSubscriptionFragment extends ListFragment {
 
 	private Account[] _gpodderAccounts;
@@ -55,7 +55,7 @@ public class AddSubscriptionFragment extends ListFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
+
 		_gpodderAccounts = AccountManager.get(getActivity()).getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
 		setListAdapter(new ImportSubscriptionAdapter());
 	}
@@ -99,7 +99,7 @@ public class AddSubscriptionFragment extends ListFragment {
 			};
 			File externalStorageDir = Storage.getExternalStorageDirectory(getActivity());
 			File[] opmlFiles = externalStorageDir.listFiles(fileFilter);
-			if (opmlFiles!= null && opmlFiles.length == 0) {
+			if (opmlFiles != null && opmlFiles.length == 0) {
 				String message = "The OPML file must be at " + externalStorageDir.getAbsolutePath() + "/podcasts.opml.";
 				Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
 				return;
@@ -142,7 +142,7 @@ public class AddSubscriptionFragment extends ListFragment {
 		LayoutInflater _inflater;
 
 		public ImportSubscriptionAdapter() {
-			_inflater = (LayoutInflater)getActivity().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+			_inflater = (LayoutInflater) getActivity().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 		}
 
 		public int getCount() {
@@ -173,8 +173,8 @@ public class AddSubscriptionFragment extends ListFragment {
 			if (position == ADD_GPODDER) {
 				View view = _inflater.inflate(R.layout.subscription_list_item, parent, false);
 
-				TextView text = (TextView)view.findViewById(R.id.text);
-				ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);
+				TextView text = (TextView) view.findViewById(R.id.text);
+				ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
 				thumbnail.setImageResource(R.drawable.mygpo);
 
 				if (_gpodderAccounts.length == 0)
@@ -183,7 +183,7 @@ public class AddSubscriptionFragment extends ListFragment {
 					text.setText("Linked to " + _gpodderAccounts[0].name);
 				return view;
 			}
-			
+
 			return null;
 		}
 	}

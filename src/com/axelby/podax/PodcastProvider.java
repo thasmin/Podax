@@ -1,13 +1,5 @@
 package com.axelby.podax;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -20,6 +12,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class PodcastProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.podcastprovider";
@@ -107,15 +107,15 @@ public class PodcastProvider extends ContentProvider {
 	@Override
 	public String getType(Uri uri) {
 		switch (uriMatcher.match(uri)) {
-		case PODCASTS:
-		case PODCASTS_QUEUE:
-		case PODCASTS_TO_DOWNLOAD:
-			return DIR_TYPE;
-		case PODCAST_ID:
-		case PODCAST_ACTIVE:
-			return ITEM_TYPE;
-		default:
-			throw new IllegalArgumentException("Unknown URI");
+			case PODCASTS:
+			case PODCASTS_QUEUE:
+			case PODCASTS_TO_DOWNLOAD:
+				return DIR_TYPE;
+			case PODCAST_ID:
+			case PODCAST_ACTIVE:
+				return ITEM_TYPE;
+			default:
+				throw new IllegalArgumentException("Unknown URI");
 		}
 	}
 
@@ -134,55 +134,55 @@ public class PodcastProvider extends ContentProvider {
 		}
 
 		switch (uriMatcher.match(uri)) {
-		case PODCASTS:
-			break;
-		case PODCASTS_QUEUE:
-			sqlBuilder.appendWhere("queuePosition IS NOT NULL");
-			if (sortOrder == null)
-				sortOrder = "queuePosition";
-			break;
-		case PODCAST_ID:
-			sqlBuilder.appendWhere("podcasts._id = " + uri.getLastPathSegment());
-			break;
-		case PODCASTS_TO_DOWNLOAD:
-			sqlBuilder.appendWhere("podcasts._id IN (" + getNeedsDownloadIds() + ")");
-			if (sortOrder == null)
-				sortOrder = "queuePosition";
-			_dbAdapter.getWritableDatabase().execSQL("update podcasts set queueposition = (select count(*) from podcasts p2 where p2.queueposition is not null and p2.queueposition < podcasts.queueposition) where podcasts.queueposition is not null");
-			break;
-		case PODCAST_ACTIVE:
-			SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
-			if (prefs.contains(PREF_ACTIVE)) {
-				long activeId = prefs.getLong(PREF_ACTIVE, -1);
-				// make sure the active podcast wasn't deleted
-				Cursor c = _dbAdapter.getReadableDatabase().query("podcasts", new String[] { "_id" }, "_id = ?", new String[] { String.valueOf(activeId) }, null, null, null);
-				if (c.moveToFirst())
-					sqlBuilder.appendWhere("podcasts._id = " + activeId);
-				else {
-					prefs.edit().remove(PREF_ACTIVE).commit();
+			case PODCASTS:
+				break;
+			case PODCASTS_QUEUE:
+				sqlBuilder.appendWhere("queuePosition IS NOT NULL");
+				if (sortOrder == null)
+					sortOrder = "queuePosition";
+				break;
+			case PODCAST_ID:
+				sqlBuilder.appendWhere("podcasts._id = " + uri.getLastPathSegment());
+				break;
+			case PODCASTS_TO_DOWNLOAD:
+				sqlBuilder.appendWhere("podcasts._id IN (" + getNeedsDownloadIds() + ")");
+				if (sortOrder == null)
+					sortOrder = "queuePosition";
+				_dbAdapter.getWritableDatabase().execSQL("update podcasts set queueposition = (select count(*) from podcasts p2 where p2.queueposition is not null and p2.queueposition < podcasts.queueposition) where podcasts.queueposition is not null");
+				break;
+			case PODCAST_ACTIVE:
+				SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
+				if (prefs.contains(PREF_ACTIVE)) {
+					long activeId = prefs.getLong(PREF_ACTIVE, -1);
+					// make sure the active podcast wasn't deleted
+					Cursor c = _dbAdapter.getReadableDatabase().query("podcasts", new String[]{"_id"}, "_id = ?", new String[]{String.valueOf(activeId)}, null, null, null);
+					if (c.moveToFirst())
+						sqlBuilder.appendWhere("podcasts._id = " + activeId);
+					else {
+						prefs.edit().remove(PREF_ACTIVE).commit();
+						sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
+					}
+					c.close();
+				} else {
 					sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
 				}
-				c.close();
-			} else {
-				sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
-			}
-			break;
-		case PODCASTS_SEARCH:
-			sqlBuilder.appendWhere("LOWER(podcasts.title) LIKE ?");
-			if (!selectionArgs[0].startsWith("%"))
-				selectionArgs[0] = "%" + selectionArgs[0] + "%";
-			if (sortOrder == null)
-				sortOrder = "pubDate DESC";
-			break;
-		case PODCASTS_EXPIRED:
-			String inWhere = "SELECT podcasts._id FROM podcasts " +
-					"JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id " +
-					"WHERE expirationDays IS NOT NULL AND queuePosition IS NOT NULL AND " +
-					"date(pubDate, 'unixepoch', expirationDays || ' days') < date('now')";
-			sqlBuilder.appendWhere("podcasts._id IN (" + inWhere + ")");
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown URI");
+				break;
+			case PODCASTS_SEARCH:
+				sqlBuilder.appendWhere("LOWER(podcasts.title) LIKE ?");
+				if (!selectionArgs[0].startsWith("%"))
+					selectionArgs[0] = "%" + selectionArgs[0] + "%";
+				if (sortOrder == null)
+					sortOrder = "pubDate DESC";
+				break;
+			case PODCASTS_EXPIRED:
+				String inWhere = "SELECT podcasts._id FROM podcasts " +
+						"JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id " +
+						"WHERE expirationDays IS NOT NULL AND queuePosition IS NOT NULL AND " +
+						"date(pubDate, 'unixepoch', expirationDays || ' days') < date('now')";
+				sqlBuilder.appendWhere("podcasts._id IN (" + inWhere + ")");
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown URI");
 		}
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
@@ -219,7 +219,7 @@ public class PodcastProvider extends ContentProvider {
 		queueBuilder.setTables("podcasts");
 		queueBuilder.appendWhere("queuePosition IS NOT NULL");
 		Cursor queue = queueBuilder.query(db,
-				new String[] { "_id, mediaUrl, fileSize" }, null, null, null,
+				new String[]{"_id, mediaUrl, fileSize"}, null, null, null,
 				null, "queuePosition");
 
 		String queueIds = "";
@@ -250,8 +250,8 @@ public class PodcastProvider extends ContentProvider {
 		if (uriMatch == PODCAST_PLAYER_UPDATE) {
 			if (activePodcastId == -1)
 				return 0;
-			Cursor c = db.query("podcasts", new String[] { "lastPosition" },
-					"_id = ?", new String[] { String.valueOf(activePodcastId) }, null, null, null);
+			Cursor c = db.query("podcasts", new String[]{"lastPosition"},
+					"_id = ?", new String[]{String.valueOf(activePodcastId)}, null, null, null);
 			c.moveToFirst();
 			int oldPosition = c.getInt(0);
 			c.close();
@@ -260,7 +260,7 @@ public class PodcastProvider extends ContentProvider {
 			if (newPosition < oldPosition || newPosition - oldPosition > 3000)
 				return 0;
 
-			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activePodcastId) });
+			db.update("podcasts", values, "_id = ?", new String[]{String.valueOf(activePodcastId)});
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 			getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, activePodcastId), null);
 			ActivePodcastReceiver.NotifyExternal(getContext());
@@ -268,34 +268,34 @@ public class PodcastProvider extends ContentProvider {
 		}
 
 		switch (uriMatch) {
-		case PODCAST_ID:
-			podcastId = ContentUris.parseId(uri);
-			break;
-		case PODCAST_ACTIVE:
-			if (values.containsKey(COLUMN_ID)) {
-				activePodcastId = values.getAsLong(COLUMN_ID);
-				Editor editor = prefs.edit();
-				if (activePodcastId != null)
-					editor.putLong(PREF_ACTIVE, values.getAsLong(COLUMN_ID));
-				else
-					editor.remove(PREF_ACTIVE);
-				editor.commit();
+			case PODCAST_ID:
+				podcastId = ContentUris.parseId(uri);
+				break;
+			case PODCAST_ACTIVE:
+				if (values.containsKey(COLUMN_ID)) {
+					activePodcastId = values.getAsLong(COLUMN_ID);
+					Editor editor = prefs.edit();
+					if (activePodcastId != null)
+						editor.putLong(PREF_ACTIVE, values.getAsLong(COLUMN_ID));
+					else
+						editor.remove(PREF_ACTIVE);
+					editor.commit();
 
-				// if we're clearing the active podcast or updating just the ID, don't go to the DB
-				if (activePodcastId == null || values.size() == 1) {
-					getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
-					return 0;
+					// if we're clearing the active podcast or updating just the ID, don't go to the DB
+					if (activePodcastId == null || values.size() == 1) {
+						getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
+						return 0;
+					}
 				}
-			}
-			
-			// if we don't have an active podcast, don't update it
-			if (activePodcastId == -1)
-				return 0;
 
-			podcastId = activePodcastId;
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown URI");
+				// if we don't have an active podcast, don't update it
+				if (activePodcastId == -1)
+					return 0;
+
+				podcastId = activePodcastId;
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown URI");
 		}
 
 		String extraWhere = COLUMN_ID + " = " + podcastId;
@@ -349,8 +349,8 @@ public class PodcastProvider extends ContentProvider {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// get the old position
-		Cursor c = db.query("podcasts", new String[] { "queuePosition" },
-				"_id = ?", new String[] { String.valueOf(podcastId) }, null, null, null);
+		Cursor c = db.query("podcasts", new String[]{"queuePosition"},
+				"_id = ?", new String[]{String.valueOf(podcastId)}, null, null, null);
 		c.moveToFirst();
 		Integer oldPosition = null;
 		if (!c.isNull(0))
@@ -364,14 +364,14 @@ public class PodcastProvider extends ContentProvider {
 		if (oldPosition == null && newPosition != null) {
 			// new at 3: 1 2 3 4 5 do: 3++ 4++ 5++
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 "
-					+ "WHERE queuePosition >= ?", new Object[] { newPosition });
+					+ "WHERE queuePosition >= ?", new Object[]{newPosition});
 
 			// download the newly added podcast
 			UpdateService.downloadPodcastsSilently(getContext());
 		} else if (oldPosition != null && newPosition == null) {
 			// remove 3: 1 2 3 4 5 do: 4-- 5--
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 "
-					+ "WHERE queuePosition > ?", new Object[] { oldPosition });
+					+ "WHERE queuePosition > ?", new Object[]{oldPosition});
 
 			// delete the podcast's file
 			deleteDownload(getContext(), Long.valueOf(podcastId));
@@ -381,13 +381,13 @@ public class PodcastProvider extends ContentProvider {
 				db.execSQL(
 						"UPDATE podcasts SET queuePosition = queuePosition - 1 "
 								+ "WHERE queuePosition > ? AND queuePosition <= ?",
-						new Object[] { oldPosition, newPosition });
+						new Object[]{oldPosition, newPosition});
 			// moving down: 1 2 3 4 5 4 -> 2: 2++ 3++ 4->2
 			if (newPosition < oldPosition)
 				db.execSQL(
 						"UPDATE podcasts SET queuePosition = queuePosition + 1 "
 								+ "WHERE queuePosition >= ? AND queuePosition < ?",
-						new Object[] { newPosition, oldPosition });
+						new Object[]{newPosition, oldPosition});
 		}
 
 
@@ -403,7 +403,7 @@ public class PodcastProvider extends ContentProvider {
 
 		// update specified podcast
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
-				new Object[] { newPosition, podcastId });
+				new Object[]{newPosition, podcastId});
 		getContext().getContentResolver().notifyChange(QUEUE_URI, null);
 	}
 
@@ -418,7 +418,7 @@ public class PodcastProvider extends ContentProvider {
 
 		Cursor mediaUrlCursor = db.rawQuery(
 				"SELECT _id FROM podcasts WHERE mediaUrl = ?",
-				new String[] { values.getAsString(COLUMN_MEDIA_URL) });
+				new String[]{values.getAsString(COLUMN_MEDIA_URL)});
 		Long podcastId = null;
 		if (mediaUrlCursor.moveToNext())
 			podcastId = mediaUrlCursor.getLong(0);
@@ -433,15 +433,15 @@ public class PodcastProvider extends ContentProvider {
 				if (new File(file).length() > values.getAsInteger(COLUMN_FILE_SIZE))
 					values.remove(COLUMN_FILE_SIZE);
 			}
-			db.update("podcasts", values, COLUMN_ID + " = ?", new String[] { String.valueOf(podcastId) });
+			db.update("podcasts", values, COLUMN_ID + " = ?", new String[]{String.valueOf(podcastId)});
 		} else {
 			podcastId = db.insert("podcasts", null, values);
 
 			// find out if we should download new podcasts
 			Cursor queueNewCursor = db.query("subscriptions",
-					new String[] { SubscriptionProvider.COLUMN_QUEUE_NEW },
+					new String[]{SubscriptionProvider.COLUMN_QUEUE_NEW},
 					"_id = ?",
-					new String[] { String.valueOf(values.getAsLong(COLUMN_SUBSCRIPTION_ID)) },
+					new String[]{String.valueOf(values.getAsLong(COLUMN_SUBSCRIPTION_ID))},
 					null, null, null);
 			queueNewCursor.moveToFirst();
 			boolean queueNew = queueNewCursor.getInt(0) != 0;
@@ -464,22 +464,22 @@ public class PodcastProvider extends ContentProvider {
 	@Override
 	public int delete(Uri uri, String where, String[] whereArgs) {
 		switch (uriMatcher.match(uri)) {
-		case PODCASTS:
-			break;
-		case PODCAST_ID:
-			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
-			if (where != null)
-				where = extraWhere + " AND " + where;
-			else
-				where = extraWhere;
-			break;
-		default:
-			throw new IllegalArgumentException("Illegal URI for delete");
+			case PODCASTS:
+				break;
+			case PODCAST_ID:
+				String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
+				if (where != null)
+					where = extraWhere + " AND " + where;
+				else
+					where = extraWhere;
+				break;
+			default:
+				throw new IllegalArgumentException("Illegal URI for delete");
 		}
-		
+
 		// find out what we're deleting and delete downloaded files
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-		String[] columns = new String[] { COLUMN_ID };
+		String[] columns = new String[]{COLUMN_ID};
 		String podcastsWhere = "queuePosition IS NOT NULL";
 		if (where != null)
 			podcastsWhere = where + " AND " + podcastsWhere;
@@ -489,7 +489,7 @@ public class PodcastProvider extends ContentProvider {
 			deleteDownload(getContext(), c.getLong(0));
 		}
 		c.close();
-		
+
 		int count = db.delete("podcasts", where, whereArgs);
 		if (!uri.equals(URI))
 			getContext().getContentResolver().notifyChange(URI, null);
@@ -534,7 +534,7 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	public static void movePositionBy(Context context, Uri uri, int delta) {
-		String[] projection = new String[] { PodcastProvider.COLUMN_LAST_POSITION, PodcastProvider.COLUMN_DURATION };
+		String[] projection = new String[]{PodcastProvider.COLUMN_LAST_POSITION, PodcastProvider.COLUMN_DURATION};
 		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
 		if (!c.moveToFirst()) {
 			c.close();
@@ -558,7 +558,7 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	public static void skipToEnd(Context context, Uri uri) {
-		String[] projection = new String[] { PodcastProvider.COLUMN_DURATION };
+		String[] projection = new String[]{PodcastProvider.COLUMN_DURATION};
 		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
 		if (!c.moveToFirst()) {
 			c.close();
@@ -571,7 +571,7 @@ public class PodcastProvider extends ContentProvider {
 
 		ContentValues values = new ContentValues(2);
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, duration);
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer)null);
+		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
 		context.getContentResolver().update(uri, values, null, null);
 	}
 }

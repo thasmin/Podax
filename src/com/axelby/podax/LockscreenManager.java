@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
@@ -38,8 +37,8 @@ public class LockscreenManager {
 		// next is destructive in podax because it deletes the cached file
 		_remoteControlClient.setTransportControlFlags(
 				RemoteControlClient.FLAG_KEY_MEDIA_PLAY_PAUSE
-				| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
-				| RemoteControlClient.FLAG_KEY_MEDIA_NEXT);
+						| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
+						| RemoteControlClient.FLAG_KEY_MEDIA_NEXT);
 
 		try {
 			final int METADATA_KEY_ARTWORK = 100;

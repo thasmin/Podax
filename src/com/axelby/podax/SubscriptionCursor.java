@@ -1,15 +1,15 @@
 package com.axelby.podax;
 
-import java.util.Date;
-
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
 
+import java.util.Date;
+
 public class SubscriptionCursor {
 
 	private Cursor _cursor;
-	
+
 	private Integer _idColumn = null;
 	private Integer _titleColumn = null;
 	private Integer _urlColumn = null;
@@ -26,7 +26,7 @@ public class SubscriptionCursor {
 			return;
 		_cursor = cursor;
 	}
-	
+
 	public boolean isNull() {
 		return _cursor == null;
 	}

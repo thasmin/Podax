@@ -9,8 +9,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
-import java.util.HashMap;
-
 public class GPodderProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.gpodder_sync";
 	public static Uri URI = Uri.parse("content://" + AUTHORITY);
@@ -27,6 +25,7 @@ public class GPodderProvider extends ContentProvider {
 	static final int TO_REMOVE = 2;
 
 	static UriMatcher _uriMatcher;
+
 	static {
 		_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 		_uriMatcher.addURI(AUTHORITY, "", ALL);
@@ -34,12 +33,12 @@ public class GPodderProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "to_remove", TO_REMOVE);
 	}
 
-		@Override
+	@Override
 	public boolean onCreate() {
 		_dbAdapter = new DBAdapter(this.getContext());
 		return true;
 	}
-	
+
 	@Override
 	public String getType(Uri uri) {
 		return DIR_TYPE;
@@ -69,16 +68,14 @@ public class GPodderProvider extends ContentProvider {
 		return 0;
 	}
 
-	public static ContentValues makeValuesToAdd(String url)
-	{
+	public static ContentValues makeValuesToAdd(String url) {
 		ContentValues values = new ContentValues(2);
 		values.put("url", url);
 		values.put("to_add", 1);
 		return values;
 	}
 
-	public static ContentValues makeValuesToRemove(String url)
-	{
+	public static ContentValues makeValuesToRemove(String url) {
 		ContentValues values = new ContentValues(2);
 		values.put("url", url);
 		values.put("to_remove", 1);
@@ -115,13 +112,13 @@ public class GPodderProvider extends ContentProvider {
 	public void fakeSync() {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
-		Cursor c = db.query("pending_remove", new String[] { "url" }, null, null, null, null, null);
+		Cursor c = db.query("pending_remove", new String[]{"url"}, null, null, null, null, null);
 		while (c.moveToNext())
-			db.delete("subscriptions", "url = ?", new String[] { c.getString(0) });
+			db.delete("subscriptions", "url = ?", new String[]{c.getString(0)});
 		c.close();
 		db.delete("pending_remove", null, null);
 
-		c = db.query("pending_add", new String[] { "url" }, null, null, null, null, null);
+		c = db.query("pending_add", new String[]{"url"}, null, null, null, null, null);
 		while (c.moveToNext())
 			db.insert("subscriptions", null, makeUrlValues(c.getString(0)));
 		c.close();

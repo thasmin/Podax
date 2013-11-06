@@ -8,9 +8,6 @@ import android.preference.PreferenceScreen;
 import com.axelby.podax.R;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 public class PodaxPreferenceFragment extends PreferenceListFragment implements Preference.OnPreferenceChangeListener {
 	@Override
@@ -26,8 +23,8 @@ public class PodaxPreferenceFragment extends PreferenceListFragment implements P
 		CharSequence[] entries = sdcard.getEntries();
 		CharSequence[] values = sdcard.getEntryValues();
 		if (!new File(values[1].toString()).exists()) {
-			sdcard.setEntries(new CharSequence[] { entries[0] });
-			sdcard.setEntryValues(new CharSequence[] { values[0] });
+			sdcard.setEntries(new CharSequence[]{entries[0]});
+			sdcard.setEntryValues(new CharSequence[]{values[0]});
 			sdcard.setEnabled(false);
 		}
 

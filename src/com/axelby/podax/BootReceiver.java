@@ -15,7 +15,7 @@ public class BootReceiver extends BroadcastReceiver {
 
 	public static void setupAlarms(Context context) {
 		// intent will always be BOOT_COMPLETED
-		AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
 		// refresh the feeds
 		Intent refreshIntent = new Intent(context, UpdateService.class);

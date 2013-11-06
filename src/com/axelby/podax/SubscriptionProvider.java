@@ -76,14 +76,14 @@ public class SubscriptionProvider extends ContentProvider {
 	@Override
 	public String getType(Uri uri) {
 		switch (_uriMatcher.match(uri)) {
-		case SUBSCRIPTIONS:
-			return DIR_TYPE;
-		case SUBSCRIPTION_ID:
-			return ITEM_TYPE;
-		case PODCASTS:
-			return PODCAST_ITEM_TYPE;
-		default:
-			throw new IllegalArgumentException("Unknown URI");
+			case SUBSCRIPTIONS:
+				return DIR_TYPE;
+			case SUBSCRIPTION_ID:
+				return ITEM_TYPE;
+			case PODCASTS:
+				return PODCAST_ITEM_TYPE;
+			default:
+				throw new IllegalArgumentException("Unknown URI");
 		}
 	}
 
@@ -94,7 +94,7 @@ public class SubscriptionProvider extends ContentProvider {
 		if (uriMatch == PODCASTS) {
 			return getContext().getContentResolver().query(PodcastProvider.URI,
 					projection, "subscriptionId = ?",
-					new String[] { uri.getPathSegments().get(1) },
+					new String[]{uri.getPathSegments().get(1)},
 					PodcastProvider.COLUMN_PUB_DATE + " DESC");
 		}
 
@@ -119,23 +119,23 @@ public class SubscriptionProvider extends ContentProvider {
 		sqlBuilder.setTables("subscriptions");
 
 		switch (uriMatch) {
-		case SUBSCRIPTIONS:
-			if (sortOrder == null)
-				sortOrder = "title IS NULL, COALESCE(titleOverride, title)";
-			break;
-		case SUBSCRIPTION_ID:
-			sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
-			break;
-		case SUBSCRIPTIONS_SEARCH:
-			sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(titleOverride) LIKE ?");
-			if (!selectionArgs[0].startsWith("%"))
-				selectionArgs[0] = "%" + selectionArgs[0] + "%";
-			selectionArgs = new String[] { selectionArgs[0], selectionArgs[0] };
-			if (sortOrder == null)
-				sortOrder = "COALESCE(titleOverride, title)";
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown URI");
+			case SUBSCRIPTIONS:
+				if (sortOrder == null)
+					sortOrder = "title IS NULL, COALESCE(titleOverride, title)";
+				break;
+			case SUBSCRIPTION_ID:
+				sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
+				break;
+			case SUBSCRIPTIONS_SEARCH:
+				sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(titleOverride) LIKE ?");
+				if (!selectionArgs[0].startsWith("%"))
+					selectionArgs[0] = "%" + selectionArgs[0] + "%";
+				selectionArgs = new String[]{selectionArgs[0], selectionArgs[0]};
+				if (sortOrder == null)
+					sortOrder = "COALESCE(titleOverride, title)";
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown URI");
 		}
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
@@ -151,17 +151,17 @@ public class SubscriptionProvider extends ContentProvider {
 			return 0;
 
 		switch (_uriMatcher.match(uri)) {
-		case SUBSCRIPTIONS:
-			break;
-		case SUBSCRIPTION_ID:
-			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
-			if (where != null)
-				where = extraWhere + " AND " + where;
-			else
-				where = extraWhere;
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown URI");
+			case SUBSCRIPTIONS:
+				break;
+			case SUBSCRIPTION_ID:
+				String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
+				if (where != null)
+					where = extraWhere + " AND " + where;
+				else
+					where = extraWhere;
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown URI");
 		}
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
@@ -181,20 +181,20 @@ public class SubscriptionProvider extends ContentProvider {
 		boolean from_gpodder = false;
 
 		switch (_uriMatcher.match(uri)) {
-		case SUBSCRIPTIONS:
-			break;
-		case FROM_GPODDER:
-			from_gpodder = true;
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown URI");
+			case SUBSCRIPTIONS:
+				break;
+			case FROM_GPODDER:
+				from_gpodder = true;
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown URI");
 		}
 
 		String url = values.getAsString(COLUMN_URL);
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// don't duplicate a url
-		Cursor c = db.rawQuery("SELECT _id FROM subscriptions WHERE url = ?", new String[] { url });
+		Cursor c = db.rawQuery("SELECT _id FROM subscriptions WHERE url = ?", new String[]{url});
 		if (c.moveToNext()) {
 			long oldId = c.getLong(0);
 			c.close();
@@ -219,26 +219,26 @@ public class SubscriptionProvider extends ContentProvider {
 		boolean from_gpodder = false;
 
 		switch (_uriMatcher.match(uri)) {
-		case SUBSCRIPTIONS:
-			break;
-		case FROM_GPODDER:
-			from_gpodder = true;
-			break;
-		case SUBSCRIPTION_ID:
-			String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
-			if (where != null)
-				where = extraWhere + " AND " + where;
-			else
-				where = extraWhere;
-			break;
-		default:
-			throw new IllegalArgumentException("Unknown URI");
+			case SUBSCRIPTIONS:
+				break;
+			case FROM_GPODDER:
+				from_gpodder = true;
+				break;
+			case SUBSCRIPTION_ID:
+				String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
+				if (where != null)
+					where = extraWhere + " AND " + where;
+				else
+					where = extraWhere;
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown URI");
 		}
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// go through subscriptions about to be deleted and remove podcasts
-		Cursor c = db.query("subscriptions", new String[] { COLUMN_ID }, where, whereArgs, null, null, null);
+		Cursor c = db.query("subscriptions", new String[]{COLUMN_ID}, where, whereArgs, null, null, null);
 		Vector<String> subIds = new Vector<String>();
 		String in = "";
 		while (c.moveToNext()) {
@@ -253,7 +253,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 		// remove during next gpodder sync
 		if (!from_gpodder) {
-			c = db.query("subscriptions", new String[] { COLUMN_URL }, where, whereArgs, null, null, null);
+			c = db.query("subscriptions", new String[]{COLUMN_URL}, where, whereArgs, null, null, null);
 			while (c.moveToNext()) {
 				String url = c.getString(0);
 				getContext().getContentResolver().insert(GPodderProvider.URI, GPodderProvider.makeValuesToRemove(url));

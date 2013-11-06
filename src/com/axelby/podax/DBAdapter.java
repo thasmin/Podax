@@ -14,11 +14,11 @@ public class DBAdapter extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("CREATE TABLE subscriptions(" + 
-				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
-				"title VARCHAR, " + 
-				"url VARCHAR NOT NULL, " + 
-				"lastModified DATE, " + 
+		db.execSQL("CREATE TABLE subscriptions(" +
+				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"title VARCHAR, " +
+				"url VARCHAR NOT NULL, " +
+				"lastModified DATE, " +
 				"lastUpdate DATE," +
 				"eTag VARCHAR," +
 				"thumbnail VARCHAR, " +
@@ -32,8 +32,8 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"subscriptionId INTEGER, " +
 				"title VARCHAR, " +
 				"link VARCHAR, " +
-				"pubDate DATE, " + 
-				"description VARCHAR, " + 
+				"pubDate DATE, " +
+				"description VARCHAR, " +
 				"mediaUrl VARCHAR," +
 				"fileSize INTEGER," +
 				"queuePosition INTEGER," +
@@ -41,7 +41,7 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"duration INTEGER DEFAULT 0," +
 				"downloadId INTEGER," +
 				"payment VARCHAR)"
-				);
+		);
 		db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
 		db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
 
@@ -65,14 +65,14 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"subscriptionId INTEGER, " +
 					"title VARCHAR, " +
 					"link VARCHAR, " +
-					"pubDate DATE, " + 
-					"description VARCHAR, " + 
+					"pubDate DATE, " +
+					"description VARCHAR, " +
 					"mediaUrl VARCHAR," +
 					"fileSize INTEGER," +
 					"queuePosition INTEGER," +
 					"lastPosition INTEGER NOT NULL DEFAULT 0," +
 					"duration INTEGER DEFAULT 0)"
-					);
+			);
 			db.execSQL("INSERT INTO podcasts(_id, subscriptionId, title, link, " +
 					"pubDate, description, mediaUrl, fileSize, " +
 					"queuePosition, lastPosition, duration) " +
@@ -85,12 +85,12 @@ public class DBAdapter extends SQLiteOpenHelper {
 			db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
 
 			// rename id in subscriptions table
-			db.execSQL("ALTER TABLE subscriptions RENAME TO subscriptions_old"); 
-			db.execSQL("CREATE TABLE subscriptions(" + 
-					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
-					"title VARCHAR, " + 
-					"url VARCHAR NOT NULL, " + 
-					"lastModified DATE, " + 
+			db.execSQL("ALTER TABLE subscriptions RENAME TO subscriptions_old");
+			db.execSQL("CREATE TABLE subscriptions(" +
+					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"title VARCHAR, " +
+					"url VARCHAR NOT NULL, " +
+					"lastModified DATE, " +
 					"lastUpdate DATE," +
 					"eTag VARCHAR," +
 					"thumbnail VARCHAR);");
