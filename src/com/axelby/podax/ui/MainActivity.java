@@ -2,10 +2,7 @@ package com.axelby.podax.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -19,6 +16,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.text.InputType;
@@ -54,7 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
 	private static int _defaultTextColor = 0;
 	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
@@ -245,11 +245,11 @@ public class MainActivity extends Activity {
 	}
 
 	public void replaceFragment(Class<? extends Fragment> clazz, Bundle args) {
-		Fragment current = getFragmentManager().findFragmentById(R.id.fragment);
+		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
 		if (current != null && current.getClass().equals(clazz))
 			return;
 
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
 		try {
 			Fragment f = null;

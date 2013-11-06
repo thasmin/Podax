@@ -1,15 +1,15 @@
 package com.axelby.podax.ui;
 
-import android.app.Fragment;
-import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -29,11 +29,9 @@ import org.acra.ACRA;
 
 public class SubscriptionSettingsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	private long _subscriptionId;
+	boolean init = false;
 	private Uri _subscriptionUri;
-
 	private String _feedTitle;
-
 	private EditText _name;
 	private CheckBox _autoName;
 	private RadioGroup _autoQueue;
@@ -43,7 +41,7 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		_subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+		long _subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 		if (_subscriptionId == -1)
 			_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 		if (_subscriptionId == -1)
@@ -157,8 +155,6 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
 		return new CursorLoader(getActivity(), uri, projection, null, null, null);
 	}
-
-	boolean init = false;
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {

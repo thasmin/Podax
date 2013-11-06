@@ -1,16 +1,16 @@
 package com.axelby.podax.ui;
 
-import android.app.FragmentTransaction;
-import android.app.ListFragment;
-import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -39,7 +39,7 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 	static final int OPTION_ADDTOQUEUE = 3;
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
-
+	CharSequence _originalTitle = null;
 	private PodcastAdapter _adapter = null;
 	private long _subscriptionId = 0;
 
@@ -94,8 +94,6 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 		setTitle();
 	}
 
-	CharSequence _originalTitle = null;
-
 	public boolean setTitle() {
 		if (_originalTitle == null)
 			_originalTitle = getActivity().getTitle();
@@ -113,7 +111,7 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 				SubscriptionProvider.COLUMN_URL,
 		};
 		Cursor subscriptionCursor = getActivity().getContentResolver().query(subscriptionUri, subscriptionProjection, null, null, null);
-		if (!subscriptionCursor.moveToNext()) {
+		if (subscriptionCursor == null || !subscriptionCursor.moveToNext()) {
 			return false;
 		}
 		SubscriptionCursor subscription = new SubscriptionCursor(subscriptionCursor);
