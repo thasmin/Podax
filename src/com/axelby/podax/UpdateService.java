@@ -16,6 +16,12 @@ import java.util.Arrays;
 import java.util.Vector;
 
 public class UpdateService extends IntentService {
+	Handler _uiHandler = new Handler();
+
+	public UpdateService() {
+		super("UpdateService");
+	}
+
 	public static void updateSubscriptions(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS);
@@ -49,16 +55,24 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
-	public UpdateService() {
-		super("UpdateService");
+	private static Intent createUpdateSubscriptionIntent(Context context, long subscriptionId) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.setAction(Constants.ACTION_REFRESH_SUBSCRIPTION);
+		intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
+		return intent;
+	}
+
+	private static Intent createDownloadPodcastIntent(Context context, long subscriptionId) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.setAction(Constants.ACTION_DOWNLOAD_PODCAST);
+		intent.putExtra(Constants.EXTRA_PODCAST_ID, subscriptionId);
+		return intent;
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
-
-	Handler _uiHandler = new Handler();
 
 	@Override
 	public void onHandleIntent(Intent intent) {
@@ -82,7 +96,7 @@ public class UpdateService extends IntentService {
 		}
 
 		if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
-			String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
+			String[] projection = new String[]{SubscriptionProvider.COLUMN_ID};
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
 			while (c.moveToNext())
 				handleIntent(createUpdateSubscriptionIntent(this, c.getLong(0)));
@@ -96,7 +110,7 @@ public class UpdateService extends IntentService {
 			verifyDownloadedFiles();
 			expireDownloadedFiles();
 
-			String[] projection = { PodcastProvider.COLUMN_ID };
+			String[] projection = {PodcastProvider.COLUMN_ID};
 			Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
 			while (c.moveToNext())
 				handleIntent(createDownloadPodcastIntent(this, c.getLong(0)));
@@ -105,30 +119,16 @@ public class UpdateService extends IntentService {
 			long podcastId = intent.getLongExtra(Constants.EXTRA_PODCAST_ID, -1L);
 			if (podcastId == -1)
 				return;
-			new PodcastDownloader(this).download(podcastId);
+			PodcastDownloader.download(this, podcastId);
 		}
 
 		removeNotification();
 	}
 
-	private static Intent createUpdateSubscriptionIntent(Context context, long subscriptionId) {
-		Intent intent = new Intent(context, UpdateService.class);
-		intent.setAction(Constants.ACTION_REFRESH_SUBSCRIPTION);
-		intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
-		return intent;
-	}
-
-	private static Intent createDownloadPodcastIntent(Context context, long subscriptionId) {
-		Intent intent = new Intent(context, UpdateService.class);
-		intent.setAction(Constants.ACTION_DOWNLOAD_PODCAST);
-		intent.putExtra(Constants.EXTRA_PODCAST_ID, subscriptionId);
-		return intent;
-	}
-
 	// make sure all media files in the folder are for existing podcasts
 	private void verifyDownloadedFiles() {
 		Vector<String> validMediaFilenames = new Vector<String>();
-		String[] projection = new String[] {
+		String[] projection = new String[]{
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_MEDIA_URL,
 		};
@@ -146,7 +146,7 @@ public class UpdateService extends IntentService {
 		for (File f : files) {
 			// make sure the file is a media file
 			String extension = PodcastCursor.getExtension(f.getName());
-			String[] mediaExtensions = new String[] { "mp3", "ogg", "wma", "m4a", };
+			String[] mediaExtensions = new String[]{"mp3", "ogg", "wma", "m4a",};
 			if (Arrays.binarySearch(mediaExtensions, extension) < 0)
 				continue;
 			if (!validMediaFilenames.contains(f.getAbsolutePath())) {
@@ -157,7 +157,7 @@ public class UpdateService extends IntentService {
 	}
 
 	private void expireDownloadedFiles() {
-		String[] projection = new String[] {
+		String[] projection = new String[]{
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_MEDIA_URL,
 		};

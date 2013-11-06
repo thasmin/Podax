@@ -74,6 +74,12 @@ public class MainActivity extends Activity {
 	};
 
 	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		handleIntent(intent);
+	}
+
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -167,12 +173,7 @@ public class MainActivity extends Activity {
 		});
 
 		if (intent.hasExtra(Constants.EXTRA_FRAGMENT)) {
-			_fragmentId = intent.getIntExtra("fragmentId", 2);
-			if (_fragmentId == 2) {
-				replaceFragment(PodcastDetailFragment.class);
-			} else if (_fragmentId == 4) {
-				replaceFragment(SubscriptionListFragment.class);
-			}
+			handleIntent(intent);
 		} else if (savedInstanceState == null) {
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
 			int subscriptionCount = c.getCount();
@@ -186,6 +187,17 @@ public class MainActivity extends Activity {
 			}
 		} else {
 			_fragmentId = savedInstanceState.getInt("fragmentId");
+		}
+	}
+
+	private void handleIntent(Intent intent) {
+		_fragmentId = intent.getIntExtra("fragmentId", 2);
+		Bundle args = (Bundle) intent.getExtras().clone();
+		args.remove("fragmentId");
+		if (_fragmentId == 2) {
+			replaceFragment(PodcastDetailFragment.class, args);
+		} else if (_fragmentId == 4) {
+			replaceFragment(SubscriptionListFragment.class);
 		}
 	}
 
@@ -229,6 +241,10 @@ public class MainActivity extends Activity {
 	}
 
 	public void replaceFragment(Class<? extends Fragment> clazz) {
+		replaceFragment(clazz, null);
+	}
+
+	public void replaceFragment(Class<? extends Fragment> clazz, Bundle args) {
 		Fragment current = getFragmentManager().findFragmentById(R.id.fragment);
 		if (current != null && current.getClass().equals(clazz))
 			return;
@@ -242,8 +258,16 @@ public class MainActivity extends Activity {
 					f = frag.get();
 					break;
 				}
-			if (f == null)
+
+			// restart activity if we have new args
+			if (f != null && args != null) {
+				_savedFragments.remove(f);
+				f = null;
+			}
+			if (f == null) {
 				f = clazz.getConstructor().newInstance();
+				f.setArguments(args);
+			}
 			ft.replace(R.id.fragment, f);
 			if (_savedFragments.size() > 0)
 				ft.addToBackStack(null);

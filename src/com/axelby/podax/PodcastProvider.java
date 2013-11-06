@@ -54,6 +54,7 @@ public class PodcastProvider extends ContentProvider {
 	public static final String COLUMN_FILE_SIZE = "fileSize";
 	public static final String COLUMN_LAST_POSITION = "lastPosition";
 	public static final String COLUMN_DURATION = "duration";
+	public static final String COLUMN_DOWNLOAD_ID = "downloadId";
 	public static final String COLUMN_PAYMENT = "payment";
 
 	static final String PREF_ACTIVE = "active";
@@ -86,6 +87,7 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap.put(COLUMN_FILE_SIZE, "fileSize");
 		_columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
 		_columnMap.put(COLUMN_DURATION, "duration");
+		_columnMap.put(COLUMN_DOWNLOAD_ID, "downloadId");
 		_columnMap.put(COLUMN_PAYMENT, "payment");
 
 	}
@@ -121,11 +123,15 @@ public class PodcastProvider extends ContentProvider {
 	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(_columnMap);
-		List<String> projectionList = Arrays.asList(projection);
-		if (projectionList.contains(COLUMN_SUBSCRIPTION_TITLE) || projectionList.contains(COLUMN_SUBSCRIPTION_THUMBNAIL))
+		if (projection != null) {
+			List<String> projectionList = Arrays.asList(projection);
+			if (projectionList.contains(COLUMN_SUBSCRIPTION_TITLE) || projectionList.contains(COLUMN_SUBSCRIPTION_THUMBNAIL))
+				sqlBuilder.setTables("podcasts JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id");
+			else
+				sqlBuilder.setTables("podcasts");
+		} else {
 			sqlBuilder.setTables("podcasts JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id");
-		else
-			sqlBuilder.setTables("podcasts");
+		}
 
 		switch (uriMatcher.match(uri)) {
 		case PODCASTS:

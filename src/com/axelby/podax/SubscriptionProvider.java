@@ -139,8 +139,7 @@ public class SubscriptionProvider extends ContentProvider {
 		}
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs,
-				null, null, sortOrder);
+		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}

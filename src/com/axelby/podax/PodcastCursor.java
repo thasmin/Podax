@@ -28,6 +28,7 @@ public class PodcastCursor {
 	private Integer _lastPositionColumn = null;
 	private Integer _durationColumn = null;
 	private Integer _pubDateColumn = null;
+	private Integer _downloadIdColumn = null;
 	private Integer _paymentColumn = null;
 
 	public PodcastCursor(Cursor cursor) {
@@ -140,6 +141,14 @@ public class PodcastCursor {
 		return new Date(_cursor.getLong(_durationColumn) * 1000);
 	}
 
+	public Long getDownloadId() {
+		if (_downloadIdColumn == null)
+			_downloadIdColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_DOWNLOAD_ID);
+		if (_cursor.isNull(_downloadIdColumn))
+			return null;
+		return _cursor.getLong(_downloadIdColumn);
+	}
+
 	public String getFilename(Context context) {
 		return PodcastCursor.getStoragePath(context) + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
 	}
@@ -168,7 +177,7 @@ public class PodcastCursor {
 
 	public static String getStoragePath(Context context) {
 		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
+		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/Podcasts/";
 		File podaxFile = new File(podaxDir);
 		if (!podaxFile.exists())
 			podaxFile.mkdirs();

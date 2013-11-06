@@ -1,36 +1,21 @@
 package com.axelby.podax;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.app.DownloadManager;
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
-import android.support.v4.app.NotificationCompat;
+import android.net.Uri;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.axelby.podax.R.drawable;
-import com.axelby.podax.ui.MainActivity;
+import java.io.File;
 
 class PodcastDownloader {
-	private Context _context;
-
-	PodcastDownloader(Context context) {
-		_context = context;
+	private PodcastDownloader() {
 	}
-	
-	public void download(long podcastId) {
-		if (!Helper.ensureWifi(_context))
-			return;
 
+	public static void download(Context _context, long podcastId) {
 		Cursor cursor = null;
 		try {
 			String[] projection = {
@@ -42,124 +27,36 @@ class PodcastDownloader {
 			};
 			cursor = _context.getContentResolver().query(PodcastProvider.QUEUE_URI, projection,
 					"podcasts._id = ?",
-					new String[] { String.valueOf(podcastId) }, null);
-			if (!cursor.moveToNext())
+					new String[]{String.valueOf(podcastId)}, null);
+			if (cursor == null || !cursor.moveToNext())
 				return;
 
 			PodcastCursor podcast = new PodcastCursor(cursor);
 			if (podcast.isDownloaded(_context))
 				return;
 
-			showNotification(podcast);
-
+			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(podcast.getMediaUrl()));
+			int networks = DownloadManager.Request.NETWORK_WIFI;
+			if (!PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("wifiPref", true))
+				networks |= DownloadManager.Request.NETWORK_MOBILE;
+			request.setAllowedNetworkTypes(networks);
+			request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+			request.allowScanningByMediaScanner();
+			request.setTitle("Downloading " + podcast.getTitle());
+			request.setDescription(podcast.getSubscriptionTitle());
 			File mediaFile = new File(podcast.getFilename(_context));
+			request.setDestinationInExternalFilesDir(_context, Environment.DIRECTORY_PODCASTS, mediaFile.getName());
 
-			HttpURLConnection c = openConnection(podcast, mediaFile);
-			if (c == null)
-				return;
-
-			if (!downloadFile(c, mediaFile))
-				return;
-
-			if (mediaFile.length() == c.getContentLength())
-				podcast.determineDuration(_context);
-
-			// the active podcast may have changed
-			// if there's no active and this is the first downloaded in the queue
-			_context.getContentResolver().notifyChange(PodcastProvider.ACTIVE_PODCAST_URI, null);
+			DownloadManager downloadManager = (DownloadManager) _context.getSystemService(Context.DOWNLOAD_SERVICE);
+			long downloadId = downloadManager.enqueue(request);
+			ContentValues values = new ContentValues();
+			values.put(PodcastProvider.COLUMN_DOWNLOAD_ID, downloadId);
+			_context.getContentResolver().update(PodcastProvider.getContentUri(podcastId), values, null, null);
 		} catch (Exception e) {
 			Log.e("Podax", "error while downloading", e);
 		} finally {
 			if (cursor != null)
 				cursor.close();
-		}
-	}
-
-	// returns null if connection should not be used (404, already downloaded, etc)
-	private HttpURLConnection openConnection(PodcastCursor podcast, File mediaFile) {
-		try {
-			URL u = new URL(podcast.getMediaUrl());
-			HttpURLConnection c = (HttpURLConnection)u.openConnection();
-			if (mediaFile.exists() && mediaFile.length() > 0)
-				c.setRequestProperty("Range", "bytes=" + mediaFile.length() + "-");
-
-			// response code 416 means range is invalid
-			if (c.getResponseCode() == 416) {
-				mediaFile.delete();
-				c = (HttpURLConnection)u.openConnection();
-			}
-
-			// only valid response codes are 200 and 206
-			if (c.getResponseCode() != 200 && c.getResponseCode() != 206)
-				return null;
-
-			// response code 206 means partial content and range header worked
-			if (c.getResponseCode() == 206) {
-				// make sure there's more data to download
-				if (c.getContentLength() <= 0) {
-					podcast.setFileSize(_context, mediaFile.length());
-					return null;
-				}
-			} else {
-				podcast.setFileSize(_context, c.getContentLength());
-				// all content returned so delete existing content
-				mediaFile.delete();
-			}
-			return c;
-		} catch (IOException ex) {
-			Log.e("Podax", "Unable to open connection to " + podcast.getMediaUrl(), ex);
-			return null;
-		}
-	}
-
-	private boolean downloadFile(HttpURLConnection conn, File file) {
-		FileOutputStream outstream = null;
-		InputStream instream = null;
-		try {
-			// file was deleted if accept-range header didn't work so always append
-			outstream = new FileOutputStream(file, true);
-			instream = conn.getInputStream();
-			int read;
-			byte[] b = new byte[1024*64];
-			while (!Thread.currentThread().isInterrupted() &&
-					(read = instream.read(b)) != -1)
-				outstream.write(b, 0, read);
-		} catch (OutOfMemoryError e) {
-			Log.e("Podax", "Not enough memory to download " + conn.getURL().toExternalForm(), e);
-			return false;
-		} catch (Exception e) {
-			Log.e("Podax", "Interrupted while downloading " + conn.getURL().toExternalForm(), e);
-			return false;
-		} finally {
-			close(outstream);
-			close(instream);
-		}
-		return file.length() == conn.getContentLength();
-	}
-
-	void showNotification(PodcastCursor podcast) {
-		Intent notificationIntent = new Intent(_context, MainActivity.class);
-		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
-
-		Notification notification = new NotificationCompat.Builder(_context)
-			.setSmallIcon(drawable.icon)
-			.setWhen(System.currentTimeMillis())
-			.setTicker("Downloading " + podcast.getTitle())
-			.setContentTitle("Downloading " + podcast.getTitle())
-			.setContentText(podcast.getSubscriptionTitle())
-			.setContentIntent(contentIntent)
-			.build();
-
-		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
-		notificationManager.notify(Constants.NOTIFICATION_UPDATE, notification);
-	}
-
-	public static void close(Closeable c) {
-		if (c == null)
-			return;
-		try {
-			c.close();
-		} catch (IOException e) {
 		}
 	}
 }
