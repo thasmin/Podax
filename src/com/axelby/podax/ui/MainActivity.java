@@ -17,10 +17,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -54,7 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends ActionBarActivity {
 
 	private static int _defaultTextColor = 0;
 	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
@@ -105,8 +105,8 @@ public class MainActivity extends FragmentActivity {
 				R.string.open_drawer, R.string.close_drawer);
 		_drawerLayout.setDrawerListener(_drawerToggle);
 
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		getActionBar().setHomeButtonEnabled(true);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
 
 		// watch active podcast for drawer
 		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
@@ -176,14 +176,16 @@ public class MainActivity extends FragmentActivity {
 			handleIntent(intent);
 		} else if (savedInstanceState == null) {
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
-			int subscriptionCount = c.getCount();
-			c.close();
-			if (subscriptionCount == 0) {
-				replaceFragment(WelcomeFragment.class);
-				_fragmentId = 1;
-			} else {
-				replaceFragment(PodcastDetailFragment.class);
-				_fragmentId = 2;
+			if (c != null) {
+				int subscriptionCount = c.getCount();
+				c.close();
+				if (subscriptionCount == 0) {
+					replaceFragment(WelcomeFragment.class);
+					_fragmentId = 1;
+				} else {
+					replaceFragment(PodcastDetailFragment.class);
+					_fragmentId = 2;
+				}
 			}
 		} else {
 			_fragmentId = savedInstanceState.getInt("fragmentId");
@@ -191,6 +193,9 @@ public class MainActivity extends FragmentActivity {
 	}
 
 	private void handleIntent(Intent intent) {
+		if (intent == null || intent.getExtras() == null)
+			return;
+
 		_fragmentId = intent.getIntExtra("fragmentId", 2);
 		Bundle args = (Bundle) intent.getExtras().clone();
 		args.remove("fragmentId");
@@ -253,17 +258,26 @@ public class MainActivity extends FragmentActivity {
 
 		try {
 			Fragment f = null;
-			for (WeakReference<Fragment> frag : _savedFragments)
-				if (frag.get() != null && frag.get().getClass().equals(clazz)) {
-					f = frag.get();
-					break;
+			if (args != null) {
+				for (WeakReference<Fragment> frag : _savedFragments) {
+					if (frag.get() != null && clazz.equals(frag.get().getClass())) {
+						f = frag.get();
+						break;
+					}
 				}
+			}
 
 			// restart activity if we have new args
-			if (f != null && args != null) {
-				_savedFragments.remove(f);
+			if (args != null) {
 				f = null;
+				for (WeakReference<Fragment> frag : _savedFragments) {
+					if (frag.get() != null && clazz.equals(frag.get().getClass())) {
+						_savedFragments.remove(frag);
+						break;
+					}
+				}
 			}
+
 			if (f == null) {
 				f = clazz.getConstructor().newInstance();
 				f.setArguments(args);
@@ -272,16 +286,11 @@ public class MainActivity extends FragmentActivity {
 			if (_savedFragments.size() > 0)
 				ft.addToBackStack(null);
 			ft.commit();
-		} catch (IllegalArgumentException e) {
-			return;
-		} catch (InstantiationException e) {
-			return;
-		} catch (IllegalAccessException e) {
-			return;
-		} catch (InvocationTargetException e) {
-			return;
-		} catch (NoSuchMethodException e) {
-			return;
+		} catch (IllegalArgumentException ignored) {
+		} catch (InstantiationException ignored) {
+		} catch (IllegalAccessException ignored) {
+		} catch (InvocationTargetException ignored) {
+		} catch (NoSuchMethodException ignored) {
 		}
 	}
 
@@ -299,9 +308,7 @@ public class MainActivity extends FragmentActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (_drawerToggle.onOptionsItemSelected(item))
-			return true;
-		return super.onOptionsItemSelected(item);
+		return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
 	}
 
 	@Override
@@ -327,7 +334,7 @@ public class MainActivity extends FragmentActivity {
 	public void onAttachFragment(Fragment fragment) {
 		super.onAttachFragment(fragment);
 		for (WeakReference<Fragment> frag : _savedFragments)
-			if (frag.get() != null && frag.get().getClass().equals(fragment.getClass()))
+			if (frag.get() != null && fragment.getClass().equals(frag.get().getClass()))
 				return;
 		_savedFragments.add(new WeakReference<Fragment>(fragment));
 	}

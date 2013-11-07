@@ -245,9 +245,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 
 	private void initializeUI(PodcastCursor podcast) {
 		String url = podcast.getSubscriptionThumbnailUrl();
-		if (url == null)
-			_subscriptionImage.setVisibility(View.GONE);
-		else
+		if (url != null)
 			_subscriptionImage.setImageUrl(podcast.getSubscriptionThumbnailUrl(), Helper.getImageLoader(getActivity()));
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
