@@ -1,6 +1,9 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.Podax" parent="android:Theme.Holo"></style>
+    <style name="Theme.Podax" parent="Theme.AppCompat">
+        <item name="android:buttonStyle">@style/podaxButton</item>
+        <item name="android:buttonStyleSmall">@style/podaxButtonSmall</item>
+    </style>
 
     <color name="podaxColor">#FFE59F39</color>
     <color name="podaxRed">#FFFC4332</color>
@@ -14,9 +17,13 @@
     <style name="podaxButtonSmall" parent="android:Widget.Button.Small">
         <item name="android:background">@drawable/button_background</item>
         <item name="android:textColor">@android:color/white</item>
-        <item name="android:paddingLeft">10dp</item>
-        <item name="android:paddingRight">10dp</item>
-        <item name="android:singleLine">true</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
+    <style name="podaxButton" parent="android:Widget.Button">
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:padding">10dp</item>
     </style>
 
     <style name="mainText" parent="@android:style/TextAppearance.Large">

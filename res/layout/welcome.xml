@@ -66,11 +66,13 @@
                     android:id="@+id/rssurl_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="-2dp"
                     android:text="@string/subscribe"/>
         </LinearLayout>
 
         <RelativeLayout
                 android:id="@+id/american_life"
+                android:layout_marginTop="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -78,15 +80,14 @@
                     android:id="@+id/american_life_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
                     android:text="@string/welcome_american_life"
+                    android:layout_alignBaseline="@+id/american_life_btn"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
 
             <Button
                     android:id="@+id/american_life_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBaseline="@+id/american_life_title"
                     android:layout_alignParentRight="true"
                     android:text="@string/subscribe"/>
 
@@ -94,30 +95,28 @@
                     android:id="@+id/american_life_desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_below="@+id/american_life_title"
-                    android:layout_marginTop="10dp"
+                    android:layout_below="@+id/american_life_btn"
                     android:text="@string/welcome_american_life_desc"/>
         </RelativeLayout>
 
         <RelativeLayout
                 android:id="@+id/tech_news_today"
                 android:layout_width="match_parent"
+                android:layout_marginTop="20dp"
                 android:layout_height="wrap_content">
 
             <TextView
                     android:id="@+id/tech_news_today_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
                     android:text="@string/welcome_tech_news_today"
+                    android:layout_alignBaseline="@+id/tech_news_today_btn"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
 
             <Button
                     android:id="@+id/tech_news_today_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBaseline="@+id/tech_news_today_title"
                     android:layout_alignParentRight="true"
                     android:text="@string/subscribe"/>
 
@@ -125,9 +124,7 @@
                     android:id="@+id/tech_news_today_desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_below="@+id/tech_news_today_title"
-                    android:layout_marginTop="10dp"
+                    android:layout_below="@+id/tech_news_today_btn"
                     android:text="@string/welcome_tech_news_today_desc"/>
         </RelativeLayout>
     </LinearLayout>

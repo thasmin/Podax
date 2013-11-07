@@ -50,9 +50,8 @@
 
             <Button
                     android:id="@+id/payment"
-                    style="@style/podaxButtonSmall"
                     android:layout_width="wrap_content"
-                    android:layout_height="32dp"
+                    android:layout_height="wrap_content"
                     android:contentDescription="@string/payment"
                     android:text="@string/donate"
                     android:layout_gravity="center_horizontal"/>
@@ -74,8 +73,7 @@
             <Button
                     android:id="@+id/queue_btn"
                     android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    style="@style/podaxButtonSmall"
+                    android:layout_height="wrap_content"
                     android:text="@string/add"
                     />
 
@@ -131,7 +129,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/restart"
                 android:padding="10dp"
-                android:scaleType="fitCenter"
+                android:scaleType="center"
                 android:src="@drawable/ic_media_previous"/>
 
         <ImageButton
@@ -142,7 +140,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/rewind"
                 android:padding="10dp"
-                android:scaleType="fitCenter"
+                android:scaleType="center"
                 android:src="@drawable/ic_media_rew"/>
 
         <ImageButton
@@ -153,7 +151,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/pause"
                 android:padding="10dp"
-                android:scaleType="fitCenter"
+                android:scaleType="center"
                 android:src="@drawable/ic_media_play"/>
 
         <ImageButton
@@ -164,7 +162,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/fast_forward"
                 android:padding="10dp"
-                android:scaleType="fitCenter"
+                android:scaleType="center"
                 android:src="@drawable/ic_media_ff"/>
 
         <View
@@ -180,7 +178,7 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="@string/skip_to_end"
                 android:padding="10dp"
-                android:scaleType="fitCenter"
+                android:scaleType="center"
                 android:src="@drawable/ic_media_next"/>
     </LinearLayout>
 
