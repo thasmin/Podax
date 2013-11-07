@@ -35,6 +35,12 @@ class PodcastDownloader {
 			if (podcast.isDownloaded(_context))
 				return;
 
+			if (new File(podcast.getOldFilename(_context)).exists()) {
+				if (!new File(podcast.getOldFilename(_context)).renameTo(new File(podcast.getFilename(_context))))
+					PodaxLog.log(_context, "unable to move downloaded podcast to new folder");
+				return;
+			}
+
 			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(podcast.getMediaUrl()));
 			int networks = DownloadManager.Request.NETWORK_WIFI;
 			if (!PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("wifiPref", true))

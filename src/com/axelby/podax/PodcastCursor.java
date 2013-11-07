@@ -151,6 +151,9 @@ public class PodcastCursor {
 	public String getFilename(Context context) {
 		return PodcastCursor.getStoragePath(context) + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
 	}
+	public String getOldFilename(Context context) {
+		return PodcastCursor.getOldStoragePath(context) + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
+	}
 
 	public boolean isDownloaded(Context context) {
 		if (getFileSize() == null)
@@ -177,6 +180,14 @@ public class PodcastCursor {
 	public static String getStoragePath(Context context) {
 		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
 		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/Podcasts/";
+		File podaxFile = new File(podaxDir);
+		if (!podaxFile.exists())
+			podaxFile.mkdirs();
+		return podaxDir;
+	}
+	public static String getOldStoragePath(Context context) {
+		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
+		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
 		File podaxFile = new File(podaxDir);
 		if (!podaxFile.exists())
 			podaxFile.mkdirs();
