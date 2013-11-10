@@ -24,6 +24,7 @@ class PodcastDownloader {
 					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 					PodcastProvider.COLUMN_MEDIA_URL,
 					PodcastProvider.COLUMN_FILE_SIZE,
+					PodcastProvider.COLUMN_DOWNLOAD_ID,
 			};
 			cursor = _context.getContentResolver().query(PodcastProvider.QUEUE_URI, projection,
 					"podcasts._id = ?",
@@ -41,19 +42,38 @@ class PodcastDownloader {
 				return;
 			}
 
+			DownloadManager downloadManager = (DownloadManager) _context.getSystemService(Context.DOWNLOAD_SERVICE);
+
+			// if download id is already set, download has been queued
+			// only continue if download will not be finished itself (failed or successful)
+			if (podcast.getDownloadId() != null) {
+				DownloadManager.Query query = new DownloadManager.Query();
+				query.setFilterById(podcast.getDownloadId());
+				int status = DownloadManager.STATUS_FAILED;
+				Cursor c = downloadManager.query(query);
+				if (c != null) {
+					if (c.moveToFirst())
+						status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
+					c.close();
+				}
+				if (status != DownloadManager.STATUS_FAILED && status != DownloadManager.STATUS_SUCCESSFUL)
+					return;
+			}
+
 			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(podcast.getMediaUrl()));
 			int networks = DownloadManager.Request.NETWORK_WIFI;
 			if (!PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("wifiPref", true))
 				networks |= DownloadManager.Request.NETWORK_MOBILE;
 			request.setAllowedNetworkTypes(networks);
+			/*
 			request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
 			request.allowScanningByMediaScanner();
+			*/
 			request.setTitle("Downloading " + podcast.getTitle());
 			request.setDescription(podcast.getSubscriptionTitle());
 			File mediaFile = new File(podcast.getFilename(_context));
 			request.setDestinationInExternalFilesDir(_context, Environment.DIRECTORY_PODCASTS, mediaFile.getName());
 
-			DownloadManager downloadManager = (DownloadManager) _context.getSystemService(Context.DOWNLOAD_SERVICE);
 			long downloadId = downloadManager.enqueue(request);
 			ContentValues values = new ContentValues();
 			values.put(PodcastProvider.COLUMN_DOWNLOAD_ID, downloadId);
