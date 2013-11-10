@@ -180,6 +180,15 @@
                 android:name="com.axelby.gpodder.AuthenticatorActivity"
                 android:exported="true"
                 android:label="@string/gpodder_authenticator_activity_title"/>
+        <activity
+                android:name="com.axelby.gpodder.AccountSettings"
+                android:exported="true"
+                android:label="@string/gpodder_account_settings">
+            <intent-filter>
+                <action android:name="com.axelby.gpodder.account_settings" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <service
                 android:name="com.axelby.gpodder.AuthenticationService"

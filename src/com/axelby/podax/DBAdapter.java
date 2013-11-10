@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 7;
+	private static final int DATABASE_VERSION = 8;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -53,6 +53,13 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"url VARCHAR, " +
 				"to_remove INTEGER DEFAULT 0, " +
 				"to_add INTEGER DEFAULT 0)");
+
+		db.execSQL("CREATE TABLE gpodder_device(" +
+				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"username VARCHAR, " +
+				"caption VARCHAR" +
+				"type VARCHAR," +
+				"needsChange INTEGER DEFAULT 0)");
 	}
 
 	@Override
@@ -136,6 +143,15 @@ public class DBAdapter extends SQLiteOpenHelper {
 		if (newVersion <= 7) {
 			// add download id column
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
+		}
+
+		if (newVersion <= 8) {
+			db.execSQL("CREATE TABLE gpodder_device(" +
+					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"username VARCHAR, " +
+					"caption VARCHAR" +
+					"type VARCHAR," +
+					"needsChange INTEGER DEFAULT 0)");
 		}
 	}
 }

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,9 +19,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.axelby.gpodder.Client.Changes;
+import com.axelby.podax.GPodderProvider;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+
+import org.acra.util.Installation;
 
 public class SyncService extends Service {
     private static final Object _syncAdapterLock = new Object();
@@ -58,13 +63,22 @@ public class SyncService extends Service {
 				return;
 
 			SharedPreferences gpodderPrefs = getContext().getSharedPreferences("gpodder", MODE_PRIVATE);
+			// default deviceId is podax for historical reasons, it should be generated with new account
+			String deviceId = gpodderPrefs.getString("deviceId", "podax");
+
+			if (gpodderPrefs.getBoolean("configurationNeedsUpdate", false)) {
+				String caption = gpodderPrefs.getString("caption", "podax");
+				String type = gpodderPrefs.getString("type", Helper.isTablet(_context) ? "tablet" : "phone");
+				client.setDeviceConfiguration(deviceId, new DeviceConfiguration(caption, type));
+			}
+
 			int lastTimestamp = gpodderPrefs.getInt("lastTimestamp-" + account.name, 0);
 			
 			// send diffs to gpodder
-			client.syncDiffs();
+			client.syncDiffs(deviceId);
 
 			// get the changes since the last time we updated
-			Client.Changes changes = client.getSubscriptionChanges(lastTimestamp);
+			Client.Changes changes = client.getSubscriptionChanges(deviceId, lastTimestamp);
 			if (changes == null)
 				return;
 			updateSubscriptions(changes);

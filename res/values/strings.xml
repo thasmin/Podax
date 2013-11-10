@@ -148,6 +148,13 @@
         <item>Internal Storage</item>
         <item>External SD Card</item>
     </string-array>
+    <string-array name="gpodder_device_types">
+        <item>desktop</item>
+        <item>laptop</item>
+        <item>mobile</item>
+        <item>server</item>
+        <item>other</item>
+    </string-array>
 
     <string name="crash_toast_text">Oops, Podax has crashed. Sorry about that!</string>
     <string name="crash_dialog_text">Sorry about that crash earlier. Would you like to report the crash to the developer?</string>
@@ -157,6 +164,12 @@
     <string name="top_gpodder_podcasts">Top GPodder Podcasts</string>
     <string name="view_website">View Website</string>
     <string name="remove">Remove</string>
+    <string name="device_name">Device Name</string>
+    <string name="device_type">Device Type</string>
+    <string name="phone">phone</string>
+    <string name="tablet">tablet</string>
+    <string name="other">other</string>
+    <string name="gpodder_account_settings">GPodder Account Settings</string>
 
 
 </resources>

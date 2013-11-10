@@ -2,6 +2,7 @@ package com.axelby.podax;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
@@ -139,5 +140,11 @@ public class Helper {
 		Bitmap scaled = Bitmap.createScaledBitmap(fullSize, width, height, false);
 		_imageCache.put(key, scaled);
 		return scaled;
+	}
+
+	public static boolean isTablet(Context context) {
+		return (context.getResources().getConfiguration().screenLayout
+				& Configuration.SCREENLAYOUT_SIZE_MASK)
+				>= Configuration.SCREENLAYOUT_SIZE_LARGE;
 	}
 }

@@ -33,8 +33,7 @@ public class Client extends NoAuthClient {
 		_password = password;
 	}
 
-	private void writePost(HttpsURLConnection conn, String toPost)
-			throws IOException {
+	private void writePost(HttpsURLConnection conn, String toPost) throws IOException {
 		conn.setDoOutput(true);
 		OutputStream output = null;
 		try {
@@ -94,7 +93,7 @@ public class Client extends NoAuthClient {
 		}
 	}
 
-	public String getDeviceName() {
+	public DeviceConfiguration getDeviceConfiguration(String deviceId) {
 		verifyCurrentConfig();
 
 		URL url;
@@ -114,8 +113,8 @@ public class Client extends NoAuthClient {
 			JSONArray devices = (JSONArray)new JSONTokener(results).nextValue();
 			for (int i = 0; i < devices.length(); ++i) {
 				JSONObject device = devices.getJSONObject(i);
-				if (device.getString("id").equals("podax"))
-					return device.getString("caption");
+				if (device.getString("id").equals(deviceId))
+					return new DeviceConfiguration(device.getString("caption"), device.getString("type"));
 			}
 			return null;
 		} catch (IOException e) {
@@ -130,17 +129,17 @@ public class Client extends NoAuthClient {
 		}
 	}
 
-	public boolean setDeviceName(String deviceName) {
+	public boolean setDeviceConfiguration(String deviceId, DeviceConfiguration configuration) {
 		verifyCurrentConfig();
 
 		URL url;
 		HttpsURLConnection conn = null;
 		try {
-			url = new URL(_config.mygpo + "api/2/devices/" + _username + "/podax.json");
+			url = new URL(_config.mygpo + "api/2/devices/" + _username + "/" + deviceId + ".json");
 			conn = createConnection(url);
 			HashMap<String, String> data = new HashMap<String, String>();
-			data.put("caption", deviceName);
-			data.put("type", "mobile");
+			data.put("caption", configuration.getCaption());
+			data.put("type", configuration.getType());
 			JSONObject json = new JSONObject(data);
 			writePost(conn, json.toString());
 
@@ -169,14 +168,14 @@ public class Client extends NoAuthClient {
 		public boolean isEmpty() { return added.size() > 0 || removed.size() > 0; }
 	}
 
-	public Changes getSubscriptionChanges(int lastCheck) {
+	public Changes getSubscriptionChanges(String deviceId, int lastCheck) {
 		verifyCurrentConfig();
 
 		URL url;
 		HttpsURLConnection conn = null;
 		Changes changes = new Changes();
 		try {
-			url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/podax.json?since=" + String.valueOf(lastCheck));
+			url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/" + deviceId + ".json?since=" + String.valueOf(lastCheck));
 			conn = createConnection(url);
 
 			conn.connect();
@@ -212,7 +211,7 @@ public class Client extends NoAuthClient {
 		}
 	}
 
-	public void syncDiffs() {
+	public void syncDiffs(String deviceId) {
 		verifyCurrentConfig();
 
 		HttpsURLConnection conn = null;
@@ -232,7 +231,7 @@ public class Client extends NoAuthClient {
 			if (toAdd.size() == 0 && toRemove.size() == 0)
 				return;
 
-			URL url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/podax.json");
+			URL url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/" + deviceId + ".json");
 			conn = createConnection(url);
 
 			conn.setDoOutput(true);

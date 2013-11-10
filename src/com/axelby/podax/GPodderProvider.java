@@ -19,10 +19,12 @@ public class GPodderProvider extends ContentProvider {
 
 	public static Uri TO_REMOVE_URI = Uri.withAppendedPath(URI, "to_remove");
 	public static Uri TO_ADD_URI = Uri.withAppendedPath(URI, "to_add");
+	public static Uri DEVICE_URI = Uri.withAppendedPath(URI, "to_add");
 
 	static final int ALL = 0;
 	static final int TO_ADD = 1;
 	static final int TO_REMOVE = 2;
+	static final int DEVICE = 3;
 
 	static UriMatcher _uriMatcher;
 
@@ -31,6 +33,7 @@ public class GPodderProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "", ALL);
 		_uriMatcher.addURI(AUTHORITY, "to_add", TO_ADD);
 		_uriMatcher.addURI(AUTHORITY, "to_remove", TO_REMOVE);
+		_uriMatcher.addURI(AUTHORITY, "device", DEVICE);
 	}
 
 	@Override
@@ -57,6 +60,8 @@ public class GPodderProvider extends ContentProvider {
 				return db.query("gpodder_sync", projection, selection + " AND to_add = 1", selectionArgs, null, null, sortOrder);
 			case TO_REMOVE:
 				return db.query("gpodder_sync", projection, selection + " AND to_remove = 1", selectionArgs, null, null, sortOrder);
+			case DEVICE:
+				return db.query("gpodder_device", projection, selection, selectionArgs, null, null, sortOrder);
 			default:
 				return null;
 		}
@@ -89,7 +94,7 @@ public class GPodderProvider extends ContentProvider {
 		if (!values.containsKey("to_add") && !values.containsKey("to_remove"))
 			return null;
 
-		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		long id = db.insert("gpodder_sync", null, values);
 		return ContentUris.withAppendedId(URI, id);
 	}

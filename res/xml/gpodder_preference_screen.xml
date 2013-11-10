@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Device Settings" />
+    <Preference android:title="Device Settings">
+        <intent android:action="com.axelby.gpodder.account_settings" />
+    </Preference>
+</PreferenceScreen>

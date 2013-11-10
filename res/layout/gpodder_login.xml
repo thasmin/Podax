@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical"
@@ -7,7 +8,6 @@
               android:paddingTop="5dip">
 
     <TextView
-            android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -25,7 +25,7 @@
             android:text="@string/username"/>
 
     <EditText
-            android:id="@+id/username_edit"
+            android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
@@ -37,11 +37,57 @@
             android:text="@string/password"/>
 
     <EditText
-            android:id="@+id/password_edit"
+            android:id="@+id/password"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
             android:singleLine="true"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:singleLine="true"
+            android:text="@string/device_name"/>
+
+    <EditText
+            android:id="@+id/devicename"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="podax"
+            android:singleLine="true"
+            tools:ignore="HardcodedText"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:singleLine="true"
+            android:text="@string/device_type"/>
+
+    <RadioGroup
+            android:id="@+id/devicetype"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content">
+
+        <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/phone"
+                android:id="@+id/radioPhone"/>
+
+        <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tablet"
+                android:id="@+id/radioTablet"/>
+
+        <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/other"
+                android:id="@+id/radioOther"/>
+    </RadioGroup>
 
     <Button
             android:id="@+id/ok_button"
@@ -51,5 +97,11 @@
             android:layout_gravity="center_horizontal"
             android:onClick="handleLogin"
             android:text="@string/login"/>
+
+    <TextView
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textIsSelectable="true"/>
 
 </LinearLayout>

@@ -1,5 +1,6 @@
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
 					   android:accountType="com.axelby.gpodder"
+                       android:accountPreferences="@xml/gpodder_preference_screen"
 					   android:icon="@drawable/mygpo"
 					   android:smallIcon="@drawable/mygpo"
 					   android:label="@string/gpodder">
