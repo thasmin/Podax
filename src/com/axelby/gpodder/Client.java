@@ -145,9 +145,7 @@ public class Client extends NoAuthClient {
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			if (code != 200)
-				return false;
-			return true;
+			return code == 200;
 		} catch (IOException e) {
 			Log.e("Podax", "io exception while getting device name", e);
 			return false;
@@ -218,15 +216,19 @@ public class Client extends NoAuthClient {
 		try {
 			Vector<String> toAdd = new Vector<String>();
 			Cursor c = _context.getContentResolver().query(GPodderProvider.TO_ADD_URI, new String[] { "url" }, null, null, null);
-			while (c.moveToNext())
-				toAdd.add(c.getString(0));
-			c.close();
+			if (c != null) {
+				while (c.moveToNext())
+					toAdd.add(c.getString(0));
+				c.close();
+			}
 
 			Vector<String> toRemove = new Vector<String>();
 			c = _context.getContentResolver().query(GPodderProvider.TO_REMOVE_URI, new String[]{"url"}, null, null, null);
-			while (c.moveToNext())
-				toRemove.add(c.getString(0));
-			c.close();
+			if (c != null) {
+				while (c.moveToNext())
+					toRemove.add(c.getString(0));
+				c.close();
+			}
 
 			if (toAdd.size() == 0 && toRemove.size() == 0)
 				return;
@@ -262,11 +264,40 @@ public class Client extends NoAuthClient {
 		}
 	}
 
-	public void writeStrings(JsonWriter writer, String key, Vector<String> values) throws IOException {
+	private void writeStrings(JsonWriter writer, String key, Vector<String> values) throws IOException {
 		writer.name(key);
 		writer.beginArray();
 		for (String s : values)
 			writer.value(s);
 		writer.endArray();
+	}
+
+	public void updateEpisodes(EpisodeUpdate[] updates) {
+		verifyCurrentConfig();
+
+		HttpsURLConnection conn = null;
+		try {
+			URL url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/" + deviceId + ".json");
+			conn = createConnection(url);
+
+			conn.setDoOutput(true);
+			OutputStreamWriter streamWriter = new OutputStreamWriter(conn.getOutputStream());
+			JsonWriter writer = new JsonWriter(streamWriter);
+			writer.beginArray();
+			for (EpisodeUpdate update : updates)
+				update.writeJson(writer);
+			writer.endArray();
+			writer.close();
+
+			conn.connect();
+			int code = conn.getResponseCode();
+			if (code != 200)
+				return;
+		} catch (MalformedURLException ignored) {
+		} catch (IOException ignored) {
+		} finally {
+			if (conn != null)
+				conn.disconnect();
+		}
 	}
 }
