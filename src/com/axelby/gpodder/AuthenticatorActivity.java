@@ -3,10 +3,7 @@ package com.axelby.gpodder;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.ContentResolver;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -25,31 +22,23 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.ui.ProgressDialogFragment;
 
-import org.acra.util.Installation;
-
 public class AuthenticatorActivity extends FragmentActivity {
 	public static final String PARAM_CONFIRMCREDENTIALS = "confirmCredentials";
 	public static final String PARAM_PASSWORD = "password";
 	public static final String PARAM_USERNAME = "username";
 	public static final String PARAM_AUTHTOKEN_TYPE = "authtokenType";
-
 	private final Handler _handler = new Handler();
-
 	String _username;
 	String _password;
 	String _authtokenType;
-
 	boolean _requestNewAccount;
 	boolean _confirmCredentials;
-
 	private Thread _authThread;
-
 	private TextView _messageText;
 	private EditText _usernameEdit;
 	private EditText _passwordEdit;
 	private EditText _deviceNameEdit;
 	private RadioGroup _deviceTypeList;
-
 	private AccountAuthenticatorResponse _accountAuthenticatorResponse;
 	private Bundle _resultBundle;
 	private ProgressDialogFragment _progressDialog;
@@ -138,11 +127,15 @@ public class AuthenticatorActivity extends FragmentActivity {
 	}
 
 	private String getCheckedDeviceType() {
-		switch(_deviceTypeList.getCheckedRadioButtonId()) {
-			case R.id.radioTablet: return "tablet";
-			case R.id.radioPhone: return "phone";
-			case R.id.radioOther: return "android-other";
-			default: return "podax";
+		switch (_deviceTypeList.getCheckedRadioButtonId()) {
+			case R.id.radioTablet:
+				return "tablet";
+			case R.id.radioPhone:
+				return "phone";
+			case R.id.radioOther:
+				return "android-other";
+			default:
+				return "podax";
 		}
 	}
 
@@ -168,9 +161,10 @@ public class AuthenticatorActivity extends FragmentActivity {
 
 		AccountManager accountManager = AccountManager.get(this);
 		if (_requestNewAccount) {
+			String rdm = Long.toHexString(Double.doubleToLongBits(Math.random()));
 			SharedPreferences gpodderPrefs = getSharedPreferences("gpodder", MODE_PRIVATE);
 			gpodderPrefs.edit()
-					.putString("deviceId", "podax-" + Installation.id(this))
+					.putString("deviceId", "podax-" + rdm)
 					.putBoolean("configurationNeedsUpdate", true)
 					.commit();
 

@@ -10,22 +10,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.axelby.gpodder.Client.Changes;
-import com.axelby.podax.GPodderProvider;
+import com.axelby.gpodder.dto.Changes;
 import com.axelby.podax.Helper;
-import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
-
-import org.acra.util.Installation;
 
 public class SyncService extends Service {
     private static final Object _syncAdapterLock = new Object();
@@ -58,6 +50,9 @@ public class SyncService extends Service {
 		public void onPerformSync(Account account, Bundle extras, String authority,
 				ContentProviderClient provider, SyncResult syncResult) {
 			AccountManager accountManager = AccountManager.get(_context);
+			if (accountManager == null)
+				return;
+
 			Client client = new Client(_context, account.name, accountManager.getPassword(account));
 			if (!client.authenticate())
 				return;
@@ -78,22 +73,22 @@ public class SyncService extends Service {
 			client.syncDiffs(deviceId);
 
 			// get the changes since the last time we updated
-			Client.Changes changes = client.getSubscriptionChanges(deviceId, lastTimestamp);
+			Changes changes = client.getSubscriptionChanges(deviceId, lastTimestamp);
 			if (changes == null)
 				return;
 			updateSubscriptions(changes);
 
 			// remember when we last updated
 			SharedPreferences.Editor gpodderPrefsEditor = gpodderPrefs.edit();
-			gpodderPrefsEditor.putInt("lastTimestamp-" + account.name, changes.timestamp);
+			gpodderPrefsEditor.putInt("lastTimestamp-" + account.name, changes.getTimestamp());
 			gpodderPrefsEditor.commit();
 		}
 
 		private void updateSubscriptions(Changes changes) {
-			for (String removedUrl : changes.removed)
+			for (String removedUrl : changes.getRemovedUrls())
 				_context.getContentResolver().delete(SubscriptionProvider.FROM_GPODDER_URI, "url = ?", new String[] { removedUrl });
 
-			for (String addedUrl : changes.added) {
+			for (String addedUrl : changes.getAddedUrls()) {
 				ContentValues values = new ContentValues();
 				values.put(SubscriptionProvider.COLUMN_URL, addedUrl);
 				Uri newUri = _context.getContentResolver().insert(SubscriptionProvider.FROM_GPODDER_URI, values);

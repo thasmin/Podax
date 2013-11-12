@@ -32,17 +32,17 @@
       <sourceFolder url="file://$MODULE_DIR$/build/source/rs/test" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/build/source/buildConfig/test" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/build/res/rs/test" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/debug/aidl" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/debug/assets" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/debug/java" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/debug/jni" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/debug/rs" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/debug/res" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/debug/resources" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/assets" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/main/jni" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/res" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/debug/aidl" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/debug/assets" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/debug/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/debug/jni" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/debug/rs" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/debug/res" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/debug/resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/assets" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/jni" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/res" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/instrumentTest/aidl" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/instrumentTest/assets" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/instrumentTest/java" isTestSource="true" />

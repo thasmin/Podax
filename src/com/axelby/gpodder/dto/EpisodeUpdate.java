@@ -1,4 +1,4 @@
-package com.axelby.gpodder;
+package com.axelby.gpodder.dto;
 
 import com.google.gson.stream.JsonWriter;
 

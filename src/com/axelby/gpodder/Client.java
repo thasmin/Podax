@@ -5,7 +5,11 @@ import android.database.Cursor;
 import android.util.Base64;
 import android.util.Log;
 
+import com.axelby.gpodder.dto.Changes;
+import com.axelby.gpodder.dto.EpisodeUpdate;
+import com.axelby.gpodder.dto.EpisodeUpdateConfirmation;
 import com.axelby.podax.GPodderProvider;
+import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import org.json.JSONArray;
@@ -13,6 +17,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
@@ -158,20 +163,11 @@ public class Client extends NoAuthClient {
 		}
 	}
 
-	public class Changes {
-		public Vector<String> added = new Vector<String>();
-		public Vector<String> removed = new Vector<String>();
-		public int timestamp = 0;
-		public boolean isValid() { return timestamp != 0; }
-		public boolean isEmpty() { return added.size() > 0 || removed.size() > 0; }
-	}
-
 	public Changes getSubscriptionChanges(String deviceId, int lastCheck) {
 		verifyCurrentConfig();
 
 		URL url;
 		HttpsURLConnection conn = null;
-		Changes changes = new Changes();
 		try {
 			url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/" + deviceId + ".json?since=" + String.valueOf(lastCheck));
 			conn = createConnection(url);
@@ -181,27 +177,13 @@ public class Client extends NoAuthClient {
 			if (code != 200)
 				return null;
 
-			String results = readStream(conn.getInputStream());
-			if (results == null)
-				return null;
-			JSONObject json = (JSONObject) new JSONTokener(results).nextValue();
-
-			changes.timestamp = json.getInt("timestamp");
-			JSONArray added = json.getJSONArray("add");
-			if (added != null)
-				for (int i = 0; i < added.length(); ++i)
-					changes.added.add(added.getString(i));
-			JSONArray removed = json.getJSONArray("remove");
-			if (removed != null)
-				for (int i = 0; i < removed.length(); ++i)
-					changes.removed.add(removed.getString(i));
-			
-			return changes;
+			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
+			return Changes.fromJson(reader);
 		} catch (IOException e) {
-			Log.e("Podax", "io exception while getting device name", e);
+			Log.e("Podax", "io exception while getting subscription changes", e);
 			return null;
 		} catch (Exception e) {
-			Log.e("Podax", "exception while getting device name", e);
+			Log.e("Podax", "exception while getting subscription changes", e);
 			return null;
 		} finally {
 			if (conn != null)
@@ -272,12 +254,12 @@ public class Client extends NoAuthClient {
 		writer.endArray();
 	}
 
-	public void updateEpisodes(EpisodeUpdate[] updates) {
+	public EpisodeUpdateConfirmation updateEpisodes(EpisodeUpdate[] updates) {
 		verifyCurrentConfig();
 
 		HttpsURLConnection conn = null;
 		try {
-			URL url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/" + deviceId + ".json");
+			URL url = new URL(_config.mygpo + "api/2/episodes/" + _username + ".json");
 			conn = createConnection(url);
 
 			conn.setDoOutput(true);
@@ -292,7 +274,11 @@ public class Client extends NoAuthClient {
 			conn.connect();
 			int code = conn.getResponseCode();
 			if (code != 200)
-				return;
+				return null;
+
+			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
+			EpisodeUpdateConfirmation result = EpisodeUpdateConfirmation.readJson(reader);
+			return result;
 		} catch (MalformedURLException ignored) {
 		} catch (IOException ignored) {
 		} finally {
