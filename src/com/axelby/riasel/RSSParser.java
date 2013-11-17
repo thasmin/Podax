@@ -8,6 +8,7 @@ import java.util.Date;
 
 public class RSSParser {
 	private static final String NAMESPACE_MEDIA = "http://search.yahoo.com/mrss/";
+	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
 
 	private RSSParser() {
 	}
@@ -27,6 +28,8 @@ public class RSSParser {
 				continue;
 
 			String name = parser.getName();
+			String namespace = parser.getNamespace();
+
 			// these are elements about the thumbnail
 			if (in_image) {
 				if (name.equals("url"))
@@ -37,23 +40,27 @@ public class RSSParser {
 			// if we're starting an item, move past the subscription details section
 			if (name.equals("item")) {
 				break;
-			} else if (name.equals("image")) {
-				in_image = true;
-				continue;
-			} else if (parser.getDepth() != 3) {
-				continue;
-			} else if (name.equalsIgnoreCase("pubDate")) {
-				Date date = Utils.parseDate(parser.nextText());
-				if (date != null)
-					feed.setPubDate(date);
-			} else if (name.equalsIgnoreCase("lastBuildDate")) {
-				Date date = Utils.parseDate(parser.nextText());
-				if (date != null)
-					feed.setLastBuildDate(date);
-			} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
-				feed.setTitle(parser.nextText());
-			} else if (name.equalsIgnoreCase("thumbnail") && parser.getNamespace().equals(NAMESPACE_MEDIA)) {
-				feed.setThumbnail(parser.getAttributeValue("", "url"));
+			} else {
+				if (name.equals("image") && namespace.equals("")) {
+					in_image = true;
+					continue;
+				} else if (parser.getDepth() != 3) {
+					continue;
+				} else if (name.equalsIgnoreCase("pubDate")) {
+					Date date = Utils.parseDate(parser.nextText());
+					if (date != null)
+						feed.setPubDate(date);
+				} else if (name.equalsIgnoreCase("lastBuildDate")) {
+					Date date = Utils.parseDate(parser.nextText());
+					if (date != null)
+						feed.setLastBuildDate(date);
+				} else if (name.equalsIgnoreCase("title") && namespace.equals("")) {
+					feed.setTitle(parser.nextText());
+				} else if (name.equalsIgnoreCase("thumbnail") && namespace.equals(NAMESPACE_MEDIA)) {
+					feed.setThumbnail(parser.getAttributeValue("", "url"));
+				} else if (name.equalsIgnoreCase("image") && namespace.equals(NAMESPACE_ITUNES)) {
+					feed.setThumbnail(parser.getAttributeValue("", "href"));
+				}
 			}
 		}
 
