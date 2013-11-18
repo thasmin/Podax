@@ -68,19 +68,32 @@
     <RadioGroup
             android:id="@+id/devicetype"
             android:layout_height="wrap_content"
-            android:layout_width="wrap_content">
+            android:layout_width="wrap_content"
+            android:orientation="horizontal">
 
         <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/phone"
-                android:id="@+id/radioPhone"/>
+                android:text="@string/desktop"
+                android:id="@+id/radioDesktop"/>
 
         <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/tablet"
-                android:id="@+id/radioTablet"/>
+                android:text="@string/laptop"
+                android:id="@+id/radioLaptop"/>
+
+        <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mobile"
+                android:id="@+id/radioMobile"/>
+
+        <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/server"
+                android:id="@+id/radioServer"/>
 
         <RadioButton
                 android:layout_width="wrap_content"

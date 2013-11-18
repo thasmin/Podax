@@ -212,7 +212,7 @@ public class MainActivity extends ActionBarActivity {
 		if (gpodder_accounts == null || gpodder_accounts.length == 0)
 			startActivity(new Intent(this, AuthenticatorActivity.class));
 		else {
-			Toast.makeText(this, "Already linked to GPodder as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "Already linked to gpodder.net as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
 			ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
 		}
 	}

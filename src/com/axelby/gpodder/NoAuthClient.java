@@ -4,36 +4,43 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import com.axelby.gpodder.dto.Podcast;
+import com.google.gson.stream.JsonReader;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class NoAuthClient {
 
-	protected static class Config {
-		public String mygpo = "https://gpodder.net/";
-		public String mygpo_feedservice = "https://mygpo-feedservice.appspot.com/";
-		public long update_timeout = 604800L;
-	}
-
 	protected static Config _config;
 	protected static Calendar _configRefresh = null;
+	protected Context _context;
 
-	public static void verifyCurrentConfig() {
+	protected String _errorMessage;
+
+	public NoAuthClient(Context context) {
+		_context = context;
+	}
+
+	public String getErrorMessage() {
+		return _errorMessage;
+	}
+	protected void setErrorMessage(String errorMessage) {
+		_errorMessage = errorMessage;
+	}
+	protected void clearErrorMessage() {
+		_errorMessage = null;
+	}
+
+	protected static void verifyCurrentConfig() {
 		if (_configRefresh == null || _configRefresh.before(new GregorianCalendar())) {
 			_config = retrieveGPodderConfig();
 
@@ -48,30 +55,41 @@ public class NoAuthClient {
 		}
 	}
 
-	protected static String readStream(InputStream stream) {
-		Scanner scanner = new Scanner(stream, "UTF-8").useDelimiter("\\A");
-		return scanner.hasNext() ? scanner.next() : null;
-	}
-
 	private static Config retrieveGPodderConfig() {
 		Config config = new Config();
 
 		HttpURLConnection conn = null;
 		try {
 			URL url = new URL("http://gpodder.net/clientconfig.json");
-			conn = (HttpURLConnection)url.openConnection();
-			conn.addRequestProperty("User-Agent", "podax/6.0");
-			String results = readStream(conn.getInputStream());
-			if (results == null)
+			conn = (HttpURLConnection) url.openConnection();
+			conn.addRequestProperty("User-Agent", "podax/6.1");
+
+			// this probably won't change -- use defaults if request fails
+			if (conn.getResponseCode() != 200)
 				return config;
-			JSONObject json = (JSONObject) new JSONTokener(results).nextValue();
-			config.mygpo = json.getJSONObject("mygpo").getString("baseurl");
-			config.mygpo_feedservice = json.getJSONObject("mygpo-feedservice").getString("baseurl");
-			config.update_timeout = json.getLong("update_timeout");
+
+			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
+			reader.beginObject();
+			while (reader.hasNext()) {
+				String name = reader.nextName();
+				if (name.equals("mygpo")) {
+					reader.beginObject();
+					reader.nextName();
+					config.mygpo = reader.nextString();
+					reader.endObject();
+				} else if (name.equals("mygpo-feedservice")) {
+					reader.beginObject();
+					reader.nextName();
+					config.mygpo_feedservice = reader.nextString();
+					reader.endObject();
+				} else if (name.equals("update_timeout")) {
+					config.update_timeout = reader.nextLong();
+				}
+			}
+			reader.endObject();
+			return config;
 		} catch (IOException e) {
 			Log.e("Podax", "io exception while retrieving gpodder config", e);
-		} catch (JSONException e) {
-			Log.e("Podax", "json exception while retrieving gpodder config", e);
 		} finally {
 			if (conn != null)
 				conn.disconnect();
@@ -81,65 +99,51 @@ public class NoAuthClient {
 	}
 
 	protected HttpsURLConnection createConnection(URL url) throws IOException {
-		HttpsURLConnection conn = (HttpsURLConnection)url.openConnection();
+		HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
 		conn.setRequestProperty("User-Agent", "podax/6.0");
 		return conn;
 	}
 
-	protected Context _context;
-
-	public NoAuthClient(Context context) {
-		_context = context;
-	}
-
-
-	public List<ToplistPodcast> getPodcastToplist() {
+	public List<Podcast> getPodcastToplist() {
 		verifyCurrentConfig();
+		clearErrorMessage();
 
-		URL url;
 		HttpsURLConnection conn = null;
 		try {
-			url = new URL(_config.mygpo + "toplist/20.json");
+			URL url = new URL(_config.mygpo + "toplist/20.json");
 			conn = createConnection(url);
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			if (code != 200)
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
 				return null;
-
-			String results = readStream(conn.getInputStream());
-			if (results == null)
-				return null;
-			JSONArray toplistJson = (JSONArray)new JSONTokener(results).nextValue();
-			ArrayList<ToplistPodcast> toplist = new ArrayList<ToplistPodcast>(toplistJson.length());
-			for (int i = 0; i < toplistJson.length(); ++i) {
-				JSONObject podcastJson = toplistJson.getJSONObject(i);
-				ToplistPodcast podcast = new ToplistPodcast();
-				for (Iterator<String> key = podcastJson.keys(); key.hasNext(); ) {
-					String k = key.next();
-					if (k.equals("website"))
-						podcast.setWebsite(Uri.parse(podcastJson.getString(k)));
-					else if (k.equals("description"))
-						podcast.setDescription(podcastJson.getString(k));
-					else if (k.equals("title"))
-						podcast.setTitle(podcastJson.getString(k));
-					else if (k.equals("url"))
-						podcast.setUrl(podcastJson.getString(k));
-					else if (k.equals("logo_url"))
-						podcast.setLogoUrl(podcastJson.getString(k));
-				}
-				toplist.add(podcast);
 			}
+
+			ArrayList<Podcast> toplist = new ArrayList<Podcast>();
+			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
+			reader.beginArray();
+			while (reader.hasNext())
+				toplist.add(Podcast.readJson(reader));
+			reader.endArray();
 			return toplist;
 		} catch (IOException e) {
 			Log.e("Podax", "io exception while getting gpodder toplist", e);
+			setErrorMessage(e.getMessage());
 			return null;
 		} catch (Exception e) {
 			Log.e("Podax", "exception while getting gpodder toplist", e);
+			setErrorMessage(e.getMessage());
 			return null;
 		} finally {
 			if (conn != null)
 				conn.disconnect();
 		}
+	}
+
+	protected static class Config {
+		public String mygpo = "https://gpodder.net/";
+		public String mygpo_feedservice = "https://mygpo-feedservice.appspot.com/";
+		public long update_timeout = 604800L;
 	}
 }

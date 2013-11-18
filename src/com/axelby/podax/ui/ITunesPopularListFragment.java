@@ -24,7 +24,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class ITunesPopularListFragment extends ListFragment {
 
@@ -61,10 +61,10 @@ public class ITunesPopularListFragment extends ListFragment {
 		String[] strings = {"Loading from iTunes"};
 		setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings));
 
-		new AsyncTask<Void, Void, Vector<PodaxFeed>>() {
+		new AsyncTask<Void, Void, ArrayList<PodaxFeed>>() {
 			@Override
-			protected Vector<PodaxFeed> doInBackground(Void... params) {
-				final Vector<PodaxFeed> feeds = new Vector<PodaxFeed>();
+			protected ArrayList<PodaxFeed> doInBackground(Void... params) {
+				final ArrayList<PodaxFeed> feeds = new ArrayList<PodaxFeed>();
 				RootElement root = new RootElement("feeds");
 				root.getChild("feed").setStartElementListener(new StartElementListener() {
 					public void start(Attributes attrs) {
@@ -91,7 +91,7 @@ public class ITunesPopularListFragment extends ListFragment {
 			}
 
 			@Override
-			protected void onPostExecute(Vector<PodaxFeed> result) {
+			protected void onPostExecute(ArrayList<PodaxFeed> result) {
 				// make sure the activity still exists
 				if (getActivity() != null) {
 					setListAdapter(new ArrayAdapter<PodaxFeed>(getActivity(), android.R.layout.simple_list_item_1, result));

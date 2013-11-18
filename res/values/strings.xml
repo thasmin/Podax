@@ -136,7 +136,7 @@
     <string name="now_playing">Now Playing</string>
     <string name="subscribe_to_podcasts">Subscribe To Podcasts</string>
     <string name="top_itunes_podcasts">Top iTunes Podcasts</string>
-    <string name="gpodder_sync">GPodder Sync</string>
+    <string name="gpodder_sync">gpodder.net Sync</string>
 
     <string name="pref_sdcard">SD Card for podcast storage</string>
     <string name="pref_sdcard_title">SD Card</string>
@@ -166,10 +166,19 @@
     <string name="remove">Remove</string>
     <string name="device_name">Device Name</string>
     <string name="device_type">Device Type</string>
-    <string name="phone">phone</string>
-    <string name="tablet">tablet</string>
+    <string name="desktop">desktop</string>
+    <string name="laptop">laptop</string>
+    <string name="mobile">mobile</string>
+    <string name="server">server</string>
     <string name="other">other</string>
     <string name="gpodder_account_settings">GPodder Account Settings</string>
 
-
+    <string name="gpodder_sync_error">Error syncing gpodder.net</string>
+    <string name="gpodder_sync_cannot_authenticate">Cannot authenticate: %1$s</string>
+    <string name="gpodder_sync_error_configuration">Cannot change device name and type: %1$s</string>
+    <string name="gpodder_sync_send_podcasts">Cannot update podcasts: %1$s</string>
+    <string name="gpodder_sync_retrieve_podcasts">Cannot retrieve podcasts: %1$s</string>
+    <string name="gpodder_sync_retrieve_all_podcasts">Cannot retrieve all podcasts: %1$s</string>
+    <string name="gpodder_sync_update_episode_positions">Cannot send episode positions: %1$s</string>
+    <string name="gpodder_sync_retrieve_episode_positions">Cannot retrieve episode positions: %1$s</string>
 </resources>

@@ -59,7 +59,7 @@ public class AuthenticatorActivity extends FragmentActivity {
 		_passwordEdit = (EditText) findViewById(R.id.password);
 		_deviceNameEdit = (EditText) findViewById(R.id.devicename);
 		_deviceTypeList = (RadioGroup) findViewById(R.id.devicetype);
-		_deviceTypeList.check(Helper.isTablet(this) ? R.id.radioTablet : R.id.radioPhone);
+		_deviceTypeList.check(Helper.isTablet(this) ? R.id.radioLaptop : R.id.radioMobile);
 
 		// taken from AccountAuthenticatorActivity source code
 		_accountAuthenticatorResponse = getIntent().getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
@@ -128,14 +128,12 @@ public class AuthenticatorActivity extends FragmentActivity {
 
 	private String getCheckedDeviceType() {
 		switch (_deviceTypeList.getCheckedRadioButtonId()) {
-			case R.id.radioTablet:
-				return "tablet";
-			case R.id.radioPhone:
-				return "phone";
-			case R.id.radioOther:
-				return "android-other";
-			default:
-				return "podax";
+			case R.id.radioDesktop: return "desktop";
+			case R.id.radioLaptop: return "laptop";
+			case R.id.radioMobile: return "mobile";
+			case R.id.radioServer: return "server";
+			case R.id.radioOther: return "other";
+			default: return "mobile";
 		}
 	}
 
@@ -143,9 +141,9 @@ public class AuthenticatorActivity extends FragmentActivity {
 		hideProgress();
 		if (!isValid) {
 			if (_requestNewAccount) {
-				_messageText.setText("That username and password did not work on GPodder.");
+				_messageText.setText("That username and password did not work on gpodder.net.");
 			} else {
-				_messageText.setText("That password did not work on GPodder.");
+				_messageText.setText("That password did not work on gpodder.net.");
 			}
 		} else {
 			if (_confirmCredentials) {
@@ -164,12 +162,12 @@ public class AuthenticatorActivity extends FragmentActivity {
 			String rdm = Long.toHexString(Double.doubleToLongBits(Math.random()));
 			SharedPreferences gpodderPrefs = getSharedPreferences("gpodder", MODE_PRIVATE);
 			gpodderPrefs.edit()
-					.putString("deviceId", "podax-" + rdm)
+					.putString("deviceId", "podax_" + rdm)
 					.putBoolean("configurationNeedsUpdate", true)
 					.commit();
 
 			accountManager.addAccountExplicitly(account, _password, null);
-			// Set contacts sync for this account.
+			ContentResolver.requestSync(account, GPodderProvider.AUTHORITY, new Bundle());
 			ContentResolver.setSyncAutomatically(account, GPodderProvider.AUTHORITY, true);
 		} else {
 			accountManager.setPassword(account, _password);

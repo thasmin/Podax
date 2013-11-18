@@ -8,22 +8,25 @@ import android.util.Log;
 import com.axelby.gpodder.dto.Changes;
 import com.axelby.gpodder.dto.EpisodeUpdate;
 import com.axelby.gpodder.dto.EpisodeUpdateConfirmation;
+import com.axelby.gpodder.dto.EpisodeUpdateResponse;
+import com.axelby.gpodder.dto.Podcast;
 import com.axelby.podax.GPodderProvider;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -36,17 +39,6 @@ public class Client extends NoAuthClient {
 		super(context);
 		_username = username;
 		_password = password;
-	}
-
-	private void writePost(HttpsURLConnection conn, String toPost) throws IOException {
-		conn.setDoOutput(true);
-		OutputStream output = null;
-		try {
-		     output = conn.getOutputStream();
-		     output.write(toPost.getBytes());
-		} finally {
-		     if (output != null) try { output.close(); } catch (IOException ignored) {}
-		}
 	}
 
 	protected HttpsURLConnection createConnection(URL url) throws IOException {
@@ -66,6 +58,7 @@ public class Client extends NoAuthClient {
 
 	public boolean authenticate() {
 		verifyCurrentConfig();
+		clearErrorMessage();
 
 		URL url;
 		HttpsURLConnection conn = null;
@@ -76,8 +69,10 @@ public class Client extends NoAuthClient {
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			if (code != 200)
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
 				return false;
+			}
 
 			for (String val : conn.getHeaderFields().get("Set-Cookie")) {
 				String[] data = val.split(";")[0].split("=");
@@ -88,9 +83,11 @@ public class Client extends NoAuthClient {
 			return true;
 		} catch (IOException e) {
 			Log.e("Podax", "io exception while authenticating to gpodder", e);
+			setErrorMessage(e.getMessage());
 			return false;
 		} catch (Exception e) {
 			Log.e("Podax", "exception while authenticating to gpodder", e);
+			setErrorMessage(e.getMessage());
 			return false;
 		} finally {
 			if (conn != null)
@@ -100,6 +97,7 @@ public class Client extends NoAuthClient {
 
 	public DeviceConfiguration getDeviceConfiguration(String deviceId) {
 		verifyCurrentConfig();
+		clearErrorMessage();
 
 		URL url;
 		HttpsURLConnection conn = null;
@@ -109,24 +107,39 @@ public class Client extends NoAuthClient {
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			if (code != 200)
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
 				return null;
+			}
 
-			String results = readStream(conn.getInputStream());
-			if (results == null)
-				return null;
-			JSONArray devices = (JSONArray)new JSONTokener(results).nextValue();
-			for (int i = 0; i < devices.length(); ++i) {
-				JSONObject device = devices.getJSONObject(i);
-				if (device.getString("id").equals(deviceId))
-					return new DeviceConfiguration(device.getString("caption"), device.getString("type"));
+			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
+			reader.beginArray();
+			while (reader.hasNext()) {
+				reader.beginObject();
+				String id = null, caption = null, type = null;
+				while (reader.hasNext()) {
+					String name = reader.nextName();
+					if (name.equals("id"))
+						id = reader.nextString();
+					else if (name.equals("caption"))
+						caption = reader.nextString();
+					else if (name.equals("type"))
+						type = reader.nextString();
+				}
+				reader.endObject();
+				if (id != null && id.equals(deviceId)) {
+					reader.close();
+					return new DeviceConfiguration(caption, type);
+				}
 			}
 			return null;
 		} catch (IOException e) {
 			Log.e("Podax", "io exception while getting device name", e);
+			setErrorMessage(e.getMessage());
 			return null;
 		} catch (Exception e) {
 			Log.e("Podax", "exception while getting device name", e);
+			setErrorMessage(e.getMessage());
 			return null;
 		} finally {
 			if (conn != null)
@@ -136,26 +149,45 @@ public class Client extends NoAuthClient {
 
 	public boolean setDeviceConfiguration(String deviceId, DeviceConfiguration configuration) {
 		verifyCurrentConfig();
+		clearErrorMessage();
 
-		URL url;
 		HttpsURLConnection conn = null;
 		try {
-			url = new URL(_config.mygpo + "api/2/devices/" + _username + "/" + deviceId + ".json");
+			URL url = new URL(_config.mygpo + "api/2/devices/" + _username + "/" + deviceId + ".json");
 			conn = createConnection(url);
-			HashMap<String, String> data = new HashMap<String, String>();
-			data.put("caption", configuration.getCaption());
-			data.put("type", configuration.getType());
-			JSONObject json = new JSONObject(data);
-			writePost(conn, json.toString());
+
+			conn.setDoOutput(true);
+			OutputStreamWriter streamWriter = new OutputStreamWriter(conn.getOutputStream());
+			JsonWriter writer = new JsonWriter(streamWriter);
+			writer.beginObject();
+			writer.name("caption").value(configuration.getCaption());
+			writer.name("type").value(configuration.getType());
+			writer.endObject();
+			writer.close();
+
+			StringWriter w = new StringWriter();
+			writer = new JsonWriter(w);
+			writer.beginObject();
+			writer.name("caption").value(configuration.getCaption());
+			writer.name("type").value(configuration.getType());
+			writer.endObject();
+			writer.close();
+			String s = w.toString();
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			return code == 200;
-		} catch (IOException e) {
-			Log.e("Podax", "io exception while getting device name", e);
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
+				return false;
+			}
+			return true;
+		} catch (MalformedURLException e) {
+			Log.e("Podax", "malformed url exception while setting device name", e);
+			setErrorMessage(e.getMessage());
 			return false;
-		} catch (Exception e) {
-			Log.e("Podax", "exception while getting device name", e);
+		} catch (IOException e) {
+			Log.e("Podax", "io exception while setting device name", e);
+			setErrorMessage(e.getMessage());
 			return false;
 		} finally {
 			if (conn != null)
@@ -165,6 +197,7 @@ public class Client extends NoAuthClient {
 
 	public Changes getSubscriptionChanges(String deviceId, int lastCheck) {
 		verifyCurrentConfig();
+		clearErrorMessage();
 
 		URL url;
 		HttpsURLConnection conn = null;
@@ -174,16 +207,20 @@ public class Client extends NoAuthClient {
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			if (code != 200)
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
 				return null;
+			}
 
 			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
 			return Changes.fromJson(reader);
 		} catch (IOException e) {
 			Log.e("Podax", "io exception while getting subscription changes", e);
+			setErrorMessage(e.getMessage());
 			return null;
 		} catch (Exception e) {
 			Log.e("Podax", "exception while getting subscription changes", e);
+			setErrorMessage(e.getMessage());
 			return null;
 		} finally {
 			if (conn != null)
@@ -191,20 +228,21 @@ public class Client extends NoAuthClient {
 		}
 	}
 
-	public void syncDiffs(String deviceId) {
+	public void syncSubscriptionDiffs(String deviceId) {
 		verifyCurrentConfig();
+		clearErrorMessage();
 
 		HttpsURLConnection conn = null;
 		try {
-			Vector<String> toAdd = new Vector<String>();
-			Cursor c = _context.getContentResolver().query(GPodderProvider.TO_ADD_URI, new String[] { "url" }, null, null, null);
+			ArrayList<String> toAdd = new ArrayList<String>();
+			Cursor c = _context.getContentResolver().query(GPodderProvider.TO_ADD_URI, new String[]{"url"}, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
 					toAdd.add(c.getString(0));
 				c.close();
 			}
 
-			Vector<String> toRemove = new Vector<String>();
+			ArrayList<String> toRemove = new ArrayList<String>();
 			c = _context.getContentResolver().query(GPodderProvider.TO_REMOVE_URI, new String[]{"url"}, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
@@ -229,24 +267,29 @@ public class Client extends NoAuthClient {
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			if (code != 200)
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
 				return;
+			}
 
 			// clear out the pending tables
 			_context.getContentResolver().delete(GPodderProvider.URI, null, null);
 		} catch (MalformedURLException e) {
 			Log.e("Podax", "error while syncing gpodder diffs", e);
+			setErrorMessage(e.getMessage());
 		} catch (IOException e) {
 			Log.e("Podax", "error while syncing gpodder diffs", e);
+			setErrorMessage(e.getMessage());
 		} catch (Exception e) {
 			Log.e("Podax", "error while syncing gpodder diffs", e);
+			setErrorMessage(e.getMessage());
 		} finally {
 			if (conn != null)
 				conn.disconnect();
 		}
 	}
 
-	private void writeStrings(JsonWriter writer, String key, Vector<String> values) throws IOException {
+	private void writeStrings(JsonWriter writer, String key, Collection<String> values) throws IOException {
 		writer.name(key);
 		writer.beginArray();
 		for (String s : values)
@@ -256,6 +299,7 @@ public class Client extends NoAuthClient {
 
 	public EpisodeUpdateConfirmation updateEpisodes(EpisodeUpdate[] updates) {
 		verifyCurrentConfig();
+		clearErrorMessage();
 
 		HttpsURLConnection conn = null;
 		try {
@@ -273,14 +317,97 @@ public class Client extends NoAuthClient {
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			if (code != 200)
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
 				return null;
+			}
 
 			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
-			EpisodeUpdateConfirmation result = EpisodeUpdateConfirmation.readJson(reader);
-			return result;
-		} catch (MalformedURLException ignored) {
-		} catch (IOException ignored) {
+			return EpisodeUpdateConfirmation.readJson(reader);
+		} catch (MalformedURLException e) {
+			Log.e("Podax", e.getMessage());
+			setErrorMessage(e.getMessage());
+			return null;
+		} catch (IOException e) {
+			Log.e("Podax", e.getMessage());
+			setErrorMessage(e.getMessage());
+			return null;
+		} finally {
+			if (conn != null)
+				conn.disconnect();
+		}
+	}
+
+	public EpisodeUpdateResponse getEpisodeUpdates(Long since) {
+		verifyCurrentConfig();
+		clearErrorMessage();
+
+		HttpsURLConnection conn = null;
+		try {
+			String querystring = "?aggregated=true";
+			if (since != null)
+				querystring += "&since=" + since;
+			URL url = new URL(_config.mygpo + "api/2/episodes/" + _username + ".json" + querystring);
+			conn = createConnection(url);
+
+			conn.connect();
+			int code = conn.getResponseCode();
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
+				return null;
+			}
+
+			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
+			return EpisodeUpdateResponse.readJson(reader);
+		} catch (ParseException e) {
+			Log.e("Podax", e.getMessage());
+			setErrorMessage(e.getMessage());
+			return null;
+		} catch (MalformedURLException e) {
+			Log.e("Podax", e.getMessage());
+			setErrorMessage(e.getMessage());
+			return null;
+		} catch (IOException e) {
+			Log.e("Podax", e.getMessage());
+			setErrorMessage(e.getMessage());
+			return null;
+		} finally {
+			if (conn != null)
+				conn.disconnect();
+		}
+	}
+
+	public ArrayList<Podcast> getAllSubscriptions() {
+		verifyCurrentConfig();
+		clearErrorMessage();
+
+		HttpsURLConnection conn = null;
+		try {
+			URL url = new URL(_config.mygpo + "subscriptions/" + _username + ".json");
+			conn = createConnection(url);
+
+			conn.connect();
+			int code = conn.getResponseCode();
+			if (code != 200) {
+				setErrorMessage(conn.getResponseMessage());
+				return null;
+			}
+
+			ArrayList<Podcast> subscriptions = new ArrayList<Podcast>();
+			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
+			reader.beginArray();
+			while (reader.hasNext())
+				subscriptions.add(Podcast.readJson(reader));
+			reader.endArray();
+			return subscriptions;
+		} catch (MalformedURLException e) {
+			Log.e("Podax", e.getMessage());
+			setErrorMessage(e.getMessage());
+			return null;
+		} catch (IOException e) {
+			Log.e("Podax", e.getMessage());
+			setErrorMessage(e.getMessage());
+			return null;
 		} finally {
 			if (conn != null)
 				conn.disconnect();

@@ -17,7 +17,7 @@ public class ProgressDialogFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 
 		final ProgressDialog dialog = new ProgressDialog(getActivity());
-		dialog.setMessage("Logging into GPodder...");
+		dialog.setMessage("Logging into gpodder.net...");
 		dialog.setIndeterminate(true);
 		dialog.setCancelable(false);
 

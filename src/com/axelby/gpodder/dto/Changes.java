@@ -3,11 +3,11 @@ package com.axelby.gpodder.dto;
 import com.google.gson.stream.JsonReader;
 
 import java.io.IOException;
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class Changes {
-	private Vector<String> _added = new Vector<String>();
-	private Vector<String> _removed = new Vector<String>();
+	private ArrayList<String> _added = new ArrayList<String>();
+	private ArrayList<String> _removed = new ArrayList<String>();
 	private int _timestamp = 0;
 
 	private Changes() {

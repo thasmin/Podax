@@ -58,8 +58,8 @@ public class AccountSettings extends FragmentActivity {
 			});
 
 			ListPreference device_type = (ListPreference) screen.findPreference("device_type");
-			device_type.setValue(_gpodderPrefs.getString("type", Helper.isTablet(getActivity()) ? "tablet" : "phone"));
-			device_type.setSummary("Currently: " + _gpodderPrefs.getString("type", Helper.isTablet(getActivity()) ? "tablet" : "phone"));
+			device_type.setValue(_gpodderPrefs.getString("type", Helper.isTablet(getActivity()) ? "laptop" : "phone"));
+			device_type.setSummary("Currently: " + _gpodderPrefs.getString("type", Helper.isTablet(getActivity()) ? "laptop" : "phone"));
 			device_type.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 				@Override
 				public boolean onPreferenceChange(Preference preference, Object value) {

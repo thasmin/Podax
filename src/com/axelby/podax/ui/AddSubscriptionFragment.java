@@ -178,7 +178,7 @@ public class AddSubscriptionFragment extends ListFragment {
 				thumbnail.setImageResource(R.drawable.mygpo);
 
 				if (_gpodderAccounts.length == 0)
-					text.setText("Link a GPodder account");
+					text.setText("Link to gpodder.net");
 				else
 					text.setText("Linked to " + _gpodderAccounts[0].name);
 				return view;

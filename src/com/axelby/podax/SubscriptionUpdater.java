@@ -13,7 +13,6 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.Xml;
 
-import com.axelby.podax.R.drawable;
 import com.axelby.podax.ui.MainActivity;
 import com.axelby.riasel.Feed;
 import com.axelby.riasel.FeedItem;
@@ -184,7 +183,7 @@ public class SubscriptionUpdater {
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)
-				.setSmallIcon(drawable.icon)
+				.setSmallIcon(R.drawable.icon)
 				.setTicker("Error Updating Subscription")
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Error updating " + subscription.getTitle())
@@ -251,7 +250,7 @@ public class SubscriptionUpdater {
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)
-				.setSmallIcon(drawable.icon)
+				.setSmallIcon(R.drawable.icon)
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Updating " + subscription.getTitle())
 				.setContentIntent(contentIntent)

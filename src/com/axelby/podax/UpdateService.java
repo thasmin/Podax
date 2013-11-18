@@ -12,8 +12,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Vector;
 
 public class UpdateService extends IntentService {
 	Handler _uiHandler = new Handler();
@@ -127,7 +127,7 @@ public class UpdateService extends IntentService {
 
 	// make sure all media files in the folder are for existing podcasts
 	private void verifyDownloadedFiles() {
-		Vector<String> validMediaFilenames = new Vector<String>();
+		ArrayList<String> validMediaFilenames = new ArrayList<String>();
 		String[] projection = new String[]{
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_MEDIA_URL,

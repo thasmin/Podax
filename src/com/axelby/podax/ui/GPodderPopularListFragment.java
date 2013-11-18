@@ -13,13 +13,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.gpodder.NoAuthClient;
-import com.axelby.gpodder.ToplistPodcast;
+import com.axelby.gpodder.dto.Podcast;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
+
+import java.util.List;
 
 public class GPodderPopularListFragment extends ListFragment {
 
@@ -40,42 +43,45 @@ public class GPodderPopularListFragment extends ListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		String[] strings = {"Loading from GPodder"};
+		String[] strings = {"Loading from gpodder.net"};
 		setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings));
 
-		getLoaderManager().initLoader(0, null, new LoaderManager.LoaderCallbacks<ToplistPodcast[]>() {
+		getLoaderManager().initLoader(0, null, new LoaderManager.LoaderCallbacks<Podcast[]>() {
 			@Override
-			public Loader<ToplistPodcast[]> onCreateLoader(int i, Bundle bundle) {
+			public Loader<Podcast[]> onCreateLoader(int i, Bundle bundle) {
 				return new ToplistPodcastLoader(getActivity());
 			}
 
 			@Override
-			public void onLoadFinished(Loader<ToplistPodcast[]> loader, ToplistPodcast[] feeds) {
-				setListAdapter(new ToplistAdapter(getActivity(), feeds));
+			public void onLoadFinished(Loader<Podcast[]> loader, Podcast[] feeds) {
+				if (feeds != null)
+					setListAdapter(new ToplistAdapter(getActivity(), feeds));
 			}
 
 			@Override
-			public void onLoaderReset(Loader<ToplistPodcast[]> loader) {
+			public void onLoaderReset(Loader<Podcast[]> loader) {
 			}
 		});
 	}
 
-	private static class ToplistPodcastLoader extends AsyncTaskLoader<ToplistPodcast[]> {
-		ToplistPodcast[] _cached = null;
-
+	private class ToplistPodcastLoader extends AsyncTaskLoader<Podcast[]> {
 		public ToplistPodcastLoader(Context context) {
 			super(context);
 		}
 
 		@Override
-		public ToplistPodcast[] loadInBackground() {
-			return new NoAuthClient(getContext()).getPodcastToplist().toArray(new ToplistPodcast[20]);
+		public Podcast[] loadInBackground() {
+			NoAuthClient client = new NoAuthClient(getContext());
+			List<Podcast> toplist = client.getPodcastToplist();
+			if (client.getErrorMessage() == null)
+				return toplist.toArray(new Podcast[20]);
+			Toast.makeText(getContext(), "Error retrieving toplist: " + client.getErrorMessage(), Toast.LENGTH_LONG).show();
+			return null;
 		}
 
 		@Override
 		protected void onStartLoading() {
-			if (takeContentChanged() || _cached == null)
-				forceLoad();
+			forceLoad();
 		}
 
 		@Override
@@ -84,11 +90,11 @@ public class GPodderPopularListFragment extends ListFragment {
 		}
 	}
 
-	private class ToplistAdapter extends ArrayAdapter<ToplistPodcast> {
+	private class ToplistAdapter extends ArrayAdapter<Podcast> {
 		private View.OnClickListener addPodcastHandler = new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				ToplistPodcast podcast = (ToplistPodcast) view.getTag();
+				Podcast podcast = (Podcast) view.getTag();
 				ContentValues values = new ContentValues();
 				values.put(SubscriptionProvider.COLUMN_URL, podcast.getUrl());
 				getContext().getContentResolver().insert(SubscriptionProvider.URI, values);
@@ -98,18 +104,18 @@ public class GPodderPopularListFragment extends ListFragment {
 			@Override
 			public void onClick(View view) {
 				View listitem = (View) view.getParent().getParent();
-				ToplistPodcast podcast = (ToplistPodcast) listitem.getTag();
+				Podcast podcast = (Podcast) listitem.getTag();
 				startActivity(new Intent(Intent.ACTION_VIEW, podcast.getWebsite()));
 			}
 		};
 
-		public ToplistAdapter(Context context, ToplistPodcast[] feeds) {
+		public ToplistAdapter(Context context, Podcast[] feeds) {
 			super(context, R.layout.gpodder_toplist_item, feeds);
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			ToplistPodcast podcast = getItem(position);
+			Podcast podcast = getItem(position);
 
 			View v = convertView;
 			if (v == null)

@@ -6,6 +6,7 @@ public class Constants {
 	public static final int NOTIFICATION_UPDATE = 1;
 	public static final int SUBSCRIPTION_UPDATE_ERROR = 2;
 	public static final int NOTIFICATION_PLAYING = 3;
+	public static final int NOTIFICATION_GPODDER_ERROR = 4;
 
 	// active podcast related
 	public static final Uri ACTIVE_PODCAST_DATA_RESTART = Uri.parse("podax://activepodcast/restart");
@@ -41,5 +42,11 @@ public class Constants {
 
 	// gpodder constants
 	public static final String GPODDER_ACCOUNT_TYPE = "com.axelby.gpodder";
-
+	public static final int GPODDER_UPDATE_NONE = 0;
+	public static final int GPODDER_UPDATE_POSITION = 1;
+	// podax automatically downloads and deletes
+	// so it doesn't make sense to send these events to gpodder
+	public static final int GPODDER_UPDATE_DOWNLOAD = 2;
+	public static final int GPODDER_UPDATE_DELETE = 4;
+	public static final int GPODDER_UPDATE_NEW = 8;
 }

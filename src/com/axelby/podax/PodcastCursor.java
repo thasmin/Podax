@@ -20,6 +20,7 @@ public class PodcastCursor {
 	private Integer _subscriptionIdColumn = null;
 	private Integer _subscriptionTitleColumn = null;
 	private Integer _subscriptionThumbnailColumn = null;
+	private Integer _subscriptionUrlColumn = null;
 	private Integer _queuePositionColumn = null;
 	private Integer _mediaUrlColumn = null;
 	private Integer _fileSizeColumn = null;
@@ -28,6 +29,7 @@ public class PodcastCursor {
 	private Integer _durationColumn = null;
 	private Integer _pubDateColumn = null;
 	private Integer _downloadIdColumn = null;
+	private Integer _gpodderUpdateTimestampColumn = null;
 	private Integer _paymentColumn = null;
 
 	public PodcastCursor(Cursor cursor) {
@@ -82,6 +84,14 @@ public class PodcastCursor {
 		if (_cursor.isNull(_subscriptionThumbnailColumn))
 			return null;
 		return _cursor.getString(_subscriptionThumbnailColumn);
+	}
+
+	public String getSubscriptionUrl() {
+		if (_subscriptionUrlColumn == null)
+			_subscriptionUrlColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_SUBSCRIPTION_URL);
+		if (_cursor.isNull(_subscriptionUrlColumn))
+			return null;
+		return _cursor.getString(_subscriptionUrlColumn);
 	}
 
 	public String getMediaUrl() {
@@ -146,6 +156,14 @@ public class PodcastCursor {
 		if (_cursor.isNull(_downloadIdColumn))
 			return null;
 		return _cursor.getLong(_downloadIdColumn);
+	}
+
+	public Date getGPodderUpdateTimestamp() {
+		if (_gpodderUpdateTimestampColumn == null)
+			_gpodderUpdateTimestampColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP);
+		if (_cursor.isNull(_gpodderUpdateTimestampColumn))
+			return null;
+		return new Date(_cursor.getLong(_gpodderUpdateTimestampColumn));
 	}
 
 	public String getFilename(Context context) {

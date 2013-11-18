@@ -10,9 +10,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Vector;
 
 public class SubscriptionProvider extends ContentProvider {
 	public static String AUTHORITY = "com.axelby.podax.subscriptionprovider";
@@ -108,7 +108,7 @@ public class SubscriptionProvider extends ContentProvider {
 					hasOverride = true;
 			}
 			if (hasTitle && !hasOverride) {
-				Vector<String> list = new Vector<String>(Arrays.asList(projection));
+				ArrayList<String> list = new ArrayList<String>(Arrays.asList(projection));
 				list.add(COLUMN_TITLE_OVERRIDE);
 				projection = list.toArray(new String[list.size()]);
 			}
@@ -239,7 +239,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 		// go through subscriptions about to be deleted and remove podcasts
 		Cursor c = db.query("subscriptions", new String[]{COLUMN_ID}, where, whereArgs, null, null, null);
-		Vector<String> subIds = new Vector<String>();
+		ArrayList<String> subIds = new ArrayList<String>();
 		String in = "";
 		while (c.moveToNext()) {
 			in += ",?";

@@ -31,6 +31,7 @@ public class PodcastProvider extends ContentProvider {
 	public static final Uri EXPIRED_URI = Uri.withAppendedPath(PodcastProvider.URI, "expired");
 	public static final Uri ACTIVE_PODCAST_URI = Uri.parse("content://" + AUTHORITY + "/active");
 	public static final Uri PLAYER_UPDATE_URI = Uri.parse("content://" + AUTHORITY + "/player_update");
+	public static final Uri NEED_GPODDER_UPDATE_URI = Uri.withAppendedPath(PodcastProvider.URI, "need_gpodder_update");
 
 	private final static int PODCASTS = 1;
 	private final static int PODCASTS_QUEUE = 2;
@@ -40,12 +41,14 @@ public class PodcastProvider extends ContentProvider {
 	private final static int PODCASTS_SEARCH = 6;
 	private final static int PODCASTS_EXPIRED = 7;
 	private final static int PODCAST_PLAYER_UPDATE = 8;
+	private final static int PODCASTS_NEED_GPODDER_UPDATE = 9;
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
 	public static final String COLUMN_SUBSCRIPTION_ID = "subscriptionId";
 	public static final String COLUMN_SUBSCRIPTION_TITLE = "subscriptionTitle";
 	public static final String COLUMN_SUBSCRIPTION_THUMBNAIL = "subscriptionThumbnail";
+	public static final String COLUMN_SUBSCRIPTION_URL = "subscriptionUrl";
 	public static final String COLUMN_QUEUE_POSITION = "queuePosition";
 	public static final String COLUMN_MEDIA_URL = "mediaUrl";
 	public static final String COLUMN_LINK = "link";
@@ -55,6 +58,8 @@ public class PodcastProvider extends ContentProvider {
 	public static final String COLUMN_LAST_POSITION = "lastPosition";
 	public static final String COLUMN_DURATION = "duration";
 	public static final String COLUMN_DOWNLOAD_ID = "downloadId";
+	public static final String COLUMN_NEEDS_GPODDER_UPDATE = "needsGpodderUpdate";
+	public static final String COLUMN_GPODDER_UPDATE_TIMESTAMP = "gpodderUpdateTimestamp";
 	public static final String COLUMN_PAYMENT = "payment";
 
 	static final String PREF_ACTIVE = "active";
@@ -72,6 +77,7 @@ public class PodcastProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "podcasts/expired", PODCASTS_EXPIRED);
 		uriMatcher.addURI(AUTHORITY, "active", PODCAST_ACTIVE);
 		uriMatcher.addURI(AUTHORITY, "player_update", PODCAST_PLAYER_UPDATE);
+		uriMatcher.addURI(AUTHORITY, "podcasts/need_gpodder_update", PODCASTS_NEED_GPODDER_UPDATE);
 
 		_columnMap = new HashMap<String, String>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
@@ -79,6 +85,7 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap.put(COLUMN_SUBSCRIPTION_ID, "subscriptionId");
 		_columnMap.put(COLUMN_SUBSCRIPTION_TITLE, "subscriptions.title AS subscriptionTitle");
 		_columnMap.put(COLUMN_SUBSCRIPTION_THUMBNAIL, "subscriptions.thumbnail as subscriptionThumbnail");
+		_columnMap.put(COLUMN_SUBSCRIPTION_URL, "subscriptions.url as subscriptionUrl");
 		_columnMap.put(COLUMN_QUEUE_POSITION, "queuePosition");
 		_columnMap.put(COLUMN_MEDIA_URL, "mediaUrl");
 		_columnMap.put(COLUMN_LINK, "link");
@@ -88,8 +95,9 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
 		_columnMap.put(COLUMN_DURATION, "duration");
 		_columnMap.put(COLUMN_DOWNLOAD_ID, "downloadId");
+		_columnMap.put(COLUMN_NEEDS_GPODDER_UPDATE, "needsGpodderUpdate");
+		_columnMap.put(COLUMN_GPODDER_UPDATE_TIMESTAMP, "gpodderUpdateTimestamp");
 		_columnMap.put(COLUMN_PAYMENT, "payment");
-
 	}
 
 	public static Uri getContentUri(long id) {
@@ -125,7 +133,9 @@ public class PodcastProvider extends ContentProvider {
 		sqlBuilder.setProjectionMap(_columnMap);
 		if (projection != null) {
 			List<String> projectionList = Arrays.asList(projection);
-			if (projectionList.contains(COLUMN_SUBSCRIPTION_TITLE) || projectionList.contains(COLUMN_SUBSCRIPTION_THUMBNAIL))
+			if (projectionList.contains(COLUMN_SUBSCRIPTION_TITLE)
+					|| projectionList.contains(COLUMN_SUBSCRIPTION_THUMBNAIL)
+					|| projectionList.contains(COLUMN_SUBSCRIPTION_URL))
 				sqlBuilder.setTables("podcasts JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id");
 			else
 				sqlBuilder.setTables("podcasts");
@@ -181,13 +191,17 @@ public class PodcastProvider extends ContentProvider {
 						"date(pubDate, 'unixepoch', expirationDays || ' days') < date('now')";
 				sqlBuilder.appendWhere("podcasts._id IN (" + inWhere + ")");
 				break;
+			case PODCASTS_NEED_GPODDER_UPDATE:
+				sqlBuilder.appendWhere("podcasts.needsGpodderUpdate != 0");
+				break;
 			default:
 				throw new IllegalArgumentException("Unknown URI");
 		}
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-		c.setNotificationUri(getContext().getContentResolver(), uri);
+		if (c != null)
+			c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
 
@@ -221,14 +235,16 @@ public class PodcastProvider extends ContentProvider {
 		Cursor queue = queueBuilder.query(db,
 				new String[]{"_id, mediaUrl, fileSize"}, null, null, null,
 				null, "queuePosition");
-
 		String queueIds = "";
-		while (queue.moveToNext()) {
-			PodcastCursor podcast = new PodcastCursor(queue);
-			if (!podcast.isDownloaded(getContext()))
-				queueIds = queueIds + queue.getLong(0) + ",";
+
+		if (queue != null) {
+			while (queue.moveToNext()) {
+				PodcastCursor podcast = new PodcastCursor(queue);
+				if (!podcast.isDownloaded(getContext()))
+					queueIds = queueIds + queue.getLong(0) + ",";
+			}
+			queue.close();
 		}
-		queue.close();
 
 		if (queueIds.length() > 0)
 			queueIds = queueIds.substring(0, queueIds.length() - 1);
@@ -243,24 +259,32 @@ public class PodcastProvider extends ContentProvider {
 		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		Long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+		if (db == null)
+			return 0;
 
 		int uriMatch = uriMatcher.match(uri);
+
+		// tell gpodder the new position
+		if (values.containsKey(COLUMN_LAST_POSITION)) {
+			values.put(COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_POSITION);
+			values.put(COLUMN_GPODDER_UPDATE_TIMESTAMP, new Date().getTime());
+		}
 
 		// process the player update separately
 		if (uriMatch == PODCAST_PLAYER_UPDATE) {
 			if (activePodcastId == -1)
 				return 0;
-			Cursor c = db.query("podcasts", new String[]{"lastPosition"},
-					"_id = ?", new String[]{String.valueOf(activePodcastId)}, null, null, null);
+			Cursor c = db.query("podcasts", new String[] { "lastPosition", "needsGpodderUpdate" },
+					"_id = ?",new String[] { String.valueOf(activePodcastId) }, null, null, null);
 			c.moveToFirst();
 			int oldPosition = c.getInt(0);
 			c.close();
 			int newPosition = values.getAsInteger(COLUMN_LAST_POSITION);
 			// reject changes if it's not a normal update
-			if (newPosition < oldPosition || newPosition - oldPosition > 3000)
+			if (newPosition < oldPosition || newPosition - oldPosition > 5000)
 				return 0;
 
-			db.update("podcasts", values, "_id = ?", new String[]{String.valueOf(activePodcastId)});
+			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activePodcastId) });
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 			getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, activePodcastId), null);
 			ActivePodcastReceiver.NotifyExternal(getContext());
@@ -304,9 +328,10 @@ public class PodcastProvider extends ContentProvider {
 		else
 			where = extraWhere;
 
-		// subscription title and thumbnail is not in the table
+		// don't try to update subscription values
 		values.remove(COLUMN_SUBSCRIPTION_TITLE);
 		values.remove(COLUMN_SUBSCRIPTION_THUMBNAIL);
+		values.remove(COLUMN_SUBSCRIPTION_URL);
 
 		// update queuePosition separately
 		if (values.containsKey(COLUMN_QUEUE_POSITION)) {
@@ -560,6 +585,8 @@ public class PodcastProvider extends ContentProvider {
 	public static void skipToEnd(Context context, Uri uri) {
 		String[] projection = new String[]{PodcastProvider.COLUMN_DURATION};
 		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
+		if (c == null)
+			return;
 		if (!c.moveToFirst()) {
 			c.close();
 			return;
