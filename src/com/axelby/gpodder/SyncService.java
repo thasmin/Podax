@@ -209,7 +209,7 @@ public class SyncService extends Service {
 						long podcastId = idCursor.getLong(0);
 						idCursor.close();
 						ContentValues values = new ContentValues();
-						values.put(PodcastProvider.COLUMN_LAST_POSITION, update.getPosition());
+						values.put(PodcastProvider.COLUMN_LAST_POSITION, update.getPosition() * 1000);
 						_context.getContentResolver().update(PodcastProvider.getContentUri(podcastId), values, selection, selectionArgs);
 					}
 				}
