@@ -12,6 +12,14 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class EpisodeUpdate {
+	private static DateFormat ISO8601 = null;
+
+	static {
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		ISO8601.setTimeZone(tz);
+	}
+
 	private String podcast;
 	private String episode;
 	private String device;
@@ -20,13 +28,6 @@ public class EpisodeUpdate {
 	private Integer started;
 	private Integer position;
 	private Integer total;
-
-	private static DateFormat ISO8601 = null;
-	static {
-		TimeZone tz = TimeZone.getTimeZone("UTC");
-		ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-		ISO8601.setTimeZone(tz);
-	}
 
 	private EpisodeUpdate() {
 	}
@@ -130,7 +131,9 @@ public class EpisodeUpdate {
 		return position;
 	}
 
-	public Integer getTotal() { return total; }
+	public Integer getTotal() {
+		return total;
+	}
 
 	public void writeJson(JsonWriter writer) throws IOException {
 		writer.beginObject();
