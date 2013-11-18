@@ -98,7 +98,8 @@ public class SyncService extends Service {
 				return;
 			if (!syncPodcasts(client, account))
 				return;
-			syncEpisodes(client, account);
+			if (!syncEpisodes(client, account))
+				return;
 
 			clearErrorNotification();
 		}
