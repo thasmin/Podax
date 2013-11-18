@@ -134,7 +134,7 @@ public class SyncService extends Service {
 				for (Podcast sub : subs) {
 					ContentValues values = new ContentValues();
 					values.put(SubscriptionProvider.COLUMN_URL, sub.getUrl());
-					Uri newUri = _context.getContentResolver().insert(SubscriptionProvider.FROM_GPODDER_URI, values);
+					Uri newUri = _context.getContentResolver().insert(SubscriptionProvider.URI, values);
 					UpdateService.updateSubscription(_context, newUri);
 				}
 			}
