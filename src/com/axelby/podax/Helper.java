@@ -9,7 +9,7 @@ import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
-import android.util.LruCache;
+import android.support.v4.util.LruCache;
 
 import com.android.volley.Cache;
 import com.android.volley.RequestQueue;
@@ -104,7 +104,7 @@ public class Helper {
 					// only put a max 256x256 image in the disk cache
 					if (bitmap.getWidth() > 256 && bitmap.getHeight() > 256)
 						bitmap = Bitmap.createScaledBitmap(bitmap, 256, 256, false);
-					ByteBuffer buffer = ByteBuffer.allocate(bitmap.getByteCount());
+					ByteBuffer buffer = ByteBuffer.allocate(bitmap.getRowBytes() * bitmap.getHeight());
 					bitmap.copyPixelsToBuffer(buffer);
 					entry.data = buffer.array();
 					_diskCache.put(key, entry);
