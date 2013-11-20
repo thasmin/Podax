@@ -86,7 +86,6 @@ public class Helper {
 			_diskCache = new DiskBasedCache(context.getExternalCacheDir());
 		if (_imageLoader == null) {
 			_imageLoader = new ImageLoader(getRequestQueue(context), new ImageLoader.ImageCache() {
-
 				@Override
 				public Bitmap getBitmap(String key) {
 					if (_imageCache.get(key) != null)
@@ -101,9 +100,9 @@ public class Helper {
 					_imageCache.put(key, bitmap);
 
 					Cache.Entry entry = new Cache.Entry();
-					// only put a max 256x256 image in the disk cache
-					if (bitmap.getWidth() > 256 && bitmap.getHeight() > 256)
-						bitmap = Bitmap.createScaledBitmap(bitmap, 256, 256, false);
+					// only put a max 512x512 image in the disk cache
+					if (bitmap.getWidth() > 512 && bitmap.getHeight() > 512)
+						bitmap = Bitmap.createScaledBitmap(bitmap, 512, 512, false);
 					ByteBuffer buffer = ByteBuffer.allocate(bitmap.getRowBytes() * bitmap.getHeight());
 					bitmap.copyPixelsToBuffer(buffer);
 					entry.data = buffer.array();

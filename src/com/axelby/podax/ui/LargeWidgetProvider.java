@@ -7,8 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.RemoteViews;
 
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.axelby.podax.ActivePodcastReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
@@ -34,11 +38,11 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 	}
 
 	@Override
-	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+	public void onUpdate(Context context, final AppWidgetManager appWidgetManager, final int[] appWidgetIds) {
 		if (appWidgetIds.length == 0)
 			return;
 
-		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.largewidget);
+		final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.largewidget);
 
 		PlayerStatus playerState = PlayerStatus.getCurrentState(context);
 
@@ -51,18 +55,35 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_PODCAST_DATA_FORWARD);
 		setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_PODCAST_DATA_END);
 
-		Bitmap thumbnail = Helper.getCachedImage(context, playerState.getSubscriptionThumbnailUrl());
-		if (thumbnail != null)
-			views.setImageViewBitmap(R.id.show_btn, thumbnail);
-		else
-			views.setImageViewResource(R.id.show_btn, R.drawable.icon);
+		final String thumbnailUrl = playerState.getSubscriptionThumbnailUrl();
+		final ImageLoader.ImageListener imageListener = new ImageLoader.ImageListener() {
+			@Override
+			public void onResponse(ImageLoader.ImageContainer imageContainer, boolean isImmediate) {
+				if (imageContainer.getBitmap() != null) {
+					views.setImageViewBitmap(R.id.show_btn, imageContainer.getBitmap());
+					appWidgetManager.updateAppWidget(appWidgetIds, views);
+				}
+			}
+
+			@Override
+			public void onErrorResponse(VolleyError volleyError) {
+				views.setImageViewResource(R.id.show_btn, R.drawable.icon);
+				appWidgetManager.updateAppWidget(appWidgetIds, views);
+			}
+		};
+		final ImageLoader imageLoader = Helper.getImageLoader(context);
+		new Handler(Looper.getMainLooper()).post(new Runnable() {
+			@Override
+			public void run() {
+				imageLoader.get(thumbnailUrl, imageListener, 83, 83);
+			}
+		});
 
 		Intent showIntent = new Intent(context, MainActivity.class);
 		PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 		views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-		for (int widgetId : appWidgetIds)
-			appWidgetManager.updateAppWidget(widgetId, views);
+		appWidgetManager.updateAppWidget(appWidgetIds, views);
 
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}

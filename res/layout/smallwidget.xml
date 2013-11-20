@@ -11,7 +11,7 @@
             android:layout_height="match_parent"
             android:orientation="horizontal">
 
-        <ImageButton
+        <ImageView
                 android:id="@+id/show_btn"
                 android:layout_width="83dp"
                 android:layout_height="83dp"

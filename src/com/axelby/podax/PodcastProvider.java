@@ -287,7 +287,7 @@ public class PodcastProvider extends ContentProvider {
 			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activePodcastId) });
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 			getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, activePodcastId), null);
-			ActivePodcastReceiver.NotifyExternal(getContext());
+			ActivePodcastReceiver.notifyExternal(getContext());
 			return 1;
 		}
 
@@ -361,7 +361,7 @@ public class PodcastProvider extends ContentProvider {
 			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
 		if (podcastId == activePodcastId) {
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
-			ActivePodcastReceiver.NotifyExternal(getContext());
+			ActivePodcastReceiver.notifyExternal(getContext());
 		}
 		// if the current podcast has updated the position but it's not from the player, tell the player to update
 		if (podcastId == activePodcastId && uriMatch != PODCAST_PLAYER_UPDATE && values.containsKey(COLUMN_LAST_POSITION))

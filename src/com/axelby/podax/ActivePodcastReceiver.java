@@ -26,7 +26,7 @@ public class ActivePodcastReceiver extends BroadcastReceiver {
 			PodcastProvider.skipToEnd(context, activePodcastUri);
 	}
 
-	public static void NotifyExternal(Context context) {
+	public static void notifyExternal(Context context) {
 		AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
 
 		int[] widgetIds;
