@@ -220,6 +220,11 @@ public class SyncService extends Service {
 				gpodderPrefsEditor.commit();
 			}
 
+			// update podcast so that gpodder has been synced
+			ContentValues clearGpodderValues = new ContentValues(1);
+			clearGpodderValues.put(PodcastProvider.COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_NONE);
+			_context.getContentResolver().update(PodcastProvider.URI, clearGpodderValues, null, null);
+
 			return true;
 		}
 	}

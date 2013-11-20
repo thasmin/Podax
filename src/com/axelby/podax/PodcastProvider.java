@@ -253,16 +253,21 @@ public class PodcastProvider extends ContentProvider {
 
 	@Override
 	public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
-		int count = 0;
-
-		long podcastId;
-		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
-		Long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		if (db == null)
 			return 0;
 
+		long podcastId;
+		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
+		Long activePodcastId = prefs.getLong(PREF_ACTIVE, -1);
+
 		int uriMatch = uriMatcher.match(uri);
+		if (uriMatch == PODCASTS) {
+			int count = db.update("podcasts", values, where, whereArgs);
+			// only main uri is notified
+			getContext().getContentResolver().notifyChange(URI, null);
+			return count;
+		}
 
 		// tell gpodder the new position
 		if (values.containsKey(COLUMN_LAST_POSITION)) {
@@ -354,6 +359,7 @@ public class PodcastProvider extends ContentProvider {
 				activePodcastId = podcastId;
 		}
 
+		int count = 0;
 		if (values.size() > 0)
 			count += db.update("podcasts", values, where, whereArgs);
 		getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, podcastId), null);
