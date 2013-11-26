@@ -29,8 +29,6 @@ import com.axelby.podax.ui.MainActivity;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class PlayerService extends Service {
 
@@ -50,7 +48,7 @@ public class PlayerService extends Service {
 	};
 	protected MediaPlayer _player;
 	protected boolean _onPhone;
-	protected Timer _updateTimer;
+	Thread _updateThread;
 	private ContentObserver _podcastChangeObserver = new ContentObserver(new Handler()) {
 		@Override
 		public boolean deliverSelfNotifications() {
@@ -76,6 +74,8 @@ public class PlayerService extends Service {
 					PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 			};
 			Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
+			if (c == null)
+				return;
 			if (!c.moveToFirst()) {
 				c.close();
 				return;
@@ -162,18 +162,16 @@ public class PlayerService extends Service {
 	}
 
 	private void createUpdateTimer() {
-		if (_updateTimer != null)
-			_updateTimer.cancel();
-		_updateTimer = new Timer();
-		_updateTimer.schedule(new UpdatePositionTimerTask(), 250, 250);
+		if (_updateThread != null)
+			stopUpdateTimer();
+		_updateThread = new Thread(new UpdatePositionTimerTask());
+		_updateThread.start();
 	}
 
 	private void stopUpdateTimer() {
-		if (_updateTimer == null)
+		if (_updateThread == null)
 			return;
-
-		_updateTimer.cancel();
-		_updateTimer = null;
+		_updateThread.interrupt();
 	}
 
 	private void createPlayer() {
@@ -211,6 +209,7 @@ public class PlayerService extends Service {
 					}
 
 					player.start();
+					createUpdateTimer();
 				}
 			});
 
@@ -308,6 +307,7 @@ public class PlayerService extends Service {
 			_player.pause();
 			updateActivePodcastPosition(_player.getCurrentPosition());
 			_player.stop();
+			_player.release();
 		}
 
 		_player = null;
@@ -358,8 +358,12 @@ public class PlayerService extends Service {
 				PodcastProvider.COLUMN_FILE_SIZE,
 		};
 		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
-		if (c.isAfterLast())
+		if (c == null)
 			return;
+		if (c.isAfterLast()) {
+			c.close();
+			return;
+		}
 		PodcastCursor p = new PodcastCursor(c);
 
 		// make sure the podcast is downloaded
@@ -385,7 +389,6 @@ public class PlayerService extends Service {
 
 		c.close();
 
-		createUpdateTimer();
 		showNotification();
 	}
 
@@ -437,8 +440,12 @@ public class PlayerService extends Service {
 				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 		};
 		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
-		if (c.isAfterLast())
+		if (c == null)
 			return;
+		if (c.isAfterLast()) {
+			c.close();
+			return;
+		}
 		PodcastCursor podcast = new PodcastCursor(c);
 
 		// both paths use the pendingintent
@@ -493,20 +500,28 @@ public class PlayerService extends Service {
 		getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
 	}
 
-	private class UpdatePositionTimerTask extends TimerTask {
-		protected int _lastPosition = 0;
-
+	private class UpdatePositionTimerTask implements Runnable {
 		public void run() {
-			if (_player == null || !_player.isPlaying())
-				return;
+			int _lastPosition = 0;
+			while (true) {
+				if (_player == null || !_player.isPlaying())
+					return;
 
-			int currentPosition = _player.getCurrentPosition();
-			if (_lastPosition / 1000 != currentPosition / 1000) {
-				ContentValues values = new ContentValues();
-				values.put(PodcastProvider.COLUMN_LAST_POSITION, currentPosition);
-				getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
+				// we're interrupted when it's time to stop
+				try {
+					Thread.sleep(250);
+				} catch (InterruptedException e) {
+					return;
+				}
+
+				int currentPosition = _player.getCurrentPosition();
+				if (_lastPosition / 1000 != currentPosition / 1000) {
+					ContentValues values = new ContentValues();
+					values.put(PodcastProvider.COLUMN_LAST_POSITION, currentPosition);
+					getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
+				}
+				_lastPosition = currentPosition;
 			}
-			_lastPosition = currentPosition;
 		}
 	}
 }
