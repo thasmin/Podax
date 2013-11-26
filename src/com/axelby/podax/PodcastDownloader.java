@@ -60,6 +60,10 @@ class PodcastDownloader {
 					return;
 			}
 
+			File mediaFile = new File(podcast.getFilename(_context));
+			if (mediaFile.exists())
+				mediaFile.delete();
+
 			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(podcast.getMediaUrl()));
 			int networks = DownloadManager.Request.NETWORK_WIFI;
 			if (!PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("wifiPref", true))
@@ -71,7 +75,6 @@ class PodcastDownloader {
 			*/
 			request.setTitle("Downloading " + podcast.getTitle());
 			request.setDescription(podcast.getSubscriptionTitle());
-			File mediaFile = new File(podcast.getFilename(_context));
 			request.setDestinationInExternalFilesDir(_context, Environment.DIRECTORY_PODCASTS, mediaFile.getName());
 
 			long downloadId = downloadManager.enqueue(request);
