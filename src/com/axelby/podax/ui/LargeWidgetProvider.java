@@ -38,7 +38,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 	}
 
 	@Override
-	public void onUpdate(Context context, final AppWidgetManager appWidgetManager, final int[] appWidgetIds) {
+	public void onUpdate(final Context context, final AppWidgetManager appWidgetManager, final int[] appWidgetIds) {
 		if (appWidgetIds.length == 0)
 			return;
 
@@ -56,28 +56,31 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_PODCAST_DATA_END);
 
 		final String thumbnailUrl = playerState.getSubscriptionThumbnailUrl();
-		final ImageLoader.ImageListener imageListener = new ImageLoader.ImageListener() {
-			@Override
-			public void onResponse(ImageLoader.ImageContainer imageContainer, boolean isImmediate) {
-				if (imageContainer.getBitmap() != null) {
-					views.setImageViewBitmap(R.id.show_btn, imageContainer.getBitmap());
+		if (thumbnailUrl != null) {
+			final ImageLoader.ImageListener imageListener = new ImageLoader.ImageListener() {
+				@Override
+				public void onResponse(ImageLoader.ImageContainer imageContainer, boolean isImmediate) {
+					if (imageContainer.getBitmap() != null) {
+						views.setImageViewBitmap(R.id.show_btn, imageContainer.getBitmap());
+						appWidgetManager.updateAppWidget(appWidgetIds, views);
+					}
+				}
+
+				@Override
+				public void onErrorResponse(VolleyError volleyError) {
+					views.setImageViewResource(R.id.show_btn, R.drawable.icon);
 					appWidgetManager.updateAppWidget(appWidgetIds, views);
 				}
-			}
-
-			@Override
-			public void onErrorResponse(VolleyError volleyError) {
-				views.setImageViewResource(R.id.show_btn, R.drawable.icon);
-				appWidgetManager.updateAppWidget(appWidgetIds, views);
-			}
-		};
-		final ImageLoader imageLoader = Helper.getImageLoader(context);
-		new Handler(Looper.getMainLooper()).post(new Runnable() {
-			@Override
-			public void run() {
-				imageLoader.get(thumbnailUrl, imageListener, 83, 83);
-			}
-		});
+			};
+			new Handler(Looper.getMainLooper()).post(new Runnable() {
+				@Override
+				public void run() {
+					Helper.getImageLoader(context).get(thumbnailUrl, imageListener, 83, 83);
+				}
+			});
+		} else {
+			views.setImageViewResource(R.id.show_btn, R.drawable.icon);
+		}
 
 		Intent showIntent = new Intent(context, MainActivity.class);
 		PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
