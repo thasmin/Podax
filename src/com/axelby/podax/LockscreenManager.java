@@ -5,12 +5,13 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.media.RemoteControlClient.MetadataEditor;
 import android.os.Build;
-import android.util.Log;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
@@ -40,16 +41,17 @@ public class LockscreenManager {
 						| RemoteControlClient.FLAG_KEY_MEDIA_PREVIOUS
 						| RemoteControlClient.FLAG_KEY_MEDIA_NEXT);
 
-		try {
-			final int METADATA_KEY_ARTWORK = 100;
+		final int METADATA_KEY_ARTWORK = 100;
 
-			// Update the remote controls
-			final MetadataEditor metadataEditor = _remoteControlClient
-					.editMetadata(true)
-					.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, podcast.getSubscriptionTitle())
-					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, podcast.getTitle())
-					.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, podcast.getDuration());
-			Helper.getImageLoader(context).get(podcast.getSubscriptionThumbnailUrl(), new ImageLoader.ImageListener() {
+		// Update the remote controls
+		final MetadataEditor metadataEditor = _remoteControlClient
+				.editMetadata(true)
+				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, podcast.getSubscriptionTitle())
+				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, podcast.getTitle())
+				.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, podcast.getDuration());
+		String thumbnailUrl = podcast.getSubscriptionThumbnailUrl();
+		if (thumbnailUrl != null) {
+			Helper.getImageLoader(context).get(thumbnailUrl, new ImageLoader.ImageListener() {
 				@Override
 				public void onResponse(ImageLoader.ImageContainer imageContainer, boolean isImmediate) {
 					metadataEditor.putBitmap(METADATA_KEY_ARTWORK, imageContainer.getBitmap());
@@ -61,8 +63,9 @@ public class LockscreenManager {
 					metadataEditor.apply();
 				}
 			});
-		} catch (Exception e) {
-			Log.e("Podax", "Updating lockscreen: " + e.toString());
+		} else {
+			Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
+			metadataEditor.putBitmap(METADATA_KEY_ARTWORK, icon);
 		}
 	}
 
