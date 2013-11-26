@@ -10,11 +10,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -25,13 +23,11 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,10 +37,7 @@ import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
-import com.axelby.podax.PlayerService;
-import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;
-import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
@@ -61,17 +54,6 @@ public class MainActivity extends ActionBarActivity {
 	private DrawerLayout _drawerLayout;
 	private ActionBarDrawerToggle _drawerToggle;
 	private int _fragmentId;
-	private ContentObserver _activePodcastObserver = new ContentObserver(new Handler()) {
-		@Override
-		public void onChange(boolean selfChange, Uri uri) {
-			updateDrawerControls();
-		}
-
-		@Override
-		public void onChange(boolean selfChange) {
-			this.onChange(selfChange, null);
-		}
-	};
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -108,14 +90,10 @@ public class MainActivity extends ActionBarActivity {
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
 
-		// watch active podcast for drawer
-		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
-		updateDrawerControls();
-
 		_drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 
-		ListView drawer = (ListView) findViewById(R.id.drawer_list);
+		ListView drawer = (ListView) findViewById(R.id.drawer);
 		PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
 		drawer.setAdapter(_drawerAdapter);
 		drawer.setOnItemClickListener(new OnItemClickListener() {
@@ -163,12 +141,6 @@ public class MainActivity extends ActionBarActivity {
 						replaceFragment(LogViewerFragment.class);
 						break;
 				}
-			}
-		});
-		findViewById(R.id.pause).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				PlayerService.playstop(MainActivity.this);
 			}
 		});
 
@@ -318,15 +290,8 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
-	protected void onPause() {
-		super.onPause();
-		getContentResolver().unregisterContentObserver(_activePodcastObserver);
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
-		getContentResolver().registerContentObserver(PodcastProvider.ACTIVE_PODCAST_URI, false, _activePodcastObserver);
 		Helper.registerMediaButtons(this);
 	}
 
@@ -336,18 +301,8 @@ public class MainActivity extends ActionBarActivity {
 		for (WeakReference<Fragment> frag : _savedFragments)
 			if (frag.get() != null && fragment.getClass().equals(frag.get().getClass()))
 				return;
-		_savedFragments.add(new WeakReference<Fragment>(fragment));
-	}
-
-	private void updateDrawerControls() {
-		// we could put the db call in a thread
-		PlayerStatus status = PlayerStatus.getCurrentState(MainActivity.this);
-		int imageResId = status.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
-		((ImageView) findViewById(R.id.pause)).setImageResource(imageResId);
-		if (status.hasActivePodcast())
-			((TextView) findViewById(R.id.podcast_title)).setText(status.getTitle());
-		else
-			((TextView) findViewById(R.id.podcast_title)).setText(R.string.queue_empty);
+		if (fragment.getClass() != PodcastDetailFragment.class)
+			_savedFragments.add(new WeakReference<Fragment>(fragment));
 	}
 
 	class PodaxDrawerAdapter extends BaseAdapter {
