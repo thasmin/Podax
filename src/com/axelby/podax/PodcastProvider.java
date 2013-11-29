@@ -348,8 +348,9 @@ public class PodcastProvider extends ContentProvider {
 			// SQLiteStatement.executeUpdateDelete in API level 11
 			updateQueuePosition(podcastId, newPosition);
 
-			// if this was the active podcast and it's no longer in the queue, pick the first downloaded in the queue
-			if (activePodcastId == podcastId && newPosition == null) {
+			// if this was the active podcast and it's no longer in the queue or it was moved to the back
+			// don't restart on this podcast
+			if (activePodcastId == podcastId && (newPosition == null || newPosition == Integer.MAX_VALUE)) {
 				prefs.edit().remove(PREF_ACTIVE).commit();
 				activePodcastId = podcastId; // make sure the active podcast notification is sent
 			}
