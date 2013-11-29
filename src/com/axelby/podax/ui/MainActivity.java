@@ -11,6 +11,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -20,6 +23,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -310,20 +314,20 @@ public class MainActivity extends ActionBarActivity {
 		private final int NORMAL = 1;
 		Item _items[] = {
 				new Item(R.string.app_name, 0, true),
-				new Item(R.string.welcome, android.R.drawable.ic_menu_compass, false),
-				new Item(R.string.now_playing, android.R.drawable.ic_menu_sort_by_size, false),
-				new Item(R.string.playlist, android.R.drawable.ic_menu_agenda, false),
-				new Item(R.string.podcasts, android.R.drawable.ic_menu_slideshow, false),
-				new Item(R.string.search, android.R.drawable.ic_menu_search, false),
+				new Item(R.string.welcome, R.drawable.ic_menu_home, false),
+				new Item(R.string.now_playing, R.drawable.ic_menu_headphone, false),
+				new Item(R.string.playlist, R.drawable.ic_menu_playlist, false),
+				new Item(R.string.podcasts, R.drawable.ic_menu_two_people, false),
+				new Item(R.string.search, R.drawable.ic_menu_search, false),
 
 				new Item(R.string.subscribe_to_podcasts, 0, true),
-				new Item(R.string.add_rss_feed, android.R.drawable.ic_menu_add, false),
-				new Item(R.string.top_itunes_podcasts, android.R.drawable.ic_menu_recent_history, false),
+				new Item(R.string.add_rss_feed, R.drawable.ic_menu_rss, false),
+				new Item(R.string.top_itunes_podcasts, R.drawable.ic_menu_apple, false),
 				new Item(R.string.top_gpodder_podcasts, R.drawable.ic_menu_mygpo, false),
 				new Item(R.string.gpodder_sync, R.drawable.ic_menu_mygpo, false),
 
 				new Item(R.string.settings, 0, true),
-				new Item(R.string.preferences, android.R.drawable.ic_menu_preferences, false),
+				new Item(R.string.preferences, R.drawable.ic_menu_configuration, false),
 				new Item(R.string.about, R.drawable.ic_menu_podax, false),
 				new Item(R.string.log_viewer, android.R.drawable.ic_menu_info_details, false),
 		};
@@ -364,8 +368,9 @@ public class MainActivity extends ActionBarActivity {
 			if (_defaultTextColor == 0)
 				_defaultTextColor = tv.getCurrentTextColor();
 
-			tv.setText(_items[position].label);
-			tv.setCompoundDrawablesWithIntrinsicBounds(_items[position].drawable, 0, 0, 0);
+			final Item item = _items[position];
+			tv.setText(item.label);
+			tv.setCompoundDrawablesWithIntrinsicBounds(item.drawable, 0, 0, 0);
 			return tv;
 		}
 
