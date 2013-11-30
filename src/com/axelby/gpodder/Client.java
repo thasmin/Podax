@@ -14,11 +14,8 @@ import com.axelby.podax.GPodderProvider;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
@@ -26,7 +23,6 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -172,7 +168,6 @@ public class Client extends NoAuthClient {
 			writer.name("type").value(configuration.getType());
 			writer.endObject();
 			writer.close();
-			String s = w.toString();
 
 			conn.connect();
 			int code = conn.getResponseCode();

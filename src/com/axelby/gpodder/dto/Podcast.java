@@ -3,6 +3,7 @@ package com.axelby.gpodder.dto;
 import android.net.Uri;
 
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 import java.io.IOException;
 
@@ -101,26 +102,28 @@ public class Podcast {
 		reader.beginObject();
 		while (reader.hasNext()) {
 			String k = reader.nextName();
-			if (k.equals("website"))
+			if (k.equals("website") && reader.peek() == JsonToken.STRING)
 				podcast.setWebsite(Uri.parse(reader.nextString()));
-			else if (k.equals("description"))
+			else if (k.equals("description") && reader.peek() == JsonToken.STRING)
 				podcast.setDescription(reader.nextString());
-			else if (k.equals("title"))
+			else if (k.equals("title") && reader.peek() == JsonToken.STRING)
 				podcast.setTitle(reader.nextString());
-			else if (k.equals("url"))
+			else if (k.equals("url") && reader.peek() == JsonToken.STRING)
 				podcast.setUrl(reader.nextString());
-			else if (k.equals("logo_url"))
+			else if (k.equals("logo_url") && reader.peek() == JsonToken.STRING)
 				podcast.setLogoUrl(reader.nextString());
-			else if (k.equals("mygpo_link"))
+			else if (k.equals("mygpo_link") && reader.peek() == JsonToken.STRING)
 				podcast.setMygpoLink(reader.nextString());
-			else if (k.equals("position_last_week"))
+			else if (k.equals("position_last_week") && reader.peek() == JsonToken.NUMBER)
 				podcast.setPositionLastWeek(reader.nextInt());
-			else if (k.equals("subscribers"))
+			else if (k.equals("subscribers") && reader.peek() == JsonToken.NUMBER)
 				podcast.setSubscribers(reader.nextInt());
-			else if (k.equals("subscribers_last_week"))
+			else if (k.equals("subscribers_last_week") && reader.peek() == JsonToken.NUMBER)
 				podcast.setSubscribersLastWeek(reader.nextInt());
-			else if (k.equals("scaled_logo_url"))
+			else if (k.equals("scaled_logo_url") && reader.peek() == JsonToken.STRING)
 				podcast.setScaledLogoUrl(reader.nextString());
+			else
+				reader.skipValue();
 		}
 		reader.endObject();
 		return podcast;
