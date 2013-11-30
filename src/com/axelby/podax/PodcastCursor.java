@@ -265,8 +265,7 @@ public class PodcastCursor {
 			PodaxLog.log(context, "Unable to determine length of " + getFilename(context) + ": " + ex.getMessage());
 			return 0;
 		} finally {
-			if (mp != null)
-				mp.release();
+			mp.release();
 		}
 	}
 }

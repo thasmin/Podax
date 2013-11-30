@@ -406,7 +406,7 @@ public class PodcastProvider extends ContentProvider {
 					+ "WHERE queuePosition > ?", new Object[]{oldPosition});
 
 			// delete the podcast's file
-			deleteDownload(getContext(), Long.valueOf(podcastId));
+			deleteDownload(getContext(), podcastId);
 		} else if (oldPosition != newPosition) {
 			// moving up: 1 2 3 4 5 2 -> 4: 3-- 4-- 2->4
 			if (oldPosition < newPosition)
@@ -590,7 +590,11 @@ public class PodcastProvider extends ContentProvider {
 	}
 
 	public static void skipToEnd(Context context, Uri uri) {
-		String[] projection = new String[]{PodcastProvider.COLUMN_DURATION};
+		String[] projection = new String[] {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_DURATION
+		};
 		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
 		if (c == null)
 			return;
