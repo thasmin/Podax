@@ -39,21 +39,10 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 			if (c != null)
 				c.close();
 		} else if (DownloadManager.ACTION_NOTIFICATION_CLICKED.equals(intent.getAction())) {
-			long[] downloadIds = intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
-			// find the first one from podax and start the activity for that one
-			for (long downloadId : downloadIds) {
-				String[] projection = {PodcastProvider.COLUMN_ID};
-				String[] selectionArgs = {String.valueOf(downloadId)};
-				Cursor pc = context.getContentResolver().query(PodcastProvider.URI, projection, "downloadId = ?", selectionArgs, null);
-				if (pc != null && pc.moveToNext()) {
-					Intent mainActivity = new Intent(context, MainActivity.class);
-					mainActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					mainActivity.putExtra("fragmentId", 2);
-					mainActivity.putExtra(Constants.EXTRA_PODCAST_ID, pc.getLong(0));
-					context.startActivity(mainActivity);
-					break;
-				}
-			}
+			Intent mainActivity = new Intent(context, MainActivity.class);
+			mainActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			mainActivity.putExtra(Constants.EXTRA_FRAGMENT, 3);
+			context.startActivity(mainActivity);
 		}
 	}
 }
