@@ -29,9 +29,11 @@
 		</p>
 
 		<h4>Changelog</h4>
-		<p><strong>Version 6.01</strong></p>
+		<p><strong>Version 6.1</strong></p>
 		<ul>
-		    <li>Bug fixes</li>
+		    <li>gpodder.net popular list and episode syncing</li>
+		    <li>fixed repeating podcast when do not delete preference was on</li>
+		    <li>fixed issues with podcast images, drawer graphics, UI speed</li>
 		</ul>
 
 		<p><strong>Version 6.0</strong></p>
