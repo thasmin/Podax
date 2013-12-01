@@ -21,7 +21,7 @@ if (new File("signing.properties").exists()) {
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "18.0.1"
+    buildToolsVersion "19"
 
     sourceSets {
         main {
