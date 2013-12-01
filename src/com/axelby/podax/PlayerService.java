@@ -70,6 +70,7 @@ public class PlayerService extends Service {
 					PodcastProvider.COLUMN_MEDIA_URL,
 					PodcastProvider.COLUMN_LAST_POSITION,
 					PodcastProvider.COLUMN_TITLE,
+					PodcastProvider.COLUMN_DURATION,
 					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
 					PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 			};
