@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 9;
+	private static final int DATABASE_VERSION = 10;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -142,6 +142,7 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"to_remove INTEGER DEFAULT 0, " +
 					"to_add INTEGER DEFAULT 0)");
 		}
+
 		if (newVersion <= 7) {
 			// add download id column
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
@@ -159,6 +160,14 @@ public class DBAdapter extends SQLiteOpenHelper {
 		if (newVersion <= 9) {
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN needsGpodderUpdate INTEGER DEFAULT 0");
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN gpodderUpdateTimestamp INTEGER");
+		}
+
+		if (newVersion <= 10) {
+			// readd download id column - some people are missing this field for some reason
+			try {
+				db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
+			} catch (Exception ignored) {
+			}
 		}
 	}
 }
