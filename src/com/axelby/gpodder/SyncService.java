@@ -198,7 +198,7 @@ public class SyncService extends Service {
 			}
 			if (updates != null) {
 				for (EpisodeUpdate update : updates.getUpdates()) {
-					if (update.getEpisode() == null && update.getPosition() != null)
+					if (update.getEpisode() == null || update.getPosition() == null)
 						continue;
 
 					String selection = PodcastProvider.COLUMN_MEDIA_URL + " = ?";
