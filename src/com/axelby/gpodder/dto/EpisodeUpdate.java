@@ -71,7 +71,9 @@ public class EpisodeUpdate {
 		reader.beginObject();
 		while (reader.hasNext()) {
 			String name = reader.nextName();
-			if (name.equals("podcast"))
+			if (reader.peek() == JsonToken.NULL)
+				reader.skipValue();
+			else if (name.equals("podcast"))
 				update.podcast = reader.nextString();
 			else if (name.equals("episode"))
 				update.episode = reader.nextString();
@@ -81,22 +83,14 @@ public class EpisodeUpdate {
 				update.action = reader.nextString();
 			else if (name.equals("timestamp"))
 				update.timestamp = ISO8601.parse(reader.nextString());
-			else if (name.equals("started")) {
-				if (reader.peek() == JsonToken.NULL)
-					reader.skipValue();
-				else
-					update.started = reader.nextInt();
-			} else if (name.equals("position"))
-				if (reader.peek() == JsonToken.NULL)
-					reader.skipValue();
-				else
-					update.position = reader.nextInt();
-			else if (name.equals("total")) {
-				if (reader.peek() == JsonToken.NULL)
-					reader.skipValue();
-				else
-					update.total = reader.nextInt();
-			}
+			else if (name.equals("started"))
+				update.started = reader.nextInt();
+			else if (name.equals("position"))
+				update.position = reader.nextInt();
+			else if (name.equals("total"))
+				update.total = reader.nextInt();
+			else
+				reader.skipValue();
 		}
 		reader.endObject();
 

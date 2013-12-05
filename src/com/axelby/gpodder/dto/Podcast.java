@@ -102,25 +102,27 @@ public class Podcast {
 		reader.beginObject();
 		while (reader.hasNext()) {
 			String k = reader.nextName();
-			if (k.equals("website") && reader.peek() == JsonToken.STRING)
+			if (reader.peek() == JsonToken.NULL)
+				reader.skipValue();
+			else if (k.equals("website"))
 				podcast.setWebsite(Uri.parse(reader.nextString()));
-			else if (k.equals("description") && reader.peek() == JsonToken.STRING)
+			else if (k.equals("description"))
 				podcast.setDescription(reader.nextString());
-			else if (k.equals("title") && reader.peek() == JsonToken.STRING)
+			else if (k.equals("title"))
 				podcast.setTitle(reader.nextString());
-			else if (k.equals("url") && reader.peek() == JsonToken.STRING)
+			else if (k.equals("url"))
 				podcast.setUrl(reader.nextString());
-			else if (k.equals("logo_url") && reader.peek() == JsonToken.STRING)
+			else if (k.equals("logo_url"))
 				podcast.setLogoUrl(reader.nextString());
-			else if (k.equals("mygpo_link") && reader.peek() == JsonToken.STRING)
+			else if (k.equals("mygpo_link"))
 				podcast.setMygpoLink(reader.nextString());
-			else if (k.equals("position_last_week") && reader.peek() == JsonToken.NUMBER)
+			else if (k.equals("position_last_week"))
 				podcast.setPositionLastWeek(reader.nextInt());
-			else if (k.equals("subscribers") && reader.peek() == JsonToken.NUMBER)
+			else if (k.equals("subscribers"))
 				podcast.setSubscribers(reader.nextInt());
-			else if (k.equals("subscribers_last_week") && reader.peek() == JsonToken.NUMBER)
+			else if (k.equals("subscribers_last_week"))
 				podcast.setSubscribersLastWeek(reader.nextInt());
-			else if (k.equals("scaled_logo_url") && reader.peek() == JsonToken.STRING)
+			else if (k.equals("scaled_logo_url"))
 				podcast.setScaledLogoUrl(reader.nextString());
 			else
 				reader.skipValue();
