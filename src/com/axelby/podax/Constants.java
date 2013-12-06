@@ -7,6 +7,7 @@ public class Constants {
 	public static final int SUBSCRIPTION_UPDATE_ERROR = 2;
 	public static final int NOTIFICATION_PLAYING = 3;
 	public static final int NOTIFICATION_GPODDER_ERROR = 4;
+	public static final int NOTIFICATION_DOWNLOAD_ERROR = 5;
 
 	// active podcast related
 	public static final Uri ACTIVE_PODCAST_DATA_RESTART = Uri.parse("podax://activepodcast/restart");
