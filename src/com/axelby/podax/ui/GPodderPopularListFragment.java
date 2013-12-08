@@ -109,7 +109,8 @@ public class GPodderPopularListFragment extends ListFragment {
 		private View.OnClickListener addPodcastHandler = new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Podcast podcast = (Podcast) view.getTag();
+				View listitem = (View) view.getParent().getParent();
+				Podcast podcast = (Podcast) listitem.getTag();
 				ContentValues values = new ContentValues();
 				values.put(SubscriptionProvider.COLUMN_URL, podcast.getUrl());
 				getContext().getContentResolver().insert(SubscriptionProvider.URI, values);
