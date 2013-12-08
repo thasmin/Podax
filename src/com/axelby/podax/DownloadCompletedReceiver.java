@@ -2,6 +2,7 @@ package com.axelby.podax;
 
 import android.app.DownloadManager;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -43,6 +44,7 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 					NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 					builder.setSmallIcon(R.drawable.icon);
 					builder.setContentTitle("Podcast download failed");
+					builder.setContentIntent(PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0));
 					switch (c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON))) {
 						case DownloadManager.ERROR_CANNOT_RESUME:
 							builder.setContentText("Download cannot be resumed");
