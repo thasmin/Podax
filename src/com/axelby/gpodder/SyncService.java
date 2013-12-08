@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
@@ -29,6 +30,7 @@ import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.ui.MainActivity;
 
 import java.util.ArrayList;
 
@@ -69,6 +71,7 @@ public class SyncService extends Service {
 			Notification notification = new NotificationCompat.Builder(_context)
 					.setContentTitle(_context.getString(R.string.gpodder_sync_error))
 					.setContentText(_context.getString(string_resource, client.getErrorMessage()))
+					.setContentIntent(PendingIntent.getActivity(_context, 0, new Intent(_context, MainActivity.class), 0))
 					.setWhen(System.currentTimeMillis())
 					.setSmallIcon(R.drawable.mygpo)
 					.build();
