@@ -3,7 +3,7 @@
 
     <string name="app_name">Podax</string>
     <string name="app_long_name">Podax Podcaster</string>
-    <string name="app_version">6.1.6</string>
+    <string name="app_version">6.1.7</string>
     <string name="pause">Pause</string>
     <string name="play">Play</string>
     <string name="add_to_queue">Add To Queue</string>
@@ -44,19 +44,7 @@
 			<li>New internal architecture that should work better and be more stable</li>
 		</ul>
 
-		<p>Special thanks to everyone who\'s helped on Github:</p>
-		<ul>
-			<li><a href="https://github.com/f1ori">Florian Richter"</a></li>
-			<li><a href="http://coffeecode.net/">Dan Scott</a></li>
-			<li><a href="https://github.com/mcepl">mcepl</a></li>
-			<li><a href="https://github.com/yamatt">yamatt</a></li>
-			<li><a href="https://github.com/brimstone">brimstone</a></li>
-			<li><a href="https://github.com/yarikoptic">yarikoptic</a></li>
-			<li><a href="https://github.com/LegoChicken">LegoChicken</a></li>
-			<li><a href="https://github.com/ourToaster">ourToaster</a></li>
-			<li><a href="https://github.com/untitaker">untitaker</a></li>
-			<li><a href="https://github.com/tgpraveen">tgpraveen</a></li>
-		</ul>
+		<p>Special thanks to everyone who\'s helped on Github and by sending me email.</p>
 	    ]]>
     </string>
     <string name="about_podax">About Podax</string>

@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -47,7 +48,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	NetworkImageView _subscriptionImage;
 	TextView _titleView;
 	TextView _subscriptionTitleView;
-	WebView _descriptionView;
+	TextView _descriptionView;
 	Button _queueButton;
 	TextView _queuePosition;
 	ImageButton _restartButton;
@@ -92,7 +93,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		_subscriptionImage = (NetworkImageView) activity.findViewById(R.id.subscription_img);
 		_titleView = (TextView) activity.findViewById(R.id.title);
 		_subscriptionTitleView = (TextView) activity.findViewById(R.id.subscription_title);
-		_descriptionView = (WebView) activity.findViewById(R.id.description);
+		_descriptionView = (TextView) activity.findViewById(R.id.description);
 		_queuePosition = (TextView) activity.findViewById(R.id.queue_position);
 		_queueButton = (Button) activity.findViewById(R.id.queue_btn);
 		_restartButton = (ImageButton) activity.findViewById(R.id.restart_btn);
@@ -249,11 +250,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
 
-		String html = "<html><head><style type=\"text/css\">" +
-				"a { color: #E59F39 }" +
-				"</style></head>" +
-				"<body style=\"color:white\">" + podcast.getDescription() + "</body></html>";
-		_descriptionView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
+		_descriptionView.setText(Html.fromHtml(podcast.getDescription()));
 
 		_seekbar.setMax(podcast.getDuration());
 		_seekbar.setProgress(podcast.getLastPosition());

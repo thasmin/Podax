@@ -187,11 +187,11 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
 
-        <WebView
+        <TextView
                 android:id="@+id/description"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/black" />
+                android:textColorLink="@color/podaxColor" />
     </ScrollView>
 
 </LinearLayout>
