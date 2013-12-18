@@ -3,6 +3,7 @@
     <style name="Theme.Podax" parent="Theme.AppCompat">
         <item name="android:buttonStyle">@style/podaxButton</item>
         <item name="android:buttonStyleSmall">@style/podaxButtonSmall</item>
+        <item name="android:windowBackground">@android:color/black</item>
     </style>
 
     <color name="podaxColor">#FFE59F39</color>

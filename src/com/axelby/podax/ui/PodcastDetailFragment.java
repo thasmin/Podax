@@ -5,7 +5,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -253,9 +252,8 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		String html = "<html><head><style type=\"text/css\">" +
 				"a { color: #E59F39 }" +
 				"</style></head>" +
-				"<body style=\"background:transprent;color:white\">" + podcast.getDescription() + "</body></html>";
+				"<body style=\"color:white\">" + podcast.getDescription() + "</body></html>";
 		_descriptionView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null);
-		_descriptionView.setBackgroundColor(Color.TRANSPARENT);
 
 		_seekbar.setMax(podcast.getDuration());
 		_seekbar.setProgress(podcast.getLastPosition());

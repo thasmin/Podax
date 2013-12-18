@@ -25,9 +25,8 @@ public class AboutFragment extends Fragment {
 		String html = "<html><head><style type=\"text/css\">" +
 				"a { color: #E59F39 }" +
 				"</style></head>" +
-				"<body style=\"background:transparent;color:white\">" + content + "</body></html>";
+				"<body style=\"color:white\">" + content + "</body></html>";
 		webview.loadData(html, "text/html", "utf-8");
-		webview.setBackgroundColor(0x00000000);
 	}
 
 }
