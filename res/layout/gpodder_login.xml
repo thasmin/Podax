@@ -1,7 +1,9 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+<LinearLayout android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
               android:orientation="vertical"
               android:paddingLeft="20dip"
               android:paddingRight="20dip"
@@ -118,3 +120,4 @@
             android:textIsSelectable="true"/>
 
 </LinearLayout>
+</ScrollView>
