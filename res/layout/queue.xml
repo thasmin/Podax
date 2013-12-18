@@ -9,6 +9,8 @@
             android:id="@+id/android:list"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            podax:remove_enabled="true"
+            podax:remove_mode="flingRemove"
             podax:drag_handle_id="@+id/drag"/>
 
     <TextView

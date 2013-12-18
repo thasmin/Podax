@@ -40,6 +40,7 @@ import com.axelby.podax.R;
 import com.axelby.podax.UpdateService;
 import com.mobeta.android.dslv.DragSortListView.DragListener;
 import com.mobeta.android.dslv.DragSortListView.DropListener;
+import com.mobeta.android.dslv.DragSortListView.RemoveListener;
 
 import java.io.File;
 
@@ -222,7 +223,7 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 		_adapter.changeCursor(null);
 	}
 
-	private class QueueListAdapter extends ResourceCursorAdapter implements DragListener, DropListener {
+	private class QueueListAdapter extends ResourceCursorAdapter implements DragListener, DropListener, RemoveListener {
 
 		public QueueListAdapter(Context context, Cursor cursor) {
 			super(context, R.layout.queue_list_item, cursor, true);
@@ -284,5 +285,13 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 		public void drag(int from, int to) {
 		}
 
+		@Override
+		public void remove(int which) {
+			Long podcastId = _adapter.getItemId(which);
+			ContentValues values = new ContentValues();
+			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
+			getActivity().getContentResolver().update(podcastUri, values, null, null);
+		}
 	}
 }
