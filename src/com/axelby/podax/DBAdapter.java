@@ -112,7 +112,7 @@ public class DBAdapter extends SQLiteOpenHelper {
 			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 		}
 
-		if (newVersion <= 3) {
+		if (oldVersion <= 3) {
 			// delete podcasts that are in subscriptions that were deleted incorrectly
 			// this happened when gpodder deleted podcasts
 			db.execSQL("DELETE FROM podcasts WHERE subscriptionid NOT IN (SELECT _id FROM subscriptions)");
@@ -123,18 +123,18 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"WHERE podcasts.queueposition IS NOT NULL";
 			db.execSQL(sql);
 		}
-		if (newVersion <= 4) {
+		if (oldVersion <= 4) {
 			// add payment column
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN payment VARCHAR");
 		}
-		if (newVersion <= 5) {
+		if (oldVersion <= 5) {
 			// add new subscription fields
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN titleOverride VARCHAR");
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN queueNew INTEGER NOT NULL DEFAULT 1");
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN expirationDays INTEGER");
 		}
 
-		if (newVersion <= 6) {
+		if (oldVersion <= 6) {
 			// add gpodder sync table
 			db.execSQL("CREATE TABLE gpodder_sync(" +
 					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -143,12 +143,12 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"to_add INTEGER DEFAULT 0)");
 		}
 
-		if (newVersion <= 7) {
+		if (oldVersion <= 7) {
 			// add download id column
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
 		}
 
-		if (newVersion <= 8) {
+		if (oldVersion <= 8) {
 			db.execSQL("CREATE TABLE gpodder_device(" +
 					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 					"username VARCHAR, " +
@@ -157,26 +157,39 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"needsChange INTEGER DEFAULT 0)");
 		}
 
-		if (newVersion <= 9) {
+		if (oldVersion <= 9) {
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN needsGpodderUpdate INTEGER DEFAULT 0");
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN gpodderUpdateTimestamp INTEGER");
 		}
 
-		if (newVersion <= 10) {
-			// readd download id column - some people are missing this field for some reason
+		if (oldVersion <= 12) {
+			// fix bug where database was upgraded wrong -- attempt to do everything from number 5 on
+			// version 6
+			try {
+				db.execSQL("CREATE TABLE gpodder_sync(" +
+						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						"url VARCHAR, " +
+						"to_remove INTEGER DEFAULT 0, " +
+						"to_add INTEGER DEFAULT 0)");
+			} catch (Exception ignored) { }
+			// version 7
 			try {
 				db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
-			} catch (Exception ignored) {
-			}
-		}
-
-		if (newVersion <= 11) {
-			// readd download id column - some people are missing this field for some reason
+			} catch (Exception ignored) { }
+			// version 8
+			try {
+				db.execSQL("CREATE TABLE gpodder_device(" +
+						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						"username VARCHAR, " +
+						"caption VARCHAR" +
+						"type VARCHAR," +
+						"needsChange INTEGER DEFAULT 0)");
+			} catch (Exception ignored) {}
+			// version 9
 			try {
 				db.execSQL("ALTER TABLE podcasts ADD COLUMN needsGpodderUpdate INTEGER DEFAULT 0");
 				db.execSQL("ALTER TABLE podcasts ADD COLUMN gpodderUpdateTimestamp INTEGER");
-			} catch (Exception ignored) {
-			}
+			} catch (Exception ignored) {}
 		}
 	}
 }
