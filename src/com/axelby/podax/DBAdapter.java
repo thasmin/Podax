@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 11;
+	private static final int DATABASE_VERSION = 12;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -112,7 +112,7 @@ public class DBAdapter extends SQLiteOpenHelper {
 			db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 		}
 
-		if (oldVersion <= 3) {
+		if (oldVersion < 3) {
 			// delete podcasts that are in subscriptions that were deleted incorrectly
 			// this happened when gpodder deleted podcasts
 			db.execSQL("DELETE FROM podcasts WHERE subscriptionid NOT IN (SELECT _id FROM subscriptions)");
@@ -123,18 +123,18 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"WHERE podcasts.queueposition IS NOT NULL";
 			db.execSQL(sql);
 		}
-		if (oldVersion <= 4) {
+		if (oldVersion < 4) {
 			// add payment column
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN payment VARCHAR");
 		}
-		if (oldVersion <= 5) {
+		if (oldVersion < 5) {
 			// add new subscription fields
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN titleOverride VARCHAR");
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN queueNew INTEGER NOT NULL DEFAULT 1");
 			db.execSQL("ALTER TABLE subscriptions ADD COLUMN expirationDays INTEGER");
 		}
 
-		if (oldVersion <= 6) {
+		if (oldVersion < 6) {
 			// add gpodder sync table
 			db.execSQL("CREATE TABLE gpodder_sync(" +
 					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -143,12 +143,12 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"to_add INTEGER DEFAULT 0)");
 		}
 
-		if (oldVersion <= 7) {
+		if (oldVersion < 7) {
 			// add download id column
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
 		}
 
-		if (oldVersion <= 8) {
+		if (oldVersion < 8) {
 			db.execSQL("CREATE TABLE gpodder_device(" +
 					"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 					"username VARCHAR, " +
@@ -157,12 +157,12 @@ public class DBAdapter extends SQLiteOpenHelper {
 					"needsChange INTEGER DEFAULT 0)");
 		}
 
-		if (oldVersion <= 9) {
+		if (oldVersion < 9) {
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN needsGpodderUpdate INTEGER DEFAULT 0");
 			db.execSQL("ALTER TABLE podcasts ADD COLUMN gpodderUpdateTimestamp INTEGER");
 		}
 
-		if (oldVersion <= 12) {
+		if (oldVersion < 12) {
 			// fix bug where database was upgraded wrong -- attempt to do everything from number 5 on
 			// version 6
 			try {
