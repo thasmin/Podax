@@ -15,9 +15,14 @@ public class PlayerStatus {
 				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_DURATION,
+				PodcastProvider.COLUMN_MEDIA_URL,
 		};
 		Cursor cursor = context.getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
 		PlayerStatus status = new PlayerStatus();
+		if (cursor == null) {
+			status._state = PlayerStates.QUEUEEMPTY;
+			return status;
+		}
 		if (cursor.moveToNext()) {
 			PodcastCursor podcast = new PodcastCursor(cursor);
 			SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
@@ -29,6 +34,7 @@ public class PlayerStatus {
 			status._subscriptionThumbnailUrl = podcast.getSubscriptionThumbnailUrl();
 			status._position = podcast.getLastPosition();
 			status._duration = podcast.getDuration();
+			status._filename = podcast.getFilename(context);
 		}
 		cursor.close();
 		return status;
@@ -78,6 +84,7 @@ public class PlayerStatus {
 	private String _title;
 	private String _subscriptionTitle;
 	private String _subscriptionThumbnailUrl;
+	private String _filename;
 
 	private PlayerStatus() {
 		_state = PlayerStates.QUEUEEMPTY;
@@ -88,17 +95,7 @@ public class PlayerStatus {
 		return _state;
 	}
 
-	public boolean isPlaying() {
-		return _state == PlayerStates.PLAYING;
-	}
-
-	public boolean isPaused() {
-		return _state == PlayerStates.PAUSED;
-	}
-
-	public boolean isStopped() {
-		return _state == PlayerStates.STOPPED;
-	}
+	public boolean isPlaying() { return _state == PlayerStates.PLAYING; }
 
 	public long getPodcastId() {
 		return _podcastId;
@@ -108,9 +105,7 @@ public class PlayerStatus {
 		return _subscriptionId;
 	}
 
-	public int getPosition() {
-		return _position;
-	}
+	public int getPosition() { return _position; }
 
 	public int getDuration() {
 		return _duration;
@@ -127,6 +122,8 @@ public class PlayerStatus {
 	public String getSubscriptionThumbnailUrl() {
 		return _subscriptionThumbnailUrl;
 	}
+
+	public String getFilename() { return _filename; }
 
 	public boolean hasActivePodcast() {
 		return getState() != PlayerStates.QUEUEEMPTY;

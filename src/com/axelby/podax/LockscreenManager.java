@@ -21,7 +21,7 @@ public class LockscreenManager {
 	private RemoteControlClient _remoteControlClient;
 
 	@TargetApi(14)
-	public void setupLockscreenControls(Context context, PodcastCursor podcast) {
+	public void setupLockscreenControls(Context context, PlayerStatus status) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 			return;
 
@@ -46,10 +46,10 @@ public class LockscreenManager {
 		// Update the remote controls
 		final MetadataEditor metadataEditor = _remoteControlClient
 				.editMetadata(true)
-				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, podcast.getSubscriptionTitle())
-				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, podcast.getTitle())
-				.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, podcast.getDuration());
-		String thumbnailUrl = podcast.getSubscriptionThumbnailUrl();
+				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, status.getSubscriptionTitle())
+				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, status.getTitle())
+				.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, status.getDuration());
+		String thumbnailUrl = status.getSubscriptionThumbnailUrl();
 		if (thumbnailUrl != null) {
 			Helper.getImageLoader(context).get(thumbnailUrl, new ImageLoader.ImageListener() {
 				@Override
