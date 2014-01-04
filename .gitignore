@@ -3,6 +3,7 @@ bin
 build
 local.properties
 proguard
+gradle*
 .gradle
 .idea
 signing.properties
