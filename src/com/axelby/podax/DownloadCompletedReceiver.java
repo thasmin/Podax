@@ -43,7 +43,12 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 				} else if (status == DownloadManager.STATUS_FAILED) {
 					NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 					builder.setSmallIcon(R.drawable.icon);
-					builder.setContentTitle("Podcast download failed");
+					String title = c.getString(c.getColumnIndex(DownloadManager.COLUMN_TITLE));
+					if (title != null)
+						title = title.substring("Downloading ".length());
+					else
+						title = "podcast";
+					builder.setContentTitle("Cannot download " + title);
 					builder.setContentIntent(PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0));
 					switch (c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON))) {
 						case DownloadManager.ERROR_CANNOT_RESUME:
