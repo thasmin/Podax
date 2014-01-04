@@ -25,6 +25,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	private MediaPlayer _player;
 	private boolean _prepared = false;
 	private ArrayList<Boolean> _pausingFor = new ArrayList<Boolean>(2);
+	private int _seekOnPrepare;
 
 	private OnPauseListener _onPauseListener = null;
 	private OnPlayListener _onPlayListener = null;
@@ -65,6 +66,8 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 			@Override
 			public void onPrepared(MediaPlayer mediaPlayer) {
 				_prepared = true;
+				_player.seekTo(_seekOnPrepare);
+				internalPlay();
 			}
 		});
 	}
@@ -98,8 +101,8 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		try {
 			_player.reset();
 			_player.setDataSource(audioFile);
-			_player.prepare();
-			_player.seekTo(position);
+			_seekOnPrepare = position;
+			_player.prepareAsync();
 			return true;
 		} catch (IllegalStateException e) {
 			// called if player is not in idle state
@@ -176,8 +179,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		if (!_prepared) {
 			if (_onUnpreparedListener != null)
 				_onUnpreparedListener.onUnprepared();
-			if (!_prepared)
-				return;
+			return;
 		}
 
 		if (!grabAudioFocus())
