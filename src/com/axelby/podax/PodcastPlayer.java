@@ -4,8 +4,6 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 
-import com.axelby.podax.Constants;
-
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -43,7 +41,6 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		_context = context;
 		_pausingFor.add(false);
 		_pausingFor.add(false);
-		_updateThread = new Thread(new UpdatePositionTimerTask());
 
 		_player = new MediaPlayer();
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -193,8 +190,10 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		_player.start();
 
 		// start the seek thread
-		if (!_updateThread.isAlive())
+		if (_updateThread == null || _updateThread.getState() == Thread.State.TERMINATED) {
+			_updateThread = new Thread(new UpdatePositionTimerTask());
 			_updateThread.start();
+		}
 
 		if (_onPlayListener != null)
 			_onPlayListener.onPlay(_player.getDuration());
