@@ -279,16 +279,6 @@ public class PodcastProvider extends ContentProvider {
 		if (uriMatch == PODCAST_PLAYER_UPDATE) {
 			if (activePodcastId == -1)
 				return 0;
-			Cursor c = db.query("podcasts", new String[] { "lastPosition", "needsGpodderUpdate" },
-					"_id = ?",new String[] { String.valueOf(activePodcastId) }, null, null, null);
-			c.moveToFirst();
-			int oldPosition = c.getInt(0);
-			c.close();
-			int newPosition = values.getAsInteger(COLUMN_LAST_POSITION);
-			// reject changes if it's not a normal update
-			if (newPosition < oldPosition || newPosition - oldPosition > 5000)
-				return 0;
-
 			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activePodcastId) });
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 			getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, activePodcastId), null);
