@@ -127,7 +127,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		if (_player.isPlaying())
 			pause(pauseReason);
 		else
-			play();
+			unpause(pauseReason);
 	}
 
 	// if playing, stop. if paused, play.
@@ -192,10 +192,10 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		_player.start();
 
 		// start the seek thread
-		if (_updateThread == null || _updateThread.getState() == Thread.State.TERMINATED) {
-			_updateThread = new Thread(new UpdatePositionTimerTask());
-			_updateThread.start();
-		}
+		if (_updateThread != null)
+			_updateThread.interrupt();
+		_updateThread = new Thread(new UpdatePositionTimerTask());
+		_updateThread.start();
 
 		if (_onPlayListener != null)
 			_onPlayListener.onPlay(_player.getDuration());
@@ -257,13 +257,16 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 
 				// if we're not playing, the pause/stop event sent the current time
 				// and we don't need to update until we're restarted
-				if (!_player.isPlaying())
+				if (!_player.isPlaying() || Thread.interrupted())
 					return;
 
 				int currentPosition = _player.getCurrentPosition();
 				if (_onSeekListener != null && _lastPosition / 1000 != currentPosition / 1000)
 					_onSeekListener.onSeek(currentPosition);
 				_lastPosition = currentPosition;
+
+				if (Thread.interrupted())
+					return;
 			}
 		}
 	}
