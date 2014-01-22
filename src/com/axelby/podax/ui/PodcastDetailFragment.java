@@ -29,11 +29,13 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
 import com.axelby.podax.Helper;
+import com.axelby.podax.IgnoreTagHandler;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
+import com.axelby.podax.URLImageGetter;
 
 import org.shredzone.flattr4j.exception.FlattrException;
 import org.shredzone.flattr4j.exception.ForbiddenException;
@@ -249,7 +251,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
 
-		_descriptionView.setText(Html.fromHtml(podcast.getDescription()));
+		_descriptionView.setText(Html.fromHtml(podcast.getDescription(), new URLImageGetter(_descriptionView), new IgnoreTagHandler()));
 
 		_seekbar.setMax(podcast.getDuration());
 		_seekbar.setProgress(podcast.getLastPosition());
