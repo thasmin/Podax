@@ -157,6 +157,11 @@ public class PlayerService extends Service {
 						PlayerService.this.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 					}
 
+					// set this podcast as active
+					ContentValues values = new ContentValues(1);
+					values.put(PodcastProvider.COLUMN_ID, _currentPodcastId);
+					getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+
 					// listen for changes to the podcast
 					getContentResolver().registerContentObserver(PodcastProvider.PLAYER_UPDATE_URI, false, _podcastChangeObserver);
 
