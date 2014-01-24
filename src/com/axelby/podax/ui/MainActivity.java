@@ -2,6 +2,7 @@ package com.axelby.podax.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
@@ -41,6 +42,8 @@ import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
+import com.axelby.podax.PlayerService;
+import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
@@ -83,6 +86,9 @@ public class MainActivity extends ActionBarActivity {
 		notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
 
 		BootReceiver.setupAlarms(getApplicationContext());
+
+		if (!isPlayerServiceRunning())
+			PlayerStatus.updateState(this, PlayerStatus.PlayerStates.STOPPED);
 
 		// ui initialization
 		setContentView(R.layout.app);
@@ -268,6 +274,14 @@ public class MainActivity extends ActionBarActivity {
 		} catch (InvocationTargetException ignored) {
 		} catch (NoSuchMethodException ignored) {
 		}
+	}
+
+	private boolean isPlayerServiceRunning() {
+		ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
+			if (PlayerService.class.getName().equals(service.service.getClassName()))
+				return true;
+		return false;
 	}
 
 	@Override

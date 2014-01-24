@@ -99,6 +99,11 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	// specify which podcast file to play and where to start it
 	public boolean prepare(String audioFile, int position) {
 		try {
+			if (_player.isPlaying()) {
+				stopUpdateThread();
+				_player.stop();
+			}
+
 			_player.reset();
 			_player.setDataSource(audioFile);
 			_seekOnPrepare = position;
@@ -118,8 +123,9 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 
 	// change position of podcast
 	public void seekTo(int newPosition) {
+		stopUpdateThread();
 		_player.seekTo(newPosition);
-		// updatethread will pick up new position shortly
+		startUpdateThread();
 	}
 
 	// if playing, pause. if paused, play.
@@ -175,6 +181,9 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	}
 
 	private void internalPlay() {
+		if (_player.isPlaying())
+			return;
+
 		// if no podcast is prepared, call the unprepared handler and see if that prepares something
 		if (!_prepared) {
 			if (_onUnpreparedListener != null)
@@ -191,18 +200,27 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 
 		_player.start();
 
-		// start the seek thread
-		if (_updateThread != null)
-			_updateThread.interrupt();
-		_updateThread = new Thread(new UpdatePositionTimerTask());
-		_updateThread.start();
+		startUpdateThread();
 
 		if (_onPlayListener != null)
 			_onPlayListener.onPlay(_player.getDuration());
 	}
 
+	private void startUpdateThread() {
+		stopUpdateThread();
+		_updateThread = new Thread(new UpdatePositionTimerTask());
+		_updateThread.start();
+	}
+
+	private void stopUpdateThread() {
+		if (_updateThread != null)
+			_updateThread.interrupt();
+	}
+
 	private void internalPause() {
 		_player.pause();
+
+		stopUpdateThread();
 
 		// tell the interested party
 		if (_onPauseListener != null)
@@ -218,6 +236,8 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		// tell Android that we don't want the audio focus
 		AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
 		am.abandonAudioFocus(_afChangeListener);
+
+		stopUpdateThread();
 
 		// tell the interested party
 		if (_onStopListener != null)

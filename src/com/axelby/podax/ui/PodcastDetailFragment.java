@@ -2,7 +2,6 @@ package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -113,10 +112,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 				if (playerState.isPlaying() && playerState.getPodcastId() == _podcastId)
 					PlayerService.stop(activity);
 				else {
-					ContentValues values = new ContentValues();
-					values.put(PodcastProvider.COLUMN_ID, _podcastId);
-					activity.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-					PlayerService.play(activity);
+					PlayerService.play(activity, _podcastId);
 				}
 			}
 		});

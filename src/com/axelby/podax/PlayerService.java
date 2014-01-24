@@ -42,31 +42,36 @@ public class PlayerService extends Service {
 
 		@Override
 		public void onChange(boolean selfChange, Uri uri) {
-			if (_player == null)
-				return;
-
-			PlayerStatus status = PlayerStatus.getCurrentState(PlayerService.this);
-			if (!status.hasActivePodcast()) {
-				_player.stop();
-				return;
-			}
-
-			if (status.getPodcastId() != _currentPodcastId) {
-				_currentPodcastId = status.getPodcastId();
-				if (!_player.prepare(status.getFilename(), status.getPosition())) {
-					String toastMessage = getResources().getString(R.string.cannot_play_podcast, status.getTitle());
-					Toast.makeText(PlayerService.this, toastMessage, Toast.LENGTH_LONG).show();
-					_player.stop();
-				} else {
-					QueueManager.changeActivePodcast(PlayerService.this, status.getPodcastId());
-					_lockscreenManager.setupLockscreenControls(PlayerService.this, status);
-					showNotification();
-				}
-			} else {
-				_player.seekTo(status.getPosition());
-			}
+			refreshPodcast();
 		}
 	};
+
+	private void refreshPodcast() {
+		if (_player == null)
+			return;
+
+		PlayerStatus status = PlayerStatus.getCurrentState(this);
+		if (!status.hasActivePodcast()) {
+			_player.stop();
+			return;
+		}
+
+		if (status.getPodcastId() != _currentPodcastId) {
+			_currentPodcastId = status.getPodcastId();
+			if (!_player.prepare(status.getFilename(), status.getPosition())) {
+				_player.stop();
+				String toastMessage = getResources().getString(R.string.cannot_play_podcast, status.getTitle());
+				Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
+			} else {
+				QueueManager.changeActivePodcast(this, status.getPodcastId());
+				_lockscreenManager.setupLockscreenControls(this, status);
+				showNotification();
+			}
+		} else {
+			_player.seekTo(status.getPosition());
+		}
+	}
+
 	private BroadcastReceiver _stopReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -80,6 +85,11 @@ public class PlayerService extends Service {
 	// static functions for easier controls
 	public static void play(Context context) {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY);
+	}
+
+	public static void play(Context context, long podcastId) {
+		QueueManager.changeActivePodcast(context, podcastId);
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_REFRESHPODCAST);
 	}
 
 	public static void pause(Context context, int pause_reason) {
@@ -196,10 +206,7 @@ public class PlayerService extends Service {
 
 					getContentResolver().unregisterContentObserver(_podcastChangeObserver);
 
-					// tell anything listening to the active podcast to refresh now that we're stopped
 					PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.STOPPED);
-					ContentValues values = new ContentValues();
-					getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
 					stopSelf();
 				}
@@ -256,6 +263,9 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_STOP:
 				_player.stop();
+				break;
+			case Constants.PLAYER_COMMAND_REFRESHPODCAST:
+				refreshPodcast();
 				break;
 		}
 

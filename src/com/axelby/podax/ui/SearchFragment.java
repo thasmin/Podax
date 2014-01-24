@@ -211,10 +211,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 						podcast.removeFromQueue(getActivity());
 						break;
 					case OPTION_PLAY:
-						ContentValues values = new ContentValues();
-						values.put(PodcastProvider.COLUMN_ID, podcast.getId());
-						getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-						PlayerService.play(getActivity());
+						PlayerService.play(getActivity(), podcast.getId());
 						break;
 				}
 				break;

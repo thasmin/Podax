@@ -361,7 +361,7 @@ public class PodcastProvider extends ContentProvider {
 			ActivePodcastReceiver.notifyExternal(getContext());
 		}
 		// if the current podcast has updated the position but it's not from the player, tell the player to update
-		if (podcastId == activePodcastId && uriMatch != PODCAST_PLAYER_UPDATE && values.containsKey(COLUMN_LAST_POSITION))
+		if (podcastId == activePodcastId && values.containsKey(COLUMN_LAST_POSITION))
 			getContext().getContentResolver().notifyChange(PLAYER_UPDATE_URI, null);
 
 		return count;

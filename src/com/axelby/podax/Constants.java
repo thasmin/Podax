@@ -35,6 +35,7 @@ public class Constants {
 	public static final int PLAYER_COMMAND_STOP = 3;
 	public static final int PLAYER_COMMAND_PLAYSTOP = 4;
 	public static final int PLAYER_COMMAND_RESUME = 5;
+	public static final int PLAYER_COMMAND_REFRESHPODCAST = 6;
 
 	// reasons for pausing
 	public static final int PAUSE_AUDIOFOCUS = 0;

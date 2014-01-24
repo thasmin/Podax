@@ -180,10 +180,7 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 				podcast.removeFromQueue(getActivity());
 				return true;
 			case OPTION_PLAY:
-				ContentValues values = new ContentValues();
-				values.put(PodcastProvider.COLUMN_ID, podcast.getId());
-				getActivity().getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-				PlayerService.play(getActivity());
+				PlayerService.play(getActivity(), podcast.getId());
 
 				Bundle args = new Bundle();
 				args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
