@@ -109,11 +109,23 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				PlayerStatus playerState = PlayerStatus.getCurrentState(activity);
-				if (playerState.isPlaying() && playerState.getPodcastId() == _podcastId)
+				if (playerState.isPlaying() && playerState.getPodcastId() == _podcastId) {
 					PlayerService.stop(activity);
-				else {
-					PlayerService.play(activity, _podcastId);
+					return;
 				}
+				Cursor c = activity.getContentResolver().query(PodcastProvider.getContentUri(_podcastId), null, null, null, null);
+				if (c == null)
+					return;
+				if (!c.moveToFirst()) {
+					c.close();
+					return;
+				}
+				PodcastCursor p = new PodcastCursor(c);
+				if (p.isDownloaded(activity))
+					PlayerService.play(activity, _podcastId);
+				else
+					Toast.makeText(activity, R.string.podcast_not_downloaded, Toast.LENGTH_LONG).show();
+				c.close();
 			}
 		});
 
