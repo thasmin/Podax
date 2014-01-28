@@ -14,6 +14,9 @@ public class ActivePodcastReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		if (intent.getData() == null)
+			return;
+
 		// only receives com.axelby.podax.activepodcast intents
 		Uri activePodcastUri = PodcastProvider.ACTIVE_PODCAST_URI;
 		if (intent.getData().equals(Constants.ACTIVE_PODCAST_DATA_RESTART))
@@ -28,6 +31,8 @@ public class ActivePodcastReceiver extends BroadcastReceiver {
 
 	public static void notifyExternal(Context context) {
 		AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
+		if (widgetManager == null)
+			return;
 
 		int[] widgetIds;
 

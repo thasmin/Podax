@@ -161,14 +161,10 @@ public class PlayerService extends Service {
 			_player.setOnPlayListener(new PodcastPlayer.OnPlayListener() {
 				@Override
 				public void onPlay(int duration) {
-					if (duration > 0) {
-						ContentValues values = new ContentValues();
-						values.put(PodcastProvider.COLUMN_DURATION, duration);
-						PlayerService.this.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
-					}
-
 					// set this podcast as active
 					ContentValues values = new ContentValues(1);
+					if (duration > 0 && duration < 1000 * 60 * 60 * 6)
+						values.put(PodcastProvider.COLUMN_DURATION, duration);
 					values.put(PodcastProvider.COLUMN_ID, _currentPodcastId);
 					getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
@@ -181,6 +177,7 @@ public class PlayerService extends Service {
 					audioManager.registerMediaButtonEventReceiver(eventReceiver);
 
 					PlayerStatus.updateState(PlayerService.this, PlayerStates.PLAYING);
+					_lockscreenManager.setLockscreenPlaying();
 				}
 			});
 
