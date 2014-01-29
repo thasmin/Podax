@@ -233,25 +233,23 @@ public class MainActivity extends ActionBarActivity {
 
 	public void replaceFragment(Class<? extends Fragment> clazz, Bundle args) {
 		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
-		if (current != null && current.getClass().equals(clazz))
+		if (current != null && current.getClass().equals(clazz) && clazz != PodcastDetailFragment.class)
 			return;
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
 		try {
 			Fragment f = null;
-			if (args != null) {
+			if (args == null) {
+				// find a saved fragment of the same class
 				for (WeakReference<Fragment> frag : _savedFragments) {
 					if (frag.get() != null && clazz.equals(frag.get().getClass())) {
 						f = frag.get();
 						break;
 					}
 				}
-			}
-
-			// restart activity if we have new args
-			if (args != null) {
-				f = null;
+			} else {
+				// args means forced new fragment - discard the old one
 				for (WeakReference<Fragment> frag : _savedFragments) {
 					if (frag.get() != null && clazz.equals(frag.get().getClass())) {
 						_savedFragments.remove(frag);
@@ -265,7 +263,7 @@ public class MainActivity extends ActionBarActivity {
 				f.setArguments(args);
 			}
 			ft.replace(R.id.fragment, f);
-			if (_savedFragments.size() > 0)
+			if (current != null)
 				ft.addToBackStack(null);
 			ft.commit();
 		} catch (IllegalArgumentException ignored) {
@@ -316,11 +314,12 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onAttachFragment(Fragment fragment) {
 		super.onAttachFragment(fragment);
+		if (fragment.getClass() != PodcastDetailFragment.class)
+			return;
 		for (WeakReference<Fragment> frag : _savedFragments)
 			if (frag.get() != null && fragment.getClass().equals(frag.get().getClass()))
 				return;
-		if (fragment.getClass() != PodcastDetailFragment.class)
-			_savedFragments.add(new WeakReference<Fragment>(fragment));
+		_savedFragments.add(new WeakReference<Fragment>(fragment));
 	}
 
 	class PodaxDrawerAdapter extends BaseAdapter {
