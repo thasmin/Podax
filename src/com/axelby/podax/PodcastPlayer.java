@@ -4,8 +4,14 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 
+import com.android.ex.variablespeed.MediaPlayerProxy;
+import com.android.ex.variablespeed.SingleThreadedMediaPlayerProxy;
+import com.android.ex.variablespeed.VariableSpeed;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class PodcastPlayer /*extends MediaPlayer*/ {
 
@@ -20,9 +26,11 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 				pause(Constants.PAUSE_AUDIOFOCUS);
 		}
 	};
+	private final ScheduledThreadPoolExecutor _executor;
+	private VariableSpeed _variableSpeedPlayer;
 
 	protected Context _context;
-	private MediaPlayer _player;
+	private MediaPlayerProxy _player;
 	private boolean _prepared = false;
 	private ArrayList<Boolean> _pausingFor = new ArrayList<Boolean>(2);
 	private int _seekOnPrepare;
@@ -35,7 +43,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	private OnUnpreparedListener _onUnpreparedListener = null;
 	private MediaPlayer.OnErrorListener _onErrorListener = null;
 
-	Thread _updateThread;
+	private UpdatePositionTimerTask _updatePositionTimerTask = new UpdatePositionTimerTask();
 
 	public PodcastPlayer(Context context) {
 		super();
@@ -43,7 +51,13 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		_pausingFor.add(false);
 		_pausingFor.add(false);
 
-		_player = new MediaPlayer();
+		_executor = new ScheduledThreadPoolExecutor(2);
+		try {
+			_variableSpeedPlayer = new VariableSpeed(_executor);
+			_player = new SingleThreadedMediaPlayerProxy(_variableSpeedPlayer);
+		} catch (UnsupportedOperationException ignored) {
+			_player = new SimpleMediaPlayerProxy();
+		}
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
 		_player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -208,13 +222,12 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 
 	private void startUpdateThread() {
 		stopUpdateThread();
-		_updateThread = new Thread(new UpdatePositionTimerTask());
-		_updateThread.start();
+		_executor.scheduleAtFixedRate(_updatePositionTimerTask, 250, 250, TimeUnit.MILLISECONDS);
 	}
 
 	private void stopUpdateThread() {
-		if (_updateThread != null)
-			_updateThread.interrupt();
+		_executor.remove(_updatePositionTimerTask);
+		_updatePositionTimerTask = new UpdatePositionTimerTask();
 	}
 
 	private void internalPause() {
@@ -265,29 +278,17 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	}
 
 	private class UpdatePositionTimerTask implements Runnable {
+		int _lastPosition = 0;
 		public void run() {
-			int _lastPosition = 0;
-			while (true) {
-				// we're interrupted when it's time to stop
-				try {
-					Thread.sleep(250);
-				} catch (InterruptedException e) {
-					return;
-				}
+			// if we're not playing, the pause/stop event sent the current time
+			// and we don't need to update until we're restarted
+			if (!_player.isPlaying())
+				return;
 
-				// if we're not playing, the pause/stop event sent the current time
-				// and we don't need to update until we're restarted
-				if (!_player.isPlaying() || Thread.interrupted())
-					return;
-
-				int currentPosition = _player.getCurrentPosition();
-				if (_onSeekListener != null && _lastPosition / 1000 != currentPosition / 1000)
-					_onSeekListener.onSeek(currentPosition);
-				_lastPosition = currentPosition;
-
-				if (Thread.interrupted())
-					return;
-			}
+			int currentPosition = _player.getCurrentPosition();
+			if (_onSeekListener != null && _lastPosition / 1000 != currentPosition / 1000)
+				_onSeekListener.onSeek(currentPosition);
+			_lastPosition = currentPosition;
 		}
 	}
 }
