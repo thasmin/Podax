@@ -5,6 +5,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 
+import com.android.ex.variablespeed.VariableSpeedNative;
 import com.axelby.podax.R;
 
 import java.io.File;
@@ -18,20 +19,28 @@ public class PodaxPreferenceFragment extends PreferenceListFragment implements P
 
 		// properly trim sdcard options
 		ListPreference sdcard = (ListPreference) screen.findPreference("storageCard");
-		if (sdcard == null)
-			return;
-		CharSequence[] entries = sdcard.getEntries();
-		CharSequence[] values = sdcard.getEntryValues();
-		if (!new File(values[1].toString()).exists()) {
-			sdcard.setEntries(new CharSequence[]{entries[0]});
-			sdcard.setEntryValues(new CharSequence[]{values[0]});
-			sdcard.setEnabled(false);
+		if (sdcard != null) {
+			CharSequence[] entries = sdcard.getEntries();
+			CharSequence[] values = sdcard.getEntryValues();
+			if (!new File(values[1].toString()).exists()) {
+				sdcard.setEntries(new CharSequence[]{entries[0]});
+				sdcard.setEntryValues(new CharSequence[]{values[0]});
+				sdcard.setEnabled(false);
+			}
+
+			String title = getString(R.string.pref_sdcard_title) + ": " + getEntryText(sdcard, sdcard.getValue());
+			sdcard.setTitle(title);
+
+			sdcard.setOnPreferenceChangeListener(this);
 		}
 
-		String title = getString(R.string.pref_sdcard_title) + ": " + getEntryText(sdcard, sdcard.getValue());
-		sdcard.setTitle(title);
-
-		sdcard.setOnPreferenceChangeListener(this);
+		LimitedSeekBarPreference playbackRate = (LimitedSeekBarPreference) screen.findPreference("playbackRate");
+		if (playbackRate != null) {
+			if (!VariableSpeedNative.canLoad()) {
+				playbackRate.setEnabled(false);
+				playbackRate.setSummary(R.string.playbackrate_disabled);
+			}
+		}
 		setPreferenceScreen(screen);
 	}
 

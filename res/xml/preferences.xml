@@ -14,6 +14,16 @@
             android:title="@string/pref_auto_delete_title" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="Playback">
+        <com.axelby.podax.ui.LimitedSeekBarPreference
+            android:defaultValue="1"
+            android:key="playbackRate"
+            android:summary="@string/pref_playbackrate"
+            android:title="@string/pref_playbackrate_title"
+            android:entries="@array/pref_playbackrate_entries"
+            android:entryValues="@array/pref_playbackrate_values" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Storage">
         <ListPreference
             android:defaultValue="/storage/sdcard0"

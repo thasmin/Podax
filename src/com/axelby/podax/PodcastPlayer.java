@@ -1,8 +1,10 @@
 package com.axelby.podax;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.preference.PreferenceManager;
 
 import com.android.ex.variablespeed.MediaPlayerProxy;
 import com.android.ex.variablespeed.SingleThreadedMediaPlayerProxy;
@@ -54,6 +56,9 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		_executor = new ScheduledThreadPoolExecutor(2);
 		try {
 			_variableSpeedPlayer = new VariableSpeed(_executor);
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
+			_variableSpeedPlayer.setVariableSpeed(playbackRate);
 			_player = new SingleThreadedMediaPlayerProxy(_variableSpeedPlayer);
 		} catch (UnsupportedOperationException ignored) {
 			_player = new SimpleMediaPlayerProxy();

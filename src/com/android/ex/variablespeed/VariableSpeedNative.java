@@ -31,9 +31,18 @@ import java.lang.reflect.Field;
  * You should not use this class directly. Prefer to use the {@link VariableSpeed}
  * class instead.
  */
-/*package*/ class VariableSpeedNative {
+public class VariableSpeedNative {
 	/*package*/ static void loadLibrary() throws UnsatisfiedLinkError, SecurityException {
 		System.loadLibrary("variablespeed");
+	}
+
+	public static boolean canLoad() {
+		try {
+			loadLibrary();
+			return true;
+		} catch (UnsupportedOperationException ignored) {
+			return false;
+		}
 	}
 
 	/*package*/ static boolean playFromContext(Context context, Uri uri)

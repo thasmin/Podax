@@ -171,4 +171,22 @@
     <string name="gpodder_sync_retrieve_all_podcasts">Cannot retrieve all podcasts: %1$s</string>
     <string name="gpodder_sync_update_episode_positions">Cannot send episode positions: %1$s</string>
     <string name="gpodder_sync_retrieve_episode_positions">Cannot retrieve episode positions: %1$s</string>
+
+    <string name="pref_playbackrate_title">Playback Rate</string>
+    <string name="pref_playbackrate">How fast the podcast should play</string>
+    <string-array name="pref_playbackrate_entries">
+        <item>1.0x</item>
+        <item>1.1x</item>
+        <item>1.25x</item>
+        <item>1.5x</item>
+        <item>2.0x</item>
+    </string-array>
+    <string-array name="pref_playbackrate_values">
+        <item>1.0</item>
+        <item>1.1</item>
+        <item>1.25</item>
+        <item>1.5</item>
+        <item>2.0</item>
+    </string-array>
+    <string name="playbackrate_disabled">This device cannot change the playback rate.</string>
 </resources>
