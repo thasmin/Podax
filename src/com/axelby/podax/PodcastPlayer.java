@@ -29,13 +29,13 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		}
 	};
 	private final ScheduledThreadPoolExecutor _executor;
-	private VariableSpeed _variableSpeedPlayer;
 
 	protected Context _context;
 	private MediaPlayerProxy _player;
 	private boolean _prepared = false;
 	private ArrayList<Boolean> _pausingFor = new ArrayList<Boolean>(2);
 	private int _seekOnPrepare;
+	private boolean _allowedToUpdate = true;
 
 	private OnPauseListener _onPauseListener = null;
 	private OnPlayListener _onPlayListener = null;
@@ -45,7 +45,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	private OnUnpreparedListener _onUnpreparedListener = null;
 	private MediaPlayer.OnErrorListener _onErrorListener = null;
 
-	private UpdatePositionTimerTask _updatePositionTimerTask = new UpdatePositionTimerTask();
+	private UpdatePositionTimerTask _updatePositionTimerTask;
 
 	public PodcastPlayer(Context context) {
 		super();
@@ -59,7 +59,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		float playbackRate = prefs.getFloat("playbackRate", 1.0f);
 		if (playbackRate != 1.0f) {
 			try {
-				_variableSpeedPlayer = new VariableSpeed(_executor);
+				VariableSpeed _variableSpeedPlayer = new VariableSpeed(_executor);
 				_variableSpeedPlayer.setVariableSpeed(playbackRate);
 				_player = new SingleThreadedMediaPlayerProxy(_variableSpeedPlayer);
 			} catch (UnsupportedOperationException ignored) {
@@ -234,13 +234,15 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	}
 
 	private void startUpdateThread() {
-		stopUpdateThread();
-		_executor.scheduleAtFixedRate(_updatePositionTimerTask, 250, 250, TimeUnit.MILLISECONDS);
+		_allowedToUpdate = true;
+		if (_updatePositionTimerTask == null) {
+			_updatePositionTimerTask = new UpdatePositionTimerTask();
+			_executor.scheduleAtFixedRate(_updatePositionTimerTask, 250, 250, TimeUnit.MILLISECONDS);
+		}
 	}
 
 	private void stopUpdateThread() {
-		_executor.remove(_updatePositionTimerTask);
-		_updatePositionTimerTask = new UpdatePositionTimerTask();
+		_allowedToUpdate = false;
 	}
 
 	private void internalPause() {
@@ -295,7 +297,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		public void run() {
 			// if we're not playing, the pause/stop event sent the current time
 			// and we don't need to update until we're restarted
-			if (!_player.isPlaying())
+			if (!_allowedToUpdate || !_player.isPlaying())
 				return;
 
 			int currentPosition = _player.getCurrentPosition();
