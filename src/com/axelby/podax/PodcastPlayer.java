@@ -114,9 +114,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	public void setOnStopListener(OnStopListener onStopListener) {
 		this._onStopListener = onStopListener;
 	}
-	public void setOnSeekListener(OnSeekListener onSeekListener) {
-		this._onSeekListener = onSeekListener;
-	}
+	public void setOnSeekListener(OnSeekListener onSeekListener) { this._onSeekListener = onSeekListener; }
 	public void setOnCompletionListener(OnCompletionListener onCompletionListener) {
 		this._onCompletionListener = onCompletionListener;
 	}
@@ -126,6 +124,7 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 	// specify which podcast file to play and where to start it
 	public boolean prepare(String audioFile, int position) {
 		try {
+			_prepared = false;
 			if (_player.isPlaying()) {
 				stopUpdateThread();
 				_player.stop();
