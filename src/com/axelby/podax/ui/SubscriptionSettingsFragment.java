@@ -167,8 +167,10 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 
 		if (getActivity() == null)
 			return;
-		if (!cursor.moveToFirst())
+		if (!cursor.moveToFirst()) {
+			cursor.close();
 			getActivity().finish();
+		}
 
 		_feedTitle = cursor.getString(0);
 		if (!cursor.isNull(1)) {
