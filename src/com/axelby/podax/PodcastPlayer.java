@@ -54,13 +54,18 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		_pausingFor.add(false);
 
 		_executor = new ScheduledThreadPoolExecutor(2);
-		try {
-			_variableSpeedPlayer = new VariableSpeed(_executor);
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
-			_variableSpeedPlayer.setVariableSpeed(playbackRate);
-			_player = new SingleThreadedMediaPlayerProxy(_variableSpeedPlayer);
-		} catch (UnsupportedOperationException ignored) {
+
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		float playbackRate = prefs.getFloat("playbackRate", 1.0f);
+		if (playbackRate != 1.0f) {
+			try {
+				_variableSpeedPlayer = new VariableSpeed(_executor);
+				_variableSpeedPlayer.setVariableSpeed(playbackRate);
+				_player = new SingleThreadedMediaPlayerProxy(_variableSpeedPlayer);
+			} catch (UnsupportedOperationException ignored) {
+				_player = new SimpleMediaPlayerProxy();
+			}
+		} else {
 			_player = new SimpleMediaPlayerProxy();
 		}
 		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -84,6 +89,9 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 			@Override
 			public void onPrepared(MediaPlayer mediaPlayer) {
+				// variable speed player reloads on seek - will call this
+				if (_prepared)
+					return;
 				_prepared = true;
 				_player.seekTo(_seekOnPrepare);
 				internalPlay();

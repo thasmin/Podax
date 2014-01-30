@@ -304,7 +304,9 @@ public class VariableSpeed implements MediaPlayerProxy {
 
 	private void stopAndStartPlayingAgain(MediaPlayerDataSource source) {
 		stopCurrentPlayback();
+		int startPosition = mStartPosition;
 		reset();
+		mStartPosition = startPosition;
 		innerSetDataSource(source);
 		try {
 			prepare();
@@ -313,7 +315,6 @@ public class VariableSpeed implements MediaPlayerProxy {
 			return;
 		}
 		start();
-		return;
 	}
 
 	private void reportException(Exception e) {
