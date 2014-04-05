@@ -58,6 +58,7 @@ class PodcastDownloader {
 				}
 				if (status != DownloadManager.STATUS_FAILED && status != DownloadManager.STATUS_SUCCESSFUL)
 					return;
+				downloadManager.remove(podcast.getDownloadId());
 			}
 
 			File mediaFile = new File(podcast.getFilename(_context));
