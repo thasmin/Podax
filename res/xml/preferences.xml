@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory android:title="Lifecycle" >
         <CheckBoxPreference
@@ -12,11 +12,18 @@
             android:key="autoDeletePref"
             android:summary="@string/pref_auto_delete"
             android:title="@string/pref_auto_delete_title" />
+        <com.axelby.podax.ui.LimitedSeekBarPreference
+            android:defaultValue="10000"
+            android:key="queueMaxNumPodcasts"
+            android:summary="@string/pref_max_num_podcasts"
+            android:title="@string/pref_max_num_podcasts_title"
+            android:entries="@array/pref_max_num_podcasts_entries"
+            android:entryValues="@array/pref_max_num_podcasts_values" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Playback">
         <com.axelby.podax.ui.LimitedSeekBarPreference
-            android:defaultValue="1"
+            android:defaultValue="1.0"
             android:key="playbackRate"
             android:summary="@string/pref_playbackrate"
             android:title="@string/pref_playbackrate_title"

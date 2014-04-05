@@ -89,6 +89,22 @@
     <string name="pref_update_wifi_title">Wi-Fi Only</string>
     <string name="pref_auto_delete">Delete podcasts automatically when playback finishes or you skip to the next podcast. If disabled, the podcast will be added to the bottom of the queue.</string>
     <string name="pref_auto_delete_title">Delete Podcasts Automatically</string>
+    <string name="pref_max_num_podcasts">Maximum number of downloaded podcasts in queue.</string>
+    <string name="pref_max_num_podcasts_title">Limit Number of Downloaded Podcasts</string>
+    <string-array name="pref_max_num_podcasts_entries">
+        <item>10</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+        <item>Unlimited</item>
+    </string-array>
+    <string-array name="pref_max_num_podcasts_values">
+        <item>10</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+        <item>10000</item>
+    </string-array>
     <string name="pref_anon_usage">Send anonymous usage data to improve Podax.</string>
     <string name="pref_anon_usage_title">Send Usage Data</string>
     <string name="pref_crash_reports">Send error reports to the developers if Podax crashes.</string>

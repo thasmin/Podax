@@ -20,6 +20,7 @@ public class LimitedSeekBarPreference extends Preference implements SeekBar.OnSe
 	private TextView _statusText;
 
 	// config
+	private float _defaultValue;
 	private String[] _entries;
 	private float[] _entryValues;
 
@@ -40,6 +41,17 @@ public class LimitedSeekBarPreference extends Preference implements SeekBar.OnSe
 	}
 
 	private void initPreference(Context context, AttributeSet attrs) {
+		// get default values
+		try {
+			_defaultValue = attrs.getAttributeFloatValue(ANDROID_NS, "defaultValue", 1.0f);
+		} catch (Exception ex) {
+			try {
+				_defaultValue = attrs.getAttributeIntValue(ANDROID_NS, "defaultValue", 1);
+			} catch (Exception ex2) {
+				_defaultValue = 1.0f;
+			}
+		}
+
 		// get entry and entryValues attributes
 		int entriesId = attrs.getAttributeResourceValue(ANDROID_NS, "entries", -1);
 		_entries = context.getResources().getStringArray(entriesId);
@@ -74,8 +86,16 @@ public class LimitedSeekBarPreference extends Preference implements SeekBar.OnSe
 		_seekBar.setMax(_entryValues.length - 1);
 		_seekBar.setEnabled(_enabled);
 
+		// make sure that the preference isn't already saved as something other than a float
+		try {
+			getPersistedFloat(1.0f);
+		} catch (java.lang.ClassCastException ex) {
+			if (getEditor() != null)
+				getEditor().remove(getKey()).commit();
+		}
+
 		// set to persisted value
-		float value = getPersistedFloat(1.0f);
+		float value = getPersistedFloat(_defaultValue);
 		for (int i = 0; i < _entryValues.length; ++i) {
 			if (_entryValues[i] == value) {
 				_currentProgress = i;

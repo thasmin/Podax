@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -98,9 +99,11 @@ public class UpdateService extends IntentService {
 		if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
 			String[] projection = new String[]{SubscriptionProvider.COLUMN_ID};
 			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
-			while (c.moveToNext())
-				handleIntent(createUpdateSubscriptionIntent(this, c.getLong(0)));
-			c.close();
+			if (c != null) {
+				while (c.moveToNext())
+					handleIntent(createUpdateSubscriptionIntent(this, c.getLong(0)));
+				c.close();
+			}
 		} else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
 			long subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 			if (subscriptionId == -1)
@@ -112,12 +115,17 @@ public class UpdateService extends IntentService {
 
 			String[] projection = {PodcastProvider.COLUMN_ID};
 			Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
-			while (c.moveToNext())
-				handleIntent(createDownloadPodcastIntent(this, c.getLong(0)));
-			c.close();
+			if (c != null) {
+				while (c.moveToNext())
+					handleIntent(createDownloadPodcastIntent(this, c.getLong(0)));
+				c.close();
+			}
 		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCAST)) {
 			long podcastId = intent.getLongExtra(Constants.EXTRA_PODCAST_ID, -1L);
 			if (podcastId == -1)
+				return;
+			float maxPodcasts = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
+			if (getQueueNumDownloadedItems() >= maxPodcasts)
 				return;
 			PodcastDownloader.download(this, podcastId);
 		}
@@ -133,7 +141,11 @@ public class UpdateService extends IntentService {
 				PodcastProvider.COLUMN_MEDIA_URL,
 		};
 		Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
+		if (queueUri == null)
+			return;
 		Cursor c = getContentResolver().query(queueUri, projection, null, null, null);
+		if (c == null)
+			return;
 		while (c.moveToNext())
 			validMediaFilenames.add(new PodcastCursor(c).getFilename(this));
 		c.close();
@@ -162,9 +174,32 @@ public class UpdateService extends IntentService {
 				PodcastProvider.COLUMN_MEDIA_URL,
 		};
 		Cursor c = getContentResolver().query(PodcastProvider.EXPIRED_URI, projection, null, null, null);
+		if (c == null)
+			return;
 		while (c.moveToNext())
 			new PodcastCursor(c).removeFromQueue(this);
 		c.close();
+	}
+
+	private int getQueueNumDownloadedItems() {
+		String[] projection = {
+				PodcastProvider.COLUMN_ID,
+				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+				PodcastProvider.COLUMN_MEDIA_URL,
+				PodcastProvider.COLUMN_FILE_SIZE,
+		};
+		Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
+		if (c == null)
+			return 0;
+		int ret = 0;
+
+		while (c.moveToNext()) {
+			PodcastCursor podcast = new PodcastCursor(c);
+			if (podcast.isDownloaded(this))
+				ret++;
+		}
+		return ret;
 	}
 
 	private void removeNotification() {
