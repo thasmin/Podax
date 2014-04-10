@@ -2,16 +2,28 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical">
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <AutoCompleteTextView
-            android:id="@+id/query"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/search_hint"
-            android:imeActionLabel="Search"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:singleLine="true"/>
+        <AutoCompleteTextView
+                android:id="@+id/query"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/search_hint"
+                android:imeActionLabel="Search"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:singleLine="true" />
+
+        <ImageView
+                android:id="@+id/cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:layout_gravity="center_vertical|right"
+                android:contentDescription="@string/clear_search" />
+    </FrameLayout>
 
     <ListView
             android:id="@+id/android:list"

@@ -210,4 +210,5 @@
         <item>2.0</item>
     </string-array>
     <string name="playbackrate_disabled">This device cannot change the playback rate.</string>
+    <string name="clear_search">Clear Search</string>
 </resources>

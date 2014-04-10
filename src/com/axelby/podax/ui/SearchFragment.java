@@ -2,7 +2,6 @@ package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.app.SearchManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -30,6 +29,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -110,7 +110,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 			}
 		});
 
-		AutoCompleteTextView actv = (AutoCompleteTextView) getActivity().findViewById(R.id.query);
+		final AutoCompleteTextView actv = (AutoCompleteTextView) getActivity().findViewById(R.id.query);
 
 		// set up autocomplete from search suggestion provider
 		/*
@@ -138,7 +138,8 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 			@Override
 			public void afterTextChanged(Editable s) {
 				_lastQuery = s.toString();
-				requery();
+				if (_lastQuery.length() > 0)
+					requery();
 			}
 
 			@Override
@@ -153,6 +154,10 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 		actv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
 			public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
+				if (view == null || view.getEditableText() == null)
+					return false;
+				if (getActivity() == null || getActivity().getCurrentFocus() == null)
+					return false;
 				if (actionId != EditorInfo.IME_ACTION_SEARCH)
 					return false;
 				SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
@@ -164,6 +169,18 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 				inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
 				return true;
+			}
+		});
+
+		ImageView cancel = (ImageView) getActivity().findViewById(R.id.cancel);
+		cancel.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				actv.setText("");
+				_adapter.setPodcastCursor(null);
+				_adapter.setSubscriptionCursor(null);
+				_adapter.notifyDataSetChanged();
+				getListView().invalidate();
 			}
 		});
 	}
@@ -196,6 +213,9 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		if (info == null)
+			return false;
+
 		SearchResultType type = _adapter.getType(info.position);
 		Cursor cursor;
 		switch (type) {
@@ -430,6 +450,8 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 			View view;
 
 			TextView textView = (TextView) _inflater.inflate(R.layout.list_item, parent, false);
+			if (textView == null)
+				return convertView;
 
 			Object o = getItem(position);
 
