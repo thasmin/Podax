@@ -15,7 +15,7 @@ LOCAL_CFLAGS     := -DACCURATE_ROUNDING \
 					-Wno-int-to-pointer-cast \
 					-Wno-pointer-to-int-cast
 
-LOCAL_SRC_FILES := 	com_axelby_mp3decoders_MPG123.c
+LOCAL_SRC_FILES := 	podax_MPG123.c
 LOCAL_SRC_FILES +=  compat.c
 LOCAL_SRC_FILES +=  frame.c
 LOCAL_SRC_FILES +=  id3.c

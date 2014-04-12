@@ -9,7 +9,7 @@ LOCAL_CFLAGS     := -D_ARM_ASSEM_ \
 					-Wno-int-to-pointer-cast \
 					-Wno-pointer-to-int-cast
 
-LOCAL_SRC_FILES  := com_axelby_mp3decoders_Vorbis.c
+LOCAL_SRC_FILES  := podax_Vorbis.c
 LOCAL_SRC_FILES  += block.c
 LOCAL_SRC_FILES  += codebook.c
 LOCAL_SRC_FILES  += floor0.c
