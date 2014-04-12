@@ -13,8 +13,6 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnErrorListener;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
@@ -23,8 +21,6 @@ import android.widget.Toast;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.ui.MainActivity;
-
-import java.util.Locale;
 
 public class PlayerService extends Service {
 	protected PodcastPlayer _player;
@@ -58,7 +54,7 @@ public class PlayerService extends Service {
 
 		if (status.getPodcastId() != _currentPodcastId) {
 			_currentPodcastId = status.getPodcastId();
-			if (!_player.prepare(status.getFilename(), status.getPosition())) {
+			if (!_player.changePodcast(status.getFilename(), status.getPosition())) {
 				_player.stop();
 				String toastMessage = getResources().getString(R.string.cannot_play_podcast, status.getTitle());
 				Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
@@ -139,8 +135,10 @@ public class PlayerService extends Service {
 	private void createPlayer() {
 		if (_player == null) {
 			_player = new PodcastPlayer(this);
+			prepareNextPodcast();
 
 			// handle errors so the onCompletionListener doens't get called
+			/*
 			_player.setOnErrorListener(new OnErrorListener() {
 				@Override
 				public boolean onError(MediaPlayer player, int what, int extra) {
@@ -149,6 +147,7 @@ public class PlayerService extends Service {
 					return true;
 				}
 			});
+			*/
 
 			_player.setOnCompletionListener(new PodcastPlayer.OnCompletionListener() {
 				@Override
@@ -160,11 +159,11 @@ public class PlayerService extends Service {
 
 			_player.setOnPlayListener(new PodcastPlayer.OnPlayListener() {
 				@Override
-				public void onPlay(int duration) {
+				public void onPlay(float durationInSeconds) {
 					// set this podcast as active
 					ContentValues values = new ContentValues(1);
-					if (duration > 0 && duration < 1000 * 60 * 60 * 6)
-						values.put(PodcastProvider.COLUMN_DURATION, duration);
+					if (durationInSeconds > 0 && durationInSeconds < 60 * 60 * 6)
+						values.put(PodcastProvider.COLUMN_DURATION, (int)(durationInSeconds * 1000));
 					values.put(PodcastProvider.COLUMN_ID, _currentPodcastId);
 					getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 
@@ -183,8 +182,8 @@ public class PlayerService extends Service {
 
 			_player.setOnPauseListener(new PodcastPlayer.OnPauseListener() {
 				@Override
-				public void onPause(int position) {
-					updateActivePodcastPosition(position);
+				public void onPause(float positionInSeconds) {
+					updateActivePodcastPosition(positionInSeconds);
 					PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.PAUSED);
 					_lockscreenManager.setLockscreenPaused();
 					showNotification();
@@ -193,8 +192,8 @@ public class PlayerService extends Service {
 
 			_player.setOnStopListener(new PodcastPlayer.OnStopListener() {
 				@Override
-				public void onStop(int position) {
-					updateActivePodcastPosition(position);
+				public void onStop(float positionInSeconds) {
+					updateActivePodcastPosition(positionInSeconds);
 
 					removeNotification();
 
@@ -211,15 +210,8 @@ public class PlayerService extends Service {
 
 			_player.setOnSeekListener(new PodcastPlayer.OnSeekListener() {
 				@Override
-				public void onSeek(int position) {
-					updateActivePodcastPosition(position);
-				}
-			});
-
-			_player.setOnUnpreparedListener(new PodcastPlayer.OnUnpreparedListener() {
-				@Override
-				public void onUnprepared() {
-					prepareNextPodcast();
+				public void onSeek(float positionInSeconds) {
+					updateActivePodcastPosition(positionInSeconds);
 				}
 			});
 		}
@@ -274,7 +266,7 @@ public class PlayerService extends Service {
 		if (!currentState.hasActivePodcast()) {
 			_player.stop();
 		} else {
-			_player.prepare(currentState.getFilename(), currentState.getPosition());
+			_player.changePodcast(currentState.getFilename(), currentState.getPosition());
 			_currentPodcastId = currentState.getPodcastId();
 		}
 	}
@@ -342,9 +334,9 @@ public class PlayerService extends Service {
 		stopForeground(true);
 	}
 
-	private void updateActivePodcastPosition(int position) {
+	private void updateActivePodcastPosition(float positionInSeconds) {
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
-		getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
+		values.put(PodcastProvider.COLUMN_LAST_POSITION, (int)(positionInSeconds * 1000));
+		//getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
 	}
 }

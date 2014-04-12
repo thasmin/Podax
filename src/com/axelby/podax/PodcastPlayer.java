@@ -3,19 +3,14 @@ package com.axelby.podax;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
-import com.android.ex.variablespeed.MediaPlayerProxy;
-import com.android.ex.variablespeed.SingleThreadedMediaPlayerProxy;
-import com.android.ex.variablespeed.VariableSpeed;
+import com.axelby.podax.player.AudioPlayer;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-public class PodcastPlayer /*extends MediaPlayer*/ {
+public class PodcastPlayer {
 
 	// listen for audio focus changes - another app started/stopped, phone call, etc
 	private final AudioManager.OnAudioFocusChangeListener _afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
@@ -28,83 +23,72 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 				pause(Constants.PAUSE_AUDIOFOCUS);
 		}
 	};
-	private final ScheduledThreadPoolExecutor _executor;
 
 	protected Context _context;
-	private MediaPlayerProxy _player;
-	private boolean _prepared = false;
 	private ArrayList<Boolean> _pausingFor = new ArrayList<Boolean>(2);
-	private int _seekOnPrepare;
-	private boolean _allowedToUpdate = true;
 
 	private OnPauseListener _onPauseListener = null;
 	private OnPlayListener _onPlayListener = null;
 	private OnStopListener _onStopListener = null;
 	private OnSeekListener _onSeekListener = null;
 	private OnCompletionListener _onCompletionListener = null;
-	private OnUnpreparedListener _onUnpreparedListener = null;
-	private MediaPlayer.OnErrorListener _onErrorListener = null;
+	//private MediaPlayer.OnErrorListener _onErrorListener = null;
 
-	private UpdatePositionTimerTask _updatePositionTimerTask;
+	private AudioPlayer _player = null;
 
 	public PodcastPlayer(Context context) {
-		super();
 		_context = context;
 		_pausingFor.add(false);
 		_pausingFor.add(false);
+	}
 
-		_executor = new ScheduledThreadPoolExecutor(2);
+	public boolean changePodcast(String filename, float positionInSeconds) {
+		if (_player != null)
+			_player.stop();
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		float playbackRate = prefs.getFloat("playbackRate", 1.0f);
-		if (playbackRate != 1.0f) {
-			try {
-				VariableSpeed _variableSpeedPlayer = new VariableSpeed(_executor);
-				_variableSpeedPlayer.setVariableSpeed(playbackRate);
-				_player = new SingleThreadedMediaPlayerProxy(_variableSpeedPlayer);
-			} catch (UnsupportedOperationException ignored) {
-				_player = new SimpleMediaPlayerProxy();
-			}
-		} else {
-			_player = new SimpleMediaPlayerProxy();
+		try {
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
+			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
+			_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
+
+			/*
+			_player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+				@Override
+				public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
+					mediaPlayer.reset();
+					if (_onErrorListener != null)
+						_onErrorListener.onError(mediaPlayer, what, extra);
+					return true;
+				}
+			});
+			*/
+			_player.setOnCompletionListener(new AudioPlayer.OnCompletionListener() {
+				@Override
+				public void onCompletion() {
+					if (_onCompletionListener != null)
+						_onCompletionListener.onCompletion();
+				}
+			});
+			_player.setPeriodicListener(new AudioPlayer.PeriodicListener() {
+				@Override
+				public void pulse(float position) {
+					if (_onSeekListener != null)
+						_onSeekListener.onSeek(position);
+				}
+			});
+
+			return true;
+		} catch (Exception ex) {
+			Log.e("Podax", "unable to change to new podcast", ex);
+			return false;
 		}
-		_player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-		_player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-			@Override
-			public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
-				mediaPlayer.reset();
-				if (_onErrorListener != null)
-					_onErrorListener.onError(mediaPlayer, what, extra);
-				return true;
-			}
-		});
-		_player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-			@Override
-			public void onCompletion(MediaPlayer mediaPlayer) {
-				if (_onCompletionListener != null)
-					_onCompletionListener.onCompletion();
-			}
-		});
-		_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-			@Override
-			public void onPrepared(MediaPlayer mediaPlayer) {
-				// variable speed player reloads on seek - will call this
-				if (_prepared)
-					return;
-				_prepared = true;
-				_player.seekTo(_seekOnPrepare);
-				internalPlay();
-			}
-		});
 	}
 
-	public void setOnUnpreparedListener(OnUnpreparedListener onUnpreparedListener) {
-		this._onUnpreparedListener = onUnpreparedListener;
-	}
+	/*
 	public void setOnErrorListener(MediaPlayer.OnErrorListener onErrorListener) {
 		this._onErrorListener = onErrorListener;
 	}
+	*/
 	public void setOnPauseListener(OnPauseListener onPauseListener) {
 		this._onPauseListener = onPauseListener;
 	}
@@ -121,37 +105,9 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 
 	/* external functions */
 
-	// specify which podcast file to play and where to start it
-	public boolean prepare(String audioFile, int position) {
-		try {
-			_prepared = false;
-			if (_player.isPlaying()) {
-				stopUpdateThread();
-				_player.stop();
-			}
-
-			_player.reset();
-			_player.setDataSource(audioFile);
-			_seekOnPrepare = position;
-			_player.prepareAsync();
-			return true;
-		} catch (IllegalStateException e) {
-			// called if player is not in idle state
-			return false;
-		} catch (IllegalArgumentException e) {
-			return false;
-		} catch (SecurityException e) {
-			return false;
-		} catch (IOException e) {
-			return false;
-		}
-	}
-
 	// change position of podcast
-	public void seekTo(int newPosition) {
-		stopUpdateThread();
-		_player.seekTo(newPosition);
-		startUpdateThread();
+	public void seekTo(float offsetInSeconds) {
+		_player.seekTo(offsetInSeconds);
 	}
 
 	// if playing, pause. if paused, play.
@@ -210,13 +166,6 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		if (_player.isPlaying())
 			return;
 
-		// if no podcast is prepared, call the unprepared handler and see if that prepares something
-		if (!_prepared) {
-			if (_onUnpreparedListener != null)
-				_onUnpreparedListener.onUnprepared();
-			return;
-		}
-
 		if (!grabAudioFocus())
 			return;
 
@@ -224,39 +173,23 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		if (_pausingFor.contains(true))
 			return;
 
-		_player.start();
-
-		startUpdateThread();
+		_player.resume();
 
 		if (_onPlayListener != null)
 			_onPlayListener.onPlay(_player.getDuration());
 	}
 
-	private void startUpdateThread() {
-		_allowedToUpdate = true;
-		if (_updatePositionTimerTask == null) {
-			_updatePositionTimerTask = new UpdatePositionTimerTask();
-			_executor.scheduleAtFixedRate(_updatePositionTimerTask, 250, 250, TimeUnit.MILLISECONDS);
-		}
-	}
-
-	private void stopUpdateThread() {
-		_allowedToUpdate = false;
-	}
-
 	private void internalPause() {
 		_player.pause();
 
-		stopUpdateThread();
-
 		// tell the interested party
 		if (_onPauseListener != null)
-			_onPauseListener.onPause(_player.getCurrentPosition());
+			_onPauseListener.onPause(_player.getPosition());
 	}
 
 	private void internalStop() {
 		// stop playing
-		int position = _player.getCurrentPosition();
+		float position = _player.getPosition();
 		if (_player.isPlaying())
 			_player.stop();
 
@@ -264,45 +197,24 @@ public class PodcastPlayer /*extends MediaPlayer*/ {
 		AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
 		am.abandonAudioFocus(_afChangeListener);
 
-		stopUpdateThread();
-
 		// tell the interested party
 		if (_onStopListener != null)
 			_onStopListener.onStop(position);
 	}
 
-
 	public static interface OnPauseListener {
-		public void onPause(int position);
+		public void onPause(float positionInSeconds);
 	}
 	public static interface OnPlayListener {
-		public void onPlay(int duration);
+		public void onPlay(float durationInSeconds);
 	}
 	public static interface OnStopListener {
-		public void onStop(int position);
+		public void onStop(float positionInSeconds);
 	}
 	public static interface OnSeekListener {
-		public void onSeek(int position);
+		public void onSeek(float positionInSeconds);
 	}
 	public static interface OnCompletionListener {
 		public void onCompletion();
-	}
-	public static interface OnUnpreparedListener {
-		public void onUnprepared();
-	}
-
-	private class UpdatePositionTimerTask implements Runnable {
-		int _lastPosition = 0;
-		public void run() {
-			// if we're not playing, the pause/stop event sent the current time
-			// and we don't need to update until we're restarted
-			if (!_allowedToUpdate || !_player.isPlaying())
-				return;
-
-			int currentPosition = _player.getCurrentPosition();
-			if (_onSeekListener != null && _lastPosition / 1000 != currentPosition / 1000)
-				_onSeekListener.onSeek(currentPosition);
-			_lastPosition = currentPosition;
-		}
 	}
 }
