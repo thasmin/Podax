@@ -9,40 +9,42 @@ public class AudioPlayer implements Runnable {
 	IMediaDecoder _decoder;
 	AudioTrack _track;
 
-	boolean _isPlaying = false;
+	private boolean _isPlaying = false;
 	private float _seekbase = 0;
 
 	public AudioPlayer(String audioFile, float positionInSeconds, float playbackRate) {
-		loadFile(audioFile);
-		if (positionInSeconds != 0)
-			seekTo(positionInSeconds);
-		createTrackFromDecoder(playbackRate);
+		_decoder = loadFile(audioFile);
+		if (positionInSeconds != 0) {
+			_seekbase = positionInSeconds;
+			_decoder.seek(positionInSeconds);
+		}
+		_track = createTrackFromDecoder(_decoder, playbackRate);
+		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
 	}
 
-	public void loadFile(String audioFile) {
+	public static IMediaDecoder loadFile(String audioFile) {
 		int lastDot = audioFile.lastIndexOf('.');
 		if (lastDot <= 0)
 			throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
 
 		String extension = audioFile.substring(lastDot + 1);
 		if (extension.equals("mp3"))
-			_decoder = new MPG123(audioFile);
+			return new MPG123(audioFile);
 		else if (extension.equals("ogg") || extension.equals("oga"))
-			_decoder = new Vorbis(audioFile);
-		else
-			throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
+			return new Vorbis(audioFile);
+		throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
 	}
 
-	private void createTrackFromDecoder(float playbackRate) {
-		_track = new AudioTrack(AudioManager.STREAM_MUSIC,
-				_decoder.getRate(),
-				_decoder.getNumChannels() == 2 ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
+	private static AudioTrack createTrackFromDecoder(IMediaDecoder decoder, float playbackRate) {
+		AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC,
+				decoder.getRate(),
+				decoder.getNumChannels() == 2 ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
 				AudioFormat.ENCODING_PCM_16BIT,
-				_decoder.getRate() * 2,
+				decoder.getRate() * 2,
 				AudioTrack.MODE_STREAM);
-		_track.setPlaybackRate((int) (_decoder.getRate() * playbackRate));
-		_track.setPositionNotificationPeriod(_decoder.getRate());
-		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
+		track.setPlaybackRate((int) (decoder.getRate() * playbackRate));
+		track.setPositionNotificationPeriod(decoder.getRate());
+		return track;
 	}
 
 	public static interface OnCompletionListener { public void onCompletion(); }
@@ -67,8 +69,14 @@ public class AudioPlayer implements Runnable {
 
 		@Override
 		public void onPeriodicNotification(AudioTrack audioTrack) {
-			if (audioTrack != null && _periodicListener != null)
-				_periodicListener.pulse(_seekbase + (float) audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate());
+			if (!_isPlaying)
+				return;
+			try {
+				if (audioTrack != null && _periodicListener != null)
+					_periodicListener.pulse(_seekbase + (float) audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate());
+			} catch (Exception e) {
+				Log.e("Podax", "exception during periodic notification", e);
+			}
 		}
 	};
 
@@ -90,16 +98,28 @@ public class AudioPlayer implements Runnable {
 		_isPlaying = true;
 	}
 
+	boolean _seeking = false;
 	public void seekTo(float offsetInSeconds) {
 		if (_decoder == null)
 			return;
-		_seekbase = offsetInSeconds;
-		_decoder.seek(offsetInSeconds);
-		if (_track == null)
-			return;
+
+		boolean wasPlaying = _isPlaying;
+		_seeking = true;
+
+		// close the current AudioTrack
 		_track.pause();
 		_track.flush();
+
+		_seekbase = offsetInSeconds;
+		_decoder.seek(offsetInSeconds);
+
+		AudioTrack toRelease = _track;
+		_track = createTrackFromDecoder(_decoder, _track.getPlaybackRate());
+		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
 		_track.play();
+		toRelease.release();
+
+		_seeking = false;
 	}
 
 	public void stop() {
@@ -131,6 +151,10 @@ public class AudioPlayer implements Runnable {
 		try {
 			short[] pcm = new short[1024 * 5];
 			do {
+				if (_seeking) {
+					Thread.sleep(50);
+					continue;
+				}
 				if (_track.getPlayState() == AudioTrack.PLAYSTATE_STOPPED)
 					return;
 				if (!_isPlaying) {
@@ -143,21 +167,16 @@ public class AudioPlayer implements Runnable {
 			} while (_track != null);
 		} catch (InterruptedException e) {
 			Log.e("Podax", "InterruptedException", e);
-		/* uncomment when routine catches are debugged
 		} catch (IllegalStateException e) {
 			Log.e("Podax", "IllegalStateException", e);
-		*/
 		} finally {
+			_decoder.close();
+			_decoder = null;
 			waitAndCloseTrack();
 		}
 	}
 
 	private void waitAndCloseTrack() {
-		if (_decoder != null) {
-			_decoder.close();
-			_decoder = null;
-		}
-
 		if (_track == null)
 			return;
 

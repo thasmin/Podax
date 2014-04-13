@@ -68,6 +68,7 @@ JNIEXPORT jlong JNICALL Java_com_axelby_podax_player_MPG123_openFile
 
         if (err == MPG123_OK)
         {
+
             int encoding;
             if (mpg123_getformat(mh, &mp3->rate, &mp3->channels, &encoding) == MPG123_OK)
             {
@@ -105,7 +106,7 @@ JNIEXPORT jlong JNICALL Java_com_axelby_podax_player_MPG123_openFile
         }
         mp3file_delete(mp3);
     } else {
-		__android_log_write(ANDROID_LOG_INFO, "mp3decoders-jni", mpg123_plain_strerror(err));
+		__android_log_write(ANDROID_LOG_INFO, "podax-jni", mpg123_plain_strerror(err));
 	}
     return 0;
 }
@@ -125,6 +126,9 @@ static inline int readBuffer(MP3File* mp3)
     mp3->leftSamples = done / 2;
     mp3->offset = 0;
 
+	if (err != MPG123_OK)
+		__android_log_write(ANDROID_LOG_ERROR, "podax-jni", mpg123_strerror(mp3->handle));
+
     return err != MPG123_OK ? 0 : done;
 }
 
@@ -135,11 +139,10 @@ JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_readSamples
 	short* buffer = (short*)(*env)->GetPrimitiveArrayCritical(env, obj_buffer, 0);
     short* target = buffer + offset;
 
-    int idx = 0;
+	int idx = 0;
     while (idx != numSamples)
     {
-        if (mp3->leftSamples > 0)
-        {
+        if (mp3->leftSamples > 0) {
             short* src = ((short*)mp3->buffer) + mp3->offset;
             while (idx < numSamples && mp3->offset < mp3->buffer_size / 2) {
                 *target = *src;
@@ -149,8 +152,7 @@ JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_readSamples
 				src++;
 				idx++;
 			}
-        }
-        else if (readBuffer(mp3) == 0) {
+        } else if (readBuffer(mp3) == 0) {
 			(*env)->ReleasePrimitiveArrayCritical(env, obj_buffer, buffer, 0);
 			return 0;
 		}
@@ -184,7 +186,7 @@ JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_seek
 	(JNIEnv *env, jclass c, jlong handle, jfloat seconds)
 {
     MP3File *mp3 = (MP3File *)handle;
-    return mpg123_seek(mp3->handle, (int) seconds / mp3->secs_per_frame * mp3->samples_per_frame, SEEK_SET);
+    return mpg123_seek(mp3->handle, (int) (seconds / mp3->secs_per_frame * mp3->samples_per_frame), SEEK_SET);
 }
 
 JNIEXPORT float JNICALL Java_com_axelby_podax_player_MPG123_getPosition

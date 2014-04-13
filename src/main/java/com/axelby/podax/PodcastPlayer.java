@@ -61,7 +61,7 @@ public class PodcastPlayer {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
 			_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
-			_playerThread = new Thread(_player);
+			_playerThread = new Thread(_player, "AudioPlayer");
 
 			/*
 			_player.setOnErrorListener(new MediaPlayer.OnErrorListener() {

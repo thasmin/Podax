@@ -54,7 +54,7 @@ public class PlayerService extends Service {
 
 		if (status.getPodcastId() != _currentPodcastId) {
 			_currentPodcastId = status.getPodcastId();
-			if (!_player.changePodcast(status.getFilename(), status.getPosition())) {
+			if (!_player.changePodcast(status.getFilename(), status.getPosition() / 1000.0f)) {
 				_player.stop();
 				String toastMessage = getResources().getString(R.string.cannot_play_podcast, status.getTitle());
 				Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
@@ -64,7 +64,7 @@ public class PlayerService extends Service {
 				showNotification();
 			}
 		} else {
-			_player.seekTo(status.getPosition());
+			_player.seekTo(status.getPosition() / 1000.0f);
 		}
 	}
 
