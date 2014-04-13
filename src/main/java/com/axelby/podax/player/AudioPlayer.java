@@ -9,20 +9,14 @@ public class AudioPlayer implements Runnable {
 	IMediaDecoder _decoder;
 	AudioTrack _track;
 
-	float _playbackRate = 1;
-	boolean _isPlaying = true;
+	boolean _isPlaying = false;
+	private float _seekbase = 0;
 
 	public AudioPlayer(String audioFile, float positionInSeconds, float playbackRate) {
-		setPlaybackRate(playbackRate);
 		loadFile(audioFile);
 		if (positionInSeconds != 0)
 			seekTo(positionInSeconds);
-	}
-
-	public void setPlaybackRate(float playbackRate) {
-		_playbackRate = playbackRate;
-		if (_decoder != null && _track != null)
-			_track.setPlaybackRate((int)(_decoder.getRate() * playbackRate));
+		createTrackFromDecoder(playbackRate);
 	}
 
 	public void loadFile(String audioFile) {
@@ -37,14 +31,16 @@ public class AudioPlayer implements Runnable {
 			_decoder = new Vorbis(audioFile);
 		else
 			throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
+	}
 
+	private void createTrackFromDecoder(float playbackRate) {
 		_track = new AudioTrack(AudioManager.STREAM_MUSIC,
 				_decoder.getRate(),
 				_decoder.getNumChannels() == 2 ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
 				AudioFormat.ENCODING_PCM_16BIT,
 				_decoder.getRate() * 2,
 				AudioTrack.MODE_STREAM);
-		_track.setPlaybackRate((int) (_decoder.getRate() * _playbackRate));
+		_track.setPlaybackRate((int) (_decoder.getRate() * playbackRate));
 		_track.setPositionNotificationPeriod(_decoder.getRate());
 		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
 	}
@@ -71,8 +67,8 @@ public class AudioPlayer implements Runnable {
 
 		@Override
 		public void onPeriodicNotification(AudioTrack audioTrack) {
-			if (_decoder != null && _periodicListener != null)
-				_periodicListener.pulse(_decoder.getPosition());
+			if (audioTrack != null && _periodicListener != null)
+				_periodicListener.pulse(_seekbase + (float) audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate());
 		}
 	};
 
@@ -95,20 +91,24 @@ public class AudioPlayer implements Runnable {
 	}
 
 	public void seekTo(float offsetInSeconds) {
-		if (_track == null || _decoder != null)
+		if (_decoder == null)
+			return;
+		_seekbase = offsetInSeconds;
+		_decoder.seek(offsetInSeconds);
+		if (_track == null)
 			return;
 		_track.pause();
 		_track.flush();
-		_decoder.seek(offsetInSeconds);
 		_track.play();
 	}
 
 	public void stop() {
 		if (_track == null)
 			return;
+		_isPlaying = false;
 		_track.pause();
 		_track.flush();
-		waitAndCloseTrack();
+		_track.stop();
 	}
 
 	public float getDuration() {
@@ -120,30 +120,44 @@ public class AudioPlayer implements Runnable {
 	public float getPosition() {
 		if (_decoder == null)
 			return 0;
-		return _decoder.getPosition();
+		return _seekbase + (float) _track.getPlaybackHeadPosition() / _track.getSampleRate();
 	}
 
 	@Override
 	public void run() {
 		_track.play();
+		_isPlaying = true;
 
 		try {
 			short[] pcm = new short[1024 * 5];
-			while (_decoder.readSamples(pcm, 0, pcm.length) > 0) {
-				_track.write(pcm, 0, pcm.length);
-				if (_track.getPlayState() != AudioTrack.PLAYSTATE_PLAYING) {
+			do {
+				if (_track.getPlayState() == AudioTrack.PLAYSTATE_STOPPED)
+					return;
+				if (!_isPlaying) {
 					Thread.sleep(50);
+					continue;
 				}
-			}
+				if (_decoder.readSamples(pcm, 0, pcm.length) == 0)
+					return;
+				_track.write(pcm, 0, pcm.length);
+			} while (_track != null);
 		} catch (InterruptedException e) {
 			Log.e("Podax", "InterruptedException", e);
+		/* uncomment when routine catches are debugged
+		} catch (IllegalStateException e) {
+			Log.e("Podax", "IllegalStateException", e);
+		*/
 		} finally {
-			_decoder.close();
 			waitAndCloseTrack();
 		}
 	}
 
 	private void waitAndCloseTrack() {
+		if (_decoder != null) {
+			_decoder.close();
+			_decoder = null;
+		}
+
 		if (_track == null)
 			return;
 
@@ -157,6 +171,5 @@ public class AudioPlayer implements Runnable {
 
 		_track.release();
 		_track = null;
-		_decoder = null;
 	}
 }

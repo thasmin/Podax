@@ -34,6 +34,7 @@ public class PodcastPlayer {
 	private OnCompletionListener _onCompletionListener = null;
 	//private MediaPlayer.OnErrorListener _onErrorListener = null;
 
+	private Thread _playerThread = null;
 	private AudioPlayer _player = null;
 
 	public PodcastPlayer(Context context) {
@@ -43,13 +44,24 @@ public class PodcastPlayer {
 	}
 
 	public boolean changePodcast(String filename, float positionInSeconds) {
-		if (_player != null)
+		if (_player != null) {
 			_player.stop();
+			_player = null;
+		}
+		if (_playerThread != null) {
+			try {
+				_playerThread.join();
+			} catch (InterruptedException ex) {
+				Log.e("Podax", "player thread interrupted", ex);
+			}
+			_playerThread = null;
+		}
 
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
 			_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
+			_playerThread = new Thread(_player);
 
 			/*
 			_player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -174,6 +186,8 @@ public class PodcastPlayer {
 			return;
 
 		_player.resume();
+		if (_playerThread.getState() == Thread.State.NEW)
+			_playerThread.start();
 
 		if (_onPlayListener != null)
 			_onPlayListener.onPlay(_player.getDuration());
@@ -190,8 +204,14 @@ public class PodcastPlayer {
 	private void internalStop() {
 		// stop playing
 		float position = _player.getPosition();
-		if (_player.isPlaying())
+		if (_player.isPlaying()) {
 			_player.stop();
+			try {
+				_playerThread.join();
+			} catch (InterruptedException e) {
+				Log.e("Podax", "stop InterruptedException", e);
+			}
+		}
 
 		// tell Android that we don't want the audio focus
 		AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);

@@ -85,7 +85,7 @@ public class PlayerService extends Service {
 
 	public static void play(Context context, long podcastId) {
 		QueueManager.changeActivePodcast(context, podcastId);
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_REFRESHPODCAST);
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY);
 	}
 
 	public static void pause(Context context, int pause_reason) {
@@ -266,7 +266,7 @@ public class PlayerService extends Service {
 		if (!currentState.hasActivePodcast()) {
 			_player.stop();
 		} else {
-			_player.changePodcast(currentState.getFilename(), currentState.getPosition());
+			_player.changePodcast(currentState.getFilename(), currentState.getPosition() / 1000.0f);
 			_currentPodcastId = currentState.getPodcastId();
 		}
 	}
@@ -337,6 +337,6 @@ public class PlayerService extends Service {
 	private void updateActivePodcastPosition(float positionInSeconds) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_LAST_POSITION, (int)(positionInSeconds * 1000));
-		//getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
+		getContentResolver().update(PodcastProvider.PLAYER_UPDATE_URI, values, null, null);
 	}
 }
