@@ -175,6 +175,7 @@ public class PlayerService extends Service {
 					ComponentName eventReceiver = new ComponentName(PlayerService.this, MediaButtonIntentReceiver.class);
 					audioManager.registerMediaButtonEventReceiver(eventReceiver);
 
+					showNotification();
 					PlayerStatus.updateState(PlayerService.this, PlayerStates.PLAYING);
 					_lockscreenManager.setLockscreenPlaying();
 				}
