@@ -4,11 +4,12 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.net.Uri;
 
+import com.axelby.podax.player.AudioPlayer;
+import com.axelby.podax.player.IMediaDecoder;
+
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 
 public class PodcastCursor {
@@ -220,20 +221,6 @@ public class PodcastCursor {
 		return _cursor.getString(_paymentColumn);
 	}
 
-	// setters
-
-	public void setFileSize(Context context, long fileSize) {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_FILE_SIZE, fileSize);
-		context.getContentResolver().update(getContentUri(), values, null, null);
-	}
-
-	public void setLastPosition(Context context, long lastPosition) {
-		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_LAST_POSITION, lastPosition);
-		context.getContentResolver().update(getContentUri(), values, null, null);
-	}
-
 	public void removeFromQueue(Context context) {
 		ContentValues values = new ContentValues();
 		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
@@ -253,19 +240,15 @@ public class PodcastCursor {
 	}
 
 	public int determineDuration(Context context) {
-		MediaPlayer mp = new MediaPlayer();
-		try {
-			mp.setDataSource(getFilename(context));
-			mp.prepare();
-			ContentValues values = new ContentValues();
-			values.put(PodcastProvider.COLUMN_DURATION, mp.getDuration());
-			context.getContentResolver().update(getContentUri(), values, null, null);
-			return mp.getDuration();
-		} catch (IOException ex) {
-			PodaxLog.log(context, "Unable to determine length of " + getFilename(context) + ": " + ex.getMessage());
+		IMediaDecoder decoder = AudioPlayer.loadFile(getFilename(context));
+		if (decoder == null)
 			return 0;
-		} finally {
-			mp.release();
-		}
+		int duration = (int) (decoder.getDuration() * 1000);
+		decoder.close();
+
+		ContentValues values = new ContentValues();
+		values.put(PodcastProvider.COLUMN_DURATION, duration);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+		return duration;
 	}
 }

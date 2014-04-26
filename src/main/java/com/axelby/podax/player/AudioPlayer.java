@@ -44,6 +44,7 @@ public class AudioPlayer implements Runnable {
 				AudioTrack.MODE_STREAM);
 		track.setPlaybackRate((int) (decoder.getRate() * playbackRate));
 		track.setPositionNotificationPeriod(decoder.getRate());
+		track.setNotificationMarkerPosition((int)(decoder.getRate() * decoder.getDuration()));
 		return track;
 	}
 
@@ -63,6 +64,7 @@ public class AudioPlayer implements Runnable {
 			new AudioTrack.OnPlaybackPositionUpdateListener() {
 		@Override
 		public void onMarkerReached(AudioTrack audioTrack) {
+			Log.d("Podax", "AudioPlayer completed");
 			if (_completionListener != null)
 				_completionListener.onCompletion();
 		}
@@ -103,7 +105,6 @@ public class AudioPlayer implements Runnable {
 		if (_decoder == null)
 			return;
 
-		boolean wasPlaying = _isPlaying;
 		_seeking = true;
 
 		// close the current AudioTrack
