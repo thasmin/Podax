@@ -259,7 +259,8 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
 
-		_descriptionView.setText(Html.fromHtml(podcast.getDescription(), new URLImageGetter(_descriptionView), new IgnoreTagHandler()));
+		if (podcast.getDescription() != null)
+			_descriptionView.setText(Html.fromHtml(podcast.getDescription(), new URLImageGetter(_descriptionView), new IgnoreTagHandler()));
 
 		_seekbar.setMax(podcast.getDuration());
 		_seekbar.setProgress(podcast.getLastPosition());
