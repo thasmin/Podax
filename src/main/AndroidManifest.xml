@@ -214,6 +214,14 @@
         </service>
         <!-- end GPodder section -->
 
+        <!-- for play services sdk -->
+        <!-- needs to compile when play services sdk isn't included -->
+        <activity android:name="com.google.android.gms.ads.AdActivity"
+                  android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+
+        <!-- correct value is "@integer/google_play_services_version" -->
+        <meta-data android:name="com.google.android.gms.version"
+                   android:value="@integer/google_play_services_version"/>
     </application>
 
 </manifest>

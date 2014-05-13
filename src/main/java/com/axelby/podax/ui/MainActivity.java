@@ -48,6 +48,9 @@ import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -314,12 +317,28 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onAttachFragment(Fragment fragment) {
 		super.onAttachFragment(fragment);
+
+		showAd();
+
 		if (fragment.getClass() != PodcastDetailFragment.class)
 			return;
 		for (WeakReference<Fragment> frag : _savedFragments)
 			if (frag.get() != null && fragment.getClass().equals(frag.get().getClass()))
 				return;
 		_savedFragments.add(new WeakReference<Fragment>(fragment));
+	}
+
+	private void showAd() {
+		final InterstitialAd interstitialAd = new InterstitialAd(this);
+		interstitialAd.setAdUnitId("ca-app-pub-7211612613879292/4292414964");
+		interstitialAd.setAdListener(new AdListener() {
+			@Override
+			public void onAdLoaded() {
+				super.onAdLoaded();
+				interstitialAd.show();
+			}
+		});
+
 	}
 
 	class PodaxDrawerAdapter extends BaseAdapter {
