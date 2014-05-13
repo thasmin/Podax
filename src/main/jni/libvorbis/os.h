@@ -20,6 +20,9 @@
 #include <math.h>
 #include <ogg/os_types.h>
 
+#define BIG_ENDIAN 0
+#define LITTLE_ENDIAN 1
+
 #ifndef _V_IFDEFJAIL_H_
 #  define _V_IFDEFJAIL_H_
 
