@@ -59,6 +59,7 @@ public class PlayerService extends Service {
 				String toastMessage = getResources().getString(R.string.cannot_play_podcast, status.getTitle());
 				Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
 			} else {
+				_player.play();
 				QueueManager.changeActivePodcast(this, status.getPodcastId());
 				_lockscreenManager.setupLockscreenControls(this, status);
 				showNotification();
