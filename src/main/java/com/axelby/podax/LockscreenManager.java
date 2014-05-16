@@ -51,22 +51,12 @@ public class LockscreenManager {
 				.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, status.getDuration());
 		String thumbnailUrl = status.getSubscriptionThumbnailUrl();
 		if (thumbnailUrl != null) {
-			Helper.getImageLoader(context).get(thumbnailUrl, new ImageLoader.ImageListener() {
-				@Override
-				public void onResponse(ImageLoader.ImageContainer imageContainer, boolean isImmediate) {
-					metadataEditor.putBitmap(METADATA_KEY_ARTWORK, imageContainer.getBitmap());
-					metadataEditor.apply();
-				}
-
-				@Override
-				public void onErrorResponse(VolleyError volleyError) {
-					metadataEditor.apply();
-				}
-			});
-		} else {
-			Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
-			metadataEditor.putBitmap(METADATA_KEY_ARTWORK, icon);
+			Bitmap artwork = Helper.getCachedImage(context, thumbnailUrl);
+			if (artwork == null)
+				artwork = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
+			metadataEditor.putBitmap(METADATA_KEY_ARTWORK, artwork);
 		}
+		metadataEditor.apply();
 	}
 
 	@TargetApi(14)

@@ -10,20 +10,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.ui.MainActivity;
 
+// this class handles connects the app to the player
+// it handles events on two sides - app and player
+// app events are handled in onStartCommand and are send to the player
+// player events are: started playing, stopped playing, paused, finished podcast
 public class PlayerService extends Service {
+	private long _currentPodcastId;
 	protected PodcastPlayer _player;
+	private LockscreenManager _lockscreenManager = new LockscreenManager();
 
 	private ContentObserver _podcastChangeObserver = new ContentObserver(new Handler()) {
 		@Override
@@ -38,36 +42,9 @@ public class PlayerService extends Service {
 
 		@Override
 		public void onChange(boolean selfChange, Uri uri) {
-			refreshPodcast();
+			ensurePlayerStatus();
 		}
 	};
-
-	private void refreshPodcast() {
-		if (_player == null)
-			return;
-
-		PlayerStatus status = PlayerStatus.getCurrentState(this);
-		if (!status.hasActivePodcast()) {
-			_player.stop();
-			return;
-		}
-
-		if (status.getPodcastId() != _currentPodcastId) {
-			_currentPodcastId = status.getPodcastId();
-			if (!_player.changePodcast(status.getFilename(), status.getPosition() / 1000.0f)) {
-				_player.stop();
-				String toastMessage = getResources().getString(R.string.cannot_play_podcast, status.getTitle());
-				Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
-			} else {
-				_player.play();
-				QueueManager.changeActivePodcast(this, status.getPodcastId());
-				_lockscreenManager.setupLockscreenControls(this, status);
-				showNotification();
-			}
-		} else {
-			_player.seekTo(status.getPosition() / 1000.0f);
-		}
-	}
 
 	private BroadcastReceiver _stopReceiver = new BroadcastReceiver() {
 		@Override
@@ -76,8 +53,6 @@ public class PlayerService extends Service {
 			PlayerService.stop(PlayerService.this);
 		}
 	};
-	private LockscreenManager _lockscreenManager = null;
-	private long _currentPodcastId;
 
 	// static functions for easier controls
 	public static void play(Context context) {
@@ -99,10 +74,6 @@ public class PlayerService extends Service {
 
 	public static void playpause(Context context, int pause_reason) {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAYPAUSE, pause_reason);
-	}
-
-	public static void playstop(Context context) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAYSTOP);
 	}
 
 	private static void sendCommand(Context context, int command) {
@@ -136,37 +107,19 @@ public class PlayerService extends Service {
 	private void createPlayer() {
 		if (_player == null) {
 			_player = new PodcastPlayer(this);
-			prepareNextPodcast();
-
-			// handle errors so the onCompletionListener doens't get called
-			/*
-			_player.setOnErrorListener(new OnErrorListener() {
-				@Override
-				public boolean onError(MediaPlayer player, int what, int extra) {
-					String message = String.format(Locale.US, "mediaplayer error - what: %d, extra: %d", what, extra);
-					PodaxLog.log(PlayerService.this, message);
-					return true;
-				}
-			});
-			*/
+			ensurePlayerStatus();
 
 			_player.setOnCompletionListener(new PodcastPlayer.OnCompletionListener() {
 				@Override
 				public void onCompletion() {
 					QueueManager.moveToNextInQueue(PlayerService.this);
-					prepareNextPodcast();
 				}
 			});
 
 			_player.setOnPlayListener(new PodcastPlayer.OnPlayListener() {
 				@Override
-				public void onPlay(float durationInSeconds) {
-					// set this podcast as active
-					ContentValues values = new ContentValues(1);
-					if (durationInSeconds > 0 && durationInSeconds < 60 * 60 * 6)
-						values.put(PodcastProvider.COLUMN_DURATION, (int)(durationInSeconds * 1000));
-					values.put(PodcastProvider.COLUMN_ID, _currentPodcastId);
-					getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+				public void onPlay() {
+					updateActivePodcast();
 
 					// listen for changes to the podcast
 					getContentResolver().registerContentObserver(PodcastProvider.PLAYER_UPDATE_URI, false, _podcastChangeObserver);
@@ -196,16 +149,10 @@ public class PlayerService extends Service {
 				@Override
 				public void onStop(float positionInSeconds) {
 					updateActivePodcastPosition(positionInSeconds);
-
+					_lockscreenManager.removeLockscreenControls();
 					removeNotification();
-
-					if (_lockscreenManager != null)
-						_lockscreenManager.removeLockscreenControls();
-
 					getContentResolver().unregisterContentObserver(_podcastChangeObserver);
-
 					PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.STOPPED);
-
 					stopSelf();
 				}
 			});
@@ -217,9 +164,6 @@ public class PlayerService extends Service {
 				}
 			});
 		}
-
-		if (_lockscreenManager == null)
-			_lockscreenManager = new LockscreenManager();
 	}
 
 	@Override
@@ -240,11 +184,11 @@ public class PlayerService extends Service {
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
 				_player.playPause(pauseReason);
 				break;
-			case Constants.PLAYER_COMMAND_PLAYSTOP:
-				_player.playStop();
-				break;
 			case Constants.PLAYER_COMMAND_PLAY:
 				_player.play();
+				break;
+			case Constants.PLAYER_COMMAND_PLAYSTOP:
+				_player.playStop();
 				break;
 			case Constants.PLAYER_COMMAND_PAUSE:
 				_player.pause(pauseReason);
@@ -256,39 +200,38 @@ public class PlayerService extends Service {
 				_player.stop();
 				break;
 			case Constants.PLAYER_COMMAND_REFRESHPODCAST:
-				refreshPodcast();
+				ensurePlayerStatus();
 				break;
 		}
 
 		return START_NOT_STICKY;
 	}
 
-	private void prepareNextPodcast() {
-		PlayerStatus currentState = PlayerStatus.getCurrentState(this);
-		if (!currentState.hasActivePodcast()) {
+	private void ensurePlayerStatus() {
+		if (_player == null)
+			return;
+
+		PlayerStatus status = PlayerStatus.getCurrentState(this);
+		if (!status.hasActivePodcast()) {
 			_player.stop();
+			return;
+		}
+
+		if (status.getPodcastId() != _currentPodcastId) {
+			_currentPodcastId = status.getPodcastId();
+			_player.changePodcast(status.getFilename(), status.getPosition() / 1000.0f);
+			if (status.getState() == PlayerStates.PLAYING)
+				_player.play();
+			QueueManager.changeActivePodcast(this, status.getPodcastId());
+			_lockscreenManager.setupLockscreenControls(this, status);
+			showNotification();
 		} else {
-			_player.changePodcast(currentState.getFilename(), currentState.getPosition() / 1000.0f);
-			_currentPodcastId = currentState.getPodcastId();
+			_player.seekTo(status.getPosition() / 1000.0f);
 		}
 	}
 
 	private void showNotification() {
-		String[] projection = new String[]{
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
-				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
-		};
-		Cursor c = getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
-		if (c == null)
-			return;
-		if (c.isAfterLast()) {
-			c.close();
-			return;
-		}
-		PodcastCursor podcast = new PodcastCursor(c);
+		PlayerStatus playerStatus = PlayerStatus.getCurrentState(this);
 
 		// both paths use the pendingintent
 		Intent showIntent = new Intent(this, MainActivity.class);
@@ -297,8 +240,8 @@ public class PlayerService extends Service {
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
 				.setSmallIcon(R.drawable.icon)
 				.setWhen(0)
-				.setContentTitle(podcast.getTitle())
-				.setContentText(podcast.getSubscriptionTitle())
+				.setContentTitle(playerStatus.getTitle())
+				.setContentText(playerStatus.getSubscriptionTitle())
 				.setContentIntent(showPendingIntent)
 				.setOngoing(true)
 				.setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -316,7 +259,7 @@ public class PlayerService extends Service {
 		forwardIntent.setData(Constants.ACTIVE_PODCAST_DATA_FORWARD);
 		PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
 
-		Bitmap subscriptionBitmap = Helper.getCachedImage(this, podcast.getSubscriptionThumbnailUrl(), 128, 128);
+		Bitmap subscriptionBitmap = Helper.getCachedImage(this, playerStatus.getSubscriptionThumbnailUrl(), 128, 128);
 		if (subscriptionBitmap != null)
 			builder.setLargeIcon(subscriptionBitmap);
 
@@ -328,12 +271,16 @@ public class PlayerService extends Service {
 
 		Notification notification = builder.build();
 		startForeground(Constants.NOTIFICATION_PLAYING, notification);
-
-		c.close();
 	}
 
 	private void removeNotification() {
 		stopForeground(true);
+	}
+
+	private void updateActivePodcast() {
+		ContentValues values = new ContentValues(1);
+		values.put(PodcastProvider.COLUMN_ID, _currentPodcastId);
+		getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
 	}
 
 	private void updateActivePodcastPosition(float positionInSeconds) {

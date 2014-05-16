@@ -44,7 +44,6 @@ public class AudioPlayer implements Runnable {
 				AudioTrack.MODE_STREAM);
 		track.setPlaybackRate((int) (decoder.getRate() * playbackRate));
 		track.setPositionNotificationPeriod(decoder.getRate());
-		track.setNotificationMarkerPosition((int)(decoder.getRate() * decoder.getDuration()));
 		return track;
 	}
 
@@ -63,11 +62,7 @@ public class AudioPlayer implements Runnable {
 	private AudioTrack.OnPlaybackPositionUpdateListener _playbackPositionListener =
 			new AudioTrack.OnPlaybackPositionUpdateListener() {
 		@Override
-		public void onMarkerReached(AudioTrack audioTrack) {
-			Log.d("Podax", "AudioPlayer completed");
-			if (_completionListener != null)
-				_completionListener.onCompletion();
-		}
+		public void onMarkerReached(AudioTrack audioTrack) { }
 
 		@Override
 		public void onPeriodicNotification(AudioTrack audioTrack) {
@@ -162,10 +157,16 @@ public class AudioPlayer implements Runnable {
 					Thread.sleep(50);
 					continue;
 				}
-				if (_decoder.readSamples(pcm, 0, pcm.length) == 0)
-					return;
+				int sampleCount = _decoder.readSamples(pcm, 0, pcm.length);
+				if (sampleCount == 0)
+					break;
 				_track.write(pcm, 0, pcm.length);
 			} while (_track != null);
+
+			waitAndCloseTrack();
+
+			if (_completionListener != null)
+				_completionListener.onCompletion();
 		} catch (InterruptedException e) {
 			Log.e("Podax", "InterruptedException", e);
 		} catch (IllegalStateException e) {
@@ -173,7 +174,13 @@ public class AudioPlayer implements Runnable {
 		} finally {
 			_decoder.close();
 			_decoder = null;
-			waitAndCloseTrack();
+
+			// close track without waiting
+			if (_track != null) {
+				_track.pause();
+				_track.release();
+				_track = null;
+			}
 		}
 	}
 
