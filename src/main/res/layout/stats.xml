@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/time_spent_listening"
+            android:layout_gravity="center_horizontal"
+            android:textSize="20sp"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="10 days 23 hours"
+            android:id="@+id/listen_time"
+            android:layout_gravity="center_horizontal"
+            android:textStyle="bold"
+            android:textSize="45sp"
+            android:gravity="center_horizontal"/>
+
+    <View android:layout_width="match_parent"
+          android:layout_height="2dp"
+          android:background="@color/podaxColor"
+          android:layout_margin="10dp" />
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/podcasts_finished"
+            android:layout_gravity="center_horizontal"
+            android:textSize="20sp"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="1"
+            android:id="@+id/completions"
+            android:layout_gravity="center_horizontal"
+            android:textStyle="bold"
+            android:textSize="45sp"/>
+
+    <View android:layout_width="match_parent"
+          android:layout_height="2dp"
+          android:background="@color/podaxColor"
+          android:layout_margin="10dp" />
+
+</LinearLayout>

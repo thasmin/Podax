@@ -104,65 +104,81 @@ public class PlayerService extends Service {
 		unregisterReceiver(_stopReceiver);
 	}
 
+	private class PodcastEventHandler implements PodcastPlayer.OnCompletionListener,
+			PodcastPlayer.OnPauseListener,
+			PodcastPlayer.OnPlayListener,
+			PodcastPlayer.OnChangeListener,
+			PodcastPlayer.OnSeekListener,
+			PodcastPlayer.OnStopListener {
+		@Override
+		public void onPlay() {
+			updateActivePodcast();
+
+			// listen for changes to the podcast
+			getContentResolver().registerContentObserver(PodcastProvider.PLAYER_UPDATE_URI, false, _podcastChangeObserver);
+
+			// grab the media button
+			AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+			ComponentName eventReceiver = new ComponentName(PlayerService.this, MediaButtonIntentReceiver.class);
+			audioManager.registerMediaButtonEventReceiver(eventReceiver);
+
+			showNotification();
+			PlayerStatus.updateState(PlayerService.this, PlayerStates.PLAYING);
+			_lockscreenManager.setLockscreenPlaying();
+		}
+
+		@Override
+		public void onPause(float positionInSeconds) {
+			updateActivePodcastPosition(positionInSeconds);
+			PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.PAUSED);
+			_lockscreenManager.setLockscreenPaused();
+			showNotification();
+		}
+
+		@Override
+		public void onStop(float positionInSeconds) {
+			updateActivePodcastPosition(positionInSeconds);
+			_lockscreenManager.removeLockscreenControls();
+			removeNotification();
+			getContentResolver().unregisterContentObserver(_podcastChangeObserver);
+			PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.STOPPED);
+			stopSelf();
+		}
+
+		@Override
+		public void onCompletion() {
+			QueueManager.moveToNextInQueue(PlayerService.this);
+		}
+
+		@Override
+		public void onChange() {
+			// assume that podcast playing is the active podcast
+			PlayerStatus status = PlayerStatus.getCurrentState(PlayerService.this);
+			_currentPodcastId = status.getPodcastId();
+			if (status.getState() == PlayerStates.PLAYING)
+				_player.play();
+			QueueManager.changeActivePodcast(PlayerService.this, status.getPodcastId());
+			_lockscreenManager.setupLockscreenControls(PlayerService.this, status);
+			showNotification();
+		}
+
+		@Override
+		public void onSeek(float positionInSeconds) {
+			updateActivePodcastPosition(positionInSeconds);
+		}
+	}
+	private PodcastEventHandler _podcastEventHandler = new PodcastEventHandler();
+
 	private void createPlayer() {
 		if (_player == null) {
 			_player = new PodcastPlayer(this);
+			_player.setOnCompletionListener(_podcastEventHandler);
+			_player.setOnPlayListener(_podcastEventHandler);
+			_player.setOnPauseListener(_podcastEventHandler);
+			_player.setOnStopListener(_podcastEventHandler);
+			_player.setOnChangeListener(_podcastEventHandler);
+			_player.setOnSeekListener(_podcastEventHandler);
 			ensurePlayerStatus();
-
-			_player.setOnCompletionListener(new PodcastPlayer.OnCompletionListener() {
-				@Override
-				public void onCompletion() {
-					QueueManager.moveToNextInQueue(PlayerService.this);
-				}
-			});
-
-			_player.setOnPlayListener(new PodcastPlayer.OnPlayListener() {
-				@Override
-				public void onPlay() {
-					updateActivePodcast();
-
-					// listen for changes to the podcast
-					getContentResolver().registerContentObserver(PodcastProvider.PLAYER_UPDATE_URI, false, _podcastChangeObserver);
-
-					// grab the media button
-					AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-					ComponentName eventReceiver = new ComponentName(PlayerService.this, MediaButtonIntentReceiver.class);
-					audioManager.registerMediaButtonEventReceiver(eventReceiver);
-
-					showNotification();
-					PlayerStatus.updateState(PlayerService.this, PlayerStates.PLAYING);
-					_lockscreenManager.setLockscreenPlaying();
-				}
-			});
-
-			_player.setOnPauseListener(new PodcastPlayer.OnPauseListener() {
-				@Override
-				public void onPause(float positionInSeconds) {
-					updateActivePodcastPosition(positionInSeconds);
-					PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.PAUSED);
-					_lockscreenManager.setLockscreenPaused();
-					showNotification();
-				}
-			});
-
-			_player.setOnStopListener(new PodcastPlayer.OnStopListener() {
-				@Override
-				public void onStop(float positionInSeconds) {
-					updateActivePodcastPosition(positionInSeconds);
-					_lockscreenManager.removeLockscreenControls();
-					removeNotification();
-					getContentResolver().unregisterContentObserver(_podcastChangeObserver);
-					PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.STOPPED);
-					stopSelf();
-				}
-			});
-
-			_player.setOnSeekListener(new PodcastPlayer.OnSeekListener() {
-				@Override
-				public void onSeek(float positionInSeconds) {
-					updateActivePodcastPosition(positionInSeconds);
-				}
-			});
 		}
 	}
 
@@ -218,16 +234,9 @@ public class PlayerService extends Service {
 		}
 
 		if (status.getPodcastId() != _currentPodcastId) {
-			_currentPodcastId = status.getPodcastId();
 			_player.changePodcast(status.getFilename(), status.getPosition() / 1000.0f);
-			if (status.getState() == PlayerStates.PLAYING)
-				_player.play();
-			QueueManager.changeActivePodcast(this, status.getPodcastId());
-			_lockscreenManager.setupLockscreenControls(this, status);
-			showNotification();
-		} else {
+		} else
 			_player.seekTo(status.getPosition() / 1000.0f);
-		}
 	}
 
 	private void showNotification() {
