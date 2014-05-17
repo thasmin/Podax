@@ -32,7 +32,7 @@ public class PodcastPlayer {
 	private OnStopListener _onStopListener = null;
 	private OnSeekListener _onSeekListener = null;
 	private OnCompletionListener _onCompletionListener = null;
-	//private MediaPlayer.OnErrorListener _onErrorListener = null;
+	private OnChangeListener _onChangeListener = null;
 
 	private Thread _playerThread = null;
 	private AudioPlayer _player = null;
@@ -63,17 +63,6 @@ public class PodcastPlayer {
 			_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
 			_playerThread = new Thread(_player, "AudioPlayer");
 
-			/*
-			_player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-				@Override
-				public boolean onError(MediaPlayer mediaPlayer, int what, int extra) {
-					mediaPlayer.reset();
-					if (_onErrorListener != null)
-						_onErrorListener.onError(mediaPlayer, what, extra);
-					return true;
-				}
-			});
-			*/
 			_player.setOnCompletionListener(new AudioPlayer.OnCompletionListener() {
 				@Override
 				public void onCompletion() {
@@ -89,6 +78,8 @@ public class PodcastPlayer {
 				}
 			});
 
+			if (_onChangeListener != null)
+				_onChangeListener.onChange();
 			return true;
 		} catch (Exception ex) {
 			Log.e("Podax", "unable to change to new podcast", ex);
@@ -96,11 +87,6 @@ public class PodcastPlayer {
 		}
 	}
 
-	/*
-	public void setOnErrorListener(MediaPlayer.OnErrorListener onErrorListener) {
-		this._onErrorListener = onErrorListener;
-	}
-	*/
 	public void setOnPauseListener(OnPauseListener onPauseListener) {
 		this._onPauseListener = onPauseListener;
 	}
@@ -110,9 +96,14 @@ public class PodcastPlayer {
 	public void setOnStopListener(OnStopListener onStopListener) {
 		this._onStopListener = onStopListener;
 	}
-	public void setOnSeekListener(OnSeekListener onSeekListener) { this._onSeekListener = onSeekListener; }
+	public void setOnSeekListener(OnSeekListener onSeekListener) {
+		this._onSeekListener = onSeekListener;
+	}
 	public void setOnCompletionListener(OnCompletionListener onCompletionListener) {
 		this._onCompletionListener = onCompletionListener;
+	}
+	public void setOnChangeListener(OnChangeListener onPodcastChangeListener) {
+		this._onChangeListener = onPodcastChangeListener;
 	}
 
 	/* external functions */
@@ -190,7 +181,7 @@ public class PodcastPlayer {
 			_playerThread.start();
 
 		if (_onPlayListener != null)
-			_onPlayListener.onPlay(_player.getDuration());
+			_onPlayListener.onPlay();
 	}
 
 	private void internalPause() {
@@ -226,7 +217,7 @@ public class PodcastPlayer {
 		public void onPause(float positionInSeconds);
 	}
 	public static interface OnPlayListener {
-		public void onPlay(float durationInSeconds);
+		public void onPlay();
 	}
 	public static interface OnStopListener {
 		public void onStop(float positionInSeconds);
@@ -236,5 +227,8 @@ public class PodcastPlayer {
 	}
 	public static interface OnCompletionListener {
 		public void onCompletion();
+	}
+	public static interface OnChangeListener {
+		public void onChange();
 	}
 }

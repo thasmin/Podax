@@ -12,9 +12,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -24,7 +21,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -145,12 +141,15 @@ public class MainActivity extends ActionBarActivity {
 						handleGPodder();
 						break;
 					case 12:
-						replaceFragment(PodaxPreferenceFragment.class);
+						replaceFragment(StatsFragment.class);
 						break;
 					case 13:
-						replaceFragment(AboutFragment.class);
+						replaceFragment(PodaxPreferenceFragment.class);
 						break;
 					case 14:
+						replaceFragment(AboutFragment.class);
+						break;
+					case 15:
 						replaceFragment(LogViewerFragment.class);
 						break;
 				}
@@ -359,6 +358,7 @@ public class MainActivity extends ActionBarActivity {
 				new Item(R.string.gpodder_sync, R.drawable.ic_menu_mygpo, false),
 
 				new Item(R.string.settings, 0, true),
+				new Item(R.string.stats, R.drawable.ic_menu_settings, false),
 				new Item(R.string.preferences, R.drawable.ic_menu_configuration, false),
 				new Item(R.string.about, R.drawable.ic_menu_podax, false),
 				new Item(R.string.log_viewer, android.R.drawable.ic_menu_info_details, false),

@@ -39,15 +39,6 @@ JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_init
 	return mpg123_init();
 }
 
-/*
-JNIEXPORT jlong JNICALL Java_com_axelby_podax_player_MPG123_new
-	(JNIEnv *env, jclass c)
-{
-	int err;
-	return (long)mpg123_new(NULL, &err);
-}
-*/
-
 JNIEXPORT jstring JNICALL Java_com_axelby_podax_player_MPG123_getErrorMessage
 	(JNIEnv *env, jclass c, jint error)
 {
@@ -68,7 +59,6 @@ JNIEXPORT jlong JNICALL Java_com_axelby_podax_player_MPG123_openFile
 
         if (err == MPG123_OK)
         {
-
             int encoding;
             if (mpg123_getformat(mh, &mp3->rate, &mp3->channels, &encoding) == MPG123_OK)
             {

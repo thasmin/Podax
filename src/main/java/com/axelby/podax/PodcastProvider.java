@@ -279,6 +279,14 @@ public class PodcastProvider extends ContentProvider {
 		if (uriMatch == PODCAST_PLAYER_UPDATE) {
 			if (activePodcastId == -1)
 				return 0;
+
+			// saved the watched time to the stats
+			Cursor lastPositionCursor = db.rawQuery("SELECT " + COLUMN_LAST_POSITION + " FROM podcasts WHERE _id = ?", new String[] { String.valueOf(activePodcastId) });
+			if (!lastPositionCursor.moveToFirst())
+				return 0;
+			Stats.addTime(getContext(), (values.getAsInteger(COLUMN_LAST_POSITION) - lastPositionCursor.getInt(0)) / 1000.0f);
+			lastPositionCursor.close();
+
 			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activePodcastId) });
 			getContext().getContentResolver().notifyChange(ACTIVE_PODCAST_URI, null);
 			getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, activePodcastId), null);

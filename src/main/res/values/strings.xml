@@ -211,4 +211,20 @@
     </string-array>
     <string name="playbackrate_disabled">This device cannot change the playback rate.</string>
     <string name="clear_search">Clear Search</string>
+    <string name="stats">Stats</string>
+    <string name="podcasts_finished">Podcasts Finished</string>
+    <string name="time_spent_listening">Time Spent Listening</string>
+    <plurals name="days">
+        <item quantity="one">day</item>
+        <item quantity="other">days</item>
+    </plurals>
+    <plurals name="hours">
+        <item quantity="one">hour</item>
+        <item quantity="other">hours</item>
+    </plurals>
+    <plurals name="minutes">
+        <item quantity="one">minute</item>
+        <item quantity="other">minutes</item>
+    </plurals>
+    <string name="none">none</string>
 </resources>

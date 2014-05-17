@@ -14,8 +14,9 @@ public class QueueManager {
 		} else {
 			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
 		}
-
 		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+
+		Stats.addCompletion(context);
 	}
 
 	public static void changeActivePodcast(Context context, long activePodcastId) {
