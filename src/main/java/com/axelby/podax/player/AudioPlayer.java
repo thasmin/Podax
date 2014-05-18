@@ -9,6 +9,10 @@ public class AudioPlayer implements Runnable {
 	IMediaDecoder _decoder;
 	AudioTrack _track;
 
+	// avoid tying up main thread by having thread check these variables to make changes
+	boolean _stopping = false;
+	Float _seekTo = null;
+
 	private boolean _isPlaying = false;
 	private float _seekbase = 0;
 
@@ -95,36 +99,12 @@ public class AudioPlayer implements Runnable {
 		_isPlaying = true;
 	}
 
-	boolean _seeking = false;
 	public void seekTo(float offsetInSeconds) {
-		if (_decoder == null)
-			return;
-
-		_seeking = true;
-
-		// close the current AudioTrack
-		_track.pause();
-		_track.flush();
-
-		_seekbase = offsetInSeconds;
-		_decoder.seek(offsetInSeconds);
-
-		AudioTrack toRelease = _track;
-		_track = createTrackFromDecoder(_decoder, _track.getPlaybackRate());
-		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
-		_track.play();
-		toRelease.release();
-
-		_seeking = false;
+		_seekTo = offsetInSeconds;
 	}
 
 	public void stop() {
-		if (_track == null)
-			return;
-		_isPlaying = false;
-		_track.pause();
-		_track.flush();
-		_track.stop();
+		_stopping = true;
 	}
 
 	public float getDuration() {
@@ -139,6 +119,24 @@ public class AudioPlayer implements Runnable {
 		return _seekbase + (float) _track.getPlaybackHeadPosition() / _track.getSampleRate();
 	}
 
+	private void changeTrackOffset(float offsetInSeconds) {
+		if (_decoder == null)
+			return;
+
+		// close the current AudioTrack
+		_track.pause();
+		_track.flush();
+
+		_seekbase = offsetInSeconds;
+		_decoder.seek(offsetInSeconds);
+
+		AudioTrack toRelease = _track;
+		_track = createTrackFromDecoder(_decoder, _track.getPlaybackRate());
+		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
+		_track.play();
+		toRelease.release();
+	}
+
 	@Override
 	public void run() {
 		_track.play();
@@ -147,11 +145,11 @@ public class AudioPlayer implements Runnable {
 		try {
 			short[] pcm = new short[1024 * 5];
 			do {
-				if (_seeking) {
-					Thread.sleep(50);
-					continue;
+				if (_seekTo != null) {
+					changeTrackOffset(_seekTo);
+					_seekTo = null;
 				}
-				if (_track.getPlayState() == AudioTrack.PLAYSTATE_STOPPED)
+				if (_stopping)
 					return;
 				if (!_isPlaying) {
 					Thread.sleep(50);
@@ -178,6 +176,7 @@ public class AudioPlayer implements Runnable {
 			// close track without waiting
 			if (_track != null) {
 				_track.pause();
+				_track.flush();
 				_track.release();
 				_track = null;
 			}
