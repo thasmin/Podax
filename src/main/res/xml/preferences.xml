@@ -41,6 +41,18 @@
             android:entryValues="@array/pref_sdcard_values" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="Ads">
+        <CheckBoxPreference
+                android:defaultValue="true"
+                android:key="showAds"
+                android:summary="@string/pref_show_ads"
+                android:title="@string/pref_show_ads_title" />
+        <Preference android:title="@string/donate_via_paypal" >
+            <intent android:action="android.intent.action.VIEW"
+                    android:data="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=7VSQV7LQ52AYS" />
+        </Preference>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Debug" >
         <CheckBoxPreference
             android:defaultValue="true"

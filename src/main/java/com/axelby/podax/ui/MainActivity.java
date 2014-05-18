@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.axelby.gpodder.AuthenticatorActivity;
+import com.axelby.podax.AdManager;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.GPodderProvider;
@@ -44,9 +45,6 @@ import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -60,6 +58,7 @@ public class MainActivity extends ActionBarActivity {
 	private DrawerLayout _drawerLayout;
 	private ActionBarDrawerToggle _drawerToggle;
 	private int _fragmentId;
+	private AdManager _adManager;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -88,6 +87,8 @@ public class MainActivity extends ActionBarActivity {
 
 		if (!isPlayerServiceRunning())
 			PlayerStatus.updateState(this, PlayerStatus.PlayerStates.STOPPED);
+
+		_adManager = new AdManager(this);
 
 		// ui initialization
 		setContentView(R.layout.app);
@@ -317,7 +318,7 @@ public class MainActivity extends ActionBarActivity {
 	public void onAttachFragment(Fragment fragment) {
 		super.onAttachFragment(fragment);
 
-		showAd();
+		_adManager.showAd();
 
 		if (fragment.getClass() != PodcastDetailFragment.class)
 			return;
@@ -325,19 +326,6 @@ public class MainActivity extends ActionBarActivity {
 			if (frag.get() != null && fragment.getClass().equals(frag.get().getClass()))
 				return;
 		_savedFragments.add(new WeakReference<Fragment>(fragment));
-	}
-
-	private void showAd() {
-		final InterstitialAd interstitialAd = new InterstitialAd(this);
-		interstitialAd.setAdUnitId("ca-app-pub-7211612613879292/4292414964");
-		interstitialAd.setAdListener(new AdListener() {
-			@Override
-			public void onAdLoaded() {
-				super.onAdLoaded();
-				interstitialAd.show();
-			}
-		});
-
 	}
 
 	class PodaxDrawerAdapter extends BaseAdapter {

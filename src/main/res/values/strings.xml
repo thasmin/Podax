@@ -227,4 +227,7 @@
         <item quantity="other">minutes</item>
     </plurals>
     <string name="none">none</string>
+    <string name="pref_show_ads_title">Show Ads</string>
+    <string name="pref_show_ads">Podax tries hard to show few ads and even lets you turn them off. There is one ad shown after an hour of listening time. Consider donating money to keep Podax development going.</string>
+    <string name="donate_via_paypal">Donate via PayPal</string>
 </resources>
