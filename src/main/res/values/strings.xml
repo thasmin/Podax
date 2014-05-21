@@ -227,4 +227,10 @@
         <item quantity="other">minutes</item>
     </plurals>
     <string name="none">none</string>
+    <string name="release_notes">Release Notes</string>
+    <string name="release_notes_detailed">
+        Version 7 of Podax has many new things, including an all new audio player that has a speed knob that works.
+    </string>
+    <string name="view_release_notes">View Release Notes</string>
+    <string name="no_thanks">No Thanks</string>
 </resources>
