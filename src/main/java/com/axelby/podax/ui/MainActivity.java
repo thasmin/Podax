@@ -11,6 +11,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -91,29 +92,32 @@ public class MainActivity extends ActionBarActivity {
 
 		// release notes dialog
 		try {
-			int lastReleaseNoteDialog = PreferenceManager.getDefaultSharedPreferences(this).getInt("lastReleaseNoteDialog", 0);
 			PackageManager packageManager = getApplication().getPackageManager();
-			if (packageManager != null &&
-					lastReleaseNoteDialog < packageManager.getPackageInfo(getPackageName(), 0).versionCode) {
-				new AlertDialog.Builder(this)
-						.setTitle(R.string.release_notes)
-						.setMessage(R.string.release_notes_detailed)
-						.setPositiveButton(R.string.view_release_notes, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialogInterface, int i) {
-								intent.putExtra("fragmentId", 14);
-							}
-						})
-						.setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialogInterface, int i) {
-							}
-						})
-						.create()
-						.show();
+			if (packageManager != null) {
+				SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+				int lastReleaseNoteDialog = preferences.getInt("lastReleaseNoteDialog", 0);
+				int versionCode = packageManager.getPackageInfo(getPackageName(), 0).versionCode;
+				if (lastReleaseNoteDialog < versionCode) {
+					new AlertDialog.Builder(this)
+							.setTitle(R.string.release_notes)
+							.setMessage(R.string.release_notes_detailed)
+							.setPositiveButton(R.string.view_release_notes, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialogInterface, int i) {
+									replaceFragment(AboutFragment.class);
+								}
+							})
+							.setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialogInterface, int i) {
+								}
+							})
+							.create()
+							.show();
+					preferences.edit().putInt("lastReleaseNoteDialog", versionCode).commit();
+				}
 			}
-		} catch (PackageManager.NameNotFoundException e) {
-			e.printStackTrace();
+		} catch (PackageManager.NameNotFoundException ignored) {
 		}
 
 		// ui initialization
