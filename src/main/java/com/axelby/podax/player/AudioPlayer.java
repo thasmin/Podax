@@ -15,14 +15,16 @@ public class AudioPlayer implements Runnable {
 
 	private boolean _isPlaying = false;
 	private float _seekbase = 0;
+	private float _playbackRate = 1f;
 
 	public AudioPlayer(String audioFile, float positionInSeconds, float playbackRate) {
+		_playbackRate = playbackRate;
 		_decoder = loadFile(audioFile);
 		if (positionInSeconds != 0) {
 			_seekbase = positionInSeconds;
 			_decoder.seek(positionInSeconds);
 		}
-		_track = createTrackFromDecoder(_decoder, playbackRate);
+		_track = createTrackFromDecoder(_decoder);
 		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
 	}
 
@@ -39,14 +41,13 @@ public class AudioPlayer implements Runnable {
 		throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
 	}
 
-	private static AudioTrack createTrackFromDecoder(IMediaDecoder decoder, float playbackRate) {
+	private static AudioTrack createTrackFromDecoder(IMediaDecoder decoder) {
 		AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC,
 				decoder.getRate(),
 				decoder.getNumChannels() == 2 ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
 				AudioFormat.ENCODING_PCM_16BIT,
 				decoder.getRate() * 2,
 				AudioTrack.MODE_STREAM);
-		track.setPlaybackRate((int) (decoder.getRate() * playbackRate));
 		track.setPositionNotificationPeriod(decoder.getRate());
 		return track;
 	}
@@ -74,7 +75,7 @@ public class AudioPlayer implements Runnable {
 				return;
 			try {
 				if (audioTrack != null && _periodicListener != null)
-					_periodicListener.pulse(_seekbase + (float) audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate());
+					_periodicListener.pulse(_seekbase + _playbackRate * audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate());
 			} catch (Exception e) {
 				Log.e("Podax", "exception during periodic notification", e);
 			}
@@ -116,7 +117,7 @@ public class AudioPlayer implements Runnable {
 	public float getPosition() {
 		if (_decoder == null)
 			return 0;
-		return _seekbase + (float) _track.getPlaybackHeadPosition() / _track.getSampleRate();
+		return _seekbase + _playbackRate * _track.getPlaybackHeadPosition() / _track.getSampleRate();
 	}
 
 	private void changeTrackOffset(float offsetInSeconds) {
@@ -131,7 +132,7 @@ public class AudioPlayer implements Runnable {
 		_decoder.seek(offsetInSeconds);
 
 		AudioTrack toRelease = _track;
-		_track = createTrackFromDecoder(_decoder, _track.getPlaybackRate());
+		_track = createTrackFromDecoder(_decoder);
 		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
 		_track.play();
 		toRelease.release();
@@ -141,6 +142,10 @@ public class AudioPlayer implements Runnable {
 	public void run() {
 		_track.play();
 		_isPlaying = true;
+
+		WSOLA wsola = new WSOLA();
+		wsola.init();
+		WSOLA.Error wsolaError = new WSOLA.Error();
 
 		try {
 			short[] pcm = new short[1024 * 5];
@@ -158,7 +163,9 @@ public class AudioPlayer implements Runnable {
 				int sampleCount = _decoder.readSamples(pcm, 0, pcm.length);
 				if (sampleCount == 0)
 					break;
-				_track.write(pcm, 0, pcm.length);
+				short[] wsolapcm = wsola.stretch(pcm, _decoder.getRate(), _decoder.getNumChannels() == 2, _playbackRate, 1, wsolaError);
+				if (wsolaError.code == WSOLA.Error.SUCCESS)
+					_track.write(wsolapcm, 0, wsolapcm.length);
 			} while (_track != null);
 
 			waitAndCloseTrack();
@@ -172,6 +179,8 @@ public class AudioPlayer implements Runnable {
 		} finally {
 			_decoder.close();
 			_decoder = null;
+
+			wsola.close();
 
 			// close track without waiting
 			if (_track != null) {

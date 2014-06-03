@@ -4,16 +4,20 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -71,7 +75,7 @@ public class MainActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 
 		// check if this was opened by android to save an RSS feed
-		Intent intent = getIntent();
+		final Intent intent = getIntent();
 		if (intent.getDataString() != null && intent.getData().getScheme().equals("http")) {
 			ContentValues values = new ContentValues();
 			values.put(SubscriptionProvider.COLUMN_URL, intent.getDataString());
@@ -89,6 +93,36 @@ public class MainActivity extends ActionBarActivity {
 			PlayerStatus.updateState(this, PlayerStatus.PlayerStates.STOPPED);
 
 		_adManager = new AdManager(this);
+
+		// release notes dialog
+		try {
+			PackageManager packageManager = getApplication().getPackageManager();
+			if (packageManager != null) {
+				SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+				int lastReleaseNoteDialog = preferences.getInt("lastReleaseNoteDialog", 0);
+				int versionCode = packageManager.getPackageInfo(getPackageName(), 0).versionCode;
+				if (lastReleaseNoteDialog < versionCode) {
+					new AlertDialog.Builder(this)
+							.setTitle(R.string.release_notes)
+							.setMessage(R.string.release_notes_detailed)
+							.setPositiveButton(R.string.view_release_notes, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialogInterface, int i) {
+									replaceFragment(AboutFragment.class);
+								}
+							})
+							.setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialogInterface, int i) {
+								}
+							})
+							.create()
+							.show();
+					preferences.edit().putInt("lastReleaseNoteDialog", versionCode).commit();
+				}
+			}
+		} catch (PackageManager.NameNotFoundException ignored) {
+		}
 
 		// ui initialization
 		setContentView(R.layout.app);
@@ -109,51 +143,7 @@ public class MainActivity extends ActionBarActivity {
 		drawer.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-				_drawerLayout.closeDrawer(GravityCompat.START);
-
-				_fragmentId = position;
-
-				switch (position) {
-					case 1:
-						replaceFragment(WelcomeFragment.class);
-						break;
-					case 2:
-						replaceFragment(PodcastDetailFragment.class);
-						break;
-					case 3:
-						replaceFragment(QueueFragment.class);
-						break;
-					case 4:
-						replaceFragment(SubscriptionListFragment.class);
-						break;
-					case 5:
-						replaceFragment(SearchFragment.class);
-						break;
-					case 7:
-						askForRSSUrl();
-						break;
-					case 8:
-						replaceFragment(ITunesPopularListFragment.class);
-						break;
-					case 9:
-						replaceFragment(GPodderPopularListFragment.class);
-						break;
-					case 10:
-						handleGPodder();
-						break;
-					case 12:
-						replaceFragment(StatsFragment.class);
-						break;
-					case 13:
-						replaceFragment(PodaxPreferenceFragment.class);
-						break;
-					case 14:
-						replaceFragment(AboutFragment.class);
-						break;
-					case 15:
-						replaceFragment(LogViewerFragment.class);
-						break;
-				}
+				changeFragment(position);
 			}
 		});
 
@@ -177,18 +167,59 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
+	private void changeFragment(int position) {
+		_drawerLayout.closeDrawer(GravityCompat.START);
+
+		_fragmentId = position;
+
+		switch (position) {
+			case 1:
+				replaceFragment(WelcomeFragment.class);
+				break;
+			case 2:
+				replaceFragment(PodcastDetailFragment.class);
+				break;
+			case 3:
+				replaceFragment(QueueFragment.class);
+				break;
+			case 4:
+				replaceFragment(SubscriptionListFragment.class);
+				break;
+			case 5:
+				replaceFragment(SearchFragment.class);
+				break;
+			case 7:
+				askForRSSUrl();
+				break;
+			case 8:
+				replaceFragment(ITunesPopularListFragment.class);
+				break;
+			case 9:
+				replaceFragment(GPodderPopularListFragment.class);
+				break;
+			case 10:
+				handleGPodder();
+				break;
+			case 12:
+				replaceFragment(StatsFragment.class);
+				break;
+			case 13:
+				replaceFragment(PodaxPreferenceFragment.class);
+				break;
+			case 14:
+				replaceFragment(AboutFragment.class);
+				break;
+			case 15:
+				replaceFragment(LogViewerFragment.class);
+				break;
+		}
+	}
+
 	private void handleIntent(Intent intent) {
 		if (intent == null || intent.getExtras() == null)
 			return;
-
-		_fragmentId = intent.getIntExtra("fragmentId", 2);
-		Bundle args = (Bundle) intent.getExtras().clone();
-		args.remove("fragmentId");
-		if (_fragmentId == 2) {
-			replaceFragment(PodcastDetailFragment.class, args);
-		} else if (_fragmentId == 4) {
-			replaceFragment(SubscriptionListFragment.class);
-		}
+		if (intent.hasExtra("fragmentId"))
+			changeFragment(intent.getIntExtra("fragmentId", 2));
 	}
 
 	private void handleGPodder() {
@@ -197,7 +228,7 @@ public class MainActivity extends ActionBarActivity {
 		if (gpodder_accounts == null || gpodder_accounts.length == 0)
 			startActivity(new Intent(this, AuthenticatorActivity.class));
 		else {
-			Toast.makeText(this, "Already linked to gpodder.net as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
 			ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
 		}
 	}

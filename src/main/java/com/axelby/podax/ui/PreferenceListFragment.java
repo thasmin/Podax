@@ -72,8 +72,10 @@ public class PreferenceListFragment extends ListFragment {
 		mPreferenceManager = onCreatePreferenceManager();
 		lv = (ListView) LayoutInflater.from(getActivity()).inflate(R.layout.preference_list_content, null);
 		lv.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-		addPreferencesFromResource(xmlId);
-		postBindPreferences();
+		if (xmlId != 0) {
+			addPreferencesFromResource(xmlId);
+			postBindPreferences();
+		}
 	}
 
 	@Override
