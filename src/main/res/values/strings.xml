@@ -277,4 +277,6 @@ limitations under the License.
     </string>
     <string name="view_release_notes">View Release Notes</string>
     <string name="no_thanks">No Thanks</string>
+    <string name="pref_playlist_swipe_to_remove_title">Allow Swipe to Remove on Playlist</string>
+    <string name="pref_playlist_swipe_to_remove">When checked, you can swipe a podcast sideways to remove it from the playlist.</string>
 </resources>
