@@ -614,6 +614,10 @@ public class DragSortListView extends ListView {
         }
     }
 
+	public FloatViewManager getFloatViewManager() {
+		return mFloatViewManager;
+	}
+
     private class AdapterWrapper extends BaseAdapter {
         private ListAdapter mAdapter;
 

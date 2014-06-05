@@ -8,6 +8,11 @@
             android:summary="@string/pref_update_wifi"
             android:title="@string/pref_update_wifi_title" />
         <CheckBoxPreference
+                android:defaultValue="true"
+                android:key="allowPlaylistSwipeToRemove"
+                android:summary="@string/pref_playlist_swipe_to_remove"
+                android:title="@string/pref_playlist_swipe_to_remove_title" />
+        <CheckBoxPreference
             android:defaultValue="true"
             android:key="autoDeletePref"
             android:summary="@string/pref_auto_delete"

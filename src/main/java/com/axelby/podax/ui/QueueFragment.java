@@ -3,10 +3,12 @@ package com.axelby.podax.ui;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -38,6 +40,8 @@ import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.UpdateService;
+import com.mobeta.android.dslv.DragSortController;
+import com.mobeta.android.dslv.DragSortListView;
 import com.mobeta.android.dslv.DragSortListView.DragListener;
 import com.mobeta.android.dslv.DragSortListView.DropListener;
 import com.mobeta.android.dslv.DragSortListView.RemoveListener;
@@ -138,6 +142,15 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
 			}
 		});
+
+		// disable swipe to remove according to preference
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		if (!preferences.getBoolean("allowPlaylistSwipeToRemove", true))
+		{
+			DragSortListView dragSortListView = (DragSortListView) getListView();
+			DragSortController dragSortController = (DragSortController) dragSortListView.getFloatViewManager();
+			dragSortController.setRemoveEnabled(false);
+		}
 	}
 
 	@Override
