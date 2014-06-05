@@ -29,7 +29,7 @@ public class AccountSettings extends FragmentActivity {
 		ft.add(R.id.fragment, new AccountSettingsFragment()).commit();
 	}
 
-	public class AccountSettingsFragment extends PreferenceListFragment {
+	public static class AccountSettingsFragment extends PreferenceListFragment {
 		private SharedPreferences _gpodderPrefs;
 
 		public AccountSettingsFragment() {
