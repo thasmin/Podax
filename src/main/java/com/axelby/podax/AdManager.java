@@ -58,8 +58,8 @@ public class AdManager {
 			return;
 
 		// show ads once per hour of listening time
-		final int SECONDS_PER_HOUR = 60 * 60 * 0 - 1;
-		if (getTimeSinceLastAd() < SECONDS_PER_HOUR)
+		final int SECONDS_PER_HOUR = 60 * 60;
+		if (getTimeSinceLastAd() > SECONDS_PER_HOUR)
 			return;
 
 		if (_interstitialAd.isLoaded()) {

@@ -276,7 +276,7 @@ limitations under the License.
     <string name="donate_via_paypal">Donate via PayPal</string>
     <string name="release_notes">Release Notes</string>
     <string name="release_notes_detailed">
-        Version 7 of Podax has many new things, including an all new audio player that has a speed knob that works.
+        Version 7 of Podax has many new things, including ads that you can turn off and a working playback speed knob.
     </string>
     <string name="view_release_notes">View Release Notes</string>
     <string name="no_thanks">No Thanks</string>
