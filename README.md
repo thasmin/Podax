@@ -1,4 +1,6 @@
-Podax is a podcast downloader and player. It is heavily modeled after Google Listen, which is no longer in development.
+Podax is a podcast downloader and player. It was heavily modeled after Google Listen, which is no longer available. Over a few years, it's taken a life of its own.
+
+You can [send money to support Podax](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7VSQV7LQ52AYS) via Paypal.
 
 Features include:
 
