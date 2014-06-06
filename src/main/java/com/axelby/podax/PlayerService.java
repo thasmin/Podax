@@ -111,7 +111,7 @@ public class PlayerService extends Service {
 			PodcastPlayer.OnSeekListener,
 			PodcastPlayer.OnStopListener {
 		@Override
-		public void onPlay() {
+		public void onPlay(float positionInSeconds, float playbackRate) {
 			updateActivePodcast();
 
 			// listen for changes to the podcast
@@ -122,23 +122,23 @@ public class PlayerService extends Service {
 			ComponentName eventReceiver = new ComponentName(PlayerService.this, MediaButtonIntentReceiver.class);
 			audioManager.registerMediaButtonEventReceiver(eventReceiver);
 
-			showNotification();
 			PlayerStatus.updateState(PlayerService.this, PlayerStates.PLAYING);
-			_lockscreenManager.setLockscreenPlaying();
+			showNotification();
+			_lockscreenManager.setLockscreenPlaying(positionInSeconds, playbackRate);
 		}
 
 		@Override
 		public void onPause(float positionInSeconds) {
 			updateActivePodcastPosition(positionInSeconds);
 			PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.PAUSED);
-			_lockscreenManager.setLockscreenPaused();
+			_lockscreenManager.setLockscreenPaused(positionInSeconds);
 			showNotification();
 		}
 
 		@Override
 		public void onStop(float positionInSeconds) {
 			updateActivePodcastPosition(positionInSeconds);
-			_lockscreenManager.removeLockscreenControls();
+			_lockscreenManager.removeLockscreenControls(positionInSeconds);
 			removeNotification();
 			getContentResolver().unregisterContentObserver(_podcastChangeObserver);
 			PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.STOPPED);

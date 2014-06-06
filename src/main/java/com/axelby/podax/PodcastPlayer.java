@@ -181,7 +181,7 @@ public class PodcastPlayer {
 			_playerThread.start();
 
 		if (_onPlayListener != null)
-			_onPlayListener.onPlay();
+			_onPlayListener.onPlay(_player.getPosition(), _player.getPlaybackRate());
 	}
 
 	private void internalPause() {
@@ -217,7 +217,7 @@ public class PodcastPlayer {
 		public void onPause(float positionInSeconds);
 	}
 	public static interface OnPlayListener {
-		public void onPlay();
+		public void onPlay(float positionInSeconds, float playbackRate);
 	}
 	public static interface OnStopListener {
 		public void onStop(float positionInSeconds);

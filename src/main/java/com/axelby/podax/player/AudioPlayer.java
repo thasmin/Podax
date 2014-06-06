@@ -52,6 +52,10 @@ public class AudioPlayer implements Runnable {
 		return track;
 	}
 
+	public float getPlaybackRate() {
+		return _playbackRate;
+	}
+
 	public static interface OnCompletionListener { public void onCompletion(); }
 	private OnCompletionListener _completionListener = null;
 	public void setOnCompletionListener(OnCompletionListener completionListener) {
