@@ -33,6 +33,8 @@ public class Stats {
 		}
 		if (listenSeconds > secondsPerHour) {
 			int hours = (int) Math.floor(listenSeconds / secondsPerHour);
+			if (listenText.length() > 0)
+				listenText.append(" ");
 			listenText.append(hours);
 			listenText.append(" ");
 			listenText.append(context.getResources().getQuantityString(R.plurals.hours, hours));
@@ -40,6 +42,8 @@ public class Stats {
 		}
 		if (listenSeconds > secondsPerMinute) {
 			int minutes = (int) Math.floor(listenSeconds / secondsPerMinute);
+			if (listenText.length() > 0)
+				listenText.append(" ");
 			listenText.append(minutes);
 			listenText.append(" ");
 			listenText.append(context.getResources().getQuantityString(R.plurals.minutes, minutes));
