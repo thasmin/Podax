@@ -349,7 +349,9 @@ public class MainActivity extends ActionBarActivity {
 	public void onAttachFragment(Fragment fragment) {
 		super.onAttachFragment(fragment);
 
-		_adManager.showAd();
+		// TODO: find out his this could be null
+		if (_adManager != null)
+			_adManager.showAd();
 
 		if (fragment.getClass() != PodcastDetailFragment.class)
 			return;
