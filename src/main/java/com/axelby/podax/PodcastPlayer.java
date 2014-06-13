@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.axelby.podax.player.AudioPlayer;
 
@@ -60,6 +61,10 @@ public class PodcastPlayer {
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
+			if (!AudioPlayer.supports(filename)) {
+				Toast.makeText(_context, "This podcast is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
+				return false;
+			}
 			_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
 			_playerThread = new Thread(_player, "AudioPlayer");
 

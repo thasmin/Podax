@@ -20,12 +20,22 @@ public class AudioPlayer implements Runnable {
 	public AudioPlayer(String audioFile, float positionInSeconds, float playbackRate) {
 		_playbackRate = playbackRate;
 		_decoder = loadFile(audioFile);
+		if (_decoder == null)
+			throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
 		if (positionInSeconds != 0) {
 			_seekbase = positionInSeconds;
 			_decoder.seek(positionInSeconds);
 		}
 		_track = createTrackFromDecoder(_decoder);
 		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
+	}
+
+	public static boolean supports(String audioFile) {
+		int lastDot = audioFile.lastIndexOf('.');
+		if (lastDot <= 0)
+			return false;
+		String extension = audioFile.substring(lastDot + 1);
+		return extension.equals("mp3") || extension.equals("ogg") || extension.equals("oga");
 	}
 
 	public static IMediaDecoder loadFile(String audioFile) {
@@ -38,7 +48,7 @@ public class AudioPlayer implements Runnable {
 			return new MPG123(audioFile);
 		else if (extension.equals("ogg") || extension.equals("oga"))
 			return new Vorbis(audioFile);
-		throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
+		return null;
 	}
 
 	private static AudioTrack createTrackFromDecoder(IMediaDecoder decoder) {
