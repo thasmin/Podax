@@ -65,7 +65,7 @@ JNIEXPORT jint JNICALL Java_com_axelby_podax_player_Vorbis_getRate
 	return file->rate;
 }
 
-JNIEXPORT jfloat JNICALL Java_com_axelby_podax_player_Vorbis_getLength
+JNIEXPORT jfloat JNICALL Java_com_axelby_podax_player_Vorbis_getDuration
 		(JNIEnv* env, jclass c, jlong handle) {
 	OggFile* file = (OggFile*)handle;
 	return file->length;

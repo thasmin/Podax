@@ -1,19 +1,24 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
 
     <com.axelby.podax.ui.SquareImageView
             android:id="@+id/thumbnail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scaleType="fitStart"
-            android:contentDescription="@string/subscription_thumbnail"/>
+            android:contentDescription="@string/subscription_thumbnail" />
 
     <TextView
             android:id="@+id/text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
+            android:layout_alignParentBottom="true"
+            android:background="#ccffffff"
+            android:textColor="@android:color/black"
+            android:textSize="12sp"
+            tools:text="Fitzdog Radio"
+            android:gravity="center_horizontal"/>
 
-</LinearLayout>
+</RelativeLayout>
