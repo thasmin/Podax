@@ -1,9 +1,18 @@
 package com.axelby.podax;
 
 import android.content.ContentUris;
+import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Log;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 
 public class SubscriptionCursor {
@@ -95,6 +104,39 @@ public class SubscriptionCursor {
 		if (_cursor.isNull(_thumbnailColumn))
 			return null;
 		return _cursor.getString(_thumbnailColumn);
+	}
+
+	private static String getThumbnailFilename(Context context, long subscriptionId) {
+		String storagePath = PodcastCursor.getStoragePath(context);
+		return storagePath + String.valueOf(subscriptionId) + "podcast.image";
+	}
+
+	public static Bitmap getThumbnailImage(Context context, long subscriptionId) {
+		String filename = getThumbnailFilename(context, subscriptionId);
+		if (!new File(filename).exists())
+			return null;
+		return BitmapFactory.decodeFile(filename);
+	}
+
+	public static void evictThumbnails(Context context, long subscriptionId) {
+		File thumbnail = new File(getThumbnailFilename(context, subscriptionId));
+		if (!thumbnail.exists())
+			return;
+		thumbnail.delete();
+	}
+
+	public static void saveThumbnailImage(Context context, long subscriptionId, Bitmap thumbnail) {
+		try {
+			String filename = getThumbnailFilename(context, subscriptionId);
+			new File(filename).delete();
+			BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename));
+			thumbnail.compress(Bitmap.CompressFormat.PNG, 95, outputStream);
+			outputStream.close();
+		} catch (FileNotFoundException e) {
+			Log.e("Podax", "unable to save subscription thumbnail", e);
+		} catch (IOException e) {
+			Log.e("Podax", "unable to save subscription thumbnail", e);
+		}
 	}
 
 	public boolean getQueueNew() {

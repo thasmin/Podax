@@ -267,8 +267,8 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 			String[] projection = {
 					PodcastProvider.COLUMN_ID,
 					PodcastProvider.COLUMN_TITLE,
+					PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-					PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 					PodcastProvider.COLUMN_QUEUE_POSITION,
 					PodcastProvider.COLUMN_MEDIA_URL,
 					PodcastProvider.COLUMN_FILE_SIZE,
@@ -470,7 +470,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 
 					view = _inflater.inflate(R.layout.search_subscription_listitem, null);
 					((TextView) view.findViewById(R.id.text)).setText(subscription.getTitle());
-					((NetworkImageView) view.findViewById(R.id.thumbnail)).setImageUrl(subscription.getThumbnail(), Helper.getImageLoader(getActivity()));
+					((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
 					view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View view) {
@@ -502,7 +502,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 
 					((TextView) view.findViewById(R.id.title)).setText(podcast.getTitle());
 					((TextView) view.findViewById(R.id.subscription)).setText(podcast.getSubscriptionTitle());
-					((NetworkImageView) view.findViewById(R.id.thumbnail)).setImageUrl(podcast.getSubscriptionThumbnailUrl(), Helper.getImageLoader(getActivity()));
+					((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), podcast.getSubscriptionId()));
 					return view;
 				default:
 					return textView;

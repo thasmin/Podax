@@ -12,7 +12,6 @@ public class PlayerStatus {
 				PodcastProvider.COLUMN_TITLE,
 				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 				PodcastProvider.COLUMN_LAST_POSITION,
 				PodcastProvider.COLUMN_DURATION,
 				PodcastProvider.COLUMN_MEDIA_URL,
@@ -31,7 +30,6 @@ public class PlayerStatus {
 			status._subscriptionId = podcast.getSubscriptionId();
 			status._title = podcast.getTitle();
 			status._subscriptionTitle = podcast.getSubscriptionTitle();
-			status._subscriptionThumbnailUrl = podcast.getSubscriptionThumbnailUrl();
 			status._position = podcast.getLastPosition();
 			status._duration = podcast.getDuration();
 			status._filename = podcast.getFilename(context);
@@ -84,7 +82,6 @@ public class PlayerStatus {
 	private int _duration;
 	private String _title;
 	private String _subscriptionTitle;
-	private String _subscriptionThumbnailUrl;
 	private String _filename;
 
 	private PlayerStatus() {
@@ -118,10 +115,6 @@ public class PlayerStatus {
 
 	public String getSubscriptionTitle() {
 		return _subscriptionTitle;
-	}
-
-	public String getSubscriptionThumbnailUrl() {
-		return _subscriptionThumbnailUrl;
 	}
 
 	public String getFilename() { return _filename; }

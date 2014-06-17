@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,6 +19,7 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionCursor;
 
 public class LargeWidgetProvider extends AppWidgetProvider {
 	public static void setPlayerServiceClickIntent(Context context, RemoteViews views, int resourceId, int command) {
@@ -54,31 +56,9 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_PODCAST_DATA_FORWARD);
 		setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_PODCAST_DATA_END);
 
-		final String thumbnailUrl = playerState.getSubscriptionThumbnailUrl();
-		if (thumbnailUrl != null) {
-			final ImageLoader.ImageListener imageListener = new ImageLoader.ImageListener() {
-				@Override
-				public void onResponse(ImageLoader.ImageContainer imageContainer, boolean isImmediate) {
-					if (imageContainer.getBitmap() != null) {
-						views.setImageViewBitmap(R.id.show_btn, imageContainer.getBitmap());
-						appWidgetManager.updateAppWidget(appWidgetIds, views);
-					}
-				}
-
-				@Override
-				public void onErrorResponse(VolleyError volleyError) {
-					views.setImageViewResource(R.id.show_btn, R.drawable.icon);
-					appWidgetManager.updateAppWidget(appWidgetIds, views);
-				}
-			};
-			new Handler(Looper.getMainLooper()).post(new Runnable() {
-				@Override
-				public void run() {
-					Helper.getImageLoader(context).get(thumbnailUrl, imageListener, 83, 83);
-				}
-			});
-		} else {
-			views.setImageViewResource(R.id.show_btn, R.drawable.icon);
+		Bitmap thumbnail = SubscriptionCursor.getThumbnailImage(context, playerState.getSubscriptionId());
+		if (thumbnail != null) {
+			views.setImageViewBitmap(R.id.show_btn, thumbnail);
 		}
 
 		Intent showIntent = new Intent(context, MainActivity.class);

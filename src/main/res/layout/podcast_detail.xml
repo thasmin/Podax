@@ -14,7 +14,7 @@
                 android:layout_width="match_parent"
                 android:layout_marginBottom="10dp">
 
-            <com.android.volley.toolbox.NetworkImageView
+            <ImageView
                     android:id="@+id/subscription_img"
                     android:layout_width="175dp"
                     android:layout_height="175dp"

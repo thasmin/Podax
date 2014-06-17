@@ -47,7 +47,6 @@ public class PodcastProvider extends ContentProvider {
 	public static final String COLUMN_TITLE = "title";
 	public static final String COLUMN_SUBSCRIPTION_ID = "subscriptionId";
 	public static final String COLUMN_SUBSCRIPTION_TITLE = "subscriptionTitle";
-	public static final String COLUMN_SUBSCRIPTION_THUMBNAIL = "subscriptionThumbnail";
 	public static final String COLUMN_SUBSCRIPTION_URL = "subscriptionUrl";
 	public static final String COLUMN_QUEUE_POSITION = "queuePosition";
 	public static final String COLUMN_MEDIA_URL = "mediaUrl";
@@ -84,7 +83,6 @@ public class PodcastProvider extends ContentProvider {
 		_columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
 		_columnMap.put(COLUMN_SUBSCRIPTION_ID, "subscriptionId");
 		_columnMap.put(COLUMN_SUBSCRIPTION_TITLE, "subscriptions.title AS subscriptionTitle");
-		_columnMap.put(COLUMN_SUBSCRIPTION_THUMBNAIL, "subscriptions.thumbnail as subscriptionThumbnail");
 		_columnMap.put(COLUMN_SUBSCRIPTION_URL, "subscriptions.url as subscriptionUrl");
 		_columnMap.put(COLUMN_QUEUE_POSITION, "queuePosition");
 		_columnMap.put(COLUMN_MEDIA_URL, "mediaUrl");
@@ -134,7 +132,6 @@ public class PodcastProvider extends ContentProvider {
 		if (projection != null) {
 			List<String> projectionList = Arrays.asList(projection);
 			if (projectionList.contains(COLUMN_SUBSCRIPTION_TITLE)
-					|| projectionList.contains(COLUMN_SUBSCRIPTION_THUMBNAIL)
 					|| projectionList.contains(COLUMN_SUBSCRIPTION_URL))
 				sqlBuilder.setTables("podcasts JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id");
 			else
@@ -333,7 +330,6 @@ public class PodcastProvider extends ContentProvider {
 
 		// don't try to update subscription values
 		values.remove(COLUMN_SUBSCRIPTION_TITLE);
-		values.remove(COLUMN_SUBSCRIPTION_THUMBNAIL);
 		values.remove(COLUMN_SUBSCRIPTION_URL);
 
 		// update queuePosition separately

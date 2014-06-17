@@ -28,17 +28,17 @@ import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.UpdateService;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
@@ -212,8 +212,8 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 		String[] projection = new String[]{
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 				PodcastProvider.COLUMN_QUEUE_POSITION,
 				PodcastProvider.COLUMN_MEDIA_URL,
 				PodcastProvider.COLUMN_FILE_SIZE,
@@ -255,7 +255,7 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 
 			((TextView) view.findViewById(R.id.title)).setText(podcast.getTitle());
 			((TextView) view.findViewById(R.id.subscription)).setText(podcast.getSubscriptionTitle());
-			((NetworkImageView) view.findViewById(R.id.thumbnail)).setImageUrl(podcast.getSubscriptionThumbnailUrl(), Helper.getImageLoader(context));
+			((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), podcast.getSubscriptionId()));
 
 			// if the podcast is not downloaded, add the download indicator
 			long downloaded = new File(podcast.getFilename(getActivity())).length();

@@ -2,10 +2,9 @@ package com.axelby.podax.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.ImageView;
 
-import com.android.volley.toolbox.NetworkImageView;
-
-public class SquareImageView extends NetworkImageView {
+public class SquareImageView extends ImageView {
 
 	public SquareImageView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);

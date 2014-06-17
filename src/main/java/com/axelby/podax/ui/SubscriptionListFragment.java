@@ -22,7 +22,6 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
@@ -137,7 +136,7 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
 			((TextView) view.findViewById(R.id.text)).setText(subscription.getTitle());
-			((SquareImageView) view.findViewById(R.id.thumbnail)).setImageUrl(subscription.getThumbnail(), Helper.getImageLoader(getActivity()));
+			((SquareImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
 		}
 	}
 }

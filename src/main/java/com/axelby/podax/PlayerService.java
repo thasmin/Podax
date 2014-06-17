@@ -268,11 +268,11 @@ public class PlayerService extends Service {
 		forwardIntent.setData(Constants.ACTIVE_PODCAST_DATA_FORWARD);
 		PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
 
-		Bitmap subscriptionBitmap = Helper.getCachedImage(this, playerStatus.getSubscriptionThumbnailUrl(), 128, 128);
+		Bitmap subscriptionBitmap = SubscriptionCursor.getThumbnailImage(this, playerStatus.getSubscriptionId());
 		if (subscriptionBitmap != null)
 			builder.setLargeIcon(subscriptionBitmap);
 
-		if (PlayerStatus.getPlayerState(this) == PlayerStates.PLAYING)
+		if (playerStatus.getState() == PlayerStates.PLAYING)
 			builder.addAction(R.drawable.ic_media_pause_normal, getString(R.string.pause), pausePendingIntent);
 		else
 			builder.addAction(R.drawable.ic_media_play_normal, getString(R.string.play), pausePendingIntent);

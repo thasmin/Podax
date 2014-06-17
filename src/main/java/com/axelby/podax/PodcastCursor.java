@@ -79,14 +79,6 @@ public class PodcastCursor {
 		return _cursor.getString(_subscriptionTitleColumn);
 	}
 
-	public String getSubscriptionThumbnailUrl() {
-		if (_subscriptionThumbnailColumn == null)
-			_subscriptionThumbnailColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL);
-		if (_cursor.isNull(_subscriptionThumbnailColumn))
-			return null;
-		return _cursor.getString(_subscriptionThumbnailColumn);
-	}
-
 	public String getSubscriptionUrl() {
 		if (_subscriptionUrlColumn == null)
 			_subscriptionUrlColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_SUBSCRIPTION_URL);

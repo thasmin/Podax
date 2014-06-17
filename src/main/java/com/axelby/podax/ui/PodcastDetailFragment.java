@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,12 +19,12 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.podax.Constants;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
@@ -34,6 +35,7 @@ import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.URLImageGetter;
 
 import org.shredzone.flattr4j.exception.FlattrException;
@@ -45,7 +47,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	private static final int CURSOR_ACTIVE = 2;
 	long _podcastId;
 	boolean _uiInitialized = false;
-	NetworkImageView _subscriptionImage;
+	ImageView _subscriptionImage;
 	TextView _titleView;
 	TextView _subscriptionTitleView;
 	TextView _descriptionView;
@@ -90,7 +92,7 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		super.onActivityCreated(savedInstanceState);
 
 		final Activity activity = getActivity();
-		_subscriptionImage = (NetworkImageView) activity.findViewById(R.id.subscription_img);
+		_subscriptionImage = (ImageView) activity.findViewById(R.id.subscription_img);
 		_titleView = (TextView) activity.findViewById(R.id.title);
 		_subscriptionTitleView = (TextView) activity.findViewById(R.id.subscription_title);
 		_descriptionView = (TextView) activity.findViewById(R.id.description);
@@ -253,11 +255,10 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 	}
 
 	private void initializeUI(PodcastCursor podcast) {
-		String url = podcast.getSubscriptionThumbnailUrl();
-		if (url != null)
-			_subscriptionImage.setImageUrl(podcast.getSubscriptionThumbnailUrl(), Helper.getImageLoader(getActivity()));
 		_titleView.setText(podcast.getTitle());
 		_subscriptionTitleView.setText(podcast.getSubscriptionTitle());
+		Bitmap subscriptionThumbnail = SubscriptionCursor.getThumbnailImage(getActivity(), podcast.getSubscriptionId());
+		_subscriptionImage.setImageBitmap(subscriptionThumbnail);
 
 		if (podcast.getDescription() != null)
 			_descriptionView.setText(Html.fromHtml(podcast.getDescription(), new URLImageGetter(_descriptionView), new IgnoreTagHandler()));
@@ -310,8 +311,8 @@ public class PodcastDetailFragment extends Fragment implements LoaderManager.Loa
 		String[] projection = new String[]{
 				PodcastProvider.COLUMN_ID,
 				PodcastProvider.COLUMN_TITLE,
+				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
 				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_THUMBNAIL,
 				PodcastProvider.COLUMN_DESCRIPTION,
 				PodcastProvider.COLUMN_DURATION,
 				PodcastProvider.COLUMN_LAST_POSITION,

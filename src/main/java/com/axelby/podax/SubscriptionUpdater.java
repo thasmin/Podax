@@ -8,6 +8,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -22,10 +24,12 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -45,20 +49,20 @@ public class SubscriptionUpdater {
 				return;
 
 			Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
+			if (subscriptionUri == null)
+				return;
 			String[] projection = new String[]{
 					SubscriptionProvider.COLUMN_ID,
 					SubscriptionProvider.COLUMN_TITLE,
 					SubscriptionProvider.COLUMN_URL,
 					SubscriptionProvider.COLUMN_ETAG,
 					SubscriptionProvider.COLUMN_LAST_MODIFIED,
+					SubscriptionProvider.COLUMN_THUMBNAIL,
 			};
-
-			final ContentValues subscriptionValues = new ContentValues();
-
 			cursor = _context.getContentResolver().query(subscriptionUri, projection,
 					SubscriptionProvider.COLUMN_ID + " = ?",
 					new String[]{String.valueOf(subscriptionId)}, null);
-			if (!cursor.moveToNext())
+			if (cursor == null || !cursor.moveToNext())
 				return;
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
@@ -77,20 +81,25 @@ public class SubscriptionUpdater {
 			// only valid response code is 200
 			// 304 (content not modified) is OK too
 			if (code != 200) {
+				ensureThumbnail(subscriptionId, subscription.getThumbnail());
 				return;
 			}
 
+			final ContentValues subscriptionValues = new ContentValues();
+
 			String eTag = connection.getHeaderField("ETag");
 			if (eTag != null) {
-				subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
-				if (eTag.equals(subscription.getETag()))
+				if (eTag.equals(subscription.getETag())) {
+					ensureThumbnail(subscriptionId, subscription.getThumbnail());
 					return;
+				}
+				subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
 			}
 
 			String encoding = connection.getContentEncoding();
 			if (encoding == null) {
 				String contentType = connection.getContentType();
-				if (contentType != null && contentType.indexOf(";") > -1) {
+				if (contentType != null && contentType.contains(";")) {
 					encoding = contentType.split(";")[1].trim().substring("charset=".length());
 				}
 			}
@@ -145,13 +154,76 @@ public class SubscriptionUpdater {
 			subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
 			_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
 
+			String oldThumbnail = subscription.getThumbnail();
+			String newThumbnail = subscriptionValues.getAsString(SubscriptionProvider.COLUMN_THUMBNAIL);
+			downloadThumbnailImage(subscriptionId, oldThumbnail, newThumbnail);
+
 			writeSubscriptionOPML();
 		} catch (Exception e) {
-			Log.w("Podax", "error while updating: " + e.getMessage());
+			Log.e("Podax", "error while updating", e);
 		} finally {
 			if (cursor != null)
 				cursor.close();
 			UpdateService.downloadPodcastsSilently(_context);
+		}
+	}
+
+	private void ensureThumbnail(long subscriptionId, String thumbnailUrl) {
+		if (SubscriptionCursor.getThumbnailImage(_context, subscriptionId) != null)
+			return;
+		downloadThumbnail(subscriptionId, thumbnailUrl);
+	}
+
+	private void downloadThumbnailImage(long subscriptionId, String oldThumbnailUrl, String newThumbnailUrl) {
+		// if the thumbnail was removed
+		if (newThumbnailUrl == null && oldThumbnailUrl != null) {
+			SubscriptionCursor.evictThumbnails(_context, subscriptionId);
+		}
+		// there's no current thumbnail
+		if (newThumbnailUrl == null)
+			return;
+		// thumbnail hasn't changed
+		if (newThumbnailUrl.equals(oldThumbnailUrl)) {
+			ensureThumbnail(subscriptionId, newThumbnailUrl);
+			return;
+		}
+		// thumbnail exists
+		if (oldThumbnailUrl != null) {
+			SubscriptionCursor.evictThumbnails(_context, subscriptionId);
+		}
+
+		downloadThumbnail(subscriptionId, newThumbnailUrl);
+
+		/*
+		Helper.getImageLoader(_context).get(newThumbnailUrl, new ImageLoader.ImageListener() {
+			@Override
+			public void onResponse(ImageLoader.ImageContainer imageContainer, boolean immediate) {
+				SubscriptionCursor.saveThumbnailImage(_context, subscriptionId, imageContainer.getBitmap());
+			}
+
+			@Override
+			public void onErrorResponse(VolleyError volleyError) {
+
+			}
+		}, 256, 256);
+		*/
+	}
+
+	private void downloadThumbnail(long subscriptionId, String thumbnailUrl) {
+		try {
+			HttpURLConnection conn = (HttpURLConnection) new URL(thumbnailUrl).openConnection();
+			if (conn.getResponseCode() != HttpURLConnection.HTTP_OK)
+				return;
+
+			BufferedInputStream input = new BufferedInputStream(conn.getInputStream());
+			Bitmap original = BitmapFactory.decodeStream(input);
+			input.close();
+			Bitmap scaled = Bitmap.createScaledBitmap(original, 256, 256, true);
+			SubscriptionCursor.saveThumbnailImage(_context, subscriptionId, scaled);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -164,8 +236,6 @@ public class SubscriptionUpdater {
 		return false;
 	}
 
-	;
-
 	private boolean changeKeyLong(ContentValues values, String oldKey, String newKey) {
 		if (values.containsKey(oldKey)) {
 			values.put(newKey, values.getAsLong(oldKey));
@@ -174,8 +244,6 @@ public class SubscriptionUpdater {
 		}
 		return false;
 	}
-
-	;
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
@@ -224,16 +292,18 @@ public class SubscriptionUpdater {
 					SubscriptionProvider.COLUMN_URL,
 			};
 			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, null, null, SubscriptionProvider.COLUMN_TITLE);
-			while (c.moveToNext()) {
-				SubscriptionCursor sub = new SubscriptionCursor(c);
+			if (c != null) {
+				while (c.moveToNext()) {
+					SubscriptionCursor sub = new SubscriptionCursor(c);
 
-				serializer.startTag(null, "outline");
-				serializer.attribute(null, "type", "rss");
-				serializer.attribute(null, "title", sub.getTitle());
-				serializer.attribute(null, "xmlUrl", sub.getUrl());
-				serializer.endTag(null, "outline");
+					serializer.startTag(null, "outline");
+					serializer.attribute(null, "type", "rss");
+					serializer.attribute(null, "title", sub.getTitle());
+					serializer.attribute(null, "xmlUrl", sub.getUrl());
+					serializer.endTag(null, "outline");
+				}
+				c.close();
 			}
-			c.close();
 
 			serializer.endTag(null, "body");
 			serializer.endTag(null, "opml");

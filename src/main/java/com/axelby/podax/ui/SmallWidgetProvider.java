@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.RemoteViews;
@@ -15,6 +16,7 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionCursor;
 
 public class SmallWidgetProvider extends AppWidgetProvider {
 	@Override
@@ -38,31 +40,9 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 		views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-		final String thumbnailUrl = playerState.getSubscriptionThumbnailUrl();
-		if (thumbnailUrl != null) {
-			final ImageLoader.ImageListener imageListener = new ImageLoader.ImageListener() {
-				@Override
-				public void onResponse(ImageLoader.ImageContainer imageContainer, boolean isImmediate) {
-					if (imageContainer.getBitmap() != null) {
-						views.setImageViewBitmap(R.id.show_btn, imageContainer.getBitmap());
-						appWidgetManager.updateAppWidget(appWidgetIds, views);
-					}
-				}
-
-				@Override
-				public void onErrorResponse(VolleyError volleyError) {
-					views.setImageViewResource(R.id.show_btn, R.drawable.icon);
-					appWidgetManager.updateAppWidget(appWidgetIds, views);
-				}
-			};
-			new Handler(Looper.getMainLooper()).post(new Runnable() {
-				@Override
-				public void run() {
-					Helper.getImageLoader(context).get(thumbnailUrl, imageListener, 83, 83);
-				}
-			});
-		} else {
-			views.setImageViewResource(R.id.show_btn, R.drawable.icon);
+		Bitmap thumbnail = SubscriptionCursor.getThumbnailImage(context, playerState.getSubscriptionId());
+		if (thumbnail != null) {
+			views.setImageViewBitmap(R.id.show_btn, thumbnail);
 		}
 
 		appWidgetManager.updateAppWidget(appWidgetIds, views);

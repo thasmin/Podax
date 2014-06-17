@@ -7,7 +7,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
@@ -72,12 +71,9 @@ public class LockscreenManager {
 				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, status.getSubscriptionTitle())
 				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, status.getTitle())
 				.putLong(MediaMetadataRetriever.METADATA_KEY_DURATION, status.getDuration());
-		String thumbnailUrl = status.getSubscriptionThumbnailUrl();
-		if (thumbnailUrl != null) {
-			Bitmap artwork = Helper.getCachedImage(context, thumbnailUrl);
-			if (artwork == null)
-				artwork = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
-			metadataEditor.putBitmap(METADATA_KEY_ARTWORK, artwork);
+		Bitmap thumbnail = SubscriptionCursor.getThumbnailImage(context, status.getSubscriptionId());
+		if (thumbnail != null) {
+			metadataEditor.putBitmap(METADATA_KEY_ARTWORK, thumbnail);
 		}
 		metadataEditor.apply();
 	}
