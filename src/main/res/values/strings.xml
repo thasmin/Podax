@@ -198,10 +198,12 @@ limitations under the License.
     <string-array name="pref_sdcard_values">
         <item>/storage/sdcard0</item>
         <item>/storage/extSdCard</item>
+        <item>/mnt/shared/sdcard0</item>
     </string-array>
     <string-array name="pref_sdcard_entries">
         <item>Internal Storage</item>
         <item>External SD Card</item>
+        <item>GenyMotion Shared sdcard0</item>
     </string-array>
     <string-array name="gpodder_device_types">
         <item>desktop</item>
