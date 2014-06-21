@@ -199,6 +199,8 @@ public class UpdateService extends IntentService {
 			if (podcast.isDownloaded(this))
 				ret++;
 		}
+		c.close();
+
 		return ret;
 	}
 

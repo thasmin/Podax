@@ -28,6 +28,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -104,9 +105,10 @@ public class SubscriptionUpdater {
 				}
 			}
 
+			InputStream inputStream = connection.getInputStream();;
 			try {
 				XmlPullParser parser = Xml.newPullParser();
-				parser.setInput(connection.getInputStream(), encoding);
+				parser.setInput(inputStream, encoding);
 
 				FeedParser feedParser = new FeedParser();
 				feedParser.setOnFeedInfoHandler(new FeedParser.FeedInfoHandler() {
@@ -148,6 +150,9 @@ public class SubscriptionUpdater {
 				// not much we can do about this
 				Log.w("Podax", "error in subscription xml: " + e.getMessage());
 				showUpdateErrorNotification(subscription, _context.getString(R.string.rss_not_valid));
+			} finally {
+				if (inputStream != null)
+					inputStream.close();
 			}
 
 			// finish grabbing subscription values and update
