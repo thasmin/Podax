@@ -4,7 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;

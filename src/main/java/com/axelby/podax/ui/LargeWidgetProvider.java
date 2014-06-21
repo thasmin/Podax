@@ -7,15 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
 import android.widget.RemoteViews;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.axelby.podax.ActivePodcastReceiver;
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;

@@ -12,8 +12,6 @@ import android.support.v4.app.NotificationCompat;
 
 import com.axelby.podax.ui.MainActivity;
 
-import java.io.File;
-
 public class DownloadCompletedReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {

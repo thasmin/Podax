@@ -33,9 +33,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.PodcastProvider;
