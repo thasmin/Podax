@@ -129,6 +129,9 @@ public class AudioPlayer implements Runnable {
 	}
 
 	public float getPosition() {
+		// not sure why track is null but it's happening
+		if (_track == null)
+			return _seekbase;
 		if (_decoder == null)
 			return 0;
 		return _seekbase + _playbackRate * _track.getPlaybackHeadPosition() / _track.getSampleRate();
@@ -199,6 +202,8 @@ public class AudioPlayer implements Runnable {
 			// close track without waiting
 			if (_track != null) {
 				_track.pause();
+				// store stop point in case something asks for position
+				_seekbase = _seekbase + _playbackRate * _track.getPlaybackHeadPosition() / _track.getSampleRate();
 				_track.flush();
 				_track.release();
 				_track = null;
@@ -217,6 +222,9 @@ public class AudioPlayer implements Runnable {
 		} catch (InterruptedException e) {
 			Log.e("Podax", "InterruptedException", e);
 		}
+
+		// store stop point in case something asks for position
+		_seekbase = _seekbase + _playbackRate * _track.getPlaybackHeadPosition() / _track.getSampleRate();
 
 		_track.release();
 		_track = null;
