@@ -16,6 +16,8 @@ public class PodcastPlayer {
 	// listen for audio focus changes - another app started/stopped, phone call, etc
 	private final AudioManager.OnAudioFocusChangeListener _afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
 		public void onAudioFocusChange(int focusChange) {
+			if (_player == null)
+				return;
 			if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
 				stop();
 			else if (focusChange == AudioManager.AUDIOFOCUS_GAIN)
