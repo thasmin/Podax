@@ -226,9 +226,11 @@ public class SubscriptionUpdater {
 			Bitmap scaled = Bitmap.createScaledBitmap(original, 256, 256, true);
 			SubscriptionCursor.saveThumbnailImage(_context, subscriptionId, scaled);
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			Log.e("Podax", "subscription bitmap has malformed url: " + thumbnailUrl);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e("Podax", "ioexception on subscription bitmap: " + thumbnailUrl);
+		} catch (OutOfMemoryError e) {
+			Log.e("Podax", "subscription bitmap won't fit in memory: " + thumbnailUrl);
 		}
 	}
 
