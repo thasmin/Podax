@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.axelby.podax"
-          android:versionCode="62"
-          android:versionName="7.05">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.axelby.podax">
 
-    <uses-sdk
-            android:minSdkVersion="9"
-            android:targetSdkVersion="19"/>
+    <uses-sdk tools:node="replace" />
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
