@@ -17,7 +17,7 @@
             android:id="@+id/android:empty"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:text="@string/no_podcasts_in_queue"/>
+            android:text="@string/no_episodes_in_playlist"/>
 
     <include
             android:id="@+id/floater"

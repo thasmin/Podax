@@ -46,7 +46,7 @@
             android:id="@+id/drag"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/drag_to_rearrange_queue"
+            android:contentDescription="@string/drag_to_rearrange_playlist"
             android:src="@drawable/ic_list_gripper"/>
 
     <ImageView

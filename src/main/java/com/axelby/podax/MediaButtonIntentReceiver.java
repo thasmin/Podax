@@ -26,7 +26,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 				if (event.getRepeatCount() == 0) {
 					PlayerService.playpause(context, Constants.PAUSE_MEDIABUTTON);
 				} else if (event.getRepeatCount() == 2) {
-					PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, 30);
+					EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, 30);
 					PlayerService.play(context);
 				}
 				break;
@@ -38,11 +38,11 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 				break;
 			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
 			case KeyEvent.KEYCODE_MEDIA_NEXT:
-				PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, 30);
+				EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, 30);
 				break;
 			case KeyEvent.KEYCODE_MEDIA_REWIND:
 			case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-				PodcastProvider.movePositionBy(context, PodcastProvider.ACTIVE_PODCAST_URI, -15);
+				EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, -15);
 				break;
 			default:
 				Log.e("Podax", "No matched event: " + event.getKeyCode());

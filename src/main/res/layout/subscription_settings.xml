@@ -34,7 +34,7 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Podcasts"
+            android:text="New Episodes"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
     <RadioGroup
@@ -47,13 +47,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="Add new podcasts to queue"/>
+                android:text="Add new episodes to queue"/>
 
         <RadioButton
                 android:id="@+id/autoQueueNo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Do not add new podcasts to queue"/>
+                android:text="Do not add new episodes to queue"/>
     </RadioGroup>
 
     <View

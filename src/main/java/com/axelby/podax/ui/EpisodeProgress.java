@@ -8,24 +8,24 @@ import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.Helper;
-import com.axelby.podax.PodcastCursor;
 import com.axelby.podax.R;
 
-public class PodcastProgress extends RelativeLayout {
+public class EpisodeProgress extends RelativeLayout {
 
 	private TextView _position;
 	private ProgressBar _progressbar;
 	private TextView _remaining;
 
-	public PodcastProgress(Context context) {
+	public EpisodeProgress(Context context) {
 		super(context);
 
 		loadViews(context);
 		clear();
 	}
 
-	public PodcastProgress(Context context, AttributeSet attrs) {
+	public EpisodeProgress(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		loadViews(context);
@@ -33,7 +33,7 @@ public class PodcastProgress extends RelativeLayout {
 	}
 
 	private void loadViews(Context context) {
-		LayoutInflater.from(context).inflate(R.layout.podcast_progress, this);
+		LayoutInflater.from(context).inflate(R.layout.episode_progress, this);
 		_position = (TextView) findViewById(R.id.position);
 		_progressbar = (ProgressBar) findViewById(R.id.progress);
 		_remaining = (TextView) findViewById(R.id.remaining);
@@ -57,12 +57,12 @@ public class PodcastProgress extends RelativeLayout {
 		return _position.getText().length() == 0;
 	}
 
-	public void set(PodcastCursor podcast) {
-		_position.setText(Helper.getTimeString(podcast.getLastPosition()));
+	public void set(EpisodeCursor episode) {
+		_position.setText(Helper.getTimeString(episode.getLastPosition()));
 		_progressbar.setVisibility(VISIBLE);
-		_progressbar.setMax(podcast.getDuration());
-		_progressbar.setProgress(podcast.getLastPosition());
-		_remaining.setText("-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
+		_progressbar.setMax(episode.getDuration());
+		_progressbar.setProgress(episode.getLastPosition());
+		_remaining.setText("-" + Helper.getTimeString(episode.getDuration() - episode.getLastPosition()));
 	}
 
 	public void set(int position, int duration) {
@@ -79,11 +79,11 @@ public class PodcastProgress extends RelativeLayout {
 		views.setTextViewText(R.id.remaining, "");
 	}
 
-	public static void remoteSet(RemoteViews views, PodcastCursor podcast) {
-		views.setTextViewText(R.id.position, Helper.getTimeString(podcast.getLastPosition()));
+	public static void remoteSet(RemoteViews views, EpisodeCursor episode) {
+		views.setTextViewText(R.id.position, Helper.getTimeString(episode.getLastPosition()));
 		views.setViewVisibility(R.id.progress, VISIBLE);
-		views.setProgressBar(R.id.progress, podcast.getDuration(), podcast.getLastPosition(), false);
-		views.setTextViewText(R.id.remaining, "-" + Helper.getTimeString(podcast.getDuration() - podcast.getLastPosition()));
+		views.setProgressBar(R.id.progress, episode.getDuration(), episode.getLastPosition(), false);
+		views.setTextViewText(R.id.remaining, "-" + Helper.getTimeString(episode.getDuration() - episode.getLastPosition()));
 	}
 
 	public static void remoteSet(RemoteViews views, int position, int duration) {

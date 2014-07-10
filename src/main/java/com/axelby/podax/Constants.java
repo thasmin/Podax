@@ -9,18 +9,18 @@ public class Constants {
 	public static final int NOTIFICATION_GPODDER_ERROR = 4;
 	public static final int NOTIFICATION_DOWNLOAD_ERROR = 5;
 
-	// active podcast related
-	public static final Uri ACTIVE_PODCAST_DATA_RESTART = Uri.parse("podax://activepodcast/restart");
-	public static final Uri ACTIVE_PODCAST_DATA_BACK = Uri.parse("podax://activepodcast/back");
-	public static final Uri ACTIVE_PODCAST_DATA_FORWARD = Uri.parse("podax://activepodcast/forward");
-	public static final Uri ACTIVE_PODCAST_DATA_END = Uri.parse("podax://activepodcast/end");
+	// active episode related
+	public static final Uri ACTIVE_EPISODE_DATA_RESTART = Uri.parse("podax://activeepisode/restart");
+	public static final Uri ACTIVE_EPISODE_DATA_BACK = Uri.parse("podax://activeepisode/back");
+	public static final Uri ACTIVE_EPISODE_DATA_FORWARD = Uri.parse("podax://activeepisode/forward");
+	public static final Uri ACTIVE_EPISODE_DATA_END = Uri.parse("podax://activeepisode/end");
 
 	public static final String ACTION_REFRESH_ALL_SUBSCRIPTIONS = "com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS";
 	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";
-	public static final String ACTION_DOWNLOAD_PODCAST = "com.axelby.podax.DOWNLOAD_PODCAST";
-	public static final String ACTION_DOWNLOAD_PODCASTS = "com.axelby.podax.DOWNLOAD_PODCASTS";
+	public static final String ACTION_DOWNLOAD_EPISODE = "com.axelby.podax.DOWNLOAD_EPISODE";
+	public static final String ACTION_DOWNLOAD_EPISODES = "com.axelby.podax.DOWNLOAD_EPISODES";
 
-	public static final String EXTRA_PODCAST_ID = "com.axelby.podax.podcastId";
+	public static final String EXTRA_EPOSIDE_ID = "com.axelby.podax.episodeId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
 	public static final String EXTRA_TITLE = "com.axelby.podax.title";
 	public static final String EXTRA_URL = "com.axelby.podax.url";
@@ -35,7 +35,7 @@ public class Constants {
 	public static final int PLAYER_COMMAND_STOP = 3;
 	public static final int PLAYER_COMMAND_PLAYSTOP = 4;
 	public static final int PLAYER_COMMAND_RESUME = 5;
-	public static final int PLAYER_COMMAND_REFRESHPODCAST = 6;
+	public static final int PLAYER_COMMAND_REFRESHEPISODE = 6;
 
 	// reasons for pausing
 	public static final int PAUSE_AUDIOFOCUS = 0;

@@ -34,9 +34,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
+import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerService;
-import com.axelby.podax.PodcastCursor;
-import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SearchSuggestionProvider;
 import com.axelby.podax.SubscriptionCursor;
@@ -91,15 +91,15 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 						break;
 					case PODCAST:
 						Cursor c = (Cursor) getListAdapter().getItem(info.position);
-						PodcastCursor podcast = new PodcastCursor(c);
+						EpisodeCursor episode = new EpisodeCursor(c);
 
-						if (podcast.isDownloaded(getActivity()))
+						if (episode.isDownloaded(getActivity()))
 							menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
-						if (podcast.getQueuePosition() == null)
-							menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_queue);
+						if (episode.getQueuePosition() == null)
+							menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_playlist);
 						else
-							menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
+							menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_playlist);
 
 						break;
 					default:
@@ -192,14 +192,14 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 		Fragment fragment;
 		switch (_adapter.getType(position)) {
 			case SUBSCRIPTION:
-				fragment = new PodcastListFragment();
+				fragment = new EpisodeListFragment();
 				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, id);
 				fragment.setArguments(args);
 				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 				break;
 			case PODCAST:
-				fragment = new PodcastDetailFragment();
-				args.putLong(Constants.EXTRA_PODCAST_ID, id);
+				fragment = new EpisodeDetailFragment();
+				args.putLong(Constants.EXTRA_EPOSIDE_ID, id);
 				fragment.setArguments(args);
 				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 				break;
@@ -219,17 +219,17 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 		switch (type) {
 			case PODCAST:
 				cursor = (Cursor) getListView().getItemAtPosition(info.position);
-				PodcastCursor podcast = new PodcastCursor(cursor);
+				EpisodeCursor episode = new EpisodeCursor(cursor);
 
 				switch (item.getItemId()) {
 					case OPTION_ADDTOQUEUE:
-						podcast.addToQueue(getActivity());
+						episode.addToQueue(getActivity());
 						break;
 					case OPTION_REMOVEFROMQUEUE:
-						podcast.removeFromQueue(getActivity());
+						episode.removeFromQueue(getActivity());
 						break;
 					case OPTION_PLAY:
-						PlayerService.play(getActivity(), podcast.getId());
+						PlayerService.play(getActivity(), episode.getId());
 						break;
 				}
 				break;
@@ -263,17 +263,17 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 					null, new String[]{query}, SubscriptionProvider.COLUMN_TITLE);
 		} else if (id == CURSOR_PODCASTS) {
 			String[] projection = {
-					PodcastProvider.COLUMN_ID,
-					PodcastProvider.COLUMN_TITLE,
-					PodcastProvider.COLUMN_SUBSCRIPTION_ID,
-					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-					PodcastProvider.COLUMN_QUEUE_POSITION,
-					PodcastProvider.COLUMN_MEDIA_URL,
-					PodcastProvider.COLUMN_FILE_SIZE,
-					PodcastProvider.COLUMN_SUBSCRIPTION_ID,
+					EpisodeProvider.COLUMN_ID,
+					EpisodeProvider.COLUMN_TITLE,
+					EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
+					EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
+					EpisodeProvider.COLUMN_QUEUE_POSITION,
+					EpisodeProvider.COLUMN_MEDIA_URL,
+					EpisodeProvider.COLUMN_FILE_SIZE,
+					EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
 			};
-			return new CursorLoader(getActivity(), PodcastProvider.SEARCH_URI, projection,
-					null, new String[]{query}, PodcastProvider.COLUMN_PUB_DATE + " DESC");
+			return new CursorLoader(getActivity(), EpisodeProvider.SEARCH_URI, projection,
+					null, new String[]{query}, EpisodeProvider.COLUMN_PUB_DATE + " DESC");
 		} else
 			throw new IllegalArgumentException("Invalid loader id");
 	}
@@ -438,7 +438,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 			if (isSubscription(position))
 				return new SubscriptionCursor(cursor).getId();
 			if (isPodcast(position))
-				return new PodcastCursor(cursor).getId();
+				return new EpisodeCursor(cursor).getId();
 
 			throw new IllegalStateException();
 		}
@@ -483,7 +483,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 					if (o == null)
 						return textView;
 
-					PodcastCursor podcast = new PodcastCursor((Cursor) o);
+					EpisodeCursor episode = new EpisodeCursor((Cursor) o);
 
 					view = _inflater.inflate(R.layout.playlist_list_item, null);
 					view.findViewById(R.id.drag).setVisibility(View.INVISIBLE);
@@ -498,9 +498,9 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 						}
 					});
 
-					((TextView) view.findViewById(R.id.title)).setText(podcast.getTitle());
-					((TextView) view.findViewById(R.id.subscription)).setText(podcast.getSubscriptionTitle());
-					((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), podcast.getSubscriptionId()));
+					((TextView) view.findViewById(R.id.title)).setText(episode.getTitle());
+					((TextView) view.findViewById(R.id.subscription)).setText(episode.getSubscriptionTitle());
+					((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
 					return view;
 				default:
 					return textView;
@@ -546,15 +546,15 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 						null, new String[] { _query },
 						SubscriptionProvider.COLUMN_TITLE);
 			} else if (groupTitle.equals("Podcasts")) {
-				Uri searchUri = Uri.withAppendedPath(PodcastProvider.URI, "search");
+				Uri searchUri = Uri.withAppendedPath(EpisodeProvider.URI, "search");
 				String[] projection = {
-						PodcastProvider.COLUMN_ID,
-						PodcastProvider.COLUMN_TITLE,
-						PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
+						EpisodeProvider.COLUMN_ID,
+						EpisodeProvider.COLUMN_TITLE,
+						EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
 				};
 				return _context.getContentResolver().query(searchUri, projection,
 						null, new String[] { _query },
-						PodcastProvider.COLUMN_PUB_DATE + " DESC");
+						EpisodeProvider.COLUMN_PUB_DATE + " DESC");
 			} else
 				throw new IllegalArgumentException("Invalid search group");
 		}

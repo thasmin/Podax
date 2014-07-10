@@ -26,15 +26,15 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
+import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerService;
-import com.axelby.podax.PodcastCursor;
-import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
-public class PodcastListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EpisodeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	static final int OPTION_ADDTOQUEUE = 3;
 	static final int OPTION_REMOVEFROMQUEUE = 1;
 	static final int OPTION_PLAY = 2;
@@ -74,15 +74,15 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 			public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 				Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
-				PodcastCursor podcast = new PodcastCursor(cursor);
+				EpisodeCursor episode = new EpisodeCursor(cursor);
 
-				if (podcast.isDownloaded(getActivity()))
+				if (episode.isDownloaded(getActivity()))
 					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
-				if (podcast.getQueuePosition() == null)
-					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_queue);
+				if (episode.getQueuePosition() == null)
+					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_playlist);
 				else
-					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
+					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_playlist);
 			}
 		});
 	}
@@ -126,22 +126,22 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
-		PodcastCursor podcast = new PodcastCursor(cursor);
+		EpisodeCursor episode = new EpisodeCursor(cursor);
 
 		switch (item.getItemId()) {
 			case OPTION_ADDTOQUEUE:
-				podcast.addToQueue(getActivity());
+				episode.addToQueue(getActivity());
 				break;
 			case OPTION_REMOVEFROMQUEUE:
-				podcast.removeFromQueue(getActivity());
+				episode.removeFromQueue(getActivity());
 				break;
 			case OPTION_PLAY:
-				PlayerService.play(getActivity(), podcast.getId());
+				PlayerService.play(getActivity(), episode.getId());
 
 				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
+				args.putLong(Constants.EXTRA_EPOSIDE_ID, episode.getId());
 				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				PodcastDetailFragment fragment = new PodcastDetailFragment();
+				EpisodeDetailFragment fragment = new EpisodeDetailFragment();
 				fragment.setArguments(args);
 				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 		}
@@ -178,12 +178,12 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
 		Cursor cursor = (Cursor) list.getItemAtPosition(position);
-		PodcastCursor podcast = new PodcastCursor(cursor);
+		EpisodeCursor episode = new EpisodeCursor(cursor);
 		Bundle args = new Bundle();
-		args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
+		args.putLong(Constants.EXTRA_EPOSIDE_ID, episode.getId());
 
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		PodcastDetailFragment fragment = new PodcastDetailFragment();
+		EpisodeDetailFragment fragment = new EpisodeDetailFragment();
 		fragment.setArguments(args);
 		ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 	}
@@ -193,11 +193,11 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
 		uri = Uri.withAppendedPath(uri, "podcasts");
 		String[] projection = {
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_TITLE,
-				PodcastProvider.COLUMN_MEDIA_URL,
-				PodcastProvider.COLUMN_FILE_SIZE,
-				PodcastProvider.COLUMN_QUEUE_POSITION,
+				EpisodeProvider.COLUMN_ID,
+				EpisodeProvider.COLUMN_TITLE,
+				EpisodeProvider.COLUMN_MEDIA_URL,
+				EpisodeProvider.COLUMN_FILE_SIZE,
+				EpisodeProvider.COLUMN_QUEUE_POSITION,
 		};
 		return new CursorLoader(getActivity(), uri, projection, null, null, null);
 	}
@@ -219,13 +219,13 @@ public class PodcastListFragment extends ListFragment implements LoaderManager.L
 
 	private class PodcastAdapter extends ResourceCursorAdapter {
 		public PodcastAdapter(Context context, Cursor cursor) {
-			super(context, R.layout.podcast_list_item, cursor, true);
+			super(context, R.layout.episode_list_item, cursor, true);
 		}
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			TextView textview = (TextView) view.findViewById(R.id.text);
-			String podcastTitle = new PodcastCursor(cursor).getTitle();
+			String podcastTitle = new EpisodeCursor(cursor).getTitle();
 			textview.setText(podcastTitle);
 
 			// more button handler

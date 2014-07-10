@@ -20,10 +20,10 @@
         <com.axelby.podax.ui.LimitedSeekBarPreference
             android:defaultValue="10000"
             android:key="queueMaxNumPodcasts"
-            android:summary="@string/pref_max_num_podcasts"
-            android:title="@string/pref_max_num_podcasts_title"
-            android:entries="@array/pref_max_num_podcasts_entries"
-            android:entryValues="@array/pref_max_num_podcasts_values" />
+            android:summary="@string/pref_max_num_episodes"
+            android:title="@string/pref_max_num_episodes_title"
+            android:entries="@array/pref_max_num_episodes_entries"
+            android:entryValues="@array/pref_max_num_episodes_values" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Playback">

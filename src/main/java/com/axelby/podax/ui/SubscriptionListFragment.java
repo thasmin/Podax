@@ -57,12 +57,12 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 				SubscriptionCursor sub = new SubscriptionCursor((Cursor) grid.getItemAtPosition(position));
 				long subscriptionId = sub.getId();
 
-				PodcastListFragment podcastListFragment = new PodcastListFragment();
+				EpisodeListFragment episodeListFragment = new EpisodeListFragment();
 				Bundle args = new Bundle();
 				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
-				podcastListFragment.setArguments(args);
+				episodeListFragment.setArguments(args);
 				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				ft.replace(R.id.fragment, podcastListFragment).addToBackStack(null).commit();
+				ft.replace(R.id.fragment, episodeListFragment).addToBackStack(null).commit();
 			}
 		});
 		registerForContextMenu(_grid);

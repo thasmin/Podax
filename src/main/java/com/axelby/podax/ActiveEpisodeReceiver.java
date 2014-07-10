@@ -10,23 +10,23 @@ import android.net.Uri;
 import com.axelby.podax.ui.LargeWidgetProvider;
 import com.axelby.podax.ui.SmallWidgetProvider;
 
-public class ActivePodcastReceiver extends BroadcastReceiver {
+public class ActiveEpisodeReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		if (intent.getData() == null)
 			return;
 
-		// only receives com.axelby.podax.activepodcast intents
-		Uri activePodcastUri = PodcastProvider.ACTIVE_PODCAST_URI;
-		if (intent.getData().equals(Constants.ACTIVE_PODCAST_DATA_RESTART))
-			PodcastProvider.restart(context, activePodcastUri);
-		else if (intent.getData().equals(Constants.ACTIVE_PODCAST_DATA_BACK))
-			PodcastProvider.movePositionBy(context, activePodcastUri, -15);
-		else if (intent.getData().equals(Constants.ACTIVE_PODCAST_DATA_FORWARD))
-			PodcastProvider.movePositionBy(context, activePodcastUri, 30);
-		else if (intent.getData().equals(Constants.ACTIVE_PODCAST_DATA_END))
-			PodcastProvider.skipToEnd(context, activePodcastUri);
+		// only receives com.axelby.podax.activeepisode intents
+		Uri activeEpisodeUri = EpisodeProvider.ACTIVE_EPISODE_URI;
+		if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_RESTART))
+			EpisodeProvider.restart(context, activeEpisodeUri);
+		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_BACK))
+			EpisodeProvider.movePositionBy(context, activeEpisodeUri, -15);
+		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_FORWARD))
+			EpisodeProvider.movePositionBy(context, activeEpisodeUri, 30);
+		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_END))
+			EpisodeProvider.skipToEnd(context, activeEpisodeUri);
 	}
 
 	public static void notifyExternal(Context context) {

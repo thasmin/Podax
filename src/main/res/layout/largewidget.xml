@@ -42,7 +42,7 @@
                     android:textIsSelectable="true"/>
 
             <TextView
-                    android:id="@+id/podcast"
+                    android:id="@+id/episode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="1dp"
@@ -51,7 +51,7 @@
 
             <include
                     android:id="@+id/positionstring"
-                    layout="@layout/podcast_progress"/>
+                    layout="@layout/episode_progress"/>
         </LinearLayout>
     </LinearLayout>
 

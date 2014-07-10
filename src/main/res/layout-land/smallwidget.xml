@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="2dp"
                 android:layout_marginRight="2dp"
-                layout="@layout/podcast_progress" />
+                layout="@layout/episode_progress" />
 
             <LinearLayout
                 android:id="@+id/bottomrow"

@@ -8,31 +8,31 @@ public class PlayerStatus {
 
 	public static PlayerStatus getCurrentState(Context context) {
 		String[] projection = {
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
-				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-				PodcastProvider.COLUMN_LAST_POSITION,
-				PodcastProvider.COLUMN_DURATION,
-				PodcastProvider.COLUMN_MEDIA_URL,
+				EpisodeProvider.COLUMN_ID,
+				EpisodeProvider.COLUMN_TITLE,
+				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
+				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
+				EpisodeProvider.COLUMN_LAST_POSITION,
+				EpisodeProvider.COLUMN_DURATION,
+				EpisodeProvider.COLUMN_MEDIA_URL,
 		};
-		Cursor cursor = context.getContentResolver().query(PodcastProvider.ACTIVE_PODCAST_URI, projection, null, null, null);
+		Cursor cursor = context.getContentResolver().query(EpisodeProvider.ACTIVE_EPISODE_URI, projection, null, null, null);
 		PlayerStatus status = new PlayerStatus();
 		if (cursor == null) {
 			status._state = PlayerStates.QUEUEEMPTY;
 			return status;
 		}
 		if (cursor.moveToNext()) {
-			PodcastCursor podcast = new PodcastCursor(cursor);
+			EpisodeCursor episode = new EpisodeCursor(cursor);
 			SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
 			status._state = PlayerStates.fromInt(prefs.getInt("playingState", PlayerStates.STOPPED.toInt()));
-			status._podcastId = podcast.getId();
-			status._subscriptionId = podcast.getSubscriptionId();
-			status._title = podcast.getTitle();
-			status._subscriptionTitle = podcast.getSubscriptionTitle();
-			status._position = podcast.getLastPosition();
-			status._duration = podcast.getDuration();
-			status._filename = podcast.getFilename(context);
+			status._episodeId = episode.getId();
+			status._subscriptionId = episode.getSubscriptionId();
+			status._title = episode.getTitle();
+			status._subscriptionTitle = episode.getSubscriptionTitle();
+			status._position = episode.getLastPosition();
+			status._duration = episode.getDuration();
+			status._filename = episode.getFilename(context);
 		}
 		cursor.close();
 		return status;
@@ -41,7 +41,7 @@ public class PlayerStatus {
 	public static void updateState(Context context, PlayerStates state) {
 		SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
 		prefs.edit().putInt("playingState", state.toInt()).commit();
-		ActivePodcastReceiver.notifyExternal(context);
+		ActiveEpisodeReceiver.notifyExternal(context);
 	}
 
 	public static PlayerStates getPlayerState(Context context) {
@@ -76,7 +76,7 @@ public class PlayerStatus {
 	}
 
 	private PlayerStates _state;
-	private long _podcastId;
+	private long _episodeId;
 	private long _subscriptionId;
 	private int _position;
 	private int _duration;
@@ -86,7 +86,7 @@ public class PlayerStatus {
 
 	private PlayerStatus() {
 		_state = PlayerStates.QUEUEEMPTY;
-		_podcastId = -1;
+		_episodeId = -1;
 	}
 
 	public PlayerStates getState() {
@@ -95,8 +95,8 @@ public class PlayerStatus {
 
 	public boolean isPlaying() { return _state == PlayerStates.PLAYING; }
 
-	public long getPodcastId() {
-		return _podcastId;
+	public long getEpisodeId() {
+		return _episodeId;
 	}
 
 	public long getSubscriptionId() {
@@ -119,7 +119,7 @@ public class PlayerStatus {
 
 	public String getFilename() { return _filename; }
 
-	public boolean hasActivePodcast() {
+	public boolean hasActiveEpisode() {
 		return getState() != PlayerStates.QUEUEEMPTY;
 	}
 

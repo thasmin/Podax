@@ -8,21 +8,21 @@ public class PlaylistManager {
 
 	public static void moveToNextInQueue(Context context) {
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_LAST_POSITION, 0);
+		values.put(EpisodeProvider.COLUMN_LAST_POSITION, 0);
 		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("autoDeletePref", true)) {
-			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+			values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, (Integer) null);
 		} else {
-			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
+			values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
 		}
-		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+		context.getContentResolver().update(EpisodeProvider.ACTIVE_EPISODE_URI, values, null, null);
 
 		Stats.addCompletion(context);
 	}
 
-	public static void changeActivePodcast(Context context, long activePodcastId) {
+	public static void changeActiveEpisode(Context context, long activeEpisodeId) {
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_ID, activePodcastId);
-		context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+		values.put(EpisodeProvider.COLUMN_ID, activeEpisodeId);
+		context.getContentResolver().update(EpisodeProvider.ACTIVE_EPISODE_URI, values, null, null);
 	}
 
 }

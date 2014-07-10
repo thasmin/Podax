@@ -107,7 +107,7 @@ public class SubscriptionCursor {
 	}
 
 	private static String getThumbnailFilename(Context context, long subscriptionId) {
-		String storagePath = PodcastCursor.getStoragePath(context);
+		String storagePath = EpisodeCursor.getStoragePath(context);
 		return storagePath + String.valueOf(subscriptionId) + "podcast.image";
 	}
 

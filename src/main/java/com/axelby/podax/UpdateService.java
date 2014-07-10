@@ -43,16 +43,16 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
-	public static void downloadPodcasts(Context context) {
+	public static void downloadEpisodes(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
-		intent.setAction(Constants.ACTION_DOWNLOAD_PODCASTS);
+		intent.setAction(Constants.ACTION_DOWNLOAD_EPISODES);
 		intent.putExtra(Constants.EXTRA_MANUAL_REFRESH, true);
 		context.startService(intent);
 	}
 
-	public static void downloadPodcastsSilently(Context context) {
+	public static void downloadEpisodesSilently(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
-		intent.setAction(Constants.ACTION_DOWNLOAD_PODCASTS);
+		intent.setAction(Constants.ACTION_DOWNLOAD_EPISODES);
 		context.startService(intent);
 	}
 
@@ -63,10 +63,10 @@ public class UpdateService extends IntentService {
 		return intent;
 	}
 
-	private static Intent createDownloadPodcastIntent(Context context, long subscriptionId) {
+	private static Intent createDownloadEpisodeIntent(Context context, long subscriptionId) {
 		Intent intent = new Intent(context, UpdateService.class);
-		intent.setAction(Constants.ACTION_DOWNLOAD_PODCAST);
-		intent.putExtra(Constants.EXTRA_PODCAST_ID, subscriptionId);
+		intent.setAction(Constants.ACTION_DOWNLOAD_EPISODE);
+		intent.putExtra(Constants.EXTRA_EPOSIDE_ID, subscriptionId);
 		return intent;
 	}
 
@@ -109,55 +109,55 @@ public class UpdateService extends IntentService {
 			if (subscriptionId == -1)
 				return;
 			new SubscriptionUpdater(this).update(subscriptionId);
-		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCASTS)) {
+		} else if (action.equals(Constants.ACTION_DOWNLOAD_EPISODES)) {
 			verifyDownloadedFiles();
 			expireDownloadedFiles();
 
-			String[] projection = {PodcastProvider.COLUMN_ID};
-			Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
+			String[] projection = {EpisodeProvider.COLUMN_ID};
+			Cursor c = getContentResolver().query(EpisodeProvider.QUEUE_URI, projection, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
-					handleIntent(createDownloadPodcastIntent(this, c.getLong(0)));
+					handleIntent(createDownloadEpisodeIntent(this, c.getLong(0)));
 				c.close();
 			}
-		} else if (action.equals(Constants.ACTION_DOWNLOAD_PODCAST)) {
-			long podcastId = intent.getLongExtra(Constants.EXTRA_PODCAST_ID, -1L);
-			if (podcastId == -1)
+		} else if (action.equals(Constants.ACTION_DOWNLOAD_EPISODE)) {
+			long episodeId = intent.getLongExtra(Constants.EXTRA_EPOSIDE_ID, -1L);
+			if (episodeId == -1)
 				return;
-			float maxPodcasts = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
-			if (getQueueNumDownloadedItems() >= maxPodcasts)
+			float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
+			if (getQueueNumDownloadedItems() >= maxEpisodes)
 				return;
-			PodcastDownloader.download(this, podcastId);
+			EpisodeDownloader.download(this, episodeId);
 		}
 
 		removeNotification();
 	}
 
-	// make sure all media files in the folder are for existing podcasts
+	// make sure all media files in the folder are for existing episodes
 	private void verifyDownloadedFiles() {
 		ArrayList<String> validMediaFilenames = new ArrayList<String>();
 		String[] projection = new String[]{
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_MEDIA_URL,
+				EpisodeProvider.COLUMN_ID,
+				EpisodeProvider.COLUMN_MEDIA_URL,
 		};
-		Uri queueUri = Uri.withAppendedPath(PodcastProvider.URI, "queue");
+		Uri queueUri = Uri.withAppendedPath(EpisodeProvider.URI, "queue");
 		if (queueUri == null)
 			return;
 		Cursor c = getContentResolver().query(queueUri, projection, null, null, null);
 		if (c == null)
 			return;
 		while (c.moveToNext())
-			validMediaFilenames.add(new PodcastCursor(c).getFilename(this));
+			validMediaFilenames.add(new EpisodeCursor(c).getFilename(this));
 		c.close();
 
-		File dir = new File(PodcastCursor.getStoragePath(this));
+		File dir = new File(EpisodeCursor.getStoragePath(this));
 		File[] files = dir.listFiles();
 		// this is possible if the directory does not exist
 		if (files == null)
 			return;
 		for (File f : files) {
 			// make sure the file is a media file
-			String extension = PodcastCursor.getExtension(f.getName());
+			String extension = EpisodeCursor.getExtension(f.getName());
 			String[] mediaExtensions = new String[]{"mp3", "ogg", "wma", "m4a",};
 			if (Arrays.binarySearch(mediaExtensions, extension) < 0)
 				continue;
@@ -170,33 +170,33 @@ public class UpdateService extends IntentService {
 
 	private void expireDownloadedFiles() {
 		String[] projection = new String[]{
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_MEDIA_URL,
+				EpisodeProvider.COLUMN_ID,
+				EpisodeProvider.COLUMN_MEDIA_URL,
 		};
-		Cursor c = getContentResolver().query(PodcastProvider.EXPIRED_URI, projection, null, null, null);
+		Cursor c = getContentResolver().query(EpisodeProvider.EXPIRED_URI, projection, null, null, null);
 		if (c == null)
 			return;
 		while (c.moveToNext())
-			new PodcastCursor(c).removeFromQueue(this);
+			new EpisodeCursor(c).removeFromQueue(this);
 		c.close();
 	}
 
 	private int getQueueNumDownloadedItems() {
 		String[] projection = {
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-				PodcastProvider.COLUMN_MEDIA_URL,
-				PodcastProvider.COLUMN_FILE_SIZE,
+				EpisodeProvider.COLUMN_ID,
+				EpisodeProvider.COLUMN_TITLE,
+				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
+				EpisodeProvider.COLUMN_MEDIA_URL,
+				EpisodeProvider.COLUMN_FILE_SIZE,
 		};
-		Cursor c = getContentResolver().query(PodcastProvider.QUEUE_URI, projection, null, null, null);
+		Cursor c = getContentResolver().query(EpisodeProvider.QUEUE_URI, projection, null, null, null);
 		if (c == null)
 			return 0;
 		int ret = 0;
 
 		while (c.moveToNext()) {
-			PodcastCursor podcast = new PodcastCursor(c);
-			if (podcast.isDownloaded(this))
+			EpisodeCursor episode = new EpisodeCursor(c);
+			if (episode.isDownloaded(this))
 				ret++;
 		}
 		c.close();

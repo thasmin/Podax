@@ -12,7 +12,7 @@ import com.axelby.podax.player.IMediaDecoder;
 import java.io.File;
 import java.util.Date;
 
-public class PodcastCursor {
+public class EpisodeCursor {
 
 	private Cursor _cursor;
 
@@ -33,7 +33,7 @@ public class PodcastCursor {
 	private Integer _gpodderUpdateTimestampColumn = null;
 	private Integer _paymentColumn = null;
 
-	public PodcastCursor(Cursor cursor) {
+	public EpisodeCursor(Cursor cursor) {
 		_cursor = cursor;
 		if (_cursor.getCount() == 0)
 			return;
@@ -46,18 +46,18 @@ public class PodcastCursor {
 	}
 
 	public Uri getContentUri() {
-		return ContentUris.withAppendedId(PodcastProvider.URI, getId());
+		return ContentUris.withAppendedId(EpisodeProvider.URI, getId());
 	}
 
 	public long getId() {
 		if (_idColumn == null)
-			_idColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_ID);
+			_idColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_ID);
 		return _cursor.getLong(_idColumn);
 	}
 
 	public String getTitle() {
 		if (_titleColumn == null)
-			_titleColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_TITLE);
+			_titleColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_TITLE);
 		if (_cursor.isNull(_titleColumn))
 			return null;
 		return _cursor.getString(_titleColumn);
@@ -65,7 +65,7 @@ public class PodcastCursor {
 
 	public Long getSubscriptionId() {
 		if (_subscriptionIdColumn == null)
-			_subscriptionIdColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_SUBSCRIPTION_ID);
+			_subscriptionIdColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_SUBSCRIPTION_ID);
 		if (_cursor.isNull(_subscriptionIdColumn))
 			return null;
 		return _cursor.getLong(_subscriptionIdColumn);
@@ -73,7 +73,7 @@ public class PodcastCursor {
 
 	public String getSubscriptionTitle() {
 		if (_subscriptionTitleColumn == null)
-			_subscriptionTitleColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_SUBSCRIPTION_TITLE);
+			_subscriptionTitleColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE);
 		if (_cursor.isNull(_subscriptionTitleColumn))
 			return null;
 		return _cursor.getString(_subscriptionTitleColumn);
@@ -81,7 +81,7 @@ public class PodcastCursor {
 
 	public String getSubscriptionUrl() {
 		if (_subscriptionUrlColumn == null)
-			_subscriptionUrlColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_SUBSCRIPTION_URL);
+			_subscriptionUrlColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_SUBSCRIPTION_URL);
 		if (_cursor.isNull(_subscriptionUrlColumn))
 			return null;
 		return _cursor.getString(_subscriptionUrlColumn);
@@ -89,7 +89,7 @@ public class PodcastCursor {
 
 	public String getMediaUrl() {
 		if (_mediaUrlColumn == null)
-			_mediaUrlColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_MEDIA_URL);
+			_mediaUrlColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_MEDIA_URL);
 		if (_cursor.isNull(_mediaUrlColumn))
 			return null;
 		return _cursor.getString(_mediaUrlColumn);
@@ -97,7 +97,7 @@ public class PodcastCursor {
 
 	public Integer getFileSize() {
 		if (_fileSizeColumn == null)
-			_fileSizeColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_FILE_SIZE);
+			_fileSizeColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_FILE_SIZE);
 		if (_cursor.isNull(_fileSizeColumn))
 			return null;
 		return _cursor.getInt(_fileSizeColumn);
@@ -105,7 +105,7 @@ public class PodcastCursor {
 
 	public Integer getQueuePosition() {
 		if (_queuePositionColumn == null)
-			_queuePositionColumn = _cursor.getColumnIndex(PodcastProvider.COLUMN_QUEUE_POSITION);
+			_queuePositionColumn = _cursor.getColumnIndex(EpisodeProvider.COLUMN_QUEUE_POSITION);
 		if (_cursor.isNull(_queuePositionColumn))
 			return null;
 		return _cursor.getInt(_queuePositionColumn);
@@ -113,7 +113,7 @@ public class PodcastCursor {
 
 	public String getDescription() {
 		if (_descriptionColumn == null)
-			_descriptionColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_DESCRIPTION);
+			_descriptionColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_DESCRIPTION);
 		if (_cursor.isNull(_descriptionColumn))
 			return null;
 		return _cursor.getString(_descriptionColumn);
@@ -121,7 +121,7 @@ public class PodcastCursor {
 
 	public Integer getLastPosition() {
 		if (_lastPositionColumn == null)
-			_lastPositionColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_LAST_POSITION);
+			_lastPositionColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_LAST_POSITION);
 		if (_cursor.isNull(_lastPositionColumn))
 			return null;
 		return _cursor.getInt(_lastPositionColumn);
@@ -129,7 +129,7 @@ public class PodcastCursor {
 
 	public Integer getDuration() {
 		if (_durationColumn == null)
-			_durationColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_DURATION);
+			_durationColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_DURATION);
 		if (_cursor.isNull(_durationColumn))
 			return null;
 		return _cursor.getInt(_durationColumn);
@@ -137,7 +137,7 @@ public class PodcastCursor {
 
 	public Date getPubDate() {
 		if (_pubDateColumn == null)
-			_pubDateColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_PUB_DATE);
+			_pubDateColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_PUB_DATE);
 		if (_cursor.isNull(_pubDateColumn))
 			return null;
 		return new Date(_cursor.getLong(_durationColumn) * 1000);
@@ -145,7 +145,7 @@ public class PodcastCursor {
 
 	public Long getDownloadId() {
 		if (_downloadIdColumn == null)
-			_downloadIdColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_DOWNLOAD_ID);
+			_downloadIdColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_DOWNLOAD_ID);
 		if (_cursor.isNull(_downloadIdColumn))
 			return null;
 		return _cursor.getLong(_downloadIdColumn);
@@ -153,17 +153,17 @@ public class PodcastCursor {
 
 	public Date getGPodderUpdateTimestamp() {
 		if (_gpodderUpdateTimestampColumn == null)
-			_gpodderUpdateTimestampColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP);
+			_gpodderUpdateTimestampColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP);
 		if (_cursor.isNull(_gpodderUpdateTimestampColumn))
 			return null;
 		return new Date(_cursor.getLong(_gpodderUpdateTimestampColumn));
 	}
 
 	public String getFilename(Context context) {
-		return PodcastCursor.getStoragePath(context) + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
+		return EpisodeCursor.getStoragePath(context) + String.valueOf(getId()) + "." + EpisodeCursor.getExtension(getMediaUrl());
 	}
 	public String getOldFilename(Context context) {
-		return PodcastCursor.getOldStoragePath(context) + String.valueOf(getId()) + "." + PodcastCursor.getExtension(getMediaUrl());
+		return EpisodeCursor.getOldStoragePath(context) + String.valueOf(getId()) + "." + EpisodeCursor.getExtension(getMediaUrl());
 	}
 
 	public boolean isDownloaded(Context context) {
@@ -207,7 +207,7 @@ public class PodcastCursor {
 
 	public String getPaymentUrl() {
 		if (_paymentColumn == null)
-			_paymentColumn = _cursor.getColumnIndexOrThrow(PodcastProvider.COLUMN_PAYMENT);
+			_paymentColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_PAYMENT);
 		if (_cursor.isNull(_paymentColumn))
 			return null;
 		return _cursor.getString(_paymentColumn);
@@ -215,19 +215,19 @@ public class PodcastCursor {
 
 	public void removeFromQueue(Context context) {
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+		values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, (Integer) null);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
 	public void addToQueue(Context context) {
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
+		values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
 	public void moveToFirstInQueue(Context context) {
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_QUEUE_POSITION, 0);
+		values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, 0);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
@@ -239,7 +239,7 @@ public class PodcastCursor {
 		decoder.close();
 
 		ContentValues values = new ContentValues();
-		values.put(PodcastProvider.COLUMN_DURATION, duration);
+		values.put(EpisodeProvider.COLUMN_DURATION, duration);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 		return duration;
 	}

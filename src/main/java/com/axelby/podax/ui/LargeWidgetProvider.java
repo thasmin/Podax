@@ -9,7 +9,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
-import com.axelby.podax.ActivePodcastReceiver;
+import com.axelby.podax.ActiveEpisodeReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
@@ -27,7 +27,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 	}
 
 	public static void setActivePodcastClickIntent(Context context, RemoteViews views, int resourceId, Uri command) {
-		Intent intent = new Intent(context, ActivePodcastReceiver.class);
+		Intent intent = new Intent(context, ActiveEpisodeReceiver.class);
 		intent.setData(command);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 		views.setOnClickPendingIntent(resourceId, pendingIntent);
@@ -45,11 +45,11 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 		updatePodcastDetails(playerState, views);
 
 		// set up pending intents
-		setActivePodcastClickIntent(context, views, R.id.restart_btn, Constants.ACTIVE_PODCAST_DATA_RESTART);
-		setActivePodcastClickIntent(context, views, R.id.rewind_btn, Constants.ACTIVE_PODCAST_DATA_BACK);
+		setActivePodcastClickIntent(context, views, R.id.restart_btn, Constants.ACTIVE_EPISODE_DATA_RESTART);
+		setActivePodcastClickIntent(context, views, R.id.rewind_btn, Constants.ACTIVE_EPISODE_DATA_BACK);
 		setPlayerServiceClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYSTOP);
-		setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_PODCAST_DATA_FORWARD);
-		setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_PODCAST_DATA_END);
+		setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_EPISODE_DATA_FORWARD);
+		setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_EPISODE_DATA_END);
 
 		Bitmap thumbnail = SubscriptionCursor.getThumbnailImage(context, playerState.getSubscriptionId());
 		if (thumbnail != null) {
@@ -66,17 +66,17 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 	}
 
 	public void updatePodcastDetails(PlayerStatus player, RemoteViews views) {
-		if (player.hasActivePodcast()) {
+		if (player.hasActiveEpisode()) {
 			views.setTextViewText(R.id.title, player.getTitle());
-			views.setTextViewText(R.id.podcast, player.getSubscriptionTitle());
-			PodcastProgress.remoteSet(views, player.getPosition(), player.getDuration());
+			views.setTextViewText(R.id.episode, player.getSubscriptionTitle());
+			EpisodeProgress.remoteSet(views, player.getPosition(), player.getDuration());
 
 			int imageRes = player.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		} else {
 			views.setTextViewText(R.id.title, "Queue empty");
-			views.setTextViewText(R.id.podcast, "");
-			PodcastProgress.remoteClear(views);
+			views.setTextViewText(R.id.episode, "");
+			EpisodeProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		}
 	}

@@ -24,20 +24,20 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 			if (c != null && c.moveToFirst()) {
 				int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
 				if (status == DownloadManager.STATUS_SUCCESSFUL) {
-					Cursor pc = context.getContentResolver().query(PodcastProvider.URI, null, "downloadId = ?", new String[]{String.valueOf(downloadId)}, null);
+					Cursor pc = context.getContentResolver().query(EpisodeProvider.URI, null, "downloadId = ?", new String[]{String.valueOf(downloadId)}, null);
 					if (pc != null) {
 						if (pc.moveToNext()) {
-							PodcastCursor podcast = new PodcastCursor(pc);
-							podcast.determineDuration(context);
+							EpisodeCursor episode = new EpisodeCursor(pc);
+							episode.determineDuration(context);
 
 							ContentValues values = new ContentValues();
 							int totalSize = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
-							values.put(PodcastProvider.COLUMN_FILE_SIZE, totalSize);
-							context.getContentResolver().update(PodcastProvider.getContentUri(podcast.getId()), values, null, null);
+							values.put(EpisodeProvider.COLUMN_FILE_SIZE, totalSize);
+							context.getContentResolver().update(EpisodeProvider.getContentUri(episode.getId()), values, null, null);
 						}
 						pc.close();
 					}
-					context.getContentResolver().notifyChange(PodcastProvider.ACTIVE_PODCAST_URI, null);
+					context.getContentResolver().notifyChange(EpisodeProvider.ACTIVE_EPISODE_URI, null);
 				} else if (status == DownloadManager.STATUS_FAILED) {
 					NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 					builder.setSmallIcon(R.drawable.icon);
@@ -45,7 +45,7 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 					if (title != null)
 						title = title.substring("Downloading ".length());
 					else
-						title = "podcast";
+						title = "episode";
 					builder.setContentTitle("Cannot download " + title);
 					builder.setContentIntent(PendingIntent.getActivity(context, 0, new Intent(context, MainActivity.class), 0));
 					switch (c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON))) {
@@ -56,7 +56,7 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 							builder.setContentText("External storage device not found");
 							break;
 						case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-							builder.setContentText("Podcast already exists (email dan@axelby.com)");
+							builder.setContentText("Episode already exists (email dan@axelby.com)");
 							break;
 						case DownloadManager.ERROR_FILE_ERROR:
 							builder.setContentText("Unknown storage error");

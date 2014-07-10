@@ -45,8 +45,8 @@ public class LockscreenManager {
 				@Override
 				public void onPlaybackPositionUpdate(long position) {
 					ContentValues values = new ContentValues(1);
-					values.put(PodcastProvider.COLUMN_LAST_POSITION, position);
-					_context.getContentResolver().update(PodcastProvider.ACTIVE_PODCAST_URI, values, null, null);
+					values.put(EpisodeProvider.COLUMN_LAST_POSITION, position);
+					_context.getContentResolver().update(EpisodeProvider.ACTIVE_EPISODE_URI, values, null, null);
 				}
 			});
 			_remoteControlClient.setOnGetPlaybackPositionListener(new RemoteControlClient.OnGetPlaybackPositionListener() {

@@ -34,9 +34,9 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
+import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerService;
-import com.axelby.podax.PodcastCursor;
-import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.UpdateService;
@@ -73,16 +73,16 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 				if (progress == null || progress.getVisibility() == View.GONE)
 					continue;
 
-				PodcastCursor podcast = new PodcastCursor((Cursor) getListAdapter().getItem(i));
-				long downloaded = new File(podcast.getFilename(getActivity())).length();
-				if (podcast.getFileSize() != null && downloaded == podcast.getFileSize()) {
+				EpisodeCursor episode = new EpisodeCursor((Cursor) getListAdapter().getItem(i));
+				long downloaded = new File(episode.getFilename(getActivity())).length();
+				if (episode.getFileSize() != null && downloaded == episode.getFileSize()) {
 					progress.setVisibility(View.GONE);
 				} else {
 					repost = true;
 					ProgressBar progressBar = (ProgressBar) progress.findViewById(R.id.progressBar);
 					progressBar.setProgress((int) downloaded);
 					TextView progressText = (TextView) progress.findViewById(R.id.progressText);
-					progressText.setText(Math.round(100.0f * downloaded / podcast.getFileSize()) + "% downloaded");
+					progressText.setText(Math.round(100.0f * downloaded / episode.getFileSize()) + "% downloaded");
 				}
 			}
 
@@ -119,10 +119,10 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_PODCAST_ID, id);
+				args.putLong(Constants.EXTRA_EPOSIDE_ID, id);
 
 				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				PodcastDetailFragment fragment = new PodcastDetailFragment();
+				EpisodeDetailFragment fragment = new EpisodeDetailFragment();
 				fragment.setArguments(args);
 				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 			}
@@ -131,15 +131,15 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 			public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 				AdapterContextMenuInfo mi = (AdapterContextMenuInfo) menuInfo;
 				Cursor c = (Cursor) getListAdapter().getItem(mi.position);
-				PodcastCursor podcast = new PodcastCursor(c);
+				EpisodeCursor episode = new EpisodeCursor(c);
 
-				if (podcast.isDownloaded(getActivity()))
+				if (episode.isDownloaded(getActivity()))
 					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
 				if (mi.position != 0)
-					menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINPLAYLIST, ContextMenu.NONE, R.string.move_to_first_in_queue);
+					menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINPLAYLIST, ContextMenu.NONE, R.string.move_to_first_in_playlist);
 
-				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMPLAYLIST, ContextMenu.NONE, R.string.remove_from_queue);
+				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMPLAYLIST, ContextMenu.NONE, R.string.remove_from_playlist);
 			}
 		});
 
@@ -161,7 +161,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.download) {
-			UpdateService.downloadPodcasts(getActivity());
+			UpdateService.downloadEpisodes(getActivity());
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -183,7 +183,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		Cursor cursor = (Cursor) getListAdapter().getItem(info.position);
-		PodcastCursor podcast = new PodcastCursor(cursor);
+		EpisodeCursor podcast = new EpisodeCursor(cursor);
 
 		switch (item.getItemId()) {
 			case OPTION_MOVETOFIRSTINPLAYLIST:
@@ -196,9 +196,9 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 				PlayerService.play(getActivity(), podcast.getId());
 
 				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_PODCAST_ID, podcast.getId());
+				args.putLong(Constants.EXTRA_EPOSIDE_ID, podcast.getId());
 				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				PodcastDetailFragment fragment = new PodcastDetailFragment();
+				EpisodeDetailFragment fragment = new EpisodeDetailFragment();
 				fragment.setArguments(args);
 				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 
@@ -210,16 +210,16 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = new String[]{
-				PodcastProvider.COLUMN_ID,
-				PodcastProvider.COLUMN_TITLE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
-				PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-				PodcastProvider.COLUMN_QUEUE_POSITION,
-				PodcastProvider.COLUMN_MEDIA_URL,
-				PodcastProvider.COLUMN_FILE_SIZE,
-				PodcastProvider.COLUMN_SUBSCRIPTION_ID,
+				EpisodeProvider.COLUMN_ID,
+				EpisodeProvider.COLUMN_TITLE,
+				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
+				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
+				EpisodeProvider.COLUMN_QUEUE_POSITION,
+				EpisodeProvider.COLUMN_MEDIA_URL,
+				EpisodeProvider.COLUMN_FILE_SIZE,
+				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
 		};
-		return new CursorLoader(getActivity(), PodcastProvider.QUEUE_URI, projection, null, null, null);
+		return new CursorLoader(getActivity(), EpisodeProvider.QUEUE_URI, projection, null, null, null);
 	}
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
@@ -241,9 +241,9 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			PodcastCursor podcast = new PodcastCursor(cursor);
+			EpisodeCursor episode = new EpisodeCursor(cursor);
 
-			view.setTag(podcast.getId());
+			view.setTag(episode.getId());
 
 			// more button handler
 			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
@@ -253,13 +253,13 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 				}
 			});
 
-			((TextView) view.findViewById(R.id.title)).setText(podcast.getTitle());
-			((TextView) view.findViewById(R.id.subscription)).setText(podcast.getSubscriptionTitle());
-			((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), podcast.getSubscriptionId()));
+			((TextView) view.findViewById(R.id.title)).setText(episode.getTitle());
+			((TextView) view.findViewById(R.id.subscription)).setText(episode.getSubscriptionTitle());
+			((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
 
-			// if the podcast is not downloaded, add the download indicator
-			long downloaded = new File(podcast.getFilename(getActivity())).length();
-			if (podcast.getFileSize() != null && downloaded != podcast.getFileSize()) {
+			// if the episode is not downloaded, add the download indicator
+			long downloaded = new File(episode.getFilename(getActivity())).length();
+			if (episode.getFileSize() != null && downloaded != episode.getFileSize()) {
 				View dlprogress;
 				ViewStub dlprogressStub = (ViewStub) view.findViewById(R.id.dlprogress_stub);
 				if (dlprogressStub != null)
@@ -268,10 +268,10 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 					dlprogress = view.findViewById(R.id.dlprogress);
 				dlprogress.setVisibility(View.VISIBLE);
 				ProgressBar progressBar = (ProgressBar) dlprogress.findViewById(R.id.progressBar);
-				progressBar.setMax(podcast.getFileSize());
+				progressBar.setMax(episode.getFileSize());
 				progressBar.setProgress((int) downloaded);
 				TextView progressText = (TextView) dlprogress.findViewById(R.id.progressText);
-				progressText.setText(Math.round(100.0f * downloaded / podcast.getFileSize()) + "% downloaded");
+				progressText.setText(Math.round(100.0f * downloaded / episode.getFileSize()) + "% downloaded");
 
 				// make sure list is refreshed to update downloading files
 				_handler.removeCallbacks(_refresher);
@@ -286,8 +286,8 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 		public void drop(int from, int to) {
 			Long podcastId = _adapter.getItemId(from);
 			ContentValues values = new ContentValues();
-			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, to);
-			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
+			values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, to);
+			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
 		}
 
@@ -299,8 +299,8 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 		public void remove(int which) {
 			Long podcastId = _adapter.getItemId(which);
 			ContentValues values = new ContentValues();
-			values.put(PodcastProvider.COLUMN_QUEUE_POSITION, (Integer) null);
-			Uri podcastUri = ContentUris.withAppendedId(PodcastProvider.URI, podcastId);
+			values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
 		}
 	}

@@ -17,11 +17,11 @@
         android:orientation="vertical" >
 
         <ImageView
-            android:id="@+id/podcast_pic"
+            android:id="@+id/episode_pic"
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:contentDescription="@string/podcast_picture"
+            android:contentDescription="@string/episode_picture"
             android:scaleType="fitCenter"
             android:src="@drawable/icon" />
 
@@ -34,15 +34,15 @@
             android:textIsSelectable="true" />
 
         <TextView
-            android:id="@+id/podcast"
+            android:id="@+id/episode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textIsSelectable="true" />
 
-        <com.axelby.podax.ui.PodcastProgress
-            android:id="@+id/podcastprogress"
+        <com.axelby.podax.ui.EpisodeProgress
+            android:id="@+id/episodeprogress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -139,7 +139,7 @@
             android:textColor="@android:color/white" />
 
         <Button
-            android:id="@+id/btn_podcasts"
+            android:id="@+id/btn_episodes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -148,7 +148,7 @@
             android:drawableRight="@drawable/ic_media_ff_normal"
             android:gravity="left|center_vertical"
             android:padding="5dp"
-            android:text="@string/podcasts"
+            android:text="@string/episodes"
             android:textColor="@android:color/white" />
 
         <Button

@@ -7,11 +7,12 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.axelby.podax.Constants;
 import com.axelby.podax.player.AudioPlayer;
 
 import java.util.ArrayList;
 
-public class PodcastPlayer {
+public class EpisodePlayer {
 
 	// listen for audio focus changes - another app started/stopped, phone call, etc
 	private final AudioManager.OnAudioFocusChangeListener _afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
@@ -40,13 +41,13 @@ public class PodcastPlayer {
 	private Thread _playerThread = null;
 	private AudioPlayer _player = null;
 
-	public PodcastPlayer(Context context) {
+	public EpisodePlayer(Context context) {
 		_context = context;
 		_pausingFor.add(false);
 		_pausingFor.add(false);
 	}
 
-	public boolean changePodcast(String filename, float positionInSeconds) {
+	public boolean changeEpisode(String filename, float positionInSeconds) {
 		if (_player != null) {
 			_player.stop();
 			_player = null;
@@ -64,7 +65,7 @@ public class PodcastPlayer {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
 			if (!AudioPlayer.supports(filename)) {
-				Toast.makeText(_context, "This podcast is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
+				Toast.makeText(_context, "This episode is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
 				return false;
 			}
 			_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
@@ -89,7 +90,7 @@ public class PodcastPlayer {
 				_onChangeListener.onChange();
 			return true;
 		} catch (Exception ex) {
-			Log.e("Podax", "unable to change to new podcast", ex);
+			Log.e("Podax", "unable to change to new episode", ex);
 			return false;
 		}
 	}
@@ -109,13 +110,13 @@ public class PodcastPlayer {
 	public void setOnCompletionListener(OnCompletionListener onCompletionListener) {
 		this._onCompletionListener = onCompletionListener;
 	}
-	public void setOnChangeListener(OnChangeListener onPodcastChangeListener) {
-		this._onChangeListener = onPodcastChangeListener;
+	public void setOnChangeListener(OnChangeListener onEpisodeChangeListener) {
+		this._onChangeListener = onEpisodeChangeListener;
 	}
 
 	/* external functions */
 
-	// change position of podcast
+	// change position of episode
 	public void seekTo(float offsetInSeconds) {
 		_player.seekTo(offsetInSeconds);
 	}
@@ -136,7 +137,7 @@ public class PodcastPlayer {
 			play();
 	}
 
-	// resume playing the podcast at the current position
+	// resume playing the episode at the current position
 	public void play() {
 		internalPlay();
 	}
@@ -155,7 +156,7 @@ public class PodcastPlayer {
 			play();
 	}
 
-	// stop the podcast with no intention of resuming in the near future
+	// stop the episode with no intention of resuming in the near future
 	public void stop() {
 		internalStop();
 	}

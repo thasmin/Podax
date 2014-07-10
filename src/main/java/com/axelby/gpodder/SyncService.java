@@ -24,9 +24,9 @@ import com.axelby.gpodder.dto.EpisodeUpdate;
 import com.axelby.gpodder.dto.EpisodeUpdateResponse;
 import com.axelby.gpodder.dto.Podcast;
 import com.axelby.podax.Constants;
+import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
-import com.axelby.podax.PodcastCursor;
-import com.axelby.podax.PodcastProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
@@ -131,7 +131,7 @@ public class SyncService extends Service {
 			if (lastTimestamp == 0) {
 				ArrayList<Podcast> subs = client.getAllSubscriptions();
 				if (subs == null) {
-					showErrorNotification(client, R.string.gpodder_sync_retrieve_all_podcasts);
+					showErrorNotification(client, R.string.gpodder_sync_retrieve_all_episodes);
 					return false;
 				}
 				for (Podcast sub : subs) {
@@ -145,14 +145,14 @@ public class SyncService extends Service {
 			// send subscription changes
 			client.syncSubscriptionDiffs(_deviceId);
 			if (client.getErrorMessage() != null) {
-				showErrorNotification(client, R.string.gpodder_sync_send_podcasts);
+				showErrorNotification(client, R.string.gpodder_sync_send_episodes);
 				return false;
 			}
 
 			// retrieve subscription changes and update podax
 			Changes changes = client.getSubscriptionChanges(_deviceId, lastTimestamp);
 			if (client.getErrorMessage() != null) {
-				showErrorNotification(client, R.string.gpodder_sync_retrieve_podcasts);
+				showErrorNotification(client, R.string.gpodder_sync_retrieve_episodes);
 				return false;
 			}
 			if (changes != null) {
@@ -175,11 +175,11 @@ public class SyncService extends Service {
 		}
 
 		private boolean syncEpisodes(Client client, Account account) {
-			Cursor c = _context.getContentResolver().query(PodcastProvider.NEED_GPODDER_UPDATE_URI, null, null, null, null);
+			Cursor c = _context.getContentResolver().query(EpisodeProvider.NEED_GPODDER_UPDATE_URI, null, null, null, null);
 			if (c != null) {
 				ArrayList<EpisodeUpdate> changeUpdates = new ArrayList<EpisodeUpdate>(c.getCount());
 				while (c.moveToNext()) {
-					PodcastCursor p = new PodcastCursor(c);
+					EpisodeCursor p = new EpisodeCursor(c);
 					changeUpdates.add(new EpisodeUpdate(p.getSubscriptionUrl(), p.getMediaUrl(), _deviceId, "play", p.getGPodderUpdateTimestamp(), p.getLastPosition() / 1000));
 				}
 				c.close();
@@ -204,16 +204,16 @@ public class SyncService extends Service {
 					if (update.getEpisode() == null || update.getPosition() == null)
 						continue;
 
-					String selection = PodcastProvider.COLUMN_MEDIA_URL + " = ?";
+					String selection = EpisodeProvider.COLUMN_MEDIA_URL + " = ?";
 					String[] selectionArgs = {update.getEpisode()};
-					String[] projection = new String[] { PodcastProvider.COLUMN_ID };
-					Cursor idCursor = _context.getContentResolver().query(PodcastProvider.URI, projection, selection, selectionArgs, null);
+					String[] projection = new String[] { EpisodeProvider.COLUMN_ID };
+					Cursor idCursor = _context.getContentResolver().query(EpisodeProvider.URI, projection, selection, selectionArgs, null);
 					if (idCursor != null && idCursor.moveToFirst()) {
 						long podcastId = idCursor.getLong(0);
 						idCursor.close();
 						ContentValues values = new ContentValues();
-						values.put(PodcastProvider.COLUMN_LAST_POSITION, update.getPosition() * 1000);
-						_context.getContentResolver().update(PodcastProvider.getContentUri(podcastId), values, selection, selectionArgs);
+						values.put(EpisodeProvider.COLUMN_LAST_POSITION, update.getPosition() * 1000);
+						_context.getContentResolver().update(EpisodeProvider.getContentUri(podcastId), values, selection, selectionArgs);
 					}
 				}
 
@@ -225,8 +225,8 @@ public class SyncService extends Service {
 
 			// update podcast so that gpodder has been synced
 			ContentValues clearGpodderValues = new ContentValues(1);
-			clearGpodderValues.put(PodcastProvider.COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_NONE);
-			_context.getContentResolver().update(PodcastProvider.URI, clearGpodderValues, null, null);
+			clearGpodderValues.put(EpisodeProvider.COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_NONE);
+			_context.getContentResolver().update(EpisodeProvider.URI, clearGpodderValues, null, null);
 
 			return true;
 		}

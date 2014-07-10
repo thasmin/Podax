@@ -12,7 +12,7 @@ import com.axelby.podax.R;
 
 public class SubscriptionFragment extends Fragment {
 
-	private PodcastListFragment _podcastListFragment = null;
+	private EpisodeListFragment _episodeListFragment = null;
 	private SubscriptionListFragment _subscriptionListFragment = null;
 
 	@Override
@@ -25,8 +25,8 @@ public class SubscriptionFragment extends Fragment {
 		try {
 			FragmentTransaction ft = getFragmentManager().beginTransaction();
 			ft.remove(_subscriptionListFragment);
-			if (_podcastListFragment != null)
-				ft.remove(_podcastListFragment);
+			if (_episodeListFragment != null)
+				ft.remove(_episodeListFragment);
 			ft.commit();
 		} catch (Exception ex) {
 		}
@@ -42,9 +42,9 @@ public class SubscriptionFragment extends Fragment {
 		FragmentTransaction ft = fm.beginTransaction();
 		_subscriptionListFragment = new SubscriptionListFragment();
 		ft.replace(R.id.subscriptionlist_fragment, _subscriptionListFragment, "subscriptionlist");
-		if (getActivity().findViewById(R.id.podcastlist_fragment) != null) {
-			_podcastListFragment = new PodcastListFragment();
-			ft.replace(R.id.podcastlist_fragment, _podcastListFragment, "podcastlist");
+		if (getActivity().findViewById(R.id.episodelist_fragment) != null) {
+			_episodeListFragment = new EpisodeListFragment();
+			ft.replace(R.id.episodelist_fragment, _episodeListFragment, "podcastlist");
 		}
 		ft.commit();
 	}

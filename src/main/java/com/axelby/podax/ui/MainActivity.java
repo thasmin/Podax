@@ -153,7 +153,7 @@ public class MainActivity extends ActionBarActivity {
 					replaceFragment(WelcomeFragment.class);
 					_fragmentId = 1;
 				} else {
-					replaceFragment(PodcastDetailFragment.class);
+					replaceFragment(EpisodeDetailFragment.class);
 					_fragmentId = 2;
 				}
 			}
@@ -172,7 +172,7 @@ public class MainActivity extends ActionBarActivity {
 				replaceFragment(WelcomeFragment.class);
 				break;
 			case 2:
-				replaceFragment(PodcastDetailFragment.class);
+				replaceFragment(EpisodeDetailFragment.class);
 				break;
 			case 3:
 				replaceFragment(PlaylistFragment.class);
@@ -262,7 +262,7 @@ public class MainActivity extends ActionBarActivity {
 
 	public void replaceFragment(Class<? extends Fragment> clazz, Bundle args) {
 		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
-		if (current != null && current.getClass().equals(clazz) && clazz != PodcastDetailFragment.class)
+		if (current != null && current.getClass().equals(clazz) && clazz != EpisodeDetailFragment.class)
 			return;
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -343,7 +343,7 @@ public class MainActivity extends ActionBarActivity {
 	@Override
 	public void onAttachFragment(Fragment fragment) {
 		super.onAttachFragment(fragment);
-		if (fragment.getClass() != PodcastDetailFragment.class)
+		if (fragment.getClass() != EpisodeDetailFragment.class)
 			return;
 		for (WeakReference<Fragment> frag : _savedFragments)
 			if (frag.get() != null && fragment.getClass().equals(frag.get().getClass()))

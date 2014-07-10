@@ -17,7 +17,7 @@
                 android:layout_height="100dp"
                 android:id="@+id/logo"
                 android:layout_marginRight="5dp"
-                android:contentDescription="@string/podcast_picture"/>
+                android:contentDescription="@string/episode_picture"/>
 
         <LinearLayout
                 android:id="@+id/rightside"

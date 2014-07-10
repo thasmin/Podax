@@ -25,11 +25,11 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		updatePodcastDetails(playerState, views);
 
 		// set up pending intents
-		LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.restart_btn, Constants.ACTIVE_PODCAST_DATA_RESTART);
-		LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.rewind_btn, Constants.ACTIVE_PODCAST_DATA_BACK);
+		LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.restart_btn, Constants.ACTIVE_EPISODE_DATA_RESTART);
+		LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.rewind_btn, Constants.ACTIVE_EPISODE_DATA_BACK);
 		LargeWidgetProvider.setPlayerServiceClickIntent(context, views, R.id.play_btn, Constants.PLAYER_COMMAND_PLAYSTOP);
-		LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_PODCAST_DATA_FORWARD);
-		LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_PODCAST_DATA_END);
+		LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.skip_btn, Constants.ACTIVE_EPISODE_DATA_FORWARD);
+		LargeWidgetProvider.setActivePodcastClickIntent(context, views, R.id.next_btn, Constants.ACTIVE_EPISODE_DATA_END);
 
 		Intent showIntent = new Intent(context, MainActivity.class);
 		PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
@@ -46,15 +46,15 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 	}
 
 	public void updatePodcastDetails(PlayerStatus player, RemoteViews views) {
-		if (player.hasActivePodcast()) {
+		if (player.hasActiveEpisode()) {
 			views.setTextViewText(R.id.title, player.getTitle());
-			PodcastProgress.remoteSet(views, player.getPosition(), player.getDuration());
+			EpisodeProgress.remoteSet(views, player.getPosition(), player.getDuration());
 
 			int imageRes = player.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		} else {
 			views.setTextViewText(R.id.title, "Queue empty");
-			PodcastProgress.remoteClear(views);
+			EpisodeProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);
 		}
 	}

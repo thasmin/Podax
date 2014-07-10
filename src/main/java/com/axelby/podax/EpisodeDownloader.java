@@ -11,34 +11,34 @@ import android.util.Log;
 
 import java.io.File;
 
-class PodcastDownloader {
-	private PodcastDownloader() {
+class EpisodeDownloader {
+	private EpisodeDownloader() {
 	}
 
-	public static void download(Context _context, long podcastId) {
+	public static void download(Context _context, long episodeId) {
 		Cursor cursor = null;
 		try {
 			String[] projection = {
-					PodcastProvider.COLUMN_ID,
-					PodcastProvider.COLUMN_TITLE,
-					PodcastProvider.COLUMN_SUBSCRIPTION_TITLE,
-					PodcastProvider.COLUMN_MEDIA_URL,
-					PodcastProvider.COLUMN_FILE_SIZE,
-					PodcastProvider.COLUMN_DOWNLOAD_ID,
+					EpisodeProvider.COLUMN_ID,
+					EpisodeProvider.COLUMN_TITLE,
+					EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
+					EpisodeProvider.COLUMN_MEDIA_URL,
+					EpisodeProvider.COLUMN_FILE_SIZE,
+					EpisodeProvider.COLUMN_DOWNLOAD_ID,
 			};
-			cursor = _context.getContentResolver().query(PodcastProvider.QUEUE_URI, projection,
+			cursor = _context.getContentResolver().query(EpisodeProvider.QUEUE_URI, projection,
 					"podcasts._id = ?",
-					new String[]{String.valueOf(podcastId)}, null);
+					new String[]{String.valueOf(episodeId)}, null);
 			if (cursor == null || !cursor.moveToNext())
 				return;
 
-			PodcastCursor podcast = new PodcastCursor(cursor);
-			if (podcast.isDownloaded(_context))
+			EpisodeCursor episode = new EpisodeCursor(cursor);
+			if (episode.isDownloaded(_context))
 				return;
 
-			if (new File(podcast.getOldFilename(_context)).exists()) {
-				if (!new File(podcast.getOldFilename(_context)).renameTo(new File(podcast.getFilename(_context))))
-					PodaxLog.log(_context, "unable to move downloaded podcast to new folder");
+			if (new File(episode.getOldFilename(_context)).exists()) {
+				if (!new File(episode.getOldFilename(_context)).renameTo(new File(episode.getFilename(_context))))
+					PodaxLog.log(_context, "unable to move downloaded episode to new folder");
 				return;
 			}
 
@@ -46,9 +46,9 @@ class PodcastDownloader {
 
 			// if download id is already set, download has been queued
 			// only continue if download will not be finished itself (failed or successful)
-			if (podcast.getDownloadId() != null) {
+			if (episode.getDownloadId() != null) {
 				DownloadManager.Query query = new DownloadManager.Query();
-				query.setFilterById(podcast.getDownloadId());
+				query.setFilterById(episode.getDownloadId());
 				int status = DownloadManager.STATUS_FAILED;
 				Cursor c = downloadManager.query(query);
 				if (c != null) {
@@ -58,14 +58,14 @@ class PodcastDownloader {
 				}
 				if (status != DownloadManager.STATUS_FAILED && status != DownloadManager.STATUS_SUCCESSFUL)
 					return;
-				downloadManager.remove(podcast.getDownloadId());
+				downloadManager.remove(episode.getDownloadId());
 			}
 
-			File mediaFile = new File(podcast.getFilename(_context));
+			File mediaFile = new File(episode.getFilename(_context));
 			if (mediaFile.exists())
 				mediaFile.delete();
 
-			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(podcast.getMediaUrl()));
+			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(episode.getMediaUrl()));
 			int networks = DownloadManager.Request.NETWORK_WIFI;
 			if (!PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("wifiPref", true))
 				networks |= DownloadManager.Request.NETWORK_MOBILE;
@@ -74,14 +74,14 @@ class PodcastDownloader {
 			request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
 			request.allowScanningByMediaScanner();
 			*/
-			request.setTitle("Downloading " + podcast.getTitle());
-			request.setDescription(podcast.getSubscriptionTitle());
+			request.setTitle("Downloading " + episode.getTitle());
+			request.setDescription(episode.getSubscriptionTitle());
 			request.setDestinationInExternalFilesDir(_context, Environment.DIRECTORY_PODCASTS, mediaFile.getName());
 
 			long downloadId = downloadManager.enqueue(request);
 			ContentValues values = new ContentValues();
-			values.put(PodcastProvider.COLUMN_DOWNLOAD_ID, downloadId);
-			_context.getContentResolver().update(PodcastProvider.getContentUri(podcastId), values, null, null);
+			values.put(EpisodeProvider.COLUMN_DOWNLOAD_ID, downloadId);
+			_context.getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
 		} catch (Exception e) {
 			Log.e("Podax", "error while downloading", e);
 		} finally {

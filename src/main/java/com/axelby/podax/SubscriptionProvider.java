@@ -92,10 +92,10 @@ public class SubscriptionProvider extends ContentProvider {
 		int uriMatch = _uriMatcher.match(uri);
 
 		if (uriMatch == PODCASTS) {
-			return getContext().getContentResolver().query(PodcastProvider.URI,
+			return getContext().getContentResolver().query(EpisodeProvider.URI,
 					projection, "subscriptionId = ?",
 					new String[]{uri.getPathSegments().get(1)},
-					PodcastProvider.COLUMN_PUB_DATE + " DESC");
+					EpisodeProvider.COLUMN_PUB_DATE + " DESC");
 		}
 
 		// make sure that title_override is in the query set if title is in there
@@ -248,7 +248,7 @@ public class SubscriptionProvider extends ContentProvider {
 		c.close();
 		if (!in.equals("")) {
 			in = "(" + in.substring(1) + ")";
-			contentResolver.delete(PodcastProvider.URI, "subscriptionId IN " + in, subIds.toArray(new String[subIds.size()]));
+			contentResolver.delete(EpisodeProvider.URI, "subscriptionId IN " + in, subIds.toArray(new String[subIds.size()]));
 		}
 
 		// remove during next gpodder sync

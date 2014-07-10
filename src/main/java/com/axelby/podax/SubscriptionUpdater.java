@@ -125,21 +125,21 @@ public class SubscriptionUpdater {
 						if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
 							return;
 
-						ContentValues podcastValues = item.getContentValues();
-						podcastValues.put(PodcastProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
+						ContentValues episodeValues = item.getContentValues();
+						episodeValues.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
 
 						// translate Riasel keys to old Podax keys
-						changeKeyString(podcastValues, "mediaURL", PodcastProvider.COLUMN_MEDIA_URL);
-						changeKeyString(podcastValues, "mediaSize", PodcastProvider.COLUMN_FILE_SIZE);
-						changeKeyString(podcastValues, "paymentURL", PodcastProvider.COLUMN_PAYMENT);
-						if (changeKeyLong(podcastValues, "publicationDate", PodcastProvider.COLUMN_PUB_DATE))
-							podcastValues.put(PodcastProvider.COLUMN_PUB_DATE, podcastValues.getAsLong(PodcastProvider.COLUMN_PUB_DATE) / 1000);
+						changeKeyString(episodeValues, "mediaURL", EpisodeProvider.COLUMN_MEDIA_URL);
+						changeKeyString(episodeValues, "mediaSize", EpisodeProvider.COLUMN_FILE_SIZE);
+						changeKeyString(episodeValues, "paymentURL", EpisodeProvider.COLUMN_PAYMENT);
+						if (changeKeyLong(episodeValues, "publicationDate", EpisodeProvider.COLUMN_PUB_DATE))
+							episodeValues.put(EpisodeProvider.COLUMN_PUB_DATE, episodeValues.getAsLong(EpisodeProvider.COLUMN_PUB_DATE) / 1000);
 
-						if (podcastValues.containsKey(PodcastProvider.COLUMN_MEDIA_URL)) {
+						if (episodeValues.containsKey(EpisodeProvider.COLUMN_MEDIA_URL)) {
 							try {
-								_context.getContentResolver().insert(PodcastProvider.URI, podcastValues);
+								_context.getContentResolver().insert(EpisodeProvider.URI, episodeValues);
 							} catch (IllegalArgumentException e) {
-								Log.w("Podax", "error while inserting podcast: " + e.getMessage());
+								Log.w("Podax", "error while inserting episode: " + e.getMessage());
 							}
 						}
 					}
@@ -169,7 +169,7 @@ public class SubscriptionUpdater {
 		} finally {
 			if (cursor != null)
 				cursor.close();
-			UpdateService.downloadPodcastsSilently(_context);
+			UpdateService.downloadEpisodesSilently(_context);
 		}
 	}
 

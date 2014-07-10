@@ -135,10 +135,10 @@
             </intent-filter>
         </receiver>
         <receiver
-                android:name=".ActivePodcastReceiver"
+                android:name=".ActiveEpisodeReceiver"
                 android:exported="false">
             <intent-filter>
-                <action android:name="com.axelby.podax.ACTIVE_PODCAST"/>
+                <action android:name="com.axelby.podax.ACTIVE_EPISODE"/>
             </intent-filter>
         </receiver>
         <receiver
@@ -156,10 +156,10 @@
                 android:exported="false"
                 android:label="Podax Search"/>
         <provider
-                android:name=".PodcastProvider"
+                android:name=".EpisodeProvider"
                 android:authorities="com.axelby.podax.podcastprovider"
                 android:exported="false"
-                android:label="Podcasts"/>
+                android:label="Episodes"/>
         <provider
                 android:name=".SubscriptionProvider"
                 android:authorities="com.axelby.podax.subscriptionprovider"

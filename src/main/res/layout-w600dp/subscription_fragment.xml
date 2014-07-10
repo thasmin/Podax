@@ -19,12 +19,12 @@
         android:background="@color/podaxColor" />
 
     <FrameLayout
-        android:id="@+id/podcastlist_fragment"
-        android:name="com.axelby.podax.ui.PodcastListFragment"
+        android:id="@+id/episodelist_fragment"
+        android:name="com.axelby.podax.ui.EpisodeListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-        <!-- Preview: layout=@layout/podcastlist_fragment -->
+        <!-- Preview: layout=@layout/episodelist_fragment -->
     </FrameLayout>
 
 </LinearLayout>
