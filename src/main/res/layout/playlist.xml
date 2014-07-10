@@ -21,6 +21,6 @@
 
     <include
             android:id="@+id/floater"
-            layout="@layout/queue_list_item"/>
+            layout="@layout/playlist_list_item"/>
 
 </LinearLayout>

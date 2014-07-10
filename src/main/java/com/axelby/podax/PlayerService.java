@@ -60,7 +60,7 @@ public class PlayerService extends Service {
 	}
 
 	public static void play(Context context, long podcastId) {
-		QueueManager.changeActivePodcast(context, podcastId);
+		PlaylistManager.changeActivePodcast(context, podcastId);
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY);
 	}
 
@@ -147,7 +147,7 @@ public class PlayerService extends Service {
 
 		@Override
 		public void onCompletion() {
-			QueueManager.moveToNextInQueue(PlayerService.this);
+			PlaylistManager.moveToNextInQueue(PlayerService.this);
 		}
 
 		@Override
@@ -157,7 +157,7 @@ public class PlayerService extends Service {
 			_currentPodcastId = status.getPodcastId();
 			if (status.getState() == PlayerStates.PLAYING)
 				_player.play();
-			QueueManager.changeActivePodcast(PlayerService.this, status.getPodcastId());
+			PlaylistManager.changeActivePodcast(PlayerService.this, status.getPodcastId());
 			_lockscreenManager.setupLockscreenControls(PlayerService.this, status);
 			showNotification();
 		}

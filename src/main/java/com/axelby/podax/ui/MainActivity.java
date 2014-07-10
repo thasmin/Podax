@@ -175,7 +175,7 @@ public class MainActivity extends ActionBarActivity {
 				replaceFragment(PodcastDetailFragment.class);
 				break;
 			case 3:
-				replaceFragment(QueueFragment.class);
+				replaceFragment(PlaylistFragment.class);
 				break;
 			case 4:
 				replaceFragment(SubscriptionListFragment.class);

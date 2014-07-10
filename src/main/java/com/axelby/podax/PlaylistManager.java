@@ -4,7 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.preference.PreferenceManager;
 
-public class QueueManager {
+public class PlaylistManager {
 
 	public static void moveToNextInQueue(Context context) {
 		ContentValues values = new ContentValues();

@@ -48,10 +48,10 @@ import com.mobeta.android.dslv.DragSortListView.RemoveListener;
 
 import java.io.File;
 
-public class QueueFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	static final int OPTION_REMOVEFROMQUEUE = 1;
+public class PlaylistFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+	static final int OPTION_REMOVEFROMPLAYLIST = 1;
 	static final int OPTION_PLAY = 2;
-	static final int OPTION_MOVETOFIRSTINQUEUE = 3;
+	static final int OPTION_MOVETOFIRSTINPLAYLIST = 3;
 	// make sure list is refreshed to update downloading files
 	Runnable _refresher = new Runnable() {
 		public void run() {
@@ -91,7 +91,7 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 		}
 	};
 	Handler _handler = new Handler();
-	QueueListAdapter _adapter;
+	PlaylistListAdapter _adapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -101,13 +101,13 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 
 		getLoaderManager().initLoader(0, null, this);
 
-		_adapter = new QueueListAdapter(getActivity(), null);
+		_adapter = new PlaylistListAdapter(getActivity(), null);
 		setListAdapter(_adapter);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.queue, container, false);
+		return inflater.inflate(R.layout.playlist, container, false);
 	}
 
 	@Override
@@ -137,9 +137,9 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
 				if (mi.position != 0)
-					menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINQUEUE, ContextMenu.NONE, R.string.move_to_first_in_queue);
+					menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINPLAYLIST, ContextMenu.NONE, R.string.move_to_first_in_queue);
 
-				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_queue);
+				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMPLAYLIST, ContextMenu.NONE, R.string.remove_from_queue);
 			}
 		});
 
@@ -186,10 +186,10 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 		PodcastCursor podcast = new PodcastCursor(cursor);
 
 		switch (item.getItemId()) {
-			case OPTION_MOVETOFIRSTINQUEUE:
+			case OPTION_MOVETOFIRSTINPLAYLIST:
 				podcast.moveToFirstInQueue(getActivity());
 				return true;
-			case OPTION_REMOVEFROMQUEUE:
+			case OPTION_REMOVEFROMPLAYLIST:
 				podcast.removeFromQueue(getActivity());
 				return true;
 			case OPTION_PLAY:
@@ -233,10 +233,10 @@ public class QueueFragment extends ListFragment implements LoaderManager.LoaderC
 		_adapter.changeCursor(null);
 	}
 
-	private class QueueListAdapter extends ResourceCursorAdapter implements DragListener, DropListener, RemoveListener {
+	private class PlaylistListAdapter extends ResourceCursorAdapter implements DragListener, DropListener, RemoveListener {
 
-		public QueueListAdapter(Context context, Cursor cursor) {
-			super(context, R.layout.queue_list_item, cursor, true);
+		public PlaylistListAdapter(Context context, Cursor cursor) {
+			super(context, R.layout.playlist_list_item, cursor, true);
 		}
 
 		@Override

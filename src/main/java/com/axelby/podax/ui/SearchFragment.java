@@ -485,7 +485,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 
 					PodcastCursor podcast = new PodcastCursor((Cursor) o);
 
-					view = _inflater.inflate(R.layout.queue_list_item, null);
+					view = _inflater.inflate(R.layout.playlist_list_item, null);
 					view.findViewById(R.id.drag).setVisibility(View.INVISIBLE);
 
 					// more button handler
