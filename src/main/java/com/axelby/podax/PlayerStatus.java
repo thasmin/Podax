@@ -19,7 +19,7 @@ public class PlayerStatus {
 		Cursor cursor = context.getContentResolver().query(EpisodeProvider.ACTIVE_EPISODE_URI, projection, null, null, null);
 		PlayerStatus status = new PlayerStatus();
 		if (cursor == null) {
-			status._state = PlayerStates.QUEUEEMPTY;
+			status._state = PlayerStates.PLAYLISTEMPTY;
 			return status;
 		}
 		if (cursor.moveToNext()) {
@@ -52,7 +52,7 @@ public class PlayerStatus {
 	// instance variables
 	public enum PlayerStates {
 		INVALID(-1),
-		QUEUEEMPTY(0),
+		PLAYLISTEMPTY(0),
 		STOPPED(1),
 		PAUSED(2),
 		PLAYING(3);
@@ -71,7 +71,7 @@ public class PlayerStatus {
 			for (PlayerStates p : PlayerStates.values())
 				if (p.toInt() == code)
 					return p;
-			return QUEUEEMPTY;
+			return PLAYLISTEMPTY;
 		}
 	}
 
@@ -85,7 +85,7 @@ public class PlayerStatus {
 	private String _filename;
 
 	private PlayerStatus() {
-		_state = PlayerStates.QUEUEEMPTY;
+		_state = PlayerStates.PLAYLISTEMPTY;
 		_episodeId = -1;
 	}
 
@@ -120,7 +120,7 @@ public class PlayerStatus {
 	public String getFilename() { return _filename; }
 
 	public boolean hasActiveEpisode() {
-		return getState() != PlayerStates.QUEUEEMPTY;
+		return getState() != PlayerStates.PLAYLISTEMPTY;
 	}
 
 	public boolean isPlayerServiceActive() {

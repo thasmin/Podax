@@ -27,7 +27,7 @@ public class SubscriptionCursor {
 	private Integer _etagColumn = null;
 	private Integer _thumbnailColumn = null;
 	private Integer _titleOverrideColumn = null;
-	private Integer _queueNewColumn = null;
+	private Integer _playlistNewColumn = null;
 	private Integer _expirationDaysColumn = null;
 
 	public SubscriptionCursor(Cursor cursor) {
@@ -140,11 +140,11 @@ public class SubscriptionCursor {
 	}
 
 	public boolean getQueueNew() {
-		if (_queueNewColumn == null)
-			_queueNewColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_QUEUE_NEW);
-		if (_cursor.isNull(_queueNewColumn))
+		if (_playlistNewColumn == null)
+			_playlistNewColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_PLAYLIST_NEW);
+		if (_cursor.isNull(_playlistNewColumn))
 			return true;
-		return _cursor.getInt(_queueNewColumn) != 0;
+		return _cursor.getInt(_playlistNewColumn) != 0;
 	}
 
 	public String getTitleOverride() {

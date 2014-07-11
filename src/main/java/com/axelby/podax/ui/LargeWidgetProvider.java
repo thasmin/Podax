@@ -74,7 +74,7 @@ public class LargeWidgetProvider extends AppWidgetProvider {
 			int imageRes = player.isPlaying() ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 			views.setImageViewResource(R.id.play_btn, imageRes);
 		} else {
-			views.setTextViewText(R.id.title, "Queue empty");
+			views.setTextViewText(R.id.title, "Playlist empty");
 			views.setTextViewText(R.id.episode, "");
 			EpisodeProgress.remoteClear(views);
 			views.setImageViewResource(R.id.play_btn, R.drawable.ic_media_play);

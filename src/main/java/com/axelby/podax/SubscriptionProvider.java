@@ -32,7 +32,7 @@ public class SubscriptionProvider extends ContentProvider {
 	public static final String COLUMN_ETAG = "eTag";
 	public static final String COLUMN_THUMBNAIL = "thumbnail";
 	public static final String COLUMN_TITLE_OVERRIDE = "titleOverride";
-	public static final String COLUMN_QUEUE_NEW = "queueNew";
+	public static final String COLUMN_PLAYLIST_NEW = "queueNew";
 	public static final String COLUMN_EXPIRATION = "expirationDays";
 
 	private static final int SUBSCRIPTIONS = 1;
@@ -61,7 +61,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_columnMap.put(COLUMN_ETAG, "eTag");
 		_columnMap.put(COLUMN_THUMBNAIL, "thumbnail");
 		_columnMap.put(COLUMN_TITLE_OVERRIDE, "titleOverride");
-		_columnMap.put(COLUMN_QUEUE_NEW, "queueNew");
+		_columnMap.put(COLUMN_PLAYLIST_NEW, "queueNew");
 		_columnMap.put(COLUMN_EXPIRATION, "expirationDays");
 	}
 

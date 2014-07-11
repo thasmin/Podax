@@ -6,13 +6,13 @@ import android.preference.PreferenceManager;
 
 public class PlaylistManager {
 
-	public static void moveToNextInQueue(Context context) {
+	public static void moveToNextInPlaylist(Context context) {
 		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_LAST_POSITION, 0);
 		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("autoDeletePref", true)) {
-			values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
 		} else {
-			values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		}
 		context.getContentResolver().update(EpisodeProvider.ACTIVE_EPISODE_URI, values, null, null);
 

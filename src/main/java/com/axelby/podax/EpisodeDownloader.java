@@ -26,7 +26,7 @@ class EpisodeDownloader {
 					EpisodeProvider.COLUMN_FILE_SIZE,
 					EpisodeProvider.COLUMN_DOWNLOAD_ID,
 			};
-			cursor = _context.getContentResolver().query(EpisodeProvider.QUEUE_URI, projection,
+			cursor = _context.getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection,
 					"podcasts._id = ?",
 					new String[]{String.valueOf(episodeId)}, null);
 			if (cursor == null || !cursor.moveToNext())

@@ -155,7 +155,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.queue_fragment, menu);
+		inflater.inflate(R.menu.playlist_fragment, menu);
 	}
 
 	@Override
@@ -187,10 +187,10 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
 		switch (item.getItemId()) {
 			case OPTION_MOVETOFIRSTINPLAYLIST:
-				podcast.moveToFirstInQueue(getActivity());
+				podcast.moveToFirstInPlaylist(getActivity());
 				return true;
 			case OPTION_REMOVEFROMPLAYLIST:
-				podcast.removeFromQueue(getActivity());
+				podcast.removeFromPlaylist(getActivity());
 				return true;
 			case OPTION_PLAY:
 				PlayerService.play(getActivity(), podcast.getId());
@@ -214,12 +214,12 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 				EpisodeProvider.COLUMN_TITLE,
 				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
 				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
-				EpisodeProvider.COLUMN_QUEUE_POSITION,
+				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 				EpisodeProvider.COLUMN_FILE_SIZE,
 				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
 		};
-		return new CursorLoader(getActivity(), EpisodeProvider.QUEUE_URI, projection, null, null, null);
+		return new CursorLoader(getActivity(), EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
 	}
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
@@ -286,7 +286,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 		public void drop(int from, int to) {
 			Long podcastId = _adapter.getItemId(from);
 			ContentValues values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, to);
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, to);
 			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
 		}
@@ -299,7 +299,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 		public void remove(int which) {
 			Long podcastId = _adapter.getItemId(which);
 			ContentValues values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
 			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
 		}

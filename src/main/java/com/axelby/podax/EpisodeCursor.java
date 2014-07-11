@@ -22,7 +22,7 @@ public class EpisodeCursor {
 	private Integer _subscriptionTitleColumn = null;
 	private Integer _subscriptionThumbnailColumn = null;
 	private Integer _subscriptionUrlColumn = null;
-	private Integer _queuePositionColumn = null;
+	private Integer _playlistPositionColumn = null;
 	private Integer _mediaUrlColumn = null;
 	private Integer _fileSizeColumn = null;
 	private Integer _descriptionColumn = null;
@@ -103,12 +103,12 @@ public class EpisodeCursor {
 		return _cursor.getInt(_fileSizeColumn);
 	}
 
-	public Integer getQueuePosition() {
-		if (_queuePositionColumn == null)
-			_queuePositionColumn = _cursor.getColumnIndex(EpisodeProvider.COLUMN_QUEUE_POSITION);
-		if (_cursor.isNull(_queuePositionColumn))
+	public Integer getPlaylistPosition() {
+		if (_playlistPositionColumn == null)
+			_playlistPositionColumn = _cursor.getColumnIndex(EpisodeProvider.COLUMN_PLAYLIST_POSITION);
+		if (_cursor.isNull(_playlistPositionColumn))
 			return null;
-		return _cursor.getInt(_queuePositionColumn);
+		return _cursor.getInt(_playlistPositionColumn);
 	}
 
 	public String getDescription() {
@@ -213,21 +213,21 @@ public class EpisodeCursor {
 		return _cursor.getString(_paymentColumn);
 	}
 
-	public void removeFromQueue(Context context) {
+	public void removeFromPlaylist(Context context) {
 		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
-	public void addToQueue(Context context) {
+	public void addToPlaylist(Context context) {
 		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, Integer.MAX_VALUE);
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
-	public void moveToFirstInQueue(Context context) {
+	public void moveToFirstInPlaylist(Context context) {
 		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, 0);
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 

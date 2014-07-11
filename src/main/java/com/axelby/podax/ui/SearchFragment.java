@@ -44,8 +44,8 @@ import com.axelby.podax.SubscriptionProvider;
 
 public class SearchFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	protected static final int OPTION_UNSUBSCRIBE = 4;
-	static final int OPTION_ADDTOQUEUE = 1;
-	static final int OPTION_REMOVEFROMQUEUE = 2;
+	static final int OPTION_ADDTOPLAYLIST = 1;
+	static final int OPTION_REMOVEFROMPLAYLIST = 2;
 	static final int OPTION_PLAY = 3;
 	private static final int CURSOR_SUBSCRIPTIONS = 0;
 	private static final int CURSOR_PODCASTS = 1;
@@ -96,10 +96,10 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 						if (episode.isDownloaded(getActivity()))
 							menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
-						if (episode.getQueuePosition() == null)
-							menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_playlist);
+						if (episode.getPlaylistPosition() == null)
+							menu.add(ContextMenu.NONE, OPTION_ADDTOPLAYLIST, ContextMenu.NONE, R.string.add_to_playlist);
 						else
-							menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_playlist);
+							menu.add(ContextMenu.NONE, OPTION_REMOVEFROMPLAYLIST, ContextMenu.NONE, R.string.remove_from_playlist);
 
 						break;
 					default:
@@ -222,11 +222,11 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 				EpisodeCursor episode = new EpisodeCursor(cursor);
 
 				switch (item.getItemId()) {
-					case OPTION_ADDTOQUEUE:
-						episode.addToQueue(getActivity());
+					case OPTION_ADDTOPLAYLIST:
+						episode.addToPlaylist(getActivity());
 						break;
-					case OPTION_REMOVEFROMQUEUE:
-						episode.removeFromQueue(getActivity());
+					case OPTION_REMOVEFROMPLAYLIST:
+						episode.removeFromPlaylist(getActivity());
 						break;
 					case OPTION_PLAY:
 						PlayerService.play(getActivity(), episode.getId());
@@ -267,7 +267,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 					EpisodeProvider.COLUMN_TITLE,
 					EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
 					EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
-					EpisodeProvider.COLUMN_QUEUE_POSITION,
+					EpisodeProvider.COLUMN_PLAYLIST_POSITION,
 					EpisodeProvider.COLUMN_MEDIA_URL,
 					EpisodeProvider.COLUMN_FILE_SIZE,
 					EpisodeProvider.COLUMN_SUBSCRIPTION_ID,

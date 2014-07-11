@@ -38,22 +38,22 @@
             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
     <RadioGroup
-            android:id="@+id/autoQueueGroup"
+            android:id="@+id/autoPlaylistGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
         <RadioButton
-                android:id="@+id/autoQueueYes"
+                android:id="@+id/autoPlaylistYes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="Add new episodes to queue"/>
+                android:text="Add new episodes to playlist"/>
 
         <RadioButton
-                android:id="@+id/autoQueueNo"
+                android:id="@+id/autoPlaylistNo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Do not add new episodes to queue"/>
+                android:text="Do not add new episodes to playlist"/>
     </RadioGroup>
 
     <View

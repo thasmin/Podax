@@ -114,7 +114,7 @@ public class UpdateService extends IntentService {
 			expireDownloadedFiles();
 
 			String[] projection = {EpisodeProvider.COLUMN_ID};
-			Cursor c = getContentResolver().query(EpisodeProvider.QUEUE_URI, projection, null, null, null);
+			Cursor c = getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
 					handleIntent(createDownloadEpisodeIntent(this, c.getLong(0)));
@@ -125,7 +125,7 @@ public class UpdateService extends IntentService {
 			if (episodeId == -1)
 				return;
 			float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
-			if (getQueueNumDownloadedItems() >= maxEpisodes)
+			if (getPlaylistNumDownloadedItems() >= maxEpisodes)
 				return;
 			EpisodeDownloader.download(this, episodeId);
 		}
@@ -140,10 +140,10 @@ public class UpdateService extends IntentService {
 				EpisodeProvider.COLUMN_ID,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 		};
-		Uri queueUri = Uri.withAppendedPath(EpisodeProvider.URI, "queue");
-		if (queueUri == null)
+		Uri playlistUri = Uri.withAppendedPath(EpisodeProvider.URI, "playlist");
+		if (playlistUri == null)
 			return;
-		Cursor c = getContentResolver().query(queueUri, projection, null, null, null);
+		Cursor c = getContentResolver().query(playlistUri, projection, null, null, null);
 		if (c == null)
 			return;
 		while (c.moveToNext())
@@ -177,11 +177,11 @@ public class UpdateService extends IntentService {
 		if (c == null)
 			return;
 		while (c.moveToNext())
-			new EpisodeCursor(c).removeFromQueue(this);
+			new EpisodeCursor(c).removeFromPlaylist(this);
 		c.close();
 	}
 
-	private int getQueueNumDownloadedItems() {
+	private int getPlaylistNumDownloadedItems() {
 		String[] projection = {
 				EpisodeProvider.COLUMN_ID,
 				EpisodeProvider.COLUMN_TITLE,
@@ -189,7 +189,7 @@ public class UpdateService extends IntentService {
 				EpisodeProvider.COLUMN_MEDIA_URL,
 				EpisodeProvider.COLUMN_FILE_SIZE,
 		};
-		Cursor c = getContentResolver().query(EpisodeProvider.QUEUE_URI, projection, null, null, null);
+		Cursor c = getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
 		if (c == null)
 			return 0;
 		int ret = 0;

@@ -147,7 +147,7 @@ public class PlayerService extends Service {
 
 		@Override
 		public void onCompletion() {
-			PlaylistManager.moveToNextInQueue(PlayerService.this);
+			PlaylistManager.moveToNextInPlaylist(PlayerService.this);
 		}
 
 		@Override

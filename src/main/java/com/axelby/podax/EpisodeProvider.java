@@ -26,7 +26,7 @@ public class EpisodeProvider extends ContentProvider {
 	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/episodes");
 	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podcast";
-	public static final Uri QUEUE_URI = Uri.withAppendedPath(EpisodeProvider.URI, "queue");
+	public static final Uri PLAYLIST_URI = Uri.withAppendedPath(EpisodeProvider.URI, "playlist");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(EpisodeProvider.URI, "search");
 	public static final Uri EXPIRED_URI = Uri.withAppendedPath(EpisodeProvider.URI, "expired");
 	public static final Uri ACTIVE_EPISODE_URI = Uri.parse("content://" + AUTHORITY + "/active");
@@ -34,7 +34,7 @@ public class EpisodeProvider extends ContentProvider {
 	public static final Uri NEED_GPODDER_UPDATE_URI = Uri.withAppendedPath(EpisodeProvider.URI, "need_gpodder_update");
 
 	private final static int EPISODES = 1;
-	private final static int EPISODES_QUEUE = 2;
+	private final static int EPISODES_PLAYLIST = 2;
 	private final static int EPISODE_ID = 3;
 	private final static int EPISODES_TO_DOWNLOAD = 4;
 	private final static int EPISODE_ACTIVE = 5;
@@ -48,7 +48,7 @@ public class EpisodeProvider extends ContentProvider {
 	public static final String COLUMN_SUBSCRIPTION_ID = "subscriptionId";
 	public static final String COLUMN_SUBSCRIPTION_TITLE = "subscriptionTitle";
 	public static final String COLUMN_SUBSCRIPTION_URL = "subscriptionUrl";
-	public static final String COLUMN_QUEUE_POSITION = "queuePosition";
+	public static final String COLUMN_PLAYLIST_POSITION = "queuePosition";
 	public static final String COLUMN_MEDIA_URL = "mediaUrl";
 	public static final String COLUMN_LINK = "link";
 	public static final String COLUMN_PUB_DATE = "pubDate";
@@ -69,7 +69,7 @@ public class EpisodeProvider extends ContentProvider {
 	static {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 		uriMatcher.addURI(AUTHORITY, "episodes", EPISODES);
-		uriMatcher.addURI(AUTHORITY, "episodes/queue", EPISODES_QUEUE);
+		uriMatcher.addURI(AUTHORITY, "episodes/playlist", EPISODES_PLAYLIST);
 		uriMatcher.addURI(AUTHORITY, "episodes/#", EPISODE_ID);
 		uriMatcher.addURI(AUTHORITY, "episodes/to_download", EPISODES_TO_DOWNLOAD);
 		uriMatcher.addURI(AUTHORITY, "episodes/search", EPISODES_SEARCH);
@@ -84,7 +84,7 @@ public class EpisodeProvider extends ContentProvider {
 		_columnMap.put(COLUMN_SUBSCRIPTION_ID, "subscriptionId");
 		_columnMap.put(COLUMN_SUBSCRIPTION_TITLE, "subscriptions.title AS subscriptionTitle");
 		_columnMap.put(COLUMN_SUBSCRIPTION_URL, "subscriptions.url as subscriptionUrl");
-		_columnMap.put(COLUMN_QUEUE_POSITION, "queuePosition");
+		_columnMap.put(COLUMN_PLAYLIST_POSITION, "queuePosition");
 		_columnMap.put(COLUMN_MEDIA_URL, "mediaUrl");
 		_columnMap.put(COLUMN_LINK, "link");
 		_columnMap.put(COLUMN_PUB_DATE, "pubDate");
@@ -114,7 +114,7 @@ public class EpisodeProvider extends ContentProvider {
 	public String getType(Uri uri) {
 		switch (uriMatcher.match(uri)) {
 			case EPISODES:
-			case EPISODES_QUEUE:
+			case EPISODES_PLAYLIST:
 			case EPISODES_TO_DOWNLOAD:
 				return DIR_TYPE;
 			case EPISODE_ID:
@@ -143,7 +143,7 @@ public class EpisodeProvider extends ContentProvider {
 		switch (uriMatcher.match(uri)) {
 			case EPISODES:
 				break;
-			case EPISODES_QUEUE:
+			case EPISODES_PLAYLIST:
 				sqlBuilder.appendWhere("queuePosition IS NOT NULL");
 				if (sortOrder == null)
 					sortOrder = "queuePosition";
@@ -208,7 +208,7 @@ public class EpisodeProvider extends ContentProvider {
 				EpisodeProvider.COLUMN_FILE_SIZE,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 		};
-		Cursor c = query(QUEUE_URI, projection, null, null, null);
+		Cursor c = query(PLAYLIST_URI, projection, null, null, null);
 		long episodeId = -1;
 		try {
 			while (c.moveToNext()) {
@@ -226,26 +226,26 @@ public class EpisodeProvider extends ContentProvider {
 
 	private String getNeedsDownloadIds() {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		SQLiteQueryBuilder queueBuilder = new SQLiteQueryBuilder();
-		queueBuilder.setTables("podcasts");
-		queueBuilder.appendWhere("queuePosition IS NOT NULL");
-		Cursor queue = queueBuilder.query(db,
+		SQLiteQueryBuilder playlistBuilder = new SQLiteQueryBuilder();
+		playlistBuilder.setTables("podcasts");
+		playlistBuilder.appendWhere("queuePosition IS NOT NULL");
+		Cursor playlist = playlistBuilder.query(db,
 				new String[]{"_id, mediaUrl, fileSize"}, null, null, null,
 				null, "queuePosition");
-		String queueIds = "";
+		String playlistIds = "";
 
-		if (queue != null) {
-			while (queue.moveToNext()) {
-				EpisodeCursor episode = new EpisodeCursor(queue);
+		if (playlist != null) {
+			while (playlist.moveToNext()) {
+				EpisodeCursor episode = new EpisodeCursor(playlist);
 				if (!episode.isDownloaded(getContext()))
-					queueIds = queueIds + queue.getLong(0) + ",";
+					playlistIds = playlistIds + playlist.getLong(0) + ",";
 			}
-			queue.close();
+			playlist.close();
 		}
 
-		if (queueIds.length() > 0)
-			queueIds = queueIds.substring(0, queueIds.length() - 1);
-		return queueIds;
+		if (playlistIds.length() > 0)
+			playlistIds = playlistIds.substring(0, playlistIds.length() - 1);
+		return playlistIds;
 	}
 
 	@Override
@@ -333,16 +333,16 @@ public class EpisodeProvider extends ContentProvider {
 		values.remove(COLUMN_SUBSCRIPTION_URL);
 
 		// update queuePosition separately
-		if (values.containsKey(COLUMN_QUEUE_POSITION)) {
+		if (values.containsKey(COLUMN_PLAYLIST_POSITION)) {
 			// get the new position
-			Integer newPosition = values.getAsInteger(COLUMN_QUEUE_POSITION);
-			values.remove(COLUMN_QUEUE_POSITION);
+			Integer newPosition = values.getAsInteger(COLUMN_PLAYLIST_POSITION);
+			values.remove(COLUMN_PLAYLIST_POSITION);
 
 			// no way to get changed record count until
 			// SQLiteStatement.executeUpdateDelete in API level 11
-			updateQueuePosition(episodeId, newPosition);
+			updatePlaylistPosition(episodeId, newPosition);
 
-			// if this was the active episode and it's no longer in the queue or it was moved to the back
+			// if this was the active episode and it's no longer in the playlist or it was moved to the back
 			// don't restart on this episode
 			if (activeEpisodeId == episodeId && (newPosition == null || newPosition == Integer.MAX_VALUE)) {
 				prefs.edit().remove(PREF_ACTIVE).commit();
@@ -371,7 +371,7 @@ public class EpisodeProvider extends ContentProvider {
 		return count;
 	}
 
-	public void updateQueuePosition(long episodeId, Integer newPosition) {
+	public void updatePlaylistPosition(long episodeId, Integer newPosition) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// get the old position
@@ -383,7 +383,7 @@ public class EpisodeProvider extends ContentProvider {
 			oldPosition = c.getInt(0);
 		c.close();
 
-		// no need to remove from queue if it's not in queue
+		// no need to remove from playlist if it's not in playlist
 		if (oldPosition == null && newPosition == null)
 			return;
 
@@ -430,7 +430,7 @@ public class EpisodeProvider extends ContentProvider {
 		// update specified episode
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
 				new Object[]{newPosition, episodeId});
-		getContext().getContentResolver().notifyChange(QUEUE_URI, null);
+		getContext().getContentResolver().notifyChange(PLAYLIST_URI, null);
 	}
 
 	@Override
@@ -464,21 +464,21 @@ public class EpisodeProvider extends ContentProvider {
 			episodeId = db.insert("podcasts", null, values);
 
 			// find out if we should download new episodes
-			Cursor queueNewCursor = db.query("subscriptions",
-					new String[]{SubscriptionProvider.COLUMN_QUEUE_NEW},
+			Cursor playlistNewCursor = db.query("subscriptions",
+					new String[]{SubscriptionProvider.COLUMN_PLAYLIST_NEW},
 					"_id = ?",
 					new String[]{String.valueOf(values.getAsLong(COLUMN_SUBSCRIPTION_ID))},
 					null, null, null);
-			queueNewCursor.moveToFirst();
-			boolean queueNew = queueNewCursor.getInt(0) != 0;
-			queueNewCursor.close();
+			playlistNewCursor.moveToFirst();
+			boolean playlistNew = playlistNewCursor.getInt(0) != 0;
+			playlistNewCursor.close();
 
-			// if the new episode is less than 5 days old , and add it to the queue
-			if (queueNew && values.containsKey(COLUMN_PUB_DATE)) {
+			// if the new episode is less than 5 days old , and add it to the playlist
+			if (playlistNew && values.containsKey(COLUMN_PUB_DATE)) {
 				Calendar c = Calendar.getInstance();
 				c.add(Calendar.DATE, -5);
 				if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {
-					updateQueuePosition(episodeId, Integer.MAX_VALUE);
+					updatePlaylistPosition(episodeId, Integer.MAX_VALUE);
 				}
 			}
 		}
@@ -511,7 +511,7 @@ public class EpisodeProvider extends ContentProvider {
 			episodesWhere = where + " AND " + episodesWhere;
 		Cursor c = db.query("podcasts", columns, episodesWhere, whereArgs, null, null, null);
 		while (c.moveToNext()) {
-			updateQueuePosition(c.getLong(0), null);
+			updatePlaylistPosition(c.getLong(0), null);
 			deleteDownload(getContext(), c.getLong(0));
 		}
 		c.close();
@@ -603,7 +603,7 @@ public class EpisodeProvider extends ContentProvider {
 
 		ContentValues values = new ContentValues(2);
 		values.put(EpisodeProvider.COLUMN_LAST_POSITION, duration);
-		values.put(EpisodeProvider.COLUMN_QUEUE_POSITION, (Integer) null);
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
 		context.getContentResolver().update(uri, values, null, null);
 	}
 }

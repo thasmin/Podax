@@ -37,7 +37,6 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:textIsSelectable="true"
                         android:text="Episode Title"
                         tools:ignore="HardcodedText"/>
 
@@ -47,7 +46,6 @@
                         android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:text="Episode Title"
-                        android:textIsSelectable="true"
                         tools:ignore="HardcodedText"/>
 
                 <Button
@@ -63,17 +61,16 @@
                         android:layout_width="wrap_content"/>
 
                 <TextView
-                        android:id="@+id/queue_position"
-                        android:text="#1 in queue"
+                        android:id="@+id/playlist_position"
+                        android:text="#1 in playlist"
                         android:layout_width="wrap_content"
                         android:layout_height="fill_parent"
-                        android:textIsSelectable="true"
                         android:gravity="center_vertical"
                         android:layout_marginRight="5dp"
                         tools:ignore="HardcodedText"/>
 
                 <Button
-                        android:id="@+id/queue_btn"
+                        android:id="@+id/playlist_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/add"

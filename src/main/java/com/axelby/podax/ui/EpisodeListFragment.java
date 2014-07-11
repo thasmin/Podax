@@ -35,8 +35,8 @@ import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
 public class EpisodeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	static final int OPTION_ADDTOQUEUE = 3;
-	static final int OPTION_REMOVEFROMQUEUE = 1;
+	static final int OPTION_ADDTOPLAYLIST = 3;
+	static final int OPTION_REMOVEFROMPLAYLIST = 1;
 	static final int OPTION_PLAY = 2;
 	CharSequence _originalTitle = null;
 	private PodcastAdapter _adapter = null;
@@ -79,10 +79,10 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 				if (episode.isDownloaded(getActivity()))
 					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
 
-				if (episode.getQueuePosition() == null)
-					menu.add(ContextMenu.NONE, OPTION_ADDTOQUEUE, ContextMenu.NONE, R.string.add_to_playlist);
+				if (episode.getPlaylistPosition() == null)
+					menu.add(ContextMenu.NONE, OPTION_ADDTOPLAYLIST, ContextMenu.NONE, R.string.add_to_playlist);
 				else
-					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMQUEUE, ContextMenu.NONE, R.string.remove_from_playlist);
+					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMPLAYLIST, ContextMenu.NONE, R.string.remove_from_playlist);
 			}
 		});
 	}
@@ -129,11 +129,11 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 		EpisodeCursor episode = new EpisodeCursor(cursor);
 
 		switch (item.getItemId()) {
-			case OPTION_ADDTOQUEUE:
-				episode.addToQueue(getActivity());
+			case OPTION_ADDTOPLAYLIST:
+				episode.addToPlaylist(getActivity());
 				break;
-			case OPTION_REMOVEFROMQUEUE:
-				episode.removeFromQueue(getActivity());
+			case OPTION_REMOVEFROMPLAYLIST:
+				episode.removeFromPlaylist(getActivity());
 				break;
 			case OPTION_PLAY:
 				PlayerService.play(getActivity(), episode.getId());
@@ -197,7 +197,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 				EpisodeProvider.COLUMN_TITLE,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 				EpisodeProvider.COLUMN_FILE_SIZE,
-				EpisodeProvider.COLUMN_QUEUE_POSITION,
+				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
 		};
 		return new CursorLoader(getActivity(), uri, projection, null, null, null);
 	}

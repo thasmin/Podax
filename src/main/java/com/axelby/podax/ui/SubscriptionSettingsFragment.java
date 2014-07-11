@@ -34,7 +34,7 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 	private String _feedTitle;
 	private EditText _name;
 	private CheckBox _autoName;
-	private RadioGroup _autoQueue;
+	private RadioGroup _autoPlaylist;
 	private RadioGroup _expiration;
 
 	@Override
@@ -88,7 +88,7 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 		});
 
 		_autoName = (CheckBox) getActivity().findViewById(R.id.nameAuto);
-		_autoQueue = (RadioGroup) getActivity().findViewById(R.id.autoQueueGroup);
+		_autoPlaylist = (RadioGroup) getActivity().findViewById(R.id.autoPlaylistGroup);
 		_expiration = (RadioGroup) getActivity().findViewById(R.id.expireGroup);
 	}
 
@@ -112,14 +112,14 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 			}
 		});
 
-		_autoQueue.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				ContentValues values = new ContentValues();
-				values.put(SubscriptionProvider.COLUMN_QUEUE_NEW, checkedId == R.id.autoQueueYes);
-				getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
-			}
-		});
+		_autoPlaylist.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                ContentValues values = new ContentValues();
+                values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, checkedId == R.id.autoPlaylistYes);
+                getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
+            }
+        });
 
 		_expiration.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 			@Override
@@ -146,7 +146,7 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 		String[] projection = {
 				SubscriptionProvider.COLUMN_TITLE,
 				SubscriptionProvider.COLUMN_TITLE_OVERRIDE,
-				SubscriptionProvider.COLUMN_QUEUE_NEW,
+				SubscriptionProvider.COLUMN_PLAYLIST_NEW,
 				SubscriptionProvider.COLUMN_EXPIRATION,
 		};
 		long subscriptionId = bundle.getLong("id");
@@ -182,7 +182,7 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 		}
 
 		if (!cursor.isNull(2) && cursor.getInt(2) == 0)
-			_autoQueue.check(R.id.autoQueueNo);
+			_autoPlaylist.check(R.id.autoPlaylistNo);
 
 		if (!cursor.isNull(3)) {
 			switch (cursor.getInt(3)) {

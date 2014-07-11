@@ -51,8 +51,8 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	TextView _titleView;
 	TextView _subscriptionTitleView;
 	TextView _descriptionView;
-	Button _queueButton;
-	TextView _queuePosition;
+	Button _playlistButton;
+	TextView _playlistPosition;
 	ImageButton _restartButton;
 	ImageButton _rewindButton;
 	ImageButton _playButton;
@@ -96,8 +96,8 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		_titleView = (TextView) activity.findViewById(R.id.title);
 		_subscriptionTitleView = (TextView) activity.findViewById(R.id.subscription_title);
 		_descriptionView = (TextView) activity.findViewById(R.id.description);
-		_queuePosition = (TextView) activity.findViewById(R.id.queue_position);
-		_queueButton = (Button) activity.findViewById(R.id.queue_btn);
+		_playlistPosition = (TextView) activity.findViewById(R.id.playlist_position);
+		_playlistButton = (Button) activity.findViewById(R.id.playlist_btn);
 		_restartButton = (ImageButton) activity.findViewById(R.id.restart_btn);
 		_rewindButton = (ImageButton) activity.findViewById(R.id.rewind_btn);
 		_playButton = (ImageButton) activity.findViewById(R.id.play_btn);
@@ -138,10 +138,10 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		});
 
 		_skipToEndButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				EpisodeProvider.skipToEnd(activity, _podcastId);
-			}
-		});
+            public void onClick(View v) {
+                EpisodeProvider.skipToEnd(activity, _podcastId);
+            }
+        });
 
 		_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress,
@@ -159,23 +159,23 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 			}
 		});
 
-		_queueButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
-				String[] projection = new String[]{EpisodeProvider.COLUMN_ID, EpisodeProvider.COLUMN_QUEUE_POSITION};
-				Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
-				if (c == null)
-					return;
-				if (c.moveToNext()) {
-					EpisodeCursor episode = new EpisodeCursor(c);
-					if (episode.getQueuePosition() == null)
-						episode.addToQueue(activity);
-					else
-						episode.removeFromQueue(activity);
-				}
-				c.close();
-			}
-		});
+		_playlistButton.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
+                String[] projection = new String[]{EpisodeProvider.COLUMN_ID, EpisodeProvider.COLUMN_PLAYLIST_POSITION};
+                Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
+                if (c == null)
+                    return;
+                if (c.moveToNext()) {
+                    EpisodeCursor episode = new EpisodeCursor(c);
+                    if (episode.getPlaylistPosition() == null)
+                        episode.addToPlaylist(activity);
+                    else
+                        episode.removeFromPlaylist(activity);
+                }
+                c.close();
+            }
+        });
 
 		_restartButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -295,14 +295,14 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		int playResource = isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
 		_playButton.setImageResource(playResource);
 
-		if (episode.getQueuePosition() == null) {
-			_queueButton.setText(R.string.add);
-			_queuePosition.setText("");
+		if (episode.getPlaylistPosition() == null) {
+			_playlistButton.setText(R.string.add);
+			_playlistPosition.setText("");
 		} else {
-			_queueButton.setText(R.string.remove);
-			_queuePosition.setText("#"
-					+ String.valueOf(episode.getQueuePosition() + 1)
-					+ " in queue");
+			_playlistButton.setText(R.string.remove);
+			_playlistPosition.setText("#"
+                    + String.valueOf(episode.getPlaylistPosition() + 1)
+                    + " in playlist");
 		}
 	}
 
@@ -316,7 +316,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 				EpisodeProvider.COLUMN_DESCRIPTION,
 				EpisodeProvider.COLUMN_DURATION,
 				EpisodeProvider.COLUMN_LAST_POSITION,
-				EpisodeProvider.COLUMN_QUEUE_POSITION,
+				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 				EpisodeProvider.COLUMN_PAYMENT,
 		};
