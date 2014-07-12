@@ -64,6 +64,44 @@ public class MainActivity extends Activity {
 	private ActionBarDrawerToggle _drawerToggle;
 	private int _fragmentId;
 
+    public static class TabListener<T extends Fragment> implements ActionBar.TabListener {
+        private Fragment _fragment;
+        private final Activity _activity;
+        private final String _tag;
+        private final Class<T> _class;
+
+        public TabListener(Activity activity, String tag, Class<T> clz) {
+            _activity = activity;
+            _tag = tag;
+            _class = clz;
+        }
+
+        @Override
+        public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+            // Check if the fragment is already initialized
+            if (_fragment == null) {
+                // If not, instantiate and add it to the activity
+                _fragment = Fragment.instantiate(_activity, _class.getName());
+                ft.add(android.R.id.content, _fragment, _tag);
+            } else {
+                // If it exists, simply attach it in order to show it
+                ft.attach(_fragment);
+            }
+        }
+
+        @Override
+        public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+            if (_fragment != null) {
+                ft.detach(_fragment);
+            }
+        }
+
+        @Override
+        public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
+
+        }
+    }
+
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
@@ -128,14 +166,6 @@ public class MainActivity extends Activity {
 		_drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, R.drawable.ic_drawer,
 				R.string.open_drawer, R.string.close_drawer);
 		_drawerLayout.setDrawerListener(_drawerToggle);
-
-        ActionBar actionBar = getActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
-        }
-
-		_drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
 
 		ListView drawer = (ListView) findViewById(R.id.drawer);
@@ -147,6 +177,30 @@ public class MainActivity extends Activity {
 				changeFragment(position);
 			}
 		});
+
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+            //actionBar.setDisplayShowTitleEnabled(false);
+
+            actionBar.addTab(actionBar.newTab()
+                    .setText(R.string.now_playing)
+                    .setTabListener(new TabListener<EpisodeDetailFragment>(
+                            this, "nowplaying", EpisodeDetailFragment.class))
+            );
+
+            actionBar.addTab(actionBar.newTab()
+                    .setText(R.string.playlist)
+                    .setTabListener(new TabListener<PlaylistFragment>(
+                            this, "playlist", PlaylistFragment.class))
+            );
+
+            actionBar.addTab(actionBar.newTab()
+                    .setText(R.string.podcasts)
+                    .setTabListener(new TabListener<SubscriptionListFragment>(
+                            this, "podcasts", SubscriptionListFragment.class))
+            );
+        }
 
 		if (intent.hasExtra(Constants.EXTRA_FRAGMENT)) {
 			handleIntent(intent);
@@ -176,15 +230,6 @@ public class MainActivity extends Activity {
 		switch (position) {
 			case 1:
 				replaceFragment(WelcomeFragment.class);
-				break;
-			case 2:
-				replaceFragment(EpisodeDetailFragment.class);
-				break;
-			case 3:
-				replaceFragment(PlaylistFragment.class);
-				break;
-			case 4:
-				replaceFragment(SubscriptionListFragment.class);
 				break;
 			case 5:
 				replaceFragment(SearchFragment.class);
@@ -267,6 +312,8 @@ public class MainActivity extends Activity {
 	}
 
 	public void replaceFragment(Class<? extends Fragment> clazz, Bundle args) {
+        return;
+        /*
 		Fragment current = getFragmentManager().findFragmentById(R.id.fragment);
 		if (current != null && current.getClass().equals(clazz) && clazz != EpisodeDetailFragment.class)
 			return;
@@ -307,6 +354,7 @@ public class MainActivity extends Activity {
 		} catch (InvocationTargetException ignored) {
 		} catch (NoSuchMethodException ignored) {
 		}
+		*/
 	}
 
 	private boolean isPlayerServiceRunning() {

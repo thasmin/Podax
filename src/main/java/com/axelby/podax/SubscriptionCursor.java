@@ -29,6 +29,7 @@ public class SubscriptionCursor {
 	private Integer _titleOverrideColumn = null;
 	private Integer _playlistNewColumn = null;
 	private Integer _expirationDaysColumn = null;
+    private Integer _descriptionColumn = null;
 
 	public SubscriptionCursor(Cursor cursor) {
 		if (cursor.isAfterLast())
@@ -158,8 +159,16 @@ public class SubscriptionCursor {
 	public Integer getExpirationDays() {
 		if (_expirationDaysColumn == null)
 			_expirationDaysColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_EXPIRATION);
-		if (_cursor.isNull(_thumbnailColumn))
+		if (_cursor.isNull(_expirationDaysColumn))
 			return null;
 		return _cursor.getInt(_expirationDaysColumn);
 	}
+
+    public String getDescription() {
+        if (_descriptionColumn == null)
+            _descriptionColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_DESCRIPTION);
+        if (_cursor.isNull(_descriptionColumn))
+            return null;
+        return _cursor.getString(_descriptionColumn);
+    }
 }

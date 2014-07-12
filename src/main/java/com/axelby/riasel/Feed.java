@@ -8,6 +8,7 @@ public class Feed {
 
 	private String _title;
 	private String _thumbnail;
+    private String _description;
 	private Date _lastBuildDate;
 	private Date _pubDate;
 
@@ -17,6 +18,8 @@ public class Feed {
 			values.put("title", getTitle());
 		if (getThumbnail() != null)
 			values.put("thumbnail", getThumbnail());
+        if (getDescription() != null)
+            values.put("description", getDescription());
 		if (getLastBuildDate() != null)
 			values.put("lastBuildDate", getLastBuildDate().getTime());
 		if (getPubDate() != null)
@@ -27,7 +30,6 @@ public class Feed {
 	public String getTitle() {
 		return _title;
 	}
-
 	public void setTitle(String title) {
 		this._title = title;
 	}
@@ -35,15 +37,20 @@ public class Feed {
 	public String getThumbnail() {
 		return _thumbnail;
 	}
-
 	public void setThumbnail(String thumbnail) {
 		_thumbnail = thumbnail;
 	}
 
-	public Date getLastBuildDate() {
+    public String getDescription() {
+        return _description;
+    }
+    public void setDescription(String description) {
+        this._description = description;
+    }
+
+    public Date getLastBuildDate() {
 		return _lastBuildDate;
 	}
-
 	public void setLastBuildDate(Date lastBuildDate) {
 		this._lastBuildDate = lastBuildDate;
 	}
@@ -51,7 +58,6 @@ public class Feed {
 	public Date getPubDate() {
 		return _pubDate;
 	}
-
 	public void setPubDate(Date _pubDate) {
 		this._pubDate = _pubDate;
 	}

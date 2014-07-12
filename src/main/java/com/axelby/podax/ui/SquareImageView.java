@@ -21,7 +21,9 @@ public class SquareImageView extends ImageView {
 	@Override
 	public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		int square = getMeasuredWidth();
-		setMeasuredDimension(square, square);
+        int h = this.getMeasuredHeight();
+        int w = this.getMeasuredWidth();
+        int max = Math.max(w,h);
+        setMeasuredDimension(max, max);
 	}
 }

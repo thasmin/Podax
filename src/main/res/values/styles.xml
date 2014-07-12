@@ -1,8 +1,10 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.Podax" parent="android:Theme.Holo">
-        <item name="android:buttonStyle">@style/podaxButton</item>
-        <item name="android:buttonStyleSmall">@style/podaxButtonSmall</item>
+    <style name="Theme.Podax" parent="android:Theme.Holo.Light">
+        <item name="android:buttonStyle">@style/Widget.Podax.Button</item>
+        <item name="android:buttonStyleSmall">@style/Widget.Podax.Button.Small</item>
+        <item name="android:actionBarStyle">@style/Widget.Podax.ActionBar</item>
+        <item name="android:actionBarTabBarStyle">@style/Widget.Podax.ActionBar.TabBar</item>
     </style>
 
     <color name="podaxColor">#FFE59F39</color>
@@ -14,16 +16,46 @@
     <color name="podaxBlue">#FF085D99</color>
     <color name="podaxBlueBright">#FF399FE5</color>
 
-    <style name="podaxButtonSmall" parent="android:Widget.Button.Small">
+    <color name="orange500">#FFff9800</color>
+    <color name="orange100">#FFffe0b2</color>
+    <color name="orange700">#FFf57c00</color>
+    <color name="indigo500">#FF3f51b5</color>
+    <color name="lightblue500">#FF03a9f4</color>
+
+    <style name="Widget.Podax.ActionBar" parent="android:Widget.Holo.ActionBar">
+        <item name="android:background">@color/orange500</item>
+        <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
+        <item name="android:icon">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.Podax.ActionBar.TabBar" parent="android:Widget.ActionBar.TabBar">
+        <item name="android:background">@color/orange500</item>
+        <item name="android:divider">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.Podax.Button.Small" parent="android:Widget.Button.Small">
         <item name="android:background">@drawable/button_background</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:padding">10dp</item>
     </style>
 
-    <style name="podaxButton" parent="android:Widget.Button">
+    <style name="Widget.Podax.Button" parent="android:Widget.Button">
         <item name="android:background">@drawable/button_background</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:padding">10dp</item>
+    </style>
+
+    <style name="Widget.Podax.Button.Flat" parent="android:Widget.Button">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_marginLeft">0dp</item>
+        <item name="android:layout_marginRight">0dp</item>
+    </style>
+
+    <style name="Widget.Podax.Button.Flat.Primary" parent="Widget.Podax.Button.Flat">
+        <item name="android:textColor">@color/orange500</item>
     </style>
 
     <style name="mainText" parent="@android:style/TextAppearance.Large">

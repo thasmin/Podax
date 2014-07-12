@@ -17,7 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.GridView;
+import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
@@ -26,6 +26,8 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+
+import javax.annotation.Nonnull;
 
 public class SubscriptionListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;
@@ -41,7 +43,7 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.subscription_list, container, false);
 	}
 
@@ -49,23 +51,23 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		GridView _grid = (GridView) getActivity().findViewById(R.id.grid);
-		_grid.setAdapter(_adapter);
-		_grid.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> grid, View view, int position, long id) {
-				SubscriptionCursor sub = new SubscriptionCursor((Cursor) grid.getItemAtPosition(position));
-				long subscriptionId = sub.getId();
+		ListView _list = (ListView) getActivity().findViewById(R.id.list);
+        _list.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> grid, View view, int position, long id) {
+                SubscriptionCursor sub = new SubscriptionCursor((Cursor) grid.getItemAtPosition(position));
+                long subscriptionId = sub.getId();
 
-				EpisodeListFragment episodeListFragment = new EpisodeListFragment();
-				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
-				episodeListFragment.setArguments(args);
-				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				ft.replace(R.id.fragment, episodeListFragment).addToBackStack(null).commit();
-			}
-		});
-		registerForContextMenu(_grid);
+                EpisodeListFragment episodeListFragment = new EpisodeListFragment();
+                Bundle args = new Bundle();
+                args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
+                episodeListFragment.setArguments(args);
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment, episodeListFragment).addToBackStack(null).commit();
+            }
+        });
+        _list.setAdapter(_adapter);
+		registerForContextMenu(_list);
 	}
 
 	@Override
@@ -109,6 +111,7 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 				SubscriptionProvider.COLUMN_TITLE,
 				SubscriptionProvider.COLUMN_URL,
 				SubscriptionProvider.COLUMN_THUMBNAIL,
+                SubscriptionProvider.COLUMN_DESCRIPTION,
 		};
 		return new CursorLoader(getActivity(), SubscriptionProvider.URI, projection, null, null, null);
 	}
@@ -135,7 +138,8 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 		public void bindView(View view, Context context, Cursor cursor) {
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
-			((TextView) view.findViewById(R.id.text)).setText(subscription.getTitle());
+			((TextView) view.findViewById(R.id.title)).setText(subscription.getTitle());
+            //((TextView) view.findViewById(R.id.description)).setText(subscription.getDescription());
 			((SquareImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
 		}
 	}

@@ -63,10 +63,12 @@
     <orderEntry type="library" exported="" name="acra-4.4.0" level="project" />
     <orderEntry type="library" exported="" name="google-gson-stream-2.0" level="project" />
     <orderEntry type="library" exported="" name="jsr305-2.0.3" level="project" />
-    <orderEntry type="library" exported="" name="appcompat-v7-19.1.0" level="project" />
-    <orderEntry type="library" exported="" name="support-v4-19.1.0" level="project" />
+    <orderEntry type="library" exported="" name="cardview-v7-21.0.0-rc1" level="project" />
+    <orderEntry type="library" exported="" name="appcompat-v7-20.0.0" level="project" />
     <orderEntry type="library" exported="" name="flattr4j-core-2.7" level="project" />
     <orderEntry type="library" exported="" name="guava-16.0" level="project" />
+    <orderEntry type="library" exported="" name="support-annotations-20.0.0" level="project" />
+    <orderEntry type="library" exported="" name="support-v4-20.0.0" level="project" />
     <orderEntry type="library" exported="" name="volley" level="project" />
   </component>
 </module>

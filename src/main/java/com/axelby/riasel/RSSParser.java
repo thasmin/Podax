@@ -56,6 +56,8 @@ public class RSSParser {
 						feed.setLastBuildDate(date);
 				} else if (name.equalsIgnoreCase("title") && namespace.equals("")) {
 					feed.setTitle(parser.nextText());
+                } else if (name.equalsIgnoreCase("description") && namespace.equals("")) {
+                    feed.setDescription(parser.nextText());
 				} else if (name.equalsIgnoreCase("thumbnail") && namespace.equals(NAMESPACE_MEDIA)) {
 					feed.setThumbnail(parser.getAttributeValue("", "url"));
 				} else if (name.equalsIgnoreCase("image") && namespace.equals(NAMESPACE_ITUNES)) {

@@ -1,24 +1,57 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content">
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
 
-    <com.axelby.podax.ui.SquareImageView
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="129dp">
+
+        <com.axelby.podax.ui.SquareImageView
             android:id="@+id/thumbnail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:scaleType="fitStart"
-            android:contentDescription="@string/subscription_thumbnail" />
+            android:contentDescription="@string/subscription_thumbnail"
+            tools:src="@drawable/icon"
+            />
 
-    <TextView
-            android:id="@+id/text"
+        <TextView
+            android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:background="#ccffffff"
-            android:textColor="@android:color/black"
-            android:textSize="12sp"
             tools:text="Fitzdog Radio"
-            android:gravity="center_horizontal"/>
+            android:layout_toRightOf="@id/thumbnail"
+            android:layout_margin="10dp"
+            android:textSize="20sp"
+            />
 
-</RelativeLayout>
+        <Button
+            android:id="@+id/settings_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings"
+            android:textAllCaps="true"
+            style="@style/Widget.Podax.Button.Flat"
+            android:layout_below="@id/title"
+            android:layout_alignLeft="@id/title"
+            android:layout_marginRight="20dp"
+            />
+
+        <Button
+            android:id="@+id/episodes_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/episodes"
+            android:textAllCaps="true"
+            style="@style/Widget.Podax.Button.Flat.Primary"
+            android:layout_below="@id/title"
+            android:layout_toRightOf="@id/settings_btn"
+            android:layout_marginRight="20dp"
+            />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

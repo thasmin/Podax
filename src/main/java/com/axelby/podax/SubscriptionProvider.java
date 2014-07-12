@@ -34,6 +34,7 @@ public class SubscriptionProvider extends ContentProvider {
 	public static final String COLUMN_TITLE_OVERRIDE = "titleOverride";
 	public static final String COLUMN_PLAYLIST_NEW = "queueNew";
 	public static final String COLUMN_EXPIRATION = "expirationDays";
+    public static final String COLUMN_DESCRIPTION = "description";
 
 	private static final int SUBSCRIPTIONS = 1;
 	private static final int SUBSCRIPTION_ID = 2;
@@ -63,6 +64,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_columnMap.put(COLUMN_TITLE_OVERRIDE, "titleOverride");
 		_columnMap.put(COLUMN_PLAYLIST_NEW, "queueNew");
 		_columnMap.put(COLUMN_EXPIRATION, "expirationDays");
+        _columnMap.put(COLUMN_DESCRIPTION, "description");
 	}
 
 	DBAdapter _dbAdapter;

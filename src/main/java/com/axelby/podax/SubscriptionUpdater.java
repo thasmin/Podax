@@ -197,20 +197,6 @@ public class SubscriptionUpdater {
 		}
 
 		downloadThumbnail(subscriptionId, newThumbnailUrl);
-
-		/*
-		Helper.getImageLoader(_context).get(newThumbnailUrl, new ImageLoader.ImageListener() {
-			@Override
-			public void onResponse(ImageLoader.ImageContainer imageContainer, boolean immediate) {
-				SubscriptionCursor.saveThumbnailImage(_context, subscriptionId, imageContainer.getBitmap());
-			}
-
-			@Override
-			public void onErrorResponse(VolleyError volleyError) {
-
-			}
-		}, 256, 256);
-		*/
 	}
 
 	private void downloadThumbnail(long subscriptionId, String thumbnailUrl) {

@@ -19,6 +19,8 @@ public class AtomParser {
 					feed.setTitle(parser.nextText());
 				else if (isAtomElement(parser, "icon"))
 					feed.setThumbnail(parser.nextText());
+                else if (isAtomElement(parser, "subtitle"))
+                    feed.setDescription(parser.nextText());
 				else if (isAtomElement(parser, "updated"))
 					feed.setLastBuildDate(Utils.parseDate(parser.nextText()));
 				else if (isAtomElement(parser, "entry"))
