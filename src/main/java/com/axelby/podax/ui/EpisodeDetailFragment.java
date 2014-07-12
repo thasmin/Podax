@@ -336,8 +336,12 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		if (getActivity() == null)
 			return;
 
-		if (!cursor.moveToFirst())
-			return;
+		if (!cursor.moveToFirst()) {
+            Intent intent = new Intent(getActivity(), MainActivity.class);
+            intent.putExtra("fragmentId", 1);
+            startActivity(intent);
+            return;
+        }
 
 		EpisodeCursor episode = new EpisodeCursor(cursor);
 		if (episode.getId() != _podcastId || !_uiInitialized) {
