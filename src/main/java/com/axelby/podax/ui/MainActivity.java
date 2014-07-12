@@ -2,8 +2,12 @@ package com.axelby.podax.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ActionBar;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -18,12 +22,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,7 +54,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity {
+import javax.annotation.Nonnull;
+
+public class MainActivity extends Activity {
 
 	private static int _defaultTextColor = 0;
 	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
@@ -113,7 +116,7 @@ public class MainActivity extends ActionBarActivity {
 							})
 							.create()
 							.show();
-					preferences.edit().putInt("lastReleaseNoteDialog", versionCode).commit();
+					preferences.edit().putInt("lastReleaseNoteDialog", versionCode).apply();
 				}
 			}
 		} catch (PackageManager.NameNotFoundException ignored) {
@@ -126,11 +129,14 @@ public class MainActivity extends ActionBarActivity {
 				R.string.open_drawer, R.string.close_drawer);
 		_drawerLayout.setDrawerListener(_drawerToggle);
 
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		getSupportActionBar().setHomeButtonEnabled(true);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+        }
 
 		_drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
 
 		ListView drawer = (ListView) findViewById(R.id.drawer);
 		PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
@@ -163,7 +169,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void changeFragment(int position) {
-		_drawerLayout.closeDrawer(GravityCompat.START);
+		_drawerLayout.closeDrawer(Gravity.START);
 
 		_fragmentId = position;
 
@@ -261,11 +267,11 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	public void replaceFragment(Class<? extends Fragment> clazz, Bundle args) {
-		Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment);
+		Fragment current = getFragmentManager().findFragmentById(R.id.fragment);
 		if (current != null && current.getClass().equals(clazz) && clazz != EpisodeDetailFragment.class)
 			return;
 
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
 
 		try {
 			Fragment f = null;
@@ -329,7 +335,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
+	protected void onSaveInstanceState(@Nonnull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt("fragmentId", _fragmentId);
 	}

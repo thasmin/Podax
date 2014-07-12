@@ -1,9 +1,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.Podax" parent="Theme.AppCompat">
+    <style name="Theme.Podax" parent="android:Theme.Holo">
         <item name="android:buttonStyle">@style/podaxButton</item>
         <item name="android:buttonStyleSmall">@style/podaxButtonSmall</item>
-        <item name="android:windowBackground">@android:color/black</item>
     </style>
 
     <color name="podaxColor">#FFE59F39</color>

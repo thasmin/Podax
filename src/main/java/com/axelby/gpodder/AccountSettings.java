@@ -1,21 +1,21 @@
 package com.axelby.gpodder;
 
+import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.widget.FrameLayout;
 
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
-import com.axelby.podax.ui.PreferenceListFragment;
 
-public class AccountSettings extends FragmentActivity {
+public class AccountSettings extends Activity {
 
 	@Override
 	protected void onCreate(Bundle icicle) {
@@ -25,11 +25,11 @@ public class AccountSettings extends FragmentActivity {
 		frame.setId(R.id.fragment);
 		setContentView(frame, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		ft.add(R.id.fragment, new AccountSettingsFragment()).commit();
 	}
 
-	public static class AccountSettingsFragment extends PreferenceListFragment {
+	public static class AccountSettingsFragment extends PreferenceFragment {
 		private SharedPreferences _gpodderPrefs;
 
 		public AccountSettingsFragment() {
@@ -39,7 +39,8 @@ public class AccountSettings extends FragmentActivity {
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 
-			PreferenceScreen screen = inflateFromResource(R.xml.gpodder_preferences);
+            addPreferencesFromResource(R.xml.gpodder_preferences);
+			PreferenceScreen screen = getPreferenceScreen();
 			_gpodderPrefs = getActivity().getSharedPreferences("gpodder", Context.MODE_PRIVATE);
 
 			EditTextPreference device_name = (EditTextPreference) screen.findPreference("device_name");

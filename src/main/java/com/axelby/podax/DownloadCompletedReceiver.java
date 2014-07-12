@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import android.app.DownloadManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -8,7 +9,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.support.v4.app.NotificationCompat;
 
 import com.axelby.podax.ui.MainActivity;
 
@@ -39,7 +39,7 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 					}
 					context.getContentResolver().notifyChange(EpisodeProvider.ACTIVE_EPISODE_URI, null);
 				} else if (status == DownloadManager.STATUS_FAILED) {
-					NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+					Notification.Builder builder = new Notification.Builder(context);
 					builder.setSmallIcon(R.drawable.icon);
 					String title = c.getString(c.getColumnIndex(DownloadManager.COLUMN_TITLE));
 					if (title != null)
@@ -78,7 +78,7 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 							break;
 					}
 					NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-					nm.notify(Constants.NOTIFICATION_DOWNLOAD_ERROR, builder.build());
+					nm.notify(Constants.NOTIFICATION_DOWNLOAD_ERROR, builder.getNotification());
 				}
 			}
 			if (c != null)

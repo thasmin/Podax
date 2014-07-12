@@ -1,14 +1,14 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
+import android.app.ListFragment;
+import android.app.LoaderManager;
+import android.content.AsyncTaskLoader;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +24,8 @@ import com.axelby.podax.SubscriptionProvider;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 public class GPodderPopularListFragment extends ListFragment {
 
 	public GPodderPopularListFragment() {
@@ -35,7 +37,7 @@ public class GPodderPopularListFragment extends ListFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.innerlist, container, false);
 	}
 
@@ -135,7 +137,7 @@ public class GPodderPopularListFragment extends ListFragment {
 
 			View v = convertView;
 			if (v == null)
-				v = _activity.getLayoutInflater().inflate(R.layout.gpodder_toplist_item, null);
+				v = _activity.getLayoutInflater().inflate(R.layout.gpodder_toplist_item, parent, false);
 			if (v == null)
 				return null;
 

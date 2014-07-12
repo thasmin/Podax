@@ -17,7 +17,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 
 import com.axelby.gpodder.dto.Changes;
 import com.axelby.gpodder.dto.EpisodeUpdate;
@@ -68,13 +67,13 @@ public class SyncService extends Service {
 		}
 
 		private void showErrorNotification(Client client, int string_resource) {
-			Notification notification = new NotificationCompat.Builder(_context)
+			Notification notification = new Notification.Builder(_context)
 					.setContentTitle(_context.getString(R.string.gpodder_sync_error))
 					.setContentText(_context.getString(string_resource, client.getErrorMessage()))
 					.setContentIntent(PendingIntent.getActivity(_context, 0, new Intent(_context, MainActivity.class), 0))
 					.setWhen(System.currentTimeMillis())
 					.setSmallIcon(R.drawable.mygpo)
-					.build();
+					.getNotification();
 			NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
 			notificationManager.notify(Constants.NOTIFICATION_GPODDER_ERROR, notification);
 		}

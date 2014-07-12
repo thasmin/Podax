@@ -9,7 +9,7 @@ import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
-import android.support.v4.util.LruCache;
+import android.util.LruCache;
 
 import com.android.volley.Cache;
 import com.android.volley.RequestQueue;
@@ -113,35 +113,7 @@ public class Helper {
 		return _imageLoader;
 	}
 
-	public static Bitmap getCachedImage(Context context, String url) {
-		if (_diskCache == null)
-			_diskCache = new DiskBasedCache(context.getExternalCacheDir());
-		String key = "#W0#H0" + url;
-		if (_imageCache.get(key) != null)
-			return _imageCache.get(key);
-		if (_diskCache.getFileForKey(key).exists())
-			return BitmapFactory.decodeFile(_diskCache.getFileForKey(url).getAbsolutePath());
-		return null;
-	}
-
-	public static Bitmap getCachedImage(Context context, String url, int width, int height) {
-		if (_diskCache == null)
-			_diskCache = new DiskBasedCache(context.getExternalCacheDir());
-
-		String key = "#W" + width + "#H" + height + url;
-		if (_imageCache.get(key) != null)
-			return _imageCache.get(key);
-
-		Bitmap fullSize = getCachedImage(context, url);
-		if (fullSize == null)
-			return null;
-
-		Bitmap scaled = Bitmap.createScaledBitmap(fullSize, width, height, false);
-		_imageCache.put(key, scaled);
-		return scaled;
-	}
-
-	public static boolean isTablet(Context context) {
+    public static boolean isTablet(Context context) {
 		return (context.getResources().getConfiguration().screenLayout
 				& Configuration.SCREENLAYOUT_SIZE_MASK)
 				>= Configuration.SCREENLAYOUT_SIZE_LARGE;

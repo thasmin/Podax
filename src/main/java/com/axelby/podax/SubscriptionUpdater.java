@@ -11,7 +11,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.Xml;
 
@@ -105,7 +104,7 @@ public class SubscriptionUpdater {
 				}
 			}
 
-			InputStream inputStream = connection.getInputStream();;
+			InputStream inputStream = connection.getInputStream();
 			try {
 				XmlPullParser parser = Xml.newPullParser();
 				parser.setInput(inputStream, encoding);
@@ -257,7 +256,7 @@ public class SubscriptionUpdater {
 		notificationIntent.putExtra(Constants.EXTRA_FRAGMENT, 4);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
-		Notification notification = new NotificationCompat.Builder(_context)
+		Notification notification = new Notification.Builder(_context)
 				.setSmallIcon(R.drawable.icon)
 				.setTicker("Error Updating Subscription")
 				.setWhen(System.currentTimeMillis())
@@ -265,7 +264,7 @@ public class SubscriptionUpdater {
 				.setContentText(reason)
 				.setContentIntent(contentIntent)
 				.setOngoing(false)
-				.build();
+				.getNotification();
 
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
@@ -326,12 +325,12 @@ public class SubscriptionUpdater {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
-		Notification notification = new NotificationCompat.Builder(_context)
+		Notification notification = new Notification.Builder(_context)
 				.setSmallIcon(R.drawable.icon)
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Updating " + subscription.getTitle())
 				.setContentIntent(contentIntent)
-				.build();
+				.getNotification();
 
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(Constants.NOTIFICATION_UPDATE, notification);

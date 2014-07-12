@@ -1,19 +1,19 @@
 package com.axelby.podax.ui;
 
+import android.app.FragmentTransaction;
+import android.app.ListFragment;
+import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -47,6 +47,8 @@ import com.mobeta.android.dslv.DragSortListView.DropListener;
 import com.mobeta.android.dslv.DragSortListView.RemoveListener;
 
 import java.io.File;
+
+import javax.annotation.Nonnull;
 
 public class PlaylistFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	static final int OPTION_REMOVEFROMPLAYLIST = 1;
@@ -106,7 +108,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.playlist, container, false);
 	}
 

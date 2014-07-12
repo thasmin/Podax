@@ -1,11 +1,11 @@
 package com.axelby.podax.ui;
 
+import android.app.FragmentTransaction;
+import android.app.ListFragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
 import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +25,8 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
 
 public class ITunesPopularListFragment extends ListFragment {
 
@@ -49,7 +51,7 @@ public class ITunesPopularListFragment extends ListFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.innerlist, container, false);
 	}
 

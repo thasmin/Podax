@@ -3,13 +3,13 @@ package com.axelby.gpodder;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
+import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -22,7 +22,7 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.ui.ProgressDialogFragment;
 
-public class AuthenticatorActivity extends FragmentActivity {
+public class AuthenticatorActivity extends Activity {
 	public static final String PARAM_CONFIRMCREDENTIALS = "confirmCredentials";
 	public static final String PARAM_PASSWORD = "password";
 	public static final String PARAM_USERNAME = "username";
@@ -33,8 +33,7 @@ public class AuthenticatorActivity extends FragmentActivity {
 	String _authtokenType;
 	boolean _requestNewAccount;
 	boolean _confirmCredentials;
-	private Thread _authThread;
-	private TextView _messageText;
+    private TextView _messageText;
 	private EditText _usernameEdit;
 	private EditText _passwordEdit;
 	private EditText _deviceNameEdit;
@@ -81,7 +80,7 @@ public class AuthenticatorActivity extends FragmentActivity {
 	}
 
 	protected void showProgress() {
-		FragmentManager fm = getSupportFragmentManager();
+		FragmentManager fm = getFragmentManager();
 		_progressDialog = ProgressDialogFragment.newInstance();
 		_progressDialog.show(fm, "progress");
 	}
@@ -101,27 +100,27 @@ public class AuthenticatorActivity extends FragmentActivity {
 			showProgress();
 			final Client client = new Client(this, _username, _password);
 
-			_authThread = new Thread() {
-				@Override
-				public void run() {
-					new Runnable() {
-						public void run() {
-							final boolean isValid = client.authenticate();
-							SharedPreferences gpodderPrefs = getSharedPreferences("gpodder", MODE_PRIVATE);
-							gpodderPrefs.edit()
-									.putString("caption", _deviceNameEdit.getText().toString())
-									.putString("type", getCheckedDeviceType())
-									.commit();
+            Thread _authThread = new Thread() {
+                @Override
+                public void run() {
+                    new Runnable() {
+                        public void run() {
+                            final boolean isValid = client.authenticate();
+                            SharedPreferences gpodderPrefs = getSharedPreferences("gpodder", MODE_PRIVATE);
+                            gpodderPrefs.edit()
+                                    .putString("caption", _deviceNameEdit.getText().toString())
+                                    .putString("type", getCheckedDeviceType())
+                                    .commit();
 
-							_handler.post(new Runnable() {
-								public void run() {
-									onAuthenticationResult(isValid);
-								}
-							});
-						}
-					}.run();
-				}
-			};
+                            _handler.post(new Runnable() {
+                                public void run() {
+                                    onAuthenticationResult(isValid);
+                                }
+                            });
+                        }
+                    }.run();
+                }
+            };
 			_authThread.start();
 		}
 	}
