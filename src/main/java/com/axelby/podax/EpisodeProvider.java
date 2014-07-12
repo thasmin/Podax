@@ -88,7 +88,7 @@ public class EpisodeProvider extends ContentProvider {
 		_columnMap.put(COLUMN_MEDIA_URL, "mediaUrl");
 		_columnMap.put(COLUMN_LINK, "link");
 		_columnMap.put(COLUMN_PUB_DATE, "pubDate");
-		_columnMap.put(COLUMN_DESCRIPTION, "description");
+		_columnMap.put(COLUMN_DESCRIPTION, "podcasts.description AS description");
 		_columnMap.put(COLUMN_FILE_SIZE, "fileSize");
 		_columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
 		_columnMap.put(COLUMN_DURATION, "duration");
