@@ -1,10 +1,12 @@
 package com.axelby.podax.ui;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -53,20 +55,6 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 		super.onActivityCreated(savedInstanceState);
 
 		ListView _list = (ListView) getActivity().findViewById(R.id.list);
-        _list.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> grid, View view, int position, long id) {
-                SubscriptionCursor sub = new SubscriptionCursor((Cursor) grid.getItemAtPosition(position));
-                long subscriptionId = sub.getId();
-
-                EpisodeListFragment episodeListFragment = new EpisodeListFragment();
-                Bundle args = new Bundle();
-                args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
-                episodeListFragment.setArguments(args);
-                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                ft.replace(R.id.fragment, episodeListFragment).addToBackStack(null).commit();
-            }
-        });
         _list.setAdapter(_adapter);
 		registerForContextMenu(_list);
 	}
@@ -131,22 +119,53 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	}
 
 	private class SubscriptionAdapter extends ResourceCursorAdapter {
+        private View.OnClickListener _episodeClickHandler = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), EpisodeListActivity.class);
+                intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, (Long) view.getTag());
+                startActivity(intent);
+            }
+        };
+
+        public class ViewHolder {
+            public TextView title;
+            public TextView description;
+            public ImageView thumbnail;
+
+            public ViewHolder(View v) {
+                title = (TextView) v.findViewById(R.id.title);
+                description = (TextView) v.findViewById(R.id.description);
+                thumbnail = (ImageView) v.findViewById(R.id.thumbnail);
+            }
+        }
+
 		public SubscriptionAdapter(Context context, Cursor cursor) {
 			super(context, R.layout.subscription_list_item, cursor, true);
 		}
 
-		@Override
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            View view = super.newView(context, cursor, parent);
+            view.setTag(new ViewHolder(view));
+
+            View episodes_btn = view.findViewById(R.id.episodes_btn);
+            episodes_btn.setTag(new SubscriptionCursor(cursor).getId());
+            episodes_btn.setOnClickListener(_episodeClickHandler);
+            return view;
+        }
+
+        @Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
+            ViewHolder holder = (ViewHolder) view.getTag();
 
-			((TextView) view.findViewById(R.id.title)).setText(subscription.getTitle());
-            TextView description = (TextView) view.findViewById(R.id.description);
-            if (subscription.getDescription() != null) {
-                description.setText(subscription.getDescription().trim());
-            } else {
-                description.setText(R.string.description_not_available);
-            }
-			((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
+			holder.title.setText(subscription.getTitle());
+            if (subscription.getDescription() != null)
+                holder.description.setText(subscription.getDescription().trim());
+            else
+                holder.description.setText(R.string.description_not_available);
+			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
 		}
 	}
 }

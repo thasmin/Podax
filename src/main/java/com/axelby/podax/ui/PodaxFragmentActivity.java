@@ -18,7 +18,8 @@ public class PodaxFragmentActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		getActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getActionBar() != null)
+		    getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
@@ -39,15 +40,22 @@ public class PodaxFragmentActivity extends Activity {
 		}
 	}
 
-	protected void createFragment(Class<?> fragmentClass) {
-		FrameLayout frame = new FrameLayout(this);
-		frame.setId(R.id.fragment);
-		setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-
-		Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
-		FragmentManager fm = getFragmentManager();
-		FragmentTransaction ft = fm.beginTransaction();
-		ft.add(R.id.fragment, fragment);
-		ft.commit();
+	protected Fragment createFragment(Class<?> fragmentClass) {
+        return createFragment(fragmentClass, null);
 	}
+
+    protected Fragment createFragment(Class<?> fragmentClass, Bundle arguments) {
+        FrameLayout frame = new FrameLayout(this);
+        frame.setId(R.id.fragment);
+        setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+        Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
+        fragment.setArguments(arguments);
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.add(R.id.fragment, fragment);
+        ft.commit();
+
+        return fragment;
+    }
 }

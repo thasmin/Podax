@@ -32,12 +32,13 @@
         <TextView
             android:id="@+id/description"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
             android:background="#ccffffff"
-            tools:text="Greg Fitzsimmons's podcast. He's a comedian."
+            tools:text="Greg Fitzsimmons's podcast. He's a comedian. His podcast is pretty good and you might want to listen to it. Or you might not like it so then you wouldn't want to listen to it."
             android:layout_alignTop="@id/thumbnail"
             android:layout_toRightOf="@id/thumbnail"
             android:ellipsize="end"
+            android:maxLines="3"
             />
 
         <Button
@@ -47,7 +48,7 @@
             android:text="@string/settings"
             android:textAllCaps="true"
             style="@style/Widget.Podax.Button.Flat"
-            android:layout_below="@id/description"
+            android:layout_alignBottom="@id/thumbnail"
             android:layout_toRightOf="@id/thumbnail"
             android:layout_marginRight="20dp"
             />
