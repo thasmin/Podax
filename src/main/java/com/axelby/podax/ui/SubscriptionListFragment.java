@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
@@ -139,8 +140,13 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
 			((TextView) view.findViewById(R.id.title)).setText(subscription.getTitle());
-            //((TextView) view.findViewById(R.id.description)).setText(subscription.getDescription());
-			((SquareImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
+            TextView description = (TextView) view.findViewById(R.id.description);
+            if (subscription.getDescription() != null) {
+                description.setText(subscription.getDescription().trim());
+            } else {
+                description.setText(R.string.description_not_available);
+            }
+			((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
 		}
 	}
 }

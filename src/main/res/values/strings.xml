@@ -281,4 +281,5 @@ limitations under the License.
     <string name="no_thanks">No Thanks</string>
     <string name="pref_playlist_swipe_to_remove_title">Allow Swipe to Remove on Playlist</string>
     <string name="pref_playlist_swipe_to_remove">When checked, you can swipe an episode sideways to remove it from the playlist.</string>
+    <string name="description_not_available">Description is not available.</string>
 </resources>
