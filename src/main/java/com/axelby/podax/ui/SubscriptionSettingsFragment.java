@@ -41,11 +41,11 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		long _subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
-		if (_subscriptionId == -1)
-			_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
-		if (_subscriptionId == -1)
-			ACRA.getErrorReporter().handleSilentException(new Exception("subscription settings got a -1"));
+		long _subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+		if (_subscriptionId == -1) {
+            ACRA.getErrorReporter().handleSilentException(new Exception("subscription settings got a -1"));
+            return;
+        }
 		_subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
 
 		Bundle bundle = new Bundle();

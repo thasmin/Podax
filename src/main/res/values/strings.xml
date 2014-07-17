@@ -282,4 +282,13 @@ limitations under the License.
     <string name="pref_playlist_swipe_to_remove_title">Allow Swipe to Remove on Playlist</string>
     <string name="pref_playlist_swipe_to_remove">When checked, you can swipe an episode sideways to remove it from the playlist.</string>
     <string name="description_not_available">Description is not available.</string>
+    <string name="use_name_from_feed">Use name from feed</string>
+    <string name="new_episodes">New Episodes</string>
+    <string name="add_new_episodes_to_playlist">Add new episodes to playlist</string>
+    <string name="do_not_add_new_episodes_to_playlist">Do not add new episodes to playlist</string>
+    <string name="automatic_delete">Automatic Delete</string>
+    <string name="only_after_ive_listened_to_it">Only after I\'ve listened to it</string>
+    <string name="after_7_days">After 7 days</string>
+    <string name="after_14_days">After 14 days</string>
+    <string name="done">done</string>
 </resources>

@@ -128,6 +128,15 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
             }
         };
 
+        private View.OnClickListener _settingsClickHandler = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), SubscriptionSettingsActivity.class);
+                intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, (Long) view.getTag());
+                startActivity(intent);
+            }
+        };
+
         public class ViewHolder {
             public TextView title;
             public TextView description;
@@ -152,6 +161,11 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
             View episodes_btn = view.findViewById(R.id.episodes_btn);
             episodes_btn.setTag(new SubscriptionCursor(cursor).getId());
             episodes_btn.setOnClickListener(_episodeClickHandler);
+
+            View settings_btn = view.findViewById(R.id.settings_btn);
+            settings_btn.setTag(new SubscriptionCursor(cursor).getId());
+            settings_btn.setOnClickListener(_settingsClickHandler);
+
             return view;
         }
 

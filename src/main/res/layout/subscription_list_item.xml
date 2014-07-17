@@ -49,7 +49,7 @@
             android:textAllCaps="true"
             style="@style/Widget.Podax.Button.Flat"
             android:layout_alignBottom="@id/thumbnail"
-            android:layout_toRightOf="@id/thumbnail"
+            android:layout_toLeftOf="@+id/episodes_btn"
             android:layout_marginRight="20dp"
             />
 
@@ -61,7 +61,7 @@
             android:textAllCaps="true"
             style="@style/Widget.Podax.Button.Flat.Primary"
             android:layout_alignBaseline="@id/settings_btn"
-            android:layout_toRightOf="@id/settings_btn"
+            android:layout_alignParentRight="true"
             android:layout_marginRight="20dp"
             />
 
