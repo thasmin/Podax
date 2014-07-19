@@ -16,25 +16,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.widget.DrawerLayout;
-import android.text.InputType;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.axelby.gpodder.AuthenticatorActivity;
@@ -44,25 +30,13 @@ import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
-import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.annotation.Nonnull;
 
 public class MainActivity extends Activity {
-
-	private static int _defaultTextColor = 0;
-	List<WeakReference<Fragment>> _savedFragments = new ArrayList<WeakReference<Fragment>>();
-	private DrawerLayout _drawerLayout;
-	private ActionBarDrawerToggle _drawerToggle;
-	private int _fragmentId;
 
     public static class TabListener<T extends Fragment> implements ActionBar.TabListener {
         private Fragment _fragment;
@@ -78,13 +52,10 @@ public class MainActivity extends Activity {
 
         @Override
         public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-            // Check if the fragment is already initialized
             if (_fragment == null) {
-                // If not, instantiate and add it to the activity
                 _fragment = Fragment.instantiate(_activity, _class.getName());
                 ft.add(android.R.id.content, _fragment, _tag);
             } else {
-                // If it exists, simply attach it in order to show it
                 ft.attach(_fragment);
             }
         }
@@ -101,12 +72,6 @@ public class MainActivity extends Activity {
 
         }
     }
-
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		handleIntent(intent);
-	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +109,7 @@ public class MainActivity extends Activity {
 							.setPositiveButton(R.string.view_release_notes, new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialogInterface, int i) {
-									replaceFragment(AboutFragment.class);
+									//replaceFragment(AboutFragment.class);
 								}
 							})
 							.setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
@@ -162,32 +127,10 @@ public class MainActivity extends Activity {
 
 		// ui initialization
 		setContentView(R.layout.app);
-		_drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-		_drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, R.drawable.ic_drawer,
-				R.string.open_drawer, R.string.close_drawer);
-		_drawerLayout.setDrawerListener(_drawerToggle);
-		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
-
-		ListView drawer = (ListView) findViewById(R.id.drawer);
-		PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
-		drawer.setAdapter(_drawerAdapter);
-		drawer.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-				changeFragment(position);
-			}
-		});
 
         ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-            //actionBar.setDisplayShowTitleEnabled(false);
-
-            actionBar.addTab(actionBar.newTab()
-                    .setText(R.string.now_playing)
-                    .setTabListener(new TabListener<EpisodeDetailFragment>(
-                            this, "nowplaying", EpisodeDetailFragment.class))
-            );
 
             actionBar.addTab(actionBar.newTab()
                     .setText(R.string.playlist)
@@ -196,77 +139,29 @@ public class MainActivity extends Activity {
             );
 
             actionBar.addTab(actionBar.newTab()
-                    .setText(R.string.podcasts)
-                    .setTabListener(new TabListener<SubscriptionListFragment>(
-                            this, "podcasts", SubscriptionListFragment.class))
+                            .setText(R.string.podcasts)
+                            .setTabListener(new TabListener<SubscriptionListFragment>(
+                                    this, "podcasts", SubscriptionListFragment.class))
             );
         }
-
-		if (intent.hasExtra(Constants.EXTRA_FRAGMENT)) {
-			handleIntent(intent);
-		} else if (savedInstanceState == null) {
-			Cursor c = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
-			if (c != null) {
-				int subscriptionCount = c.getCount();
-				c.close();
-				if (subscriptionCount == 0) {
-					replaceFragment(WelcomeFragment.class);
-					_fragmentId = 1;
-				} else {
-					replaceFragment(EpisodeDetailFragment.class);
-					_fragmentId = 2;
-				}
-			}
-		} else {
-			_fragmentId = savedInstanceState.getInt("fragmentId");
-		}
 	}
 
-	private void changeFragment(int position) {
-		_drawerLayout.closeDrawer(Gravity.START);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-		_fragmentId = position;
-
-		switch (position) {
-			case 1:
-				replaceFragment(WelcomeFragment.class);
-				break;
-			case 5:
-				replaceFragment(SearchFragment.class);
-				break;
-			case 7:
-				askForRSSUrl();
-				break;
-			case 8:
-				replaceFragment(ITunesPopularListFragment.class);
-				break;
-			case 9:
-				replaceFragment(GPodderPopularListFragment.class);
-				break;
-			case 10:
-				handleGPodder();
-				break;
-			case 12:
-				replaceFragment(StatsFragment.class);
-				break;
-			case 13:
-				replaceFragment(PodaxPreferenceFragment.class);
-				break;
-			case 14:
-				replaceFragment(AboutFragment.class);
-				break;
-			case 15:
-				replaceFragment(LogViewerFragment.class);
-				break;
-		}
-	}
-
-	private void handleIntent(Intent intent) {
-		if (intent == null || intent.getExtras() == null)
-			return;
-		if (intent.hasExtra("fragmentId"))
-			changeFragment(intent.getIntExtra("fragmentId", 2));
-	}
+    @Override
+    public boolean onMenuItemSelected(int featureId, @Nonnull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.now_playing:
+                startActivity(new Intent(this, EpisodeDetailActivity.class));
+                return true;
+            default:
+                return super.onMenuItemSelected(featureId, item);
+        }
+    }
 
 	private void handleGPodder() {
 		AccountManager am = AccountManager.get(this);
@@ -279,84 +174,6 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	protected void askForRSSUrl() {
-		AlertDialog.Builder alert = new AlertDialog.Builder(this);
-		alert.setTitle("Podcast URL");
-		alert.setMessage("Type the URL of the podcast RSS");
-		final EditText input = new EditText(this);
-		//input.setText("http://blog.axelby.com/podcast.xml");
-		input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-		alert.setView(input);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				String subscriptionUrl = input.getText().toString();
-				if (!subscriptionUrl.contains("://"))
-					subscriptionUrl = "http://" + subscriptionUrl;
-				ContentValues values = new ContentValues();
-				values.put(SubscriptionProvider.COLUMN_URL, subscriptionUrl);
-				values.put(SubscriptionProvider.COLUMN_TITLE, subscriptionUrl);
-				Uri subscriptionUri = getContentResolver().insert(SubscriptionProvider.URI, values);
-				UpdateService.updateSubscription(MainActivity.this, subscriptionUri);
-			}
-		});
-		alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				// do nothing
-			}
-		});
-		alert.show();
-	}
-
-	public void replaceFragment(Class<? extends Fragment> clazz) {
-		replaceFragment(clazz, null);
-	}
-
-	public void replaceFragment(Class<? extends Fragment> clazz, Bundle args) {
-        return;
-        /*
-		Fragment current = getFragmentManager().findFragmentById(R.id.fragment);
-		if (current != null && current.getClass().equals(clazz) && clazz != EpisodeDetailFragment.class)
-			return;
-
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
-
-		try {
-			Fragment f = null;
-			if (args == null) {
-				// find a saved fragment of the same class
-				for (WeakReference<Fragment> frag : _savedFragments) {
-					if (frag.get() != null && clazz.equals(frag.get().getClass())) {
-						f = frag.get();
-						break;
-					}
-				}
-			} else {
-				// args means forced new fragment - discard the old one
-				for (WeakReference<Fragment> frag : _savedFragments) {
-					if (frag.get() != null && clazz.equals(frag.get().getClass())) {
-						_savedFragments.remove(frag);
-						break;
-					}
-				}
-			}
-
-			if (f == null) {
-				f = clazz.getConstructor().newInstance();
-				f.setArguments(args);
-			}
-			ft.replace(R.id.fragment, f);
-			if (current != null)
-				ft.addToBackStack(null);
-			ft.commit();
-		} catch (IllegalArgumentException ignored) {
-		} catch (InstantiationException ignored) {
-		} catch (IllegalAccessException ignored) {
-		} catch (InvocationTargetException ignored) {
-		} catch (NoSuchMethodException ignored) {
-		}
-		*/
-	}
-
 	private boolean isPlayerServiceRunning() {
 		ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
@@ -366,148 +183,8 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		_drawerToggle.onConfigurationChanged(newConfig);
-	}
-
-	@Override
-	protected void onPostCreate(Bundle savedInstanceState) {
-		super.onPostCreate(savedInstanceState);
-		_drawerToggle.syncState();
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	protected void onSaveInstanceState(@Nonnull Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putInt("fragmentId", _fragmentId);
-	}
-
-	@Override
 	protected void onResume() {
 		super.onResume();
 		Helper.registerMediaButtons(this);
-	}
-
-	@Override
-	public void onAttachFragment(Fragment fragment) {
-		super.onAttachFragment(fragment);
-		if (fragment.getClass() != EpisodeDetailFragment.class)
-			return;
-		for (WeakReference<Fragment> frag : _savedFragments)
-			if (frag.get() != null && fragment.getClass().equals(frag.get().getClass()))
-				return;
-		_savedFragments.add(new WeakReference<Fragment>(fragment));
-	}
-
-	class PodaxDrawerAdapter extends BaseAdapter {
-		private final int HEADER = 0;
-		private final int NORMAL = 1;
-		Item _items[] = {
-				new Item(R.string.app_name, 0, true),
-				new Item(R.string.welcome, R.drawable.ic_menu_home, false),
-				new Item(R.string.now_playing, R.drawable.ic_menu_headphone, false),
-				new Item(R.string.playlist, R.drawable.ic_menu_playlist, false),
-				new Item(R.string.podcasts, R.drawable.ic_menu_two_people, false),
-				new Item(R.string.search, R.drawable.ic_menu_search, false),
-
-				new Item(R.string.subscribe_to_podcasts, 0, true),
-				new Item(R.string.add_rss_feed, R.drawable.ic_menu_rss, false),
-				new Item(R.string.top_itunes_podcasts, R.drawable.ic_menu_apple, false),
-				new Item(R.string.top_gpodder_podcasts, R.drawable.ic_menu_mygpo, false),
-				new Item(R.string.gpodder_sync, R.drawable.ic_menu_mygpo, false),
-
-				new Item(R.string.settings, 0, true),
-				new Item(R.string.stats, R.drawable.ic_menu_settings, false),
-				new Item(R.string.preferences, R.drawable.ic_menu_configuration, false),
-				new Item(R.string.about, R.drawable.ic_menu_podax, false),
-				new Item(R.string.log_viewer, android.R.drawable.ic_menu_info_details, false),
-		};
-		private Context _context;
-
-		public PodaxDrawerAdapter(Context context) {
-			_context = context;
-		}
-
-		@Override
-		public int getCount() {
-			// log viewer is only available when debugging
-			if (PodaxLog.isDebuggable(MainActivity.this))
-				return _items.length;
-			return _items.length - 1;
-		}
-
-		@Override
-		public Object getItem(int position) {
-			return _items[position];
-		}
-
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			boolean isHeader = getItemViewType(position) == HEADER;
-			int layoutId = isHeader ? R.layout.drawer_header_listitem : R.layout.drawer_listitem;
-			if (convertView == null)
-				convertView = LayoutInflater.from(_context).inflate(layoutId, null);
-			if (convertView == null)
-				return null;
-
-			TextView tv = (TextView) convertView;
-			if (_defaultTextColor == 0)
-				_defaultTextColor = tv.getCurrentTextColor();
-
-			final Item item = _items[position];
-			tv.setText(item.label);
-			tv.setCompoundDrawablesWithIntrinsicBounds(item.drawable, 0, 0, 0);
-			return tv;
-		}
-
-		@Override
-		public int getItemViewType(int position) {
-			return _items[position].isHeader ? HEADER : NORMAL;
-		}
-
-		@Override
-		public int getViewTypeCount() {
-			return 2;
-		}
-
-		@Override
-		public boolean isEnabled(int position) {
-			return !_items[position].isHeader;
-		}
-
-		@Override
-		public boolean hasStableIds() {
-			return true;
-		}
-
-		class Item {
-			String label;
-			int drawable;
-			boolean isHeader;
-
-			public Item(String label, int drawable, boolean isHeader) {
-				this.drawable = drawable;
-				this.isHeader = isHeader;
-				if (this.isHeader)
-					this.label = label.toUpperCase();
-				else
-					this.label = label;
-			}
-
-			public Item(int labelId, int drawableId, boolean isHeader) {
-				this(MainActivity.this.getResources().getString(labelId), drawableId, isHeader);
-			}
-		}
 	}
 }

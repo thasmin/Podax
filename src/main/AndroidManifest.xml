@@ -86,6 +86,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.EpisodeDetailActivity" />
         <activity android:name=".ui.EpisodeListActivity" />
         <activity android:name=".ui.SubscriptionSettingsActivity" />
 

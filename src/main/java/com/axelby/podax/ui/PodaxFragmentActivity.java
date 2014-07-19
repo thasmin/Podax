@@ -12,6 +12,8 @@ import android.widget.FrameLayout.LayoutParams;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
+import javax.annotation.Nonnull;
+
 public class PodaxFragmentActivity extends Activity {
 
 	@Override
@@ -52,6 +54,21 @@ public class PodaxFragmentActivity extends Activity {
         Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
         fragment.setArguments(arguments);
         FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.add(R.id.fragment, fragment);
+        ft.commit();
+
+        return fragment;
+    }
+
+    public static Fragment createFragment(@Nonnull Activity activity, @Nonnull Class<?> fragmentClass, Bundle arguments) {
+        FrameLayout frame = new FrameLayout(activity);
+        frame.setId(R.id.fragment);
+        activity.setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+        Fragment fragment = Fragment.instantiate(activity, fragmentClass.getCanonicalName());
+        fragment.setArguments(arguments);
+        FragmentManager fm = activity.getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.add(R.id.fragment, fragment);
         ft.commit();
