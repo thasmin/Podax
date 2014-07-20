@@ -58,6 +58,11 @@
         <item name="android:textColor">@color/orange500</item>
     </style>
 
+    <style name="Widget.Podax.ImageButton.Flat" parent="android:Widget.ImageButton">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
     <style name="mainText" parent="@android:style/TextAppearance.Large">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>

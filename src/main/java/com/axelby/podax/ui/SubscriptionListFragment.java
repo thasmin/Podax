@@ -1,8 +1,6 @@
 package com.axelby.podax.ui;
 
-import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -18,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
@@ -35,7 +32,7 @@ import javax.annotation.Nonnull;
 public class SubscriptionListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;
 
-	@Override
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -56,21 +53,22 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 
 		ListView _list = (ListView) getActivity().findViewById(R.id.list);
         _list.setAdapter(_adapter);
-		registerForContextMenu(_list);
-	}
 
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.subscription_list, menu);
-	}
+        View.OnClickListener addListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getActivity(), AddSubscriptionActivity.class));
+            }
+        };
+        getActivity().findViewById(R.id.add).setOnClickListener(addListener);
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.refresh_subscriptions) {
-			UpdateService.updateSubscriptions(getActivity());
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
+        View.OnClickListener refreshListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UpdateService.updateSubscriptions(getActivity());
+            }
+        };
+        getActivity().findViewById(R.id.refresh).setOnClickListener(refreshListener);
 	}
 
 	@Override

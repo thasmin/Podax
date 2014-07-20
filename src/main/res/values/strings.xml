@@ -16,7 +16,8 @@
     <string name="import_subscriptions">Add Subscriptions</string>
     <string name="search">Search</string>
     <string name="preferences">Preferences</string>
-    <string name="about_content"><![CDATA[
+    <string name="about_content">
+<![CDATA[
 
 		<p>Podax was created by Dan Goldstein.
 			You can email me at <a href="mailto:dan@axelby.com">dan@axelby.com</a> with any comments or questions you have.
@@ -95,7 +96,8 @@ limitations under the License.
         <h4>Volley</h4>
         <p><a href="https://android.googlesource.com/platform/frameworks/volley">(link)</a></p>
         <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
-    ]]></string>
+    ]]>
+    </string>
     <string name="about_podax">About Podax</string>
     <string name="download_only_on_wifi">Podax is set to only download episodes when on Wi-fi.</string>
     <string name="no_downloads">There are no episodes in the playlist that were not downloaded.</string>
@@ -135,6 +137,7 @@ limitations under the License.
     <string name="pref_auto_delete_title">Delete Episodes Automatically</string>
     <string name="pref_max_num_episodes">Maximum number of downloaded episodes in playlist.</string>
     <string name="pref_max_num_episodes_title">Limit Number of Downloaded Episodes</string>
+
     <string-array name="pref_max_num_episodes_entries">
         <item>10</item>
         <item>20</item>
@@ -149,6 +152,7 @@ limitations under the License.
         <item>100</item>
         <item>10000</item>
     </string-array>
+
     <string name="pref_anon_usage">Send anonymous usage data to improve Podax.</string>
     <string name="pref_anon_usage_title">Send Usage Data</string>
     <string name="pref_crash_reports">Send error reports to the developers if Podax crashes.</string>
@@ -192,9 +196,9 @@ limitations under the License.
     <string name="subscribe_to_podcasts">Subscribe To Podcasts</string>
     <string name="top_itunes_podcasts">Top iTunes Podcasts</string>
     <string name="gpodder_sync">gpodder.net Sync</string>
-
     <string name="pref_sdcard">SD Card for podcast storage</string>
     <string name="pref_sdcard_title">SD Card</string>
+
     <string-array name="pref_sdcard_values">
         <item>/storage/sdcard0</item>
         <item>/storage/extSdCard</item>
@@ -229,7 +233,6 @@ limitations under the License.
     <string name="server">server</string>
     <string name="other">other</string>
     <string name="gpodder_account_settings">GPodder Account Settings</string>
-
     <string name="gpodder_sync_error">Error syncing gpodder.net</string>
     <string name="gpodder_sync_cannot_authenticate">Cannot authenticate: %1$s</string>
     <string name="gpodder_sync_error_configuration">Cannot change device name and type: %1$s</string>
@@ -238,9 +241,9 @@ limitations under the License.
     <string name="gpodder_sync_retrieve_all_episodes">Cannot retrieve all episodes: %1$s</string>
     <string name="gpodder_sync_update_episode_positions">Cannot send episode positions: %1$s</string>
     <string name="gpodder_sync_retrieve_episode_positions">Cannot retrieve episode positions: %1$s</string>
-
     <string name="pref_playbackrate_title">Playback Rate</string>
     <string name="pref_playbackrate">How fast the episode should play</string>
+
     <string-array name="pref_playbackrate_entries">
         <item>1.0x</item>
         <item>1.1x</item>
@@ -255,11 +258,13 @@ limitations under the License.
         <item>1.5</item>
         <item>2.0</item>
     </string-array>
+
     <string name="playbackrate_disabled">This device cannot change the playback rate.</string>
     <string name="clear_search">Clear Search</string>
     <string name="stats">Stats</string>
     <string name="episodes_finished">Episodes Finished</string>
     <string name="time_spent_listening">Time Spent Listening</string>
+
     <plurals name="days">
         <item quantity="one">day</item>
         <item quantity="other">days</item>
@@ -272,11 +277,10 @@ limitations under the License.
         <item quantity="one">minute</item>
         <item quantity="other">minutes</item>
     </plurals>
+
     <string name="none">none</string>
     <string name="release_notes">Release Notes</string>
-    <string name="release_notes_detailed">
-        Version 7 of Podax has many new things, including an all new audio player that has a speed knob that works.
-    </string>
+    <string name="release_notes_detailed">        Version 7 of Podax has many new things, including an all new audio player that has a speed knob that works.</string>
     <string name="view_release_notes">View Release Notes</string>
     <string name="no_thanks">No Thanks</string>
     <string name="pref_playlist_swipe_to_remove_title">Allow Swipe to Remove on Playlist</string>
@@ -291,4 +295,7 @@ limitations under the License.
     <string name="after_7_days">After 7 days</string>
     <string name="after_14_days">After 14 days</string>
     <string name="done">done</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="find_a_podcast">Find a Podcast</string>
+
 </resources>

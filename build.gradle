@@ -8,9 +8,16 @@ buildscript {
 }
 apply plugin: 'com.android.application'
 
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
     compile 'com.android.support:cardview-v7:+'
+    compile 'com.joanzapata.android:android-iconify:1.0.6'
 }
 
 Properties props = new Properties()
