@@ -1,16 +1,20 @@
 package com.axelby.podax.ui;
 
 import android.app.Fragment;
+import android.content.ContentValues;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 import com.joanzapata.android.iconify.Iconify;
 
 public class AddSubscriptionFragment extends Fragment {
@@ -52,6 +56,26 @@ public class AddSubscriptionFragment extends Fragment {
         };
         ListView listView = (ListView) getActivity().findViewById(R.id.list);
         listView.setAdapter(new AddSubscriptionAdapter(getActivity(), sources));
+
+        getActivity().findViewById(R.id.add_rss).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                EditText rssText = (EditText) getActivity().findViewById(R.id.rssurl);
+                if (rssText.getText() == null)
+                    return;
+                String url = rssText.getText().toString();
+                if (url.length() == 0)
+                    return;
+                if (!url.contains("://"))
+                    url = "http://" + url;
+
+                ContentValues values = new ContentValues();
+                values.put(SubscriptionProvider.COLUMN_URL, url);
+                getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
+                UpdateService.updateSubscriptions(getActivity());
+                rssText.setText("");
+            }
+        });
     }
 
     public static class iTunesCategory {
