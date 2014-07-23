@@ -8,6 +8,7 @@ import android.content.Loader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
 import android.view.View;
@@ -145,10 +146,24 @@ public class ITunesToplistFragment
             if (convertView != null) {
                 view = convertView;
                 holder = (ViewHolder) view.getTag();
+
+                holder.summary.setMaxLines(3);
+                holder.summary.setEllipsize(TextUtils.TruncateAt.END);
             } else {
                 view = getActivity().getLayoutInflater().inflate(R.layout.fragment_itunes_toplist_item, parent, false);
                 holder = new ViewHolder(view);
                 view.setTag(holder);
+
+                view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ViewHolder holder = (ViewHolder) view.getTag();
+                        if (holder.summary.getEllipsize() != null) {
+                            holder.summary.setMaxLines(Integer.MAX_VALUE);
+                            holder.summary.setEllipsize(null);
+                        }
+                    }
+                });
             }
 
             ITunesPodcast podcast = getItem(position);
