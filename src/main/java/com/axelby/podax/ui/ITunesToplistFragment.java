@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.util.Xml;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -20,23 +21,15 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 public class ITunesToplistFragment
         extends ListFragment
@@ -51,6 +44,7 @@ public class ITunesToplistFragment
         public String summary;
         public String imageUrl;
 
+        /*
         public ITunesPodcast(XPath xPath, Node entry) throws XPathExpressionException {
             id = ((Number) xPath.evaluate("atom:id/@im:id", entry, XPathConstants.NUMBER)).longValue();
             name = (String) xPath.evaluate("im:name", entry, XPathConstants.STRING);
@@ -58,6 +52,8 @@ public class ITunesToplistFragment
             imageUrl = (String) xPath.evaluate("im:image[@height=170]", entry, XPathConstants.STRING);
             imageUrl = imageUrl.replace("170", "100");
         }
+        */
+        public ITunesPodcast() { }
 
         @Override
         public String toString() {
@@ -181,7 +177,7 @@ public class ITunesToplistFragment
         @Override
         public List<ITunesPodcast> loadInBackground() {
             StringBuilder url = new StringBuilder();
-            url.append("https://itunes.apple.com/us/rss/toppodcasts/limit=10/");
+            url.append("https://itunes.apple.com/us/rss/toppodcasts/limit=100/");
             if (_category != 0) {
                 url.append("genre=");
                 url.append(_category);
@@ -191,27 +187,22 @@ public class ITunesToplistFragment
 
             List<ITunesPodcast> podcasts = new ArrayList<ITunesPodcast>(100);
             try {
-                XPathFactory factory = XPathFactory.newInstance();
-                XPath xPath = factory.newXPath();
-                xPath.setNamespaceContext(new NamespaceContext() {
-                    @Override
-                    public String getNamespaceURI(String s) {
-                        if (s.equals("im")) return "http://itunes.apple.com/rss";
-                        if (s.equals("atom")) return "http://www.w3.org/2005/Atom";
-                        return XMLConstants.DEFAULT_NS_PREFIX;
-                    }
-                    @Override public String getPrefix(String s) { return s; }
-                    @Override public Iterator getPrefixes(String s) { return null; }
-                });
+                XmlPullParser parser = Xml.newPullParser();
+                parser.setInput(new URL(url.toString()).openStream(), "utf-8");
 
-                InputSource source = new InputSource(new URL(url.toString()).openStream());
-                NodeList nodes = (NodeList) xPath.evaluate("/atom:feed/atom:entry", source, XPathConstants.NODESET);
-                for (int i = 0; i < nodes.getLength(); ++i)
-                    podcasts.add(new ITunesPodcast(xPath, nodes.item(i)));
+                // find feed tag
+                int eventType = parser.getEventType();
+                while (eventType != XmlPullParser.START_TAG)
+                    eventType = parser.next();
+
+                // find entry tag
+                for (eventType = parser.next(); eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next())
+                    if (eventType == XmlPullParser.START_TAG && isAtomElement(parser, "entry"))
+                        podcasts.add(handleEntry(parser));
             } catch (IOException e) {
                 Log.e("Podax", "error loading itunes toplist", e);
                 return null;
-            } catch (XPathExpressionException e) {
+            } catch (XmlPullParserException e) {
                 Log.e("Podax", "error loading itunes toplist", e);
                 return null;
             }
@@ -257,6 +248,36 @@ public class ITunesToplistFragment
             super.onReset();
             onStopLoading();
             _lastResult = null;
+        }
+
+        private ITunesPodcast handleEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
+            ITunesPodcast podcast = new ITunesPodcast();
+            for (int eventType = parser.getEventType(); eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
+                if (eventType == XmlPullParser.START_TAG) {
+                    if (isAtomElement(parser, "id")) {
+                        podcast.id = Long.valueOf(parser.getAttributeValue(NS_ITUNES, "id"));
+                    } else if (isAtomElement(parser, "summary")) {
+                        podcast.summary = parser.nextText();
+                    } else if (isITunesElement(parser, "name")) {
+                        podcast.name = parser.nextText();
+                    } else if (isITunesElement(parser, "image")
+                            && parser.getAttributeValue("", "height").equals("170")) {
+                        podcast.imageUrl = parser.nextText().replace("170", "100");
+                    }
+                } else if (eventType == XmlPullParser.END_TAG && isAtomElement(parser, "entry")) {
+                    return podcast;
+                }
+            }
+            return podcast;
+        }
+
+        private static final String NS_ATOM = "http://www.w3.org/2005/Atom";
+        private static final String NS_ITUNES = "http://itunes.apple.com/rss";
+        private static boolean isITunesElement(@Nonnull XmlPullParser parser, @Nonnull String name) {
+            return name.equals(parser.getName()) && NS_ITUNES.equals(parser.getNamespace());
+        }
+        private static boolean isAtomElement(@Nonnull XmlPullParser parser, @Nonnull String name) {
+            return name.equals(parser.getName()) && NS_ATOM.equals(parser.getNamespace());
         }
     }
 }
