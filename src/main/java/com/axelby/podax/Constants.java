@@ -26,6 +26,7 @@ public class Constants {
 	public static final String EXTRA_URL = "com.axelby.podax.url";
 	public static final String EXTRA_MANUAL_REFRESH = "com.axelby.podax.manual_refresh";
 	public static final String EXTRA_FRAGMENT = "com.axelby.podax.fragmentId";
+    public static final String EXTRA_CATEGORY_ID = "com.axelby.podax.categoryId";
 
 	public static final String EXTRA_PLAYER_COMMAND = "com.axelby.podax.player_command";
 	public static final String EXTRA_PLAYER_COMMAND_ARG = "com.axelby.podax.player_command_arg";

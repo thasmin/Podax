@@ -8,16 +8,24 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 
 public class ProgressDialogFragment extends DialogFragment {
+    private String _message;
 
 	public static ProgressDialogFragment newInstance() {
 		return new ProgressDialogFragment();
 	}
 
+    public void setMessage(String message) {
+        _message = message;
+    }
+
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 
 		final ProgressDialog dialog = new ProgressDialog(getActivity());
-		dialog.setMessage("Logging into gpodder.net...");
+        if (_message != null)
+            dialog.setMessage(_message);
+        else
+            dialog.setMessage("Logging into gpodder.net...");
 		dialog.setIndeterminate(true);
 		dialog.setCancelable(false);
 
