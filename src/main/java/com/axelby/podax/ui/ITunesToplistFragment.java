@@ -3,8 +3,10 @@ package com.axelby.podax.ui;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.AsyncTaskLoader;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Loader;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -21,11 +23,15 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,22 +50,9 @@ public class ITunesToplistFragment
         public String name;
         public String summary;
         public String imageUrl;
+        public String idUrl;
 
-        /*
-        public ITunesPodcast(XPath xPath, Node entry) throws XPathExpressionException {
-            id = ((Number) xPath.evaluate("atom:id/@im:id", entry, XPathConstants.NUMBER)).longValue();
-            name = (String) xPath.evaluate("im:name", entry, XPathConstants.STRING);
-            summary = (String) xPath.evaluate("atom:summary", entry, XPathConstants.STRING);
-            imageUrl = (String) xPath.evaluate("im:image[@height=170]", entry, XPathConstants.STRING);
-            imageUrl = imageUrl.replace("170", "100");
-        }
-        */
-        public ITunesPodcast() { }
-
-        @Override
-        public String toString() {
-            return name;
-        }
+        @Override public String toString() { return name; }
     }
 
     @Override
@@ -123,11 +116,13 @@ public class ITunesToplistFragment
             TextView name;
             TextView summary;
             NetworkImageView image;
+            View subscribe;
 
             public ViewHolder(View v) {
                 name = (TextView) v.findViewById(R.id.name);
                 summary = (TextView) v.findViewById(R.id.summary);
                 image = (NetworkImageView) v.findViewById(R.id.image);
+                subscribe = v.findViewById(R.id.subscribe);
             }
         }
 
@@ -164,12 +159,75 @@ public class ITunesToplistFragment
                         }
                     }
                 });
+
+                holder.subscribe.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        final Handler handler = new Handler();
+
+                        _progressDialog = ProgressDialogFragment.newInstance();
+                        _progressDialog.setMessage("Retrieving RSS from iTunes...");
+                        _progressDialog.show(getActivity().getFragmentManager(), "progress");
+
+                        final String url = (String) view.getTag();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+                                    connection.setRequestProperty("User-Agent", "iTunes/10.2.1");
+                                    BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+                                    byte[] bytes = new byte[100000];
+                                    int read = stream.read(bytes);
+                                    stream.close();
+                                    if (read == 0)
+                                        return;
+
+                                    String resp = new String(bytes);
+                                    int doctypeAt = resp.indexOf("<!DOCTYPE ");
+                                    String doctype = resp.substring(doctypeAt + 10, resp.indexOf(" ", doctypeAt + 10));
+                                    if (doctype.equals("plist")) {
+                                        int urlAt = resp.indexOf("<key>url</key>");
+                                        int urlStart = resp.indexOf(">", urlAt + 15) + 1;
+                                        int urlEnd = resp.indexOf("<", urlStart);
+                                        String newUrl = resp.substring(urlStart, urlEnd).replace("&amp;", "&");
+
+                                        connection = (HttpURLConnection) new URL(newUrl).openConnection();
+                                        connection.setRequestProperty("User-Agent", "iTunes/10.2.1");
+                                        stream = new BufferedInputStream(connection.getInputStream());
+                                        read = stream.read(bytes);
+                                        stream.close();
+                                        if (read == 0)
+                                            return;
+                                        resp = new String(bytes);
+                                    }
+
+                                    int rssUrlStart = resp.indexOf("feed-url=\"") + 10;
+                                    int rssUrlEnd = resp.indexOf("\"", rssUrlStart);
+                                    String rssUrl = resp.substring(rssUrlStart, rssUrlEnd);
+
+                                    ContentValues values = new ContentValues(1);
+                                    values.put(SubscriptionProvider.COLUMN_URL, rssUrl);
+                                    Uri uri = getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
+                                    UpdateService.updateSubscription(getActivity(), uri);
+                                } catch (IOException e) {
+                                    Log.e("Podax", "error retrieving rss url from iTunes", e);
+                                } finally {
+                                    handler.post(new Runnable() {
+                                        @Override public void run() { _progressDialog.dismiss(); }
+                                    });
+                                }
+                            }
+                        }).start();
+                    }
+                });
             }
 
             ITunesPodcast podcast = getItem(position);
             holder.name.setText(podcast.name);
             holder.summary.setText(podcast.summary);
             holder.image.setImageUrl(podcast.imageUrl, _imageLoader);
+            holder.subscribe.setTag(podcast.idUrl);
 
             return view;
         }
@@ -271,6 +329,7 @@ public class ITunesToplistFragment
                 if (eventType == XmlPullParser.START_TAG) {
                     if (isAtomElement(parser, "id")) {
                         podcast.id = Long.valueOf(parser.getAttributeValue(NS_ITUNES, "id"));
+                        podcast.idUrl = parser.nextText();
                     } else if (isAtomElement(parser, "summary")) {
                         podcast.summary = parser.nextText();
                     } else if (isITunesElement(parser, "name")) {
