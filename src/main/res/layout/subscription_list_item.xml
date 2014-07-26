@@ -18,6 +18,15 @@
             android:textSize="20sp"
             />
 
+        <Button
+            android:id="@+id/more_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_menu_moreoverflow"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            />
+
         <ImageView
             android:id="@+id/thumbnail"
             android:layout_width="96dp"

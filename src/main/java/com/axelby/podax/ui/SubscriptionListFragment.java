@@ -7,17 +7,17 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
@@ -135,6 +135,30 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
             }
         };
 
+        private View.OnClickListener _moreClickHandler = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final long subscriptionId = (Long) view.getTag();
+                PopupMenu menu = new PopupMenu(getActivity(), view);
+                menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        if (menuItem.getItemId() == R.id.refresh) {
+                            UpdateService.updateSubscription(getActivity(), subscriptionId);
+                            return true;
+                        } else if (menuItem.getItemId() == R.id.unsubscribe) {
+                            Uri subscriptionUri= SubscriptionProvider.getContentUri(subscriptionId);
+                            getActivity().getContentResolver().delete(subscriptionUri, null, null);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                menu.inflate(R.menu.subscription_list);
+                menu.show();
+            }
+        };
+
         public class ViewHolder {
             public TextView title;
             public TextView description;
@@ -163,6 +187,10 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
             View settings_btn = view.findViewById(R.id.settings_btn);
             settings_btn.setTag(new SubscriptionCursor(cursor).getId());
             settings_btn.setOnClickListener(_settingsClickHandler);
+
+            View more_btn = view.findViewById(R.id.more_btn);
+            more_btn.setTag(new SubscriptionCursor(cursor).getId());
+            more_btn.setOnClickListener(_moreClickHandler);
 
             return view;
         }

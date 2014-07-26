@@ -67,6 +67,10 @@ public class SubscriptionProvider extends ContentProvider {
         _columnMap.put(COLUMN_DESCRIPTION, "description");
 	}
 
+	public static Uri getContentUri(long id) {
+		return ContentUris.withAppendedId(URI, id);
+	}
+
 	DBAdapter _dbAdapter;
 
 	@Override
