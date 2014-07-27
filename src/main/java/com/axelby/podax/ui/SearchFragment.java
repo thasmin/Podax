@@ -199,7 +199,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 				break;
 			case PODCAST:
 				fragment = new EpisodeDetailFragment();
-				args.putLong(Constants.EXTRA_EPOSIDE_ID, id);
+				args.putLong(Constants.EXTRA_EPISODE_ID, id);
 				fragment.setArguments(args);
 				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 				break;

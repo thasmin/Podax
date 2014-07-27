@@ -66,7 +66,7 @@ public class UpdateService extends IntentService {
 	private static Intent createDownloadEpisodeIntent(Context context, long subscriptionId) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_DOWNLOAD_EPISODE);
-		intent.putExtra(Constants.EXTRA_EPOSIDE_ID, subscriptionId);
+		intent.putExtra(Constants.EXTRA_EPISODE_ID, subscriptionId);
 		return intent;
 	}
 
@@ -121,7 +121,7 @@ public class UpdateService extends IntentService {
 				c.close();
 			}
 		} else if (action.equals(Constants.ACTION_DOWNLOAD_EPISODE)) {
-			long episodeId = intent.getLongExtra(Constants.EXTRA_EPOSIDE_ID, -1L);
+			long episodeId = intent.getLongExtra(Constants.EXTRA_EPISODE_ID, -1L);
 			if (episodeId == -1)
 				return;
 			float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);

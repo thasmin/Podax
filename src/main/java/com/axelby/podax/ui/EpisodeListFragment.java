@@ -139,7 +139,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 				PlayerService.play(getActivity(), episode.getId());
 
 				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_EPOSIDE_ID, episode.getId());
+				args.putLong(Constants.EXTRA_EPISODE_ID, episode.getId());
 				FragmentTransaction ft = getFragmentManager().beginTransaction();
 				EpisodeDetailFragment fragment = new EpisodeDetailFragment();
 				fragment.setArguments(args);
@@ -180,7 +180,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 		Cursor cursor = (Cursor) list.getItemAtPosition(position);
 		EpisodeCursor episode = new EpisodeCursor(cursor);
 		Bundle args = new Bundle();
-		args.putLong(Constants.EXTRA_EPOSIDE_ID, episode.getId());
+		args.putLong(Constants.EXTRA_EPISODE_ID, episode.getId());
 
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		EpisodeDetailFragment fragment = new EpisodeDetailFragment();

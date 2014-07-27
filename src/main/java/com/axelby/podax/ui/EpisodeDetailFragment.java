@@ -68,7 +68,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (getArguments() != null && getArguments().containsKey(Constants.EXTRA_EPOSIDE_ID))
+		if (getArguments() != null && getArguments().containsKey(Constants.EXTRA_EPISODE_ID))
 			getLoaderManager().initLoader(CURSOR_PODCAST, getArguments(), this);
 		else
 			getLoaderManager().initLoader(CURSOR_ACTIVE, null, this);
@@ -321,8 +321,8 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 				EpisodeProvider.COLUMN_PAYMENT,
 		};
 
-		if (id == CURSOR_PODCAST && args != null && args.containsKey(Constants.EXTRA_EPOSIDE_ID)) {
-			_podcastId = args.getLong(Constants.EXTRA_EPOSIDE_ID);
+		if (id == CURSOR_PODCAST && args != null && args.containsKey(Constants.EXTRA_EPISODE_ID)) {
+			_podcastId = args.getLong(Constants.EXTRA_EPISODE_ID);
 			Uri uri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
 			return new CursorLoader(getActivity(), uri, projection, null, null, null);
 		} else if (id == CURSOR_ACTIVE) {

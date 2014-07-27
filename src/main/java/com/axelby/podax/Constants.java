@@ -20,7 +20,7 @@ public class Constants {
 	public static final String ACTION_DOWNLOAD_EPISODE = "com.axelby.podax.DOWNLOAD_EPISODE";
 	public static final String ACTION_DOWNLOAD_EPISODES = "com.axelby.podax.DOWNLOAD_EPISODES";
 
-	public static final String EXTRA_EPOSIDE_ID = "com.axelby.podax.episodeId";
+	public static final String EXTRA_EPISODE_ID = "com.axelby.podax.episodeId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
 	public static final String EXTRA_TITLE = "com.axelby.podax.title";
 	public static final String EXTRA_URL = "com.axelby.podax.url";

@@ -1,35 +1,30 @@
 package com.axelby.podax.ui;
 
-import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
-import android.view.ViewStub;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
@@ -51,9 +46,6 @@ import java.io.File;
 import javax.annotation.Nonnull;
 
 public class PlaylistFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	static final int OPTION_REMOVEFROMPLAYLIST = 1;
-	static final int OPTION_PLAY = 2;
-	static final int OPTION_MOVETOFIRSTINPLAYLIST = 3;
 	// make sure list is refreshed to update downloading files
 	Runnable _refresher = new Runnable() {
 		public void run() {
@@ -71,21 +63,22 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 				View view = getListView().getChildAt(i);
 				if (view == null)
 					continue;
-				View progress = view.findViewById(R.id.dlprogress);
-				if (progress == null || progress.getVisibility() == View.GONE)
+                PlaylistListAdapter.ViewHolder holder = (PlaylistListAdapter.ViewHolder) view.getTag();
+                if (holder == null)
+                    continue;
+                if (holder.downloaded.getText().subSequence(0, 3).equals("100"))
 					continue;
 
 				EpisodeCursor episode = new EpisodeCursor((Cursor) getListAdapter().getItem(i));
-				long downloaded = new File(episode.getFilename(getActivity())).length();
-				if (episode.getFileSize() != null && downloaded == episode.getFileSize()) {
-					progress.setVisibility(View.GONE);
-				} else {
+                int filesizePct = 0;
+                if (episode.getFileSize() != null) {
+                    float downloaded = new File(episode.getFilename(getActivity())).length();
+                    filesizePct = Math.round(100.0f * downloaded / episode.getFileSize());
+                }
+                holder.downloaded.setText(String.valueOf(filesizePct) + "% downloaded");
+
+                if (filesizePct < 100)
 					repost = true;
-					ProgressBar progressBar = (ProgressBar) progress.findViewById(R.id.progressBar);
-					progressBar.setProgress((int) downloaded);
-					TextView progressText = (TextView) progress.findViewById(R.id.progressText);
-					progressText.setText(Math.round(100.0f * downloaded / episode.getFileSize()) + "% downloaded");
-				}
 			}
 
 			if (repost)
@@ -116,43 +109,23 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		getActivity().registerForContextMenu(getListView());
-
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_EPOSIDE_ID, id);
+                Intent intent = new Intent(getActivity(), EpisodeDetailActivity.class);
+                intent.putExtra(Constants.EXTRA_EPISODE_ID, id);
+                startActivity(intent);
 
-				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				EpisodeDetailFragment fragment = new EpisodeDetailFragment();
-				fragment.setArguments(args);
-				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
 			}
 		});
-		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
-			public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-				AdapterContextMenuInfo mi = (AdapterContextMenuInfo) menuInfo;
-				Cursor c = (Cursor) getListAdapter().getItem(mi.position);
-				EpisodeCursor episode = new EpisodeCursor(c);
 
-				if (episode.isDownloaded(getActivity()))
-					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
-
-				if (mi.position != 0)
-					menu.add(ContextMenu.NONE, OPTION_MOVETOFIRSTINPLAYLIST, ContextMenu.NONE, R.string.move_to_first_in_playlist);
-
-				menu.add(ContextMenu.NONE, OPTION_REMOVEFROMPLAYLIST, ContextMenu.NONE, R.string.remove_from_playlist);
-			}
-		});
+        DragSortListView dragSortListView = (DragSortListView) getListView();
+        DragSortController dragSortController = (DragSortController) dragSortListView.getFloatViewManager();
+        dragSortController.setBackgroundColor(Color.WHITE);
 
 		// disable swipe to remove according to preference
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		if (!preferences.getBoolean("allowPlaylistSwipeToRemove", true))
-		{
-			DragSortListView dragSortListView = (DragSortListView) getListView();
-			DragSortController dragSortController = (DragSortController) dragSortListView.getFloatViewManager();
 			dragSortController.setRemoveEnabled(false);
-		}
 	}
 
 	@Override
@@ -179,35 +152,6 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 	public void onResume() {
 		super.onResume();
 		_refresher.run();
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-		Cursor cursor = (Cursor) getListAdapter().getItem(info.position);
-		EpisodeCursor podcast = new EpisodeCursor(cursor);
-
-		switch (item.getItemId()) {
-			case OPTION_MOVETOFIRSTINPLAYLIST:
-				podcast.moveToFirstInPlaylist(getActivity());
-				return true;
-			case OPTION_REMOVEFROMPLAYLIST:
-				podcast.removeFromPlaylist(getActivity());
-				return true;
-			case OPTION_PLAY:
-				PlayerService.play(getActivity(), podcast.getId());
-
-				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_EPOSIDE_ID, podcast.getId());
-				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				EpisodeDetailFragment fragment = new EpisodeDetailFragment();
-				fragment.setArguments(args);
-				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
-
-				return true;
-		}
-
-		return false;
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -237,51 +181,87 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
 	private class PlaylistListAdapter extends ResourceCursorAdapter implements DragListener, DropListener, RemoveListener {
 
+        class ViewHolder {
+            public TextView title;
+            public TextView subscription;
+            public ImageView thumbnail;
+            public TextView downloaded;
+
+            public ViewHolder(View view) {
+                title = (TextView) view.findViewById(R.id.title);
+                subscription = (TextView) view.findViewById(R.id.subscription);
+                thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+                downloaded = (TextView) view.findViewById(R.id.downloaded);
+            }
+        }
+
+        private OnClickListener _playHandler = new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long episodeId = (Long) view.getTag();
+				PlayerService.play(getActivity(), episodeId);
+
+                Intent intent = new Intent(getActivity(), EpisodeDetailActivity.class);
+                intent.putExtra(Constants.EXTRA_EPISODE_ID, episodeId);
+                startActivity(intent);
+            }
+        };
+
+        private OnClickListener _removeHandler = new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long episodeId = (Long) view.getTag();
+
+                ContentValues values = new ContentValues();
+                values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
+                getActivity().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
+            }
+        };
+
 		public PlaylistListAdapter(Context context, Cursor cursor) {
 			super(context, R.layout.playlist_list_item, cursor, true);
 		}
 
-		@Override
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            View view = super.newView(context, cursor, parent);
+            view.setTag(new ViewHolder(view));
+
+            EpisodeCursor episode = new EpisodeCursor(cursor);
+
+            View play = view.findViewById(R.id.play);
+            play.setTag(episode.getId());
+            play.setOnClickListener(_playHandler);
+
+            View remove = view.findViewById(R.id.remove);
+            remove.setTag(episode.getId());
+            remove.setOnClickListener(_removeHandler);
+
+            return view;
+        }
+
+        @Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			EpisodeCursor episode = new EpisodeCursor(cursor);
 
-			view.setTag(episode.getId());
+			//view.setTag(episode.getId());
+            ViewHolder holder = (ViewHolder) view.getTag();
+            holder.title.setText(episode.getTitle());
+            holder.subscription.setText(episode.getSubscriptionTitle());
+            holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
 
-			// more button handler
-			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					getActivity().openContextMenu((View) (view.getParent()));
-				}
-			});
+            int filesizePct = 0;
+            if (episode.getFileSize() != null) {
+                long downloaded = new File(episode.getFilename(getActivity())).length();
+                filesizePct = Math.round(100.0f * downloaded / episode.getFileSize());
+            }
+            holder.downloaded.setText(String.valueOf(filesizePct) + "% downloaded");
 
-			((TextView) view.findViewById(R.id.title)).setText(episode.getTitle());
-			((TextView) view.findViewById(R.id.subscription)).setText(episode.getSubscriptionTitle());
-			((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
-
-			// if the episode is not downloaded, add the download indicator
-			long downloaded = new File(episode.getFilename(getActivity())).length();
-			if (episode.getFileSize() != null && downloaded != episode.getFileSize()) {
-				View dlprogress;
-				ViewStub dlprogressStub = (ViewStub) view.findViewById(R.id.dlprogress_stub);
-				if (dlprogressStub != null)
-					dlprogress = dlprogressStub.inflate();
-				else
-					dlprogress = view.findViewById(R.id.dlprogress);
-				dlprogress.setVisibility(View.VISIBLE);
-				ProgressBar progressBar = (ProgressBar) dlprogress.findViewById(R.id.progressBar);
-				progressBar.setMax(episode.getFileSize());
-				progressBar.setProgress((int) downloaded);
-				TextView progressText = (TextView) dlprogress.findViewById(R.id.progressText);
-				progressText.setText(Math.round(100.0f * downloaded / episode.getFileSize()) + "% downloaded");
-
-				// make sure list is refreshed to update downloading files
-				_handler.removeCallbacks(_refresher);
-				_handler.postDelayed(_refresher, 1000);
-			} else {
-				if (view.findViewById(R.id.dlprogress) != null)
-					view.findViewById(R.id.dlprogress).setVisibility(View.GONE);
-			}
+            if (filesizePct != 100) {
+                // make sure list is refreshed to update downloading files
+                _handler.removeCallbacks(_refresher);
+                _handler.postDelayed(_refresher, 1000);
+            }
 		}
 
 		@Override
