@@ -61,6 +61,7 @@
     <style name="Widget.Podax.ImageButton.Flat" parent="android:Widget.ImageButton">
         <item name="android:background">@android:color/transparent</item>
         <item name="android:padding">10dp</item>
+        <item name="android:textAllCaps">true</item>
     </style>
 
     <style name="mainText" parent="@android:style/TextAppearance.Large">

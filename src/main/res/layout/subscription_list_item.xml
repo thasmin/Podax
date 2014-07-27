@@ -19,12 +19,13 @@
             />
 
         <Button
-            android:id="@+id/more_btn"
+            android:id="@+id/more"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/ic_menu_moreoverflow"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
+            android:focusable="false"
             />
 
         <ImageView
@@ -51,32 +52,22 @@
             />
 
         <Button
-            android:id="@+id/settings_btn"
+            android:id="@+id/settings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings"
             android:textAllCaps="true"
             style="@style/Widget.Podax.Button.Flat"
             android:layout_alignBottom="@id/thumbnail"
-            android:layout_toLeftOf="@+id/episodes_btn"
-            />
-
-        <Button
-            android:id="@+id/episodes_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/episodes"
-            android:textAllCaps="true"
-            style="@style/Widget.Podax.Button.Flat.Primary"
-            android:layout_alignBaseline="@id/settings_btn"
             android:layout_alignParentRight="true"
+            android:focusable="false"
             />
 
         <!-- fix for bug with relativelayout not using bottom margins -->
         <View
             android:layout_width="wrap_content"
             android:layout_height="10dp"
-            android:layout_below="@id/episodes_btn"
+            android:layout_below="@id/thumbnail"
             />
 
     </RelativeLayout>

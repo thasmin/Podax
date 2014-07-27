@@ -140,7 +140,7 @@ public class EpisodeCursor {
 			_pubDateColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_PUB_DATE);
 		if (_cursor.isNull(_pubDateColumn))
 			return null;
-		return new Date(_cursor.getLong(_durationColumn) * 1000);
+		return new Date(_cursor.getLong(_pubDateColumn) * 1000);
 	}
 
 	public Long getDownloadId() {

@@ -118,4 +118,39 @@ public class Helper {
 				& Configuration.SCREENLAYOUT_SIZE_MASK)
 				>= Configuration.SCREENLAYOUT_SIZE_LARGE;
 	}
+
+    public static String getVerboseTimeString(Context context, float seconds) {
+        final int secondsPerMinute = 60;
+        final int secondsPerHour = secondsPerMinute * 60;
+        final int secondsPerDay = secondsPerHour * 24;
+
+        StringBuilder listenText = new StringBuilder();
+        if (seconds > secondsPerDay) {
+            int days = (int) Math.floor(seconds / secondsPerDay);
+            listenText.append(days);
+            listenText.append(" ");
+            listenText.append(context.getResources().getQuantityString(R.plurals.days, days));
+            seconds = seconds % secondsPerDay;
+        }
+        if (seconds > secondsPerHour) {
+            int hours = (int) Math.floor(seconds / secondsPerHour);
+            if (listenText.length() > 0)
+                listenText.append(" ");
+            listenText.append(hours);
+            listenText.append(" ");
+            listenText.append(context.getResources().getQuantityString(R.plurals.hours, hours));
+            seconds = seconds % secondsPerHour;
+        }
+        if (seconds > secondsPerMinute) {
+            int minutes = (int) Math.floor(seconds / secondsPerMinute);
+            if (listenText.length() > 0)
+                listenText.append(" ");
+            listenText.append(minutes);
+            listenText.append(" ");
+            listenText.append(context.getResources().getQuantityString(R.plurals.minutes, minutes));
+        }
+        if (listenText.length() == 0)
+            listenText.append(context.getString(R.string.none));
+        return listenText.toString();
+    }
 }

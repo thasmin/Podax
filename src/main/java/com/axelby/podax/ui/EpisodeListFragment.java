@@ -4,8 +4,10 @@ import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -13,14 +15,15 @@ import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
@@ -28,19 +31,19 @@ import android.widget.TextView;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.UpdateService;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+import javax.annotation.Nonnull;
 
 public class EpisodeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	static final int OPTION_ADDTOPLAYLIST = 3;
-	static final int OPTION_REMOVEFROMPLAYLIST = 1;
-	static final int OPTION_PLAY = 2;
-	CharSequence _originalTitle = null;
 	private PodcastAdapter _adapter = null;
-	private long _subscriptionId = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -48,153 +51,70 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 
 		setHasOptionsMenu(true);
 
-		_subscriptionId = getActivity().getIntent().getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, 0);
-		if (_subscriptionId == 0)
-			_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, 0);
-		getLoaderManager().initLoader(0, null, this);
+		getLoaderManager().initLoader(0, getArguments(), this);
 		_adapter = new PodcastAdapter(getActivity(), null);
 		setListAdapter(_adapter);
 	}
 
-	public void setSubscriptionId(long id) {
-		_subscriptionId = id;
-		getLoaderManager().restartLoader(0, null, this);
-	}
-
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.podcastlist_fragment, container, false);
+	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.fragment_episodelist, container, false);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
-			public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-				AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-				Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
-				EpisodeCursor episode = new EpisodeCursor(cursor);
-
-				if (episode.isDownloaded(getActivity()))
-					menu.add(ContextMenu.NONE, OPTION_PLAY, ContextMenu.NONE, R.string.play);
-
-				if (episode.getPlaylistPosition() == null)
-					menu.add(ContextMenu.NONE, OPTION_ADDTOPLAYLIST, ContextMenu.NONE, R.string.add_to_playlist);
-				else
-					menu.add(ContextMenu.NONE, OPTION_REMOVEFROMPLAYLIST, ContextMenu.NONE, R.string.remove_from_playlist);
-			}
-		});
+        setTitle();
 	}
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		setTitle();
-	}
+	public void setTitle() {
+		if (getView() == null)
+			return;
 
-	public boolean setTitle() {
-		if (_originalTitle == null)
-			_originalTitle = getActivity().getTitle();
+        long subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+        if (subscriptionId == -1)
+            return;
 
-		if (_subscriptionId == 0) {
-			getActivity().setTitle(_originalTitle);
-			return true;
-		}
-
-		// set the title before loading the layout
-		Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
+		Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
 		String[] subscriptionProjection = {
 				SubscriptionProvider.COLUMN_ID,
 				SubscriptionProvider.COLUMN_TITLE,
 				SubscriptionProvider.COLUMN_URL,
 		};
 		Cursor subscriptionCursor = getActivity().getContentResolver().query(subscriptionUri, subscriptionProjection, null, null, null);
-		if (subscriptionCursor == null || !subscriptionCursor.moveToNext()) {
-			return false;
-		}
-		SubscriptionCursor subscription = new SubscriptionCursor(subscriptionCursor);
-		try {
-			getActivity().setTitle(subscription.getTitle());
-		} finally {
-			subscriptionCursor.close();
-		}
-		return true;
-	}
+		if (subscriptionCursor == null)
+			return;
 
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-		Cursor cursor = (Cursor) getListView().getItemAtPosition(info.position);
-		EpisodeCursor episode = new EpisodeCursor(cursor);
+        if (subscriptionCursor.moveToNext()) {
+            SubscriptionCursor cursor = new SubscriptionCursor(subscriptionCursor);
 
-		switch (item.getItemId()) {
-			case OPTION_ADDTOPLAYLIST:
-				episode.addToPlaylist(getActivity());
-				break;
-			case OPTION_REMOVEFROMPLAYLIST:
-				episode.removeFromPlaylist(getActivity());
-				break;
-			case OPTION_PLAY:
-				PlayerService.play(getActivity(), episode.getId());
+            TextView subscription = (TextView) getView().findViewById(R.id.subscription);
+            subscription.setText(cursor.getTitle());
 
-				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_EPISODE_ID, episode.getId());
-				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				EpisodeDetailFragment fragment = new EpisodeDetailFragment();
-				fragment.setArguments(args);
-				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
-		}
+            ImageView thumbnail = (ImageView) getView().findViewById(R.id.thumbnail);
+            thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscriptionId));
+        }
 
-		return true;
-	}
-
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.podcast_list, menu);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle item selection
-		switch (item.getItemId()) {
-			case R.id.refresh_subscription:
-				UpdateService.updateSubscription(getActivity(), _subscriptionId);
-				return true;
-			case R.id.settings:
-				SubscriptionSettingsFragment fragment = new SubscriptionSettingsFragment();
-				Bundle args = new Bundle();
-				args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, _subscriptionId);
-				fragment.setArguments(args);
-
-				FragmentTransaction ft = getFragmentManager().beginTransaction();
-				ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
-				return true;
-			default:
-				return super.onOptionsItemSelected(item);
-		}
+        subscriptionCursor.close();
 	}
 
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
-		Cursor cursor = (Cursor) list.getItemAtPosition(position);
-		EpisodeCursor episode = new EpisodeCursor(cursor);
-		Bundle args = new Bundle();
-		args.putLong(Constants.EXTRA_EPISODE_ID, episode.getId());
-
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		EpisodeDetailFragment fragment = new EpisodeDetailFragment();
-		fragment.setArguments(args);
-		ft.replace(R.id.fragment, fragment).addToBackStack(null).commit();
+        Intent intent = new Intent(view.getContext(), EpisodeDetailActivity.class);
+        intent.putExtra(Constants.EXTRA_EPISODE_ID, id);
+        startActivity(intent);
 	}
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
+		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, args.getLong(Constants.EXTRA_SUBSCRIPTION_ID));
 		uri = Uri.withAppendedPath(uri, "podcasts");
 		String[] projection = {
 				EpisodeProvider.COLUMN_ID,
 				EpisodeProvider.COLUMN_TITLE,
+                EpisodeProvider.COLUMN_PUB_DATE,
+                EpisodeProvider.COLUMN_DURATION,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 				EpisodeProvider.COLUMN_FILE_SIZE,
 				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
@@ -208,34 +128,99 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 			return;
 
 		_adapter.changeCursor(cursor);
-		setTitle();
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
 		_adapter.changeCursor(null);
-		setTitle();
 	}
 
 	private class PodcastAdapter extends ResourceCursorAdapter {
+
+        private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
+
+        class ViewHolder {
+            public TextView title;
+            public TextView date;
+            public TextView duration;
+            public Button play;
+            public Button playlist;
+
+            public ViewHolder (View view) {
+                title = (TextView) view.findViewById(R.id.title);
+                date = (TextView) view.findViewById(R.id.date);
+                duration = (TextView) view.findViewById(R.id.duration);
+                play = (Button) view.findViewById(R.id.play);
+                playlist = (Button) view.findViewById(R.id.playlist);
+            }
+        }
+
 		public PodcastAdapter(Context context, Cursor cursor) {
-			super(context, R.layout.episode_list_item, cursor, true);
-		}
+			super(context, R.layout.fragment_episoidelist_item, cursor, true);
+        }
 
-		@Override
+        OnClickListener _playListener = new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long episodeId = (Long) view.getTag();
+                PlayerService.play(view.getContext(), episodeId);
+
+                Intent intent = new Intent(view.getContext(), EpisodeDetailActivity.class);
+                intent.putExtra(Constants.EXTRA_EPISODE_ID, episodeId);
+                startActivity(intent);
+            }
+        };
+
+        OnClickListener _playlistListener = new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long episodeId = (Long) view.getTag(R.id.episode);
+                Integer position = (Integer) view.getTag(R.id.playlist);
+
+                ContentValues values = new ContentValues(1);
+                values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, position);
+                view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
+            }
+        };
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            View view = super.newView(context, cursor, parent);
+            ViewHolder holder = new ViewHolder(view);
+            holder.play.setOnClickListener(_playListener);
+            holder.playlist.setOnClickListener(_playlistListener);
+            view.setTag(holder);
+            return view;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return new EpisodeCursor((Cursor)getItem(position)).getId();
+        }
+
+        @Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			TextView textview = (TextView) view.findViewById(R.id.text);
-			String podcastTitle = new EpisodeCursor(cursor).getTitle();
-			textview.setText(podcastTitle);
-
-			// more button handler
-			view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					getActivity().openContextMenu((View) (view.getParent()));
-				}
-			});
-
+            ViewHolder holder = (ViewHolder) view.getTag();
+            EpisodeCursor episode = new EpisodeCursor(cursor);
+            holder.title.setText(episode.getTitle());
+            holder.date.setText(context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
+            if (episode.getDuration() > 0) {
+                holder.duration.setText(Helper.getVerboseTimeString(context, episode.getDuration() / 1000f) + " " + context.getString(R.string.in_duration));
+                holder.duration.setVisibility(View.VISIBLE);
+            } else
+                holder.duration.setVisibility(View.GONE);
+            holder.play.setTag(episode.getId());
+            holder.playlist.setTag(R.id.episode, episode.getId());
+            Integer position = episode.getPlaylistPosition();
+            if (position == null) {
+                holder.playlist.setTag(R.id.playlist, Integer.MAX_VALUE);
+                holder.playlist.setText(R.string.add_to_playlist);
+                holder.play.setVisibility(View.GONE);
+            } else {
+                holder.playlist.setTag(R.id.playlist, null);
+                holder.playlist.setText(R.string.remove_from_playlist);
+                holder.play.setVisibility(View.VISIBLE);
+            }
 		}
 	}
 }

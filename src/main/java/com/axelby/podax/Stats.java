@@ -18,42 +18,10 @@ public class Stats {
 	}
 
 	public static String getTimeString(Context context) {
-		float listenSeconds = Stats.getTime(context);
-		final int secondsPerMinute = 60;
-		final int secondsPerHour = secondsPerMinute * 60;
-		final int secondsPerDay = secondsPerHour * 24;
-
-		StringBuilder listenText = new StringBuilder();
-		if (listenSeconds > secondsPerDay) {
-			int days = (int) Math.floor(listenSeconds / secondsPerDay);
-			listenText.append(days);
-			listenText.append(" ");
-			listenText.append(context.getResources().getQuantityString(R.plurals.days, days));
-			listenSeconds = listenSeconds % secondsPerDay;
-		}
-		if (listenSeconds > secondsPerHour) {
-			int hours = (int) Math.floor(listenSeconds / secondsPerHour);
-			if (listenText.length() > 0)
-				listenText.append(" ");
-			listenText.append(hours);
-			listenText.append(" ");
-			listenText.append(context.getResources().getQuantityString(R.plurals.hours, hours));
-			listenSeconds = listenSeconds % secondsPerHour;
-		}
-		if (listenSeconds > secondsPerMinute) {
-			int minutes = (int) Math.floor(listenSeconds / secondsPerMinute);
-			if (listenText.length() > 0)
-				listenText.append(" ");
-			listenText.append(minutes);
-			listenText.append(" ");
-			listenText.append(context.getResources().getQuantityString(R.plurals.minutes, minutes));
-		}
-		if (listenText.length() == 0)
-			listenText.append(context.getString(R.string.none));
-		return listenText.toString();
+        return Helper.getVerboseTimeString(context, Stats.getTime(context));
 	}
 
-	public static void addCompletion(Context context) {
+    public static void addCompletion(Context context) {
 		SharedPreferences statsPrefs = context.getSharedPreferences("stats", Context.MODE_PRIVATE);
 		int completions = statsPrefs.getInt("completions", 0) + 1;
 		statsPrefs.edit().putInt("completions", completions).commit();

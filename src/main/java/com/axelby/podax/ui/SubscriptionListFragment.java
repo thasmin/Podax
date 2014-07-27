@@ -1,6 +1,6 @@
 package com.axelby.podax.ui;
 
-import android.app.Fragment;
+import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
@@ -29,7 +30,7 @@ import com.axelby.podax.UpdateService;
 
 import javax.annotation.Nonnull;
 
-public class SubscriptionListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class SubscriptionListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private SubscriptionAdapter _adapter = null;
 
     @Override
@@ -51,8 +52,7 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		ListView _list = (ListView) getActivity().findViewById(R.id.list);
-        _list.setAdapter(_adapter);
+        setListAdapter(_adapter);
 
         View.OnClickListener addListener = new View.OnClickListener() {
             @Override
@@ -91,7 +91,14 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 		return true;
 	}
 
-	@Override
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        Intent intent = new Intent(getActivity(), EpisodeListActivity.class);
+        intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, id);
+        startActivity(intent);
+    }
+
+    @Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = {
 				SubscriptionProvider.COLUMN_ID,
@@ -117,14 +124,6 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	}
 
 	private class SubscriptionAdapter extends ResourceCursorAdapter {
-        private View.OnClickListener _episodeClickHandler = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), EpisodeListActivity.class);
-                intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, (Long) view.getTag());
-                startActivity(intent);
-            }
-        };
 
         private View.OnClickListener _settingsClickHandler = new View.OnClickListener() {
             @Override
@@ -163,11 +162,15 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
             public TextView title;
             public TextView description;
             public ImageView thumbnail;
+            public Button settings;
+            public Button more;
 
             public ViewHolder(View v) {
                 title = (TextView) v.findViewById(R.id.title);
                 description = (TextView) v.findViewById(R.id.description);
                 thumbnail = (ImageView) v.findViewById(R.id.thumbnail);
+                settings = (Button) v.findViewById(R.id.settings);
+                more = (Button) v.findViewById(R.id.more);
             }
         }
 
@@ -178,20 +181,10 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
         @Override
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             View view = super.newView(context, cursor, parent);
-            view.setTag(new ViewHolder(view));
-
-            View episodes_btn = view.findViewById(R.id.episodes_btn);
-            episodes_btn.setTag(new SubscriptionCursor(cursor).getId());
-            episodes_btn.setOnClickListener(_episodeClickHandler);
-
-            View settings_btn = view.findViewById(R.id.settings_btn);
-            settings_btn.setTag(new SubscriptionCursor(cursor).getId());
-            settings_btn.setOnClickListener(_settingsClickHandler);
-
-            View more_btn = view.findViewById(R.id.more_btn);
-            more_btn.setTag(new SubscriptionCursor(cursor).getId());
-            more_btn.setOnClickListener(_moreClickHandler);
-
+            ViewHolder holder = new ViewHolder(view);
+            holder.settings.setOnClickListener(_settingsClickHandler);
+            holder.more.setOnClickListener(_moreClickHandler);
+            view.setTag(holder);
             return view;
         }
 
@@ -206,6 +199,13 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
             else
                 holder.description.setText(R.string.description_not_available);
 			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
+            holder.settings.setTag(subscription.getId());
+            holder.more.setTag(subscription.getId());
 		}
-	}
+
+        @Override
+        public long getItemId(int position) {
+            return new SubscriptionCursor((Cursor) getItem(position)).getId();
+        }
+    }
 }

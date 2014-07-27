@@ -305,5 +305,8 @@ limitations under the License.
     <string name="done">done</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="find_a_podcast">Find a Podcast</string>
+    <string name="number_in_playlist">#%1$d in playlist</string>
+    <string name="released_on">Released on</string>
+    <string name="in_duration">long</string>
 
 </resources>
