@@ -96,6 +96,14 @@ limitations under the License.
         <h4>Volley</h4>
         <p><a href="https://android.googlesource.com/platform/frameworks/volley">(link)</a></p>
         <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
+
+        <h4>Android Iconify</h4>
+        <p><a href="http://joanzapata.com/android-iconify/">(link)</a></p>
+        <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
+
+        <h4>Font Awesome by Dave Gandy</h4>
+        <p><a href="http://fontawesome.io/">(link)</a></p>
+        <p>Licensed under <a href="http://scripts.sil.org/OFL">SIL OFL 1.1</a>.</p>
     ]]>
     </string>
     <string name="about_podax">About Podax</string>
