@@ -7,6 +7,10 @@
         <item name="android:actionBarTabBarStyle">@style/Widget.Podax.ActionBar.TabBar</item>
     </style>
 
+    <style name="Theme.Podax.MainActivity" parent="Theme.Podax">
+        <item name="android:actionBarStyle">@style/Widget.Podax.ActionBar.Main</item>
+    </style>
+
     <color name="podaxColor">#FFE59F39</color>
     <color name="podaxRed">#FFFC4332</color>
     <color name="podaxYellow">#FFFCF232</color>
@@ -26,6 +30,10 @@
         <item name="android:background">@color/orange500</item>
         <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
         <item name="android:icon">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.Podax.ActionBar.Main" parent="Widget.Podax.ActionBar">
+        <item name="android:displayOptions">showHome|showTitle</item>
     </style>
 
     <style name="Widget.Podax.ActionBar.TabBar" parent="android:Widget.ActionBar.TabBar">
