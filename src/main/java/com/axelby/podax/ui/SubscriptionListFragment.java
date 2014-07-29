@@ -11,6 +11,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,16 +64,24 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
         };
         getActivity().findViewById(R.id.add).setOnClickListener(addListener);
 
-        View.OnClickListener refreshListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                UpdateService.updateSubscriptions(getActivity());
-            }
-        };
-        getActivity().findViewById(R.id.refresh).setOnClickListener(refreshListener);
 	}
 
-	@Override
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.subscription_list, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.refresh) {
+            UpdateService.updateSubscriptions(getActivity());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		menu.add(0, 0, 0, R.string.unsubscribe);
 	}
@@ -124,6 +134,11 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	}
 
 	private class SubscriptionAdapter extends ResourceCursorAdapter {
+        private View.OnClickListener _episodeClickHandler = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            }
+        };
 
         private View.OnClickListener _settingsClickHandler = new View.OnClickListener() {
             @Override
@@ -153,7 +168,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
                         return false;
                     }
                 });
-                menu.inflate(R.menu.subscription_list);
+                menu.inflate(R.menu.subscription_list_item);
                 menu.show();
             }
         };

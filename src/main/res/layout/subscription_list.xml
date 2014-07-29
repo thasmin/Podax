@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -7,35 +9,20 @@
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/orange500"
-        android:weightSum="2">
+        tools:listitem="@layout/subscription_list_item"
+    />
 
-        <Button
-            android:id="@+id/add"
-            style="@style/Widget.Podax.Button.Flat"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/add"
-            android:textAllCaps="true"
-            />
+    <Button
+        android:id="@+id/add"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentRight="true"
+        android:layout_margin="24dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/circle"
+        android:text="+"
+        android:textSize="24sp"
+        />
 
-        <Button
-            android:id="@+id/refresh"
-            style="@style/Widget.Podax.Button.Flat"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/refresh"
-            android:textAllCaps="true"
-            />
-
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

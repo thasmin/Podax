@@ -3,8 +3,12 @@
 
     <item
         android:id="@+id/refresh"
-        android:icon="@drawable/ic_action_refresh"
-        android:showAsAction="ifRoom|withText"
+        android:icon="@drawable/ic_menu_refresh"
         android:title="@string/refresh"/>
+
+    <item
+        android:id="@+id/unsubscribe"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/unsubscribe"/>
 
 </menu>
