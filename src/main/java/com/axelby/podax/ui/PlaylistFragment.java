@@ -6,7 +6,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -25,12 +24,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
@@ -111,10 +112,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), EpisodeDetailActivity.class);
-                intent.putExtra(Constants.EXTRA_EPISODE_ID, id);
-                startActivity(intent);
-
+                Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id);
 			}
 		});
 
@@ -142,7 +140,12 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 		return super.onOptionsItemSelected(item);
 	}
 
-	@Override
+    @Override
+    public void onListItemClick(ListView listview, View view, int position, long id) {
+        Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id);
+    }
+
+    @Override
 	public void onPause() {
 		super.onPause();
 		_handler.removeCallbacks(_refresher);
@@ -200,10 +203,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();
 				PlayerService.play(getActivity(), episodeId);
-
-                Intent intent = new Intent(getActivity(), EpisodeDetailActivity.class);
-                intent.putExtra(Constants.EXTRA_EPISODE_ID, episodeId);
-                startActivity(intent);
+                Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId);
             }
         };
 

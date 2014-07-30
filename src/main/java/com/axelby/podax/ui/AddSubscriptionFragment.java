@@ -15,6 +15,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
@@ -62,9 +63,7 @@ public class AddSubscriptionFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), ITunesToplistActivity.class);
-                intent.putExtra(Constants.EXTRA_CATEGORY_ID, id);
-                startActivity(intent);
+                Helper.changeFragment(getActivity(), ITunesToplistFragment.class, Constants.EXTRA_CATEGORY_ID, id);
             }
         });
 

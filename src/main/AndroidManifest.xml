@@ -87,12 +87,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.EpisodeDetailActivity" />
-        <activity android:name=".ui.EpisodeListActivity" />
-        <activity android:name=".ui.SubscriptionSettingsActivity" />
-        <activity android:name=".ui.AddSubscriptionActivity" />
-        <activity android:name=".ui.ITunesToplistActivity" />
-
         <activity
             android:name="org.acra.CrashReportDialog"
             android:theme="@android:style/Theme.Dialog"

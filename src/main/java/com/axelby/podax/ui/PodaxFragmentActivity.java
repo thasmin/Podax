@@ -42,10 +42,6 @@ public class PodaxFragmentActivity extends Activity {
 		}
 	}
 
-	protected Fragment createFragment(Class<?> fragmentClass) {
-        return createFragment(fragmentClass, null);
-	}
-
     protected Fragment createFragment(Class<?> fragmentClass, Bundle arguments) {
         FrameLayout frame = new FrameLayout(this);
         frame.setId(R.id.fragment);
@@ -61,18 +57,4 @@ public class PodaxFragmentActivity extends Activity {
         return fragment;
     }
 
-    public static Fragment createFragment(@Nonnull Activity activity, @Nonnull Class<?> fragmentClass, Bundle arguments) {
-        FrameLayout frame = new FrameLayout(activity);
-        frame.setId(R.id.fragment);
-        activity.setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-
-        Fragment fragment = Fragment.instantiate(activity, fragmentClass.getCanonicalName());
-        fragment.setArguments(arguments);
-        FragmentManager fm = activity.getFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.add(R.id.fragment, fragment);
-        ft.commit();
-
-        return fragment;
-    }
 }

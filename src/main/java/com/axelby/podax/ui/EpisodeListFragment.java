@@ -1,27 +1,19 @@
 package com.axelby.podax.ui;
 
-import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -38,7 +30,6 @@ import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 
 import javax.annotation.Nonnull;
 
@@ -101,9 +92,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
-        Intent intent = new Intent(view.getContext(), EpisodeDetailActivity.class);
-        intent.putExtra(Constants.EXTRA_EPISODE_ID, id);
-        startActivity(intent);
+        Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id);
 	}
 
 	@Override
@@ -164,10 +153,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();
                 PlayerService.play(view.getContext(), episodeId);
-
-                Intent intent = new Intent(view.getContext(), EpisodeDetailActivity.class);
-                intent.putExtra(Constants.EXTRA_EPISODE_ID, episodeId);
-                startActivity(intent);
+                Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId);
             }
         };
 

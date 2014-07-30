@@ -1,5 +1,9 @@
 package com.axelby.podax;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -8,8 +12,10 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.LruCache;
+import android.widget.FrameLayout;
 
 import com.android.volley.Cache;
 import com.android.volley.RequestQueue;
@@ -18,6 +24,9 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
 import java.nio.ByteBuffer;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 
 public class Helper {
@@ -153,4 +162,32 @@ public class Helper {
             listenText.append(context.getString(R.string.none));
         return listenText.toString();
     }
+
+    public static Fragment createFragmentLayout(@Nonnull Activity activity, @Nonnull Class<?> fragmentClass, @Nullable Bundle arguments) {
+        FrameLayout frame = new FrameLayout(activity);
+        frame.setId(R.id.fragment);
+        activity.setContentView(frame, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+
+        Fragment fragment = Fragment.instantiate(activity, fragmentClass.getCanonicalName());
+        fragment.setArguments(arguments);
+        FragmentManager fm = activity.getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.add(R.id.fragment, fragment);
+        ft.commit();
+
+        return fragment;
+    }
+
+    public static void changeFragment(@Nonnull Activity activity, @Nonnull Class<?> fragmentClass, @Nullable Bundle arguments) {
+		FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
+		Fragment fragment = Fragment.instantiate(activity, fragmentClass.getName(), arguments);
+        ft.replace(R.id.mainlayout, fragment).addToBackStack(null).commit();
+    }
+
+    public static void changeFragment(@Nonnull Activity activity, @Nonnull Class<?> fragmentClass, String extraId, long id) {
+        Bundle args = new Bundle(1);
+        args.putLong(extraId, id);
+        Helper.changeFragment(activity, fragmentClass, args);
+    }
+
 }

@@ -4,7 +4,6 @@ import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -25,6 +24,7 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
@@ -59,7 +59,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
         View.OnClickListener addListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getActivity(), AddSubscriptionActivity.class));
+                Helper.changeFragment(getActivity(), AddSubscriptionFragment.class, null);
             }
         };
         getActivity().findViewById(R.id.add).setOnClickListener(addListener);
@@ -103,9 +103,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        Intent intent = new Intent(getActivity(), EpisodeListActivity.class);
-        intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, id);
-        startActivity(intent);
+        Helper.changeFragment(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, id);
     }
 
     @Override
@@ -134,18 +132,10 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	}
 
 	private class SubscriptionAdapter extends ResourceCursorAdapter {
-        private View.OnClickListener _episodeClickHandler = new View.OnClickListener() {
+       private View.OnClickListener _settingsClickHandler = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            }
-        };
-
-        private View.OnClickListener _settingsClickHandler = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), SubscriptionSettingsActivity.class);
-                intent.putExtra(Constants.EXTRA_SUBSCRIPTION_ID, (Long) view.getTag());
-                startActivity(intent);
+                Helper.changeFragment(getActivity(), SubscriptionSettingsFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (Long) view.getTag());
             }
         };
 

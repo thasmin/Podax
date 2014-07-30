@@ -67,6 +67,7 @@
             style="@style/Widget.Podax.Button.Flat.Primary"
             android:layout_alignBaseline="@id/downloaded"
             android:layout_alignParentRight="true"
+            android:focusable="false"
             />
 
         <Button
@@ -78,9 +79,10 @@
             style="@style/Widget.Podax.Button.Flat"
             android:layout_alignBaseline="@id/downloaded"
             android:layout_toLeftOf="@id/play"
+            android:focusable="false"
             />
 
-        <View
+        <Space
             android:layout_height="10dp"
             android:layout_width="0dp"
             android:layout_below="@id/downloaded"

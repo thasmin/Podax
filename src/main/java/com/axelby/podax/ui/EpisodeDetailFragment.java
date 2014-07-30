@@ -337,9 +337,10 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 			return;
 
 		if (!cursor.moveToFirst()) {
-            Intent intent = new Intent(getActivity(), MainActivity.class);
-            intent.putExtra("fragmentId", 1);
-            startActivity(intent);
+            if (getFragmentManager().getBackStackEntryCount() == 0)
+                Helper.changeFragment(getActivity(), MainFragment.class, null);
+            else
+                getFragmentManager().popBackStack();
             return;
         }
 

@@ -2,12 +2,9 @@ package com.axelby.podax.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -19,8 +16,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.axelby.gpodder.AuthenticatorActivity;
@@ -34,44 +30,7 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
-import javax.annotation.Nonnull;
-
 public class MainActivity extends Activity {
-
-    public static class TabListener<T extends Fragment> implements ActionBar.TabListener {
-        private Fragment _fragment;
-        private final Activity _activity;
-        private final String _tag;
-        private final Class<T> _class;
-
-        public TabListener(Activity activity, String tag, Class<T> clz) {
-            _activity = activity;
-            _tag = tag;
-            _class = clz;
-        }
-
-        @Override
-        public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-            if (_fragment == null) {
-                _fragment = Fragment.instantiate(_activity, _class.getName());
-                ft.add(android.R.id.content, _fragment, _tag);
-            } else {
-                ft.attach(_fragment);
-            }
-        }
-
-        @Override
-        public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-            if (_fragment != null) {
-                ft.detach(_fragment);
-            }
-        }
-
-        @Override
-        public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,41 +85,11 @@ public class MainActivity extends Activity {
         }
 
         // ui initialization
-        setContentView(R.layout.app);
-
-        ActionBar actionBar = getActionBar();
-        if (actionBar != null) {
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-            actionBar.addTab(actionBar.newTab()
-                            .setText(R.string.playlist)
-                            .setTabListener(new TabListener<PlaylistFragment>(
-                                    this, "playlist", PlaylistFragment.class))
-            );
-
-            actionBar.addTab(actionBar.newTab()
-                            .setText(R.string.podcasts)
-                            .setTabListener(new TabListener<SubscriptionListFragment>(
-                                    this, "podcasts", SubscriptionListFragment.class))
-            );
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onMenuItemSelected(int featureId, @Nonnull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.now_playing:
-                startActivity(new Intent(this, EpisodeDetailActivity.class));
-                return true;
-            default:
-                return super.onMenuItemSelected(featureId, item);
-        }
+        FrameLayout frame = new FrameLayout(this);
+        frame.setId(R.id.mainlayout);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        setContentView(frame, params);
+        getFragmentManager().beginTransaction().add(R.id.mainlayout, new MainFragment()).commit();
     }
 
     private void handleGPodder() {
