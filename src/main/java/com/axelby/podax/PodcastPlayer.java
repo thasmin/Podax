@@ -13,229 +13,235 @@ import java.util.ArrayList;
 
 public class PodcastPlayer {
 
-	// listen for audio focus changes - another app started/stopped, phone call, etc
-	private final AudioManager.OnAudioFocusChangeListener _afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
-		public void onAudioFocusChange(int focusChange) {
-			if (_player == null)
-				return;
-			if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
-				stop();
-			else if (focusChange == AudioManager.AUDIOFOCUS_GAIN)
-				unpause(Constants.PAUSE_AUDIOFOCUS);
-			else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
-				pause(Constants.PAUSE_AUDIOFOCUS);
-		}
-	};
+    // listen for audio focus changes - another app started/stopped, phone call, etc
+    private final AudioManager.OnAudioFocusChangeListener _afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+        public void onAudioFocusChange(int focusChange) {
+            if (_player == null)
+                return;
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
+                stop();
+            else if (focusChange == AudioManager.AUDIOFOCUS_GAIN)
+                unpause(Constants.PAUSE_AUDIOFOCUS);
+            else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
+                pause(Constants.PAUSE_AUDIOFOCUS);
+        }
+    };
 
-	protected Context _context;
-	private ArrayList<Boolean> _pausingFor = new ArrayList<Boolean>(2);
+    protected Context _context;
+    private ArrayList<Boolean> _pausingFor = new ArrayList<Boolean>(2);
 
-	private OnPauseListener _onPauseListener = null;
-	private OnPlayListener _onPlayListener = null;
-	private OnStopListener _onStopListener = null;
-	private OnSeekListener _onSeekListener = null;
-	private OnCompletionListener _onCompletionListener = null;
-	private OnChangeListener _onChangeListener = null;
+    private OnPauseListener _onPauseListener = null;
+    private OnPlayListener _onPlayListener = null;
+    private OnStopListener _onStopListener = null;
+    private OnSeekListener _onSeekListener = null;
+    private OnCompletionListener _onCompletionListener = null;
+    private OnChangeListener _onChangeListener = null;
 
-	private Thread _playerThread = null;
-	private AudioPlayer _player = null;
+    private Thread _playerThread = null;
+    private AudioPlayer _player = null;
 
-	public PodcastPlayer(Context context) {
-		_context = context;
-		_pausingFor.add(false);
-		_pausingFor.add(false);
-	}
+    public PodcastPlayer(Context context) {
+        _context = context;
+        _pausingFor.add(false);
+        _pausingFor.add(false);
+    }
 
-	public boolean changePodcast(String filename, float positionInSeconds) {
-		if (_player != null) {
-			_player.stop();
-			_player = null;
-		}
-		if (_playerThread != null) {
-			try {
-				_playerThread.join();
-			} catch (InterruptedException ex) {
-				Log.e("Podax", "player thread interrupted", ex);
-			}
-			_playerThread = null;
-		}
+    public boolean changePodcast(String filename, float positionInSeconds) {
+        if (_player != null) {
+            _player.stop();
+            _player = null;
+        }
+        if (_playerThread != null) {
+            try {
+                _playerThread.join();
+            } catch (InterruptedException ex) {
+                Log.e("Podax", "player thread interrupted", ex);
+            }
+            _playerThread = null;
+        }
 
-		try {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
-			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
-			if (!AudioPlayer.supports(filename)) {
-				Toast.makeText(_context, "This podcast is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
-				return false;
-			}
-			_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
-			_playerThread = new Thread(_player, "AudioPlayer");
+        try {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
+            float playbackRate = prefs.getFloat("playbackRate", 1.0f);
+            if (!AudioPlayer.supports(filename)) {
+                Toast.makeText(_context, "This podcast is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
+                return false;
+            }
+            _player = new AudioPlayer(filename, positionInSeconds, playbackRate);
+            _playerThread = new Thread(_player, "AudioPlayer");
 
-			_player.setOnCompletionListener(new AudioPlayer.OnCompletionListener() {
-				@Override
-				public void onCompletion() {
-					if (_onCompletionListener != null)
-						_onCompletionListener.onCompletion();
-				}
-			});
-			_player.setPeriodicListener(new AudioPlayer.PeriodicListener() {
-				@Override
-				public void pulse(float position) {
-					if (_onSeekListener != null)
-						_onSeekListener.onSeek(position);
-				}
-			});
+            _player.setOnCompletionListener(new AudioPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion() {
+                    if (_onCompletionListener != null)
+                        _onCompletionListener.onCompletion();
+                }
+            });
+            _player.setPeriodicListener(new AudioPlayer.PeriodicListener() {
+                @Override
+                public void pulse(float position) {
+                    if (_onSeekListener != null)
+                        _onSeekListener.onSeek(position);
+                }
+            });
 
-			if (_onChangeListener != null)
-				_onChangeListener.onChange();
-			return true;
-		} catch (Exception ex) {
-			Log.e("Podax", "unable to change to new podcast", ex);
-			return false;
-		}
-	}
+            if (_onChangeListener != null)
+                _onChangeListener.onChange();
+            return true;
+        } catch (Exception ex) {
+            Log.e("Podax", "unable to change to new podcast", ex);
+            return false;
+        }
+    }
 
-	public void setOnPauseListener(OnPauseListener onPauseListener) {
-		this._onPauseListener = onPauseListener;
-	}
-	public void setOnPlayListener(OnPlayListener onPlayListener) {
-		this._onPlayListener = onPlayListener;
-	}
-	public void setOnStopListener(OnStopListener onStopListener) {
-		this._onStopListener = onStopListener;
-	}
-	public void setOnSeekListener(OnSeekListener onSeekListener) {
-		this._onSeekListener = onSeekListener;
-	}
-	public void setOnCompletionListener(OnCompletionListener onCompletionListener) {
-		this._onCompletionListener = onCompletionListener;
-	}
-	public void setOnChangeListener(OnChangeListener onPodcastChangeListener) {
-		this._onChangeListener = onPodcastChangeListener;
-	}
+    public void setOnPauseListener(OnPauseListener onPauseListener) {
+        this._onPauseListener = onPauseListener;
+    }
+    public void setOnPlayListener(OnPlayListener onPlayListener) {
+        this._onPlayListener = onPlayListener;
+    }
+    public void setOnStopListener(OnStopListener onStopListener) {
+        this._onStopListener = onStopListener;
+    }
+    public void setOnSeekListener(OnSeekListener onSeekListener) {
+        this._onSeekListener = onSeekListener;
+    }
+    public void setOnCompletionListener(OnCompletionListener onCompletionListener) {
+        this._onCompletionListener = onCompletionListener;
+    }
+    public void setOnChangeListener(OnChangeListener onPodcastChangeListener) {
+        this._onChangeListener = onPodcastChangeListener;
+    }
 
 	/* external functions */
 
-	// change position of podcast
-	public void seekTo(float offsetInSeconds) {
-		_player.seekTo(offsetInSeconds);
-	}
+    // change position of podcast
+    public void seekTo(float offsetInSeconds) {
+        _player.seekTo(offsetInSeconds);
+    }
 
-	// if playing, pause. if paused, play.
-	public void playPause(int pauseReason) {
-		if (_player.isPlaying())
-			pause(pauseReason);
-		else
-			unpause(pauseReason);
-	}
+    // if playing, pause. if paused, play.
+    public void playPause(int pauseReason) {
+        if (_player.isPlaying())
+            pause(pauseReason);
+        else
+            unpause(pauseReason);
+    }
 
-	// if playing, stop. if paused, play.
-	public void playStop() {
-		if (_player.isPlaying())
-			stop();
-		else
-			play();
-	}
+    // if playing, stop. if paused, play.
+    public void playStop() {
+        if (_player.isPlaying())
+            stop();
+        else
+            play();
+    }
 
-	// resume playing the podcast at the current position
-	public void play() {
-		internalPlay();
-	}
+    // resume playing the podcast at the current position
+    public void play() {
+        internalPlay();
+    }
 
-	// set a pause reason and pause
-	public void pause(int reason) {
-		_pausingFor.set(reason, true);
-		if (_player.isPlaying())
-			internalPause();
-	}
+    // set a pause reason and pause
+    public void pause(int reason) {
+        _pausingFor.set(reason, true);
+        if (_player.isPlaying())
+            internalPause();
+    }
 
-	// clear a pause reason and play if there's no valid pause reasons
-	public void unpause(int pauseReason) {
-		_pausingFor.set(pauseReason, false);
-		if (!_pausingFor.contains(true))
-			play();
-	}
+    // clear a pause reason and play if there's no valid pause reasons
+    public void unpause(int pauseReason) {
+        _pausingFor.set(pauseReason, false);
+        if (!_pausingFor.contains(true))
+            play();
+    }
 
-	// stop the podcast with no intention of resuming in the near future
-	public void stop() {
-		internalStop();
-	}
+    // stop the podcast with no intention of resuming in the near future
+    public void stop() {
+        internalStop();
+    }
 
-	/* internal operations and state keeping */
-	private boolean grabAudioFocus() {
-		AudioManager audioManager = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
-		int result = audioManager.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-		if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
-			stop();
-			return false;
-		}
+    /* internal operations and state keeping */
+    private boolean grabAudioFocus() {
+        AudioManager audioManager = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
+        int result = audioManager.requestAudioFocus(_afChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_FAILED) {
+            stop();
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	private void internalPlay() {
-		if (_player.isPlaying())
-			return;
+    private void internalPlay() {
+        if (_player == null || _player.isPlaying())
+            return;
 
-		if (!grabAudioFocus())
-			return;
+        if (!grabAudioFocus())
+            return;
 
-		// make sure we're not pausing
-		if (_pausingFor.contains(true))
-			return;
+        // make sure we're not pausing
+        if (_pausingFor.contains(true))
+            return;
 
-		_player.resume();
-		if (_playerThread.getState() == Thread.State.NEW)
-			_playerThread.start();
+        _player.resume();
+        if (_playerThread.getState() == Thread.State.NEW)
+            _playerThread.start();
 
-		if (_onPlayListener != null)
-			_onPlayListener.onPlay(_player.getPosition(), _player.getPlaybackRate());
-	}
+        if (_onPlayListener != null)
+            _onPlayListener.onPlay(_player.getPosition(), _player.getPlaybackRate());
+    }
 
-	private void internalPause() {
-		_player.pause();
+    private void internalPause() {
+        if (_player == null)
+            return;
 
-		// tell the interested party
-		if (_onPauseListener != null)
-			_onPauseListener.onPause(_player.getPosition());
-	}
+        _player.pause();
 
-	private void internalStop() {
-		// stop playing
-		float position = _player.getPosition();
-		if (_player.isPlaying()) {
-			_player.stop();
-			try {
-				_playerThread.join();
-			} catch (InterruptedException e) {
-				Log.e("Podax", "stop InterruptedException", e);
-			}
-		}
+        // tell the interested party
+        if (_onPauseListener != null)
+            _onPauseListener.onPause(_player.getPosition());
+    }
 
-		// tell Android that we don't want the audio focus
-		AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
-		am.abandonAudioFocus(_afChangeListener);
+    private void internalStop() {
+        if (_player == null)
+            return;
 
-		// tell the interested party
-		if (_onStopListener != null)
-			_onStopListener.onStop(position);
-	}
+        // stop playing
+        float position = _player.getPosition();
+        if (_player.isPlaying()) {
+            _player.stop();
+            try {
+                _playerThread.join();
+            } catch (InterruptedException e) {
+                Log.e("Podax", "stop InterruptedException", e);
+            }
+        }
 
-	public static interface OnPauseListener {
-		public void onPause(float positionInSeconds);
-	}
-	public static interface OnPlayListener {
-		public void onPlay(float positionInSeconds, float playbackRate);
-	}
-	public static interface OnStopListener {
-		public void onStop(float positionInSeconds);
-	}
-	public static interface OnSeekListener {
-		public void onSeek(float positionInSeconds);
-	}
-	public static interface OnCompletionListener {
-		public void onCompletion();
-	}
-	public static interface OnChangeListener {
-		public void onChange();
-	}
+        // tell Android that we don't want the audio focus
+        AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
+        am.abandonAudioFocus(_afChangeListener);
+
+        // tell the interested party
+        if (_onStopListener != null)
+            _onStopListener.onStop(position);
+    }
+
+    public static interface OnPauseListener {
+        public void onPause(float positionInSeconds);
+    }
+    public static interface OnPlayListener {
+        public void onPlay(float positionInSeconds, float playbackRate);
+    }
+    public static interface OnStopListener {
+        public void onStop(float positionInSeconds);
+    }
+    public static interface OnSeekListener {
+        public void onSeek(float positionInSeconds);
+    }
+    public static interface OnCompletionListener {
+        public void onCompletion();
+    }
+    public static interface OnChangeListener {
+        public void onChange();
+    }
 }
