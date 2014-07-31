@@ -174,7 +174,7 @@ public class EpisodePlayer {
 	}
 
 	private void internalPlay() {
-		if (_player.isPlaying())
+		if (_player == null || _player.isPlaying())
 			return;
 
 		if (!grabAudioFocus())
@@ -193,6 +193,9 @@ public class EpisodePlayer {
 	}
 
 	private void internalPause() {
+		if (_player == null)
+			return;
+
 		_player.pause();
 
 		// tell the interested party
@@ -201,6 +204,9 @@ public class EpisodePlayer {
 	}
 
 	private void internalStop() {
+		if (_player == null)
+			return;
+
 		// stop playing
 		float position = _player.getPosition();
 		if (_player.isPlaying()) {

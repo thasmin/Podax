@@ -8,16 +8,16 @@ buildscript {
 }
 apply plugin: 'com.android.application'
 
-allprojects {
-    repositories {
-        mavenCentral()
-    }
-}
-
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
     compile 'com.android.support:cardview-v7:+'
     compile 'com.joanzapata.android:android-iconify:1.0.6'
+    compile 'com.android.support:support-v4:19.1.+'
+    compile 'com.android.support:appcompat-v7:19.1.+'
+	compile 'ch.acra:acra:4.5.0'
+	compile 'org.shredzone.flattr4j:flattr4j-core:2.7'
+	compile 'com.google.code.gson:gson:2.2.4'
+	compile 'com.google.code.findbugs:jsr305:3.0.0'
 }
 
 Properties props = new Properties()
@@ -26,6 +26,9 @@ if (new File("signing.properties").exists()) {
 }
 
 android {
+	repositories {
+		mavenCentral()
+	}
     compileSdkVersion 19
     buildToolsVersion "20.0.0"
 

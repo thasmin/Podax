@@ -3,7 +3,7 @@
 
     <string name="app_name">Podax</string>
     <string name="app_long_name">Podax Podcaster</string>
-    <string name="app_version">7.05</string>
+    <string name="app_version">7.06</string>
     <string name="pause">Pause</string>
     <string name="play">Play</string>
     <string name="add_to_playlist">Add To Playlist</string>
