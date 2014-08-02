@@ -86,7 +86,6 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 		} else if (DownloadManager.ACTION_NOTIFICATION_CLICKED.equals(intent.getAction())) {
 			Intent mainActivity = new Intent(context, MainActivity.class);
 			mainActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			mainActivity.putExtra(Constants.EXTRA_FRAGMENT, 3);
 			context.startActivity(mainActivity);
 		}
 	}

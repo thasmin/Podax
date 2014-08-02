@@ -239,7 +239,6 @@ public class SubscriptionUpdater {
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
-		notificationIntent.putExtra(Constants.EXTRA_FRAGMENT, 4);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new Notification.Builder(_context)

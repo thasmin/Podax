@@ -1,36 +1,47 @@
 package com.axelby.podax.ui;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.widget.FrameLayout;
-import android.widget.Toast;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
-import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
 public class MainActivity extends Activity {
+
+    private ActionBarDrawerToggle _drawerToggle;
+    private DrawerLayout _drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,23 +95,36 @@ public class MainActivity extends Activity {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
 
-        // ui initialization
-        FrameLayout frame = new FrameLayout(this);
-        frame.setId(R.id.mainlayout);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-        setContentView(frame, params);
-        getFragmentManager().beginTransaction().add(R.id.mainlayout, new MainFragment()).commit();
-    }
-
-    private void handleGPodder() {
-        AccountManager am = AccountManager.get(this);
-        Account[] gpodder_accounts = am.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
-        if (gpodder_accounts == null || gpodder_accounts.length == 0)
-            startActivity(new Intent(this, AuthenticatorActivity.class));
-        else {
-            Toast.makeText(this, "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
-            ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
+        @SuppressLint("AppCompatMethod") ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
         }
+
+        setContentView(R.layout.app);
+
+        getFragmentManager().beginTransaction().add(R.id.mainlayout, new MainFragment()).commit();
+
+        ListView drawer = (ListView) findViewById(R.id.drawer);
+        PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
+        drawer.setAdapter(_drawerAdapter);
+        drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+                _drawerLayout.closeDrawer(GravityCompat.START);
+
+                Intent activityIntent = new Intent(view.getContext(), PodaxFragmentActivity.class);
+                activityIntent.putExtra(Constants.EXTRA_FRAGMENT, id);
+                startActivity(activityIntent);
+            }
+        });
+
+        _drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        _drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+
+        _drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, R.drawable.ic_drawer,
+                R.string.open_drawer, R.string.close_drawer);
+        _drawerLayout.setDrawerListener(_drawerToggle);
     }
 
     private boolean isPlayerServiceRunning() {
@@ -115,5 +139,87 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Helper.registerMediaButtons(this);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        _drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        _drawerToggle.syncState();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
+    }
+
+    class PodaxDrawerAdapter extends BaseAdapter {
+        Item _items[] = {
+                new Item(PodaxFragmentActivity.FRAGMENT_GPODDER, R.string.gpodder_sync, R.drawable.ic_menu_mygpo),
+                new Item(PodaxFragmentActivity.FRAGMENT_STATS, R.string.stats, R.drawable.ic_menu_settings),
+                new Item(PodaxFragmentActivity.FRAGMENT_PREFERENCES, R.string.preferences, R.drawable.ic_menu_configuration),
+                new Item(PodaxFragmentActivity.FRAGMENT_ABOUT, R.string.about, R.drawable.ic_menu_podax),
+                new Item(PodaxFragmentActivity.FRAGMENT_LOG_VIEWER, R.string.log_viewer, android.R.drawable.ic_menu_info_details),
+        };
+        private Context _context;
+
+        public PodaxDrawerAdapter(Context context) {
+            _context = context;
+        }
+
+        @Override
+        public int getCount() {
+            // log viewer is only available when debugging
+            if (PodaxLog.isDebuggable(MainActivity.this))
+                return _items.length;
+            return _items.length - 1;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return _items[position];
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return _items[position].id;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            int layoutId = R.layout.drawer_listitem;
+            if (convertView == null)
+                convertView = LayoutInflater.from(_context).inflate(layoutId, null);
+            if (convertView == null)
+                return null;
+
+            TextView tv = (TextView) convertView;
+            final Item item = _items[position];
+            tv.setText(item.label);
+            tv.setCompoundDrawablesWithIntrinsicBounds(item.drawable, 0, 0, 0);
+            return tv;
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
+
+        class Item {
+            long id;
+            String label;
+            int drawable;
+
+            public Item(long id, int labelId, int drawableId) {
+                this.id = id;
+                this.drawable = drawableId;
+                this.label = MainActivity.this.getResources().getString(labelId);
+            }
+        }
     }
 }

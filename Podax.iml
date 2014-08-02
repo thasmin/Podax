@@ -61,9 +61,9 @@
     <orderEntry type="jdk" jdkName="Android API 19 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="android-iconify-1.0.6" level="project" />
-    <orderEntry type="library" exported="" name="cardview-v7-21.0.0-rc1" level="project" />
     <orderEntry type="library" exported="" name="gson-2.2.4" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-19.1.0" level="project" />
+    <orderEntry type="library" exported="" name="cardview-v7-21.0.0-rc1" level="project" />
     <orderEntry type="library" exported="" name="support-v4-19.1.0" level="project" />
     <orderEntry type="library" exported="" name="flattr4j-core-2.7" level="project" />
     <orderEntry type="library" exported="" name="httpcore-4.1.4" level="project" />

@@ -1,9 +1,10 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
+
 <LinearLayout android:id="@+id/layout"
               android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
+              android:layout_height="wrap_content"
               android:orientation="vertical">
 
     <RelativeLayout
@@ -11,6 +12,12 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal">
+
+        <!-- make sure an id called fragment is generated -->
+        <View
+            android:layout_width="0dip"
+            android:layout_height="0dip"
+            android:id="@+id/fragment" />
 
         <TextView
                 android:id="@+id/header"

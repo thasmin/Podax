@@ -1,27 +1,54 @@
 package com.axelby.podax.ui;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.ContentResolver;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.Toast;
 
+import com.axelby.gpodder.AuthenticatorActivity;
+import com.axelby.podax.Constants;
+import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
-import javax.annotation.Nonnull;
-
 public class PodaxFragmentActivity extends Activity {
 
-	@Override
+    public final static long FRAGMENT_GPODDER = 0;
+    public final static long FRAGMENT_STATS = 1;
+    public final static long FRAGMENT_PREFERENCES = 2;
+    public final static long FRAGMENT_ABOUT = 3;
+    public final static long FRAGMENT_LOG_VIEWER = 4;
+
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        if (getActionBar() != null)
-		    getActionBar().setDisplayHomeAsUpEnabled(true);
+        @SuppressLint("AppCompatMethod") ActionBar actionBar = getActionBar();
+        if (actionBar != null)
+		    actionBar.setDisplayHomeAsUpEnabled(true);
+
+        long fragmentCode = getIntent().getLongExtra(Constants.EXTRA_FRAGMENT, -1);
+        if (fragmentCode == FRAGMENT_GPODDER)
+            handleGPodder();
+        else if (fragmentCode == FRAGMENT_STATS)
+            createFragment(StatsFragment.class, null);
+        else if (fragmentCode == FRAGMENT_PREFERENCES)
+            createFragment(PodaxPreferenceFragment.class, null);
+        else if (fragmentCode == FRAGMENT_ABOUT)
+            createFragment(AboutFragment.class, null);
+        else if (fragmentCode == FRAGMENT_LOG_VIEWER)
+            createFragment(LogViewerFragment.class, null);
 	}
 
 	@Override
@@ -55,6 +82,18 @@ public class PodaxFragmentActivity extends Activity {
         ft.commit();
 
         return fragment;
+    }
+
+    private void handleGPodder() {
+        AccountManager am = AccountManager.get(this);
+        Account[] gpodder_accounts = am.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
+        if (gpodder_accounts == null || gpodder_accounts.length == 0) {
+            finish();
+            startActivity(new Intent(this, AuthenticatorActivity.class));
+        } else {
+            Toast.makeText(this, "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
+            ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
+        }
     }
 
 }

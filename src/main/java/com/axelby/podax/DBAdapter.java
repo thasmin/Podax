@@ -24,6 +24,7 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"thumbnail VARCHAR, " +
 				"titleOverride VARCHAR," +
 				"queueNew INTEGER NOT NULL DEFAULT 1," +
+				"description VARCHAR," +
 				"expirationDays INTEGER);");
 		db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 

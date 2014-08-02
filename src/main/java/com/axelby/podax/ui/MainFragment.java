@@ -1,11 +1,11 @@
 package com.axelby.podax.ui;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
@@ -35,7 +36,7 @@ public class MainFragment extends Fragment {
         public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
             if (_fragment == null) {
                 _fragment = Fragment.instantiate(_context, _class.getName());
-                ft.add(android.R.id.content, _fragment, _tag);
+                ft.add(R.id.fragment, _fragment, _tag);
             } else {
                 ft.attach(_fragment);
             }
@@ -63,7 +64,10 @@ public class MainFragment extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.app, container, false);
+		FrameLayout frame = new FrameLayout(container.getContext());
+		frame.setId(R.id.fragment);
+        frame.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+		return frame;
 	}
 
 	@Override
@@ -71,7 +75,7 @@ public class MainFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         Activity activity = getActivity();
-        ActionBar actionBar = activity.getActionBar();
+        @SuppressLint("AppCompatMethod") ActionBar actionBar = activity.getActionBar();
         if (actionBar != null) {
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
