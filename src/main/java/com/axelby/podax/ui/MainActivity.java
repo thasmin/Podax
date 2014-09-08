@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
                             .setPositiveButton(R.string.view_release_notes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    //replaceFragment(AboutFragment.class);
+                                    startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, PodaxFragmentActivity.FRAGMENT_ABOUT));
                                 }
                             })
                             .setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
@@ -112,10 +112,7 @@ public class MainActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
                 _drawerLayout.closeDrawer(GravityCompat.START);
-
-                Intent activityIntent = new Intent(view.getContext(), PodaxFragmentActivity.class);
-                activityIntent.putExtra(Constants.EXTRA_FRAGMENT, id);
-                startActivity(activityIntent);
+                startActivity(PodaxFragmentActivity.createIntent(view.getContext(), id));
             }
         });
 
@@ -139,6 +136,10 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Helper.registerMediaButtons(this);
+
+        if (getContentResolver().query(SubscriptionProvider.URI, null, null, null, null).getCount() == 0) {
+            Helper.changeFragment(this, AddSubscriptionFragment.class, null);
+        }
     }
 
     @Override
