@@ -3,10 +3,10 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.1'
+        classpath 'com.android.tools.build:gradle:0.12.2'
     }
 }
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
@@ -28,7 +28,15 @@ android {
 		mavenCentral()
 	}
     compileSdkVersion 19
-    buildToolsVersion "19.1.0"
+    buildToolsVersion "20.0.0"
+
+    defaultConfig {
+        applicationId 'com.axelby.podax'
+        minSdkVersion 15
+        targetSdkVersion 19
+        versionCode 64
+        versionName '7.07'
+    }
 
     sourceSets.main {
         jni.srcDirs = []
@@ -49,8 +57,7 @@ android {
     buildTypes {
         release {
             runProguard true
-            proguardFile getDefaultProguardFile('proguard-android.txt')
-            proguardFile './proguard.cfg'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), './proguard.cfg'
             signingConfig signingConfigs.release
         }
     }
