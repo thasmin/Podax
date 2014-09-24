@@ -201,6 +201,7 @@ public class PlayerService extends Service {
 				_player.playPause(pauseReason);
 				break;
 			case Constants.PLAYER_COMMAND_PLAY:
+                ensurePlayerStatus();
 				_player.play();
 				break;
 			case Constants.PLAYER_COMMAND_PLAYSTOP:
