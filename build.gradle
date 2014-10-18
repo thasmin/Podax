@@ -36,8 +36,8 @@ android {
         applicationId 'com.axelby.podax'
         minSdkVersion 15
         targetSdkVersion 19
-        versionCode 62
-        versionName '7.05'
+        versionCode 65
+        versionName '7.08'
     }
 
     sourceSets.main {
