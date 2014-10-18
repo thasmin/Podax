@@ -1,8 +1,5 @@
 package com.axelby.podax.ui;
 
-import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
@@ -19,6 +16,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,7 +37,7 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity {
 
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
@@ -95,7 +94,7 @@ public class MainActivity extends Activity {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
 
-        @SuppressLint("AppCompatMethod") ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
@@ -103,7 +102,7 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.app);
 
-        getFragmentManager().beginTransaction().add(R.id.mainlayout, new MainFragment()).commit();
+        getSupportFragmentManager().beginTransaction().add(R.id.mainlayout, new MainFragment()).commit();
 
         ListView drawer = (ListView) findViewById(R.id.drawer);
         PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);

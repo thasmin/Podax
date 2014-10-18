@@ -1,18 +1,18 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.app.ListFragment;
-import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.ContextMenu;

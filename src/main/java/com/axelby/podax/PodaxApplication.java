@@ -17,7 +17,8 @@ public class PodaxApplication extends Application {
 
 	@Override
 	public void onCreate() {
-		ACRA.init(this);
+        if (!PodaxLog.isDebuggable(this))
+            ACRA.init(this);
 		super.onCreate();
 
 		PodaxLog.ensureRemoved(this);

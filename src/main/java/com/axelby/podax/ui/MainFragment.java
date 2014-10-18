@@ -1,12 +1,11 @@
 package com.axelby.podax.ui;
 
-import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -74,8 +73,8 @@ public class MainFragment extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        Activity activity = getActivity();
-        @SuppressLint("AppCompatMethod") ActionBar actionBar = activity.getActionBar();
+        ActionBarActivity activity = (ActionBarActivity) getActivity();
+        ActionBar actionBar = activity.getSupportActionBar();
         if (actionBar != null) {
             actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 

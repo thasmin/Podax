@@ -2,15 +2,14 @@ package com.axelby.podax.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
@@ -22,7 +21,7 @@ import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
-public class PodaxFragmentActivity extends Activity {
+public class PodaxFragmentActivity extends ActionBarActivity {
 
     public final static long FRAGMENT_GPODDER = 0;
     public final static long FRAGMENT_STATS = 1;
@@ -34,7 +33,7 @@ public class PodaxFragmentActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        @SuppressLint("AppCompatMethod") ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
 		    actionBar.setDisplayHomeAsUpEnabled(true);
 
@@ -76,7 +75,7 @@ public class PodaxFragmentActivity extends Activity {
 
         Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
         fragment.setArguments(arguments);
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.add(R.id.fragment, fragment);
         ft.commit();
