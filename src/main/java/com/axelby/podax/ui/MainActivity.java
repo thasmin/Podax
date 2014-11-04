@@ -13,11 +13,15 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.internal.view.menu.MenuBuilder;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -94,15 +98,13 @@ public class MainActivity extends ActionBarActivity {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
-        }
-
         setContentView(R.layout.app);
 
         getSupportFragmentManager().beginTransaction().add(R.id.mainlayout, new MainFragment()).commit();
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.inflateMenu(R.menu.main);
+        setSupportActionBar(toolbar);
 
         ListView drawer = (ListView) findViewById(R.id.drawer);
         PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
@@ -121,7 +123,7 @@ public class MainActivity extends ActionBarActivity {
         _drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         _drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 
-        _drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, R.drawable.ic_drawer,
+        _drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, toolbar,
                 R.string.open_drawer, R.string.close_drawer);
         _drawerLayout.setDrawerListener(_drawerToggle);
     }

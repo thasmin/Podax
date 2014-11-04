@@ -15,33 +15,12 @@
     <color name="indigo500">#FF3f51b5</color>
     <color name="lightblue500">#FF03a9f4</color>
 
-    <style name="Theme.Podax" parent="Theme.AppCompat.Light">
+    <style name="Theme.Podax" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/orange500</item>
         <item name="colorPrimaryDark">@color/orange700</item>
-        <item name="colorAccent">@color/indigo500</item>
+        <item name="colorAccent">@color/lightblue500</item>
         <item name="android:buttonStyle">@style/Widget.Podax.Button</item>
         <item name="android:buttonStyleSmall">@style/Widget.Podax.Button.Small</item>
-        <item name="android:actionBarStyle">@style/Widget.Podax.ActionBar</item>
-        <item name="android:actionBarTabBarStyle">@style/Widget.Podax.ActionBar.TabBar</item>
-    </style>
-
-    <style name="Theme.Podax.MainActivity" parent="Theme.Podax">
-        <item name="android:actionBarStyle">@style/Widget.Podax.ActionBar.Main</item>
-    </style>
-
-    <style name="Widget.Podax.ActionBar" parent="Widget.AppCompat.ActionBar">
-        <item name="android:background">@color/orange500</item>
-        <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
-        <item name="android:icon">@android:color/transparent</item>
-    </style>
-
-    <style name="Widget.Podax.ActionBar.Main" parent="Widget.Podax.ActionBar">
-        <item name="android:displayOptions">showHome|showTitle</item>
-    </style>
-
-    <style name="Widget.Podax.ActionBar.TabBar" parent="android:Widget.ActionBar.TabBar">
-        <item name="android:background">@color/orange500</item>
-        <item name="android:divider">@android:color/transparent</item>
     </style>
 
     <style name="Widget.Podax.Button.Small" parent="android:Widget.Button.Small">
@@ -72,7 +51,6 @@
     <style name="Widget.Podax.ImageButton.Flat" parent="android:Widget.ImageButton">
         <item name="android:background">@android:color/transparent</item>
         <item name="android:padding">10dp</item>
-        <item name="android:textAllCaps">true</item>
     </style>
 
     <style name="mainText" parent="@android:style/TextAppearance.Large">

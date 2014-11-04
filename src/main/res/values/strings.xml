@@ -308,5 +308,7 @@ limitations under the License.
     <string name="number_in_playlist">#%1$d in playlist</string>
     <string name="released_on">Released on</string>
     <string name="in_duration">long</string>
+    <string name="subscriptions_caps">SUBSCRIPTIONS</string>
+    <string name="playlist_caps">PLAYLIST</string>
 
 </resources>

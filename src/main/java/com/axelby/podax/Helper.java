@@ -1,9 +1,5 @@
 package com.axelby.podax;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -14,7 +10,11 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.LruCache;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.util.LruCache;
 import android.widget.FrameLayout;
 
 import com.android.volley.Cache;
@@ -27,7 +27,6 @@ import java.nio.ByteBuffer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 
 public class Helper {
 
@@ -163,14 +162,14 @@ public class Helper {
         return listenText.toString();
     }
 
-    public static Fragment createFragmentLayout(@Nonnull Activity activity, @Nonnull Class<?> fragmentClass, @Nullable Bundle arguments) {
+    public static Fragment createFragmentLayout(@Nonnull FragmentActivity activity, @Nonnull Class<?> fragmentClass, @Nullable Bundle arguments) {
         FrameLayout frame = new FrameLayout(activity);
         frame.setId(R.id.fragment);
         activity.setContentView(frame, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
         Fragment fragment = Fragment.instantiate(activity, fragmentClass.getCanonicalName());
         fragment.setArguments(arguments);
-        FragmentManager fm = activity.getFragmentManager();
+        FragmentManager fm = activity.getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.add(R.id.fragment, fragment);
         ft.commit();
@@ -178,13 +177,13 @@ public class Helper {
         return fragment;
     }
 
-    public static void changeFragment(@Nonnull Activity activity, @Nonnull Class<?> fragmentClass, @Nullable Bundle arguments) {
-		FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
+    public static void changeFragment(@Nonnull FragmentActivity activity, @Nonnull Class<?> fragmentClass, @Nullable Bundle arguments) {
+		FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
 		Fragment fragment = Fragment.instantiate(activity, fragmentClass.getName(), arguments);
         ft.replace(R.id.mainlayout, fragment).addToBackStack(null).commit();
     }
 
-    public static void changeFragment(@Nonnull Activity activity, @Nonnull Class<?> fragmentClass, String extraId, long id) {
+    public static void changeFragment(@Nonnull FragmentActivity activity, @Nonnull Class<?> fragmentClass, String extraId, long id) {
         Bundle args = new Bundle(1);
         args.putLong(extraId, id);
         Helper.changeFragment(activity, fragmentClass, args);
