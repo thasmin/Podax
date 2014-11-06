@@ -3,18 +3,23 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.2'
+        classpath 'com.android.tools.build:gradle:0.14.0'
     }
 }
 apply plugin: 'com.android.application'
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    compile 'com.android.support:support-v4:19.1.+'
-    compile 'com.android.support:appcompat-v7:19.1.+'
-	compile 'ch.acra:acra:4.5.0'
-	compile 'org.shredzone.flattr4j:flattr4j-core:2.7'
-	compile 'com.google.code.gson:gson:2.2.4'
+    compile 'com.android.support:support-v4:21.0.0'
+    compile 'com.android.support:appcompat-v7:21.0.0'
+    compile 'com.google.code.gson:gson:2.3'
+    compile('ch.acra:acra:4.5.0') {
+        exclude group: 'org.json'
+    }
+	compile('org.shredzone.flattr4j:flattr4j-core:2.11') {
+        exclude group: 'org.json'
+        exclude group: 'org.apache.httpcomponents'
+    }
 	compile 'com.google.code.findbugs:jsr305:3.0.0'
 }
 
@@ -27,21 +32,8 @@ android {
 	repositories {
 		mavenCentral()
 	}
-    compileSdkVersion 19
-    buildToolsVersion "20.0.0"
-
-    defaultConfig {
-        applicationId 'com.axelby.podax'
-        minSdkVersion 15
-        targetSdkVersion 19
-        versionCode 65
-        versionName '7.08'
-    }
-
-    sourceSets.main {
-        jni.srcDirs = []
-        jniLibs.srcDir 'src/main/libs'
-    }
+    compileSdkVersion 21
+    buildToolsVersion "21.1"
 
     signingConfigs {
         release {
@@ -54,9 +46,22 @@ android {
         }
     }
 
+    defaultConfig {
+        applicationId 'com.axelby.podax'
+        minSdkVersion 9
+        targetSdkVersion 21
+        versionCode 65
+        versionName '7.08'
+    }
+
+    sourceSets.main {
+        jni.srcDirs = []
+        jniLibs.srcDir 'src/main/libs'
+    }
+
     buildTypes {
         release {
-            runProguard true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), './proguard.cfg'
             signingConfig signingConfigs.release
         }
