@@ -86,8 +86,7 @@
     <orderEntry type="library" exported="" name="support-annotations-21.0.0" level="project" />
     <orderEntry type="library" exported="" name="android-iconify-1.0.6" level="project" />
     <orderEntry type="library" exported="" name="support-v4-21.0.0" level="project" />
-    <orderEntry type="library" exported="" name="flattr4j-core-2.7" level="project" />
-    <orderEntry type="library" exported="" name="httpcore-4.1.4" level="project" />
+    <orderEntry type="library" exported="" name="flattr4j-core-2.11" level="project" />
     <orderEntry type="library" exported="" name="volley" level="project" />
     <orderEntry type="library" exported="" name="acra-4.5.0" level="project" />
     <orderEntry type="library" exported="" name="gson-2.3" level="project" />

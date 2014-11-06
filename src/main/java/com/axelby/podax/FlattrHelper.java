@@ -125,6 +125,6 @@ public class FlattrHelper {
 		if (token == null)
 			throw new ForbiddenException("404", "No authentication token provided");
 		FlattrService flattrService = FlattrFactory.getInstance().createFlattrService(token);
-		flattrService.click(sub);
+		flattrService.flattr(sub);
 	}
 }
