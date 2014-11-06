@@ -22,8 +22,10 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -36,11 +38,18 @@ import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.ObjectAnimator;
 
 public class MainActivity extends ActionBarActivity {
 
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
+
+    private View _bottom;
+    private View _play;
+    private TextView _episodeTitle;
+    private ImageButton _expand;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +130,49 @@ public class MainActivity extends ActionBarActivity {
         _drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, toolbar,
                 R.string.open_drawer, R.string.close_drawer);
         _drawerLayout.setDrawerListener(_drawerToggle);
+
+        // bottom bar controls
+        _bottom = findViewById(R.id.bottom);
+        _play = findViewById(R.id.play);
+        _episodeTitle = (TextView) findViewById(R.id.episodeTitle);
+        _expand = (ImageButton) findViewById(R.id.expand);
+
+        _play.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) {
+                Context context = MainActivity.this;
+                PlayerStatus playerState = PlayerStatus.getCurrentState(context);
+				if (playerState.isPlaying())
+					PlayerService.stop(context);
+				else
+                    PlayerService.play(context);
+            }
+        });
+
+        PlayerStatus playerState = PlayerStatus.getCurrentState(this);
+        _episodeTitle.setText(playerState.getTitle());
+
+        _expand.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int[] loc = new int[2];
+                _bottom.getLocationInWindow(loc);
+                int top = _bottom.getTop() - getSupportActionBar().getHeight();
+                final int target = loc[1] > 200 ? -top : 0;
+                ObjectAnimator anim = ObjectAnimator.ofFloat(_bottom, "translationY", target);
+                anim.addListener(new Animator.AnimatorListener() {
+                    @Override public void onAnimationStart(Animator animation) {  }
+                    @Override public void onAnimationCancel(Animator animation) {  }
+                    @Override public void onAnimationRepeat(Animator animation) {  }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        _expand.setImageResource(target == 0 ? R.drawable.ic_action_collapse : R.drawable.ic_action_expand);
+                    }
+                });
+                anim.setInterpolator(new DecelerateInterpolator());
+                anim.start();
+            }
+        });
     }
 
     private boolean isPlayerServiceRunning() {
