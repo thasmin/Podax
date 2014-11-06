@@ -310,5 +310,6 @@ limitations under the License.
     <string name="in_duration">long</string>
     <string name="subscriptions_caps">SUBSCRIPTIONS</string>
     <string name="playlist_caps">PLAYLIST</string>
+    <string name="expand">Expand</string>
 
 </resources>

@@ -15,10 +15,14 @@
     <color name="indigo500">#FF3f51b5</color>
     <color name="lightblue500">#FF03a9f4</color>
 
-    <style name="Theme.Podax" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.Podax" parent="Theme.Podax.Base" />
+
+    <style name="Theme.Podax.Base" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/orange500</item>
         <item name="colorPrimaryDark">@color/orange700</item>
         <item name="colorAccent">@color/lightblue500</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
         <item name="android:buttonStyle">@style/Widget.Podax.Button</item>
         <item name="android:buttonStyleSmall">@style/Widget.Podax.Button.Small</item>
     </style>

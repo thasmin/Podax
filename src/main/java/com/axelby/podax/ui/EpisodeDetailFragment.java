@@ -45,8 +45,10 @@ import org.shredzone.flattr4j.model.AutoSubmission;
 public class EpisodeDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
+
 	long _podcastId;
 	boolean _uiInitialized = false;
+
 	ImageView _subscriptionImage;
 	TextView _titleView;
 	TextView _subscriptionTitleView;
