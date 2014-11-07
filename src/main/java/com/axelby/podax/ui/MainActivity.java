@@ -39,6 +39,7 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 
 public class MainActivity extends ActionBarActivity {
@@ -50,6 +51,7 @@ public class MainActivity extends ActionBarActivity {
     private View _play;
     private TextView _episodeTitle;
     private ImageButton _expand;
+    private View _below;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +138,7 @@ public class MainActivity extends ActionBarActivity {
         _play = findViewById(R.id.play);
         _episodeTitle = (TextView) findViewById(R.id.episodeTitle);
         _expand = (ImageButton) findViewById(R.id.expand);
+        _below = findViewById(R.id.below);
 
         _play.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {
@@ -159,18 +162,38 @@ public class MainActivity extends ActionBarActivity {
                 int top = _bottom.getTop() - getSupportActionBar().getHeight();
                 final int target = loc[1] > 200 ? -top : 0;
                 ObjectAnimator anim = ObjectAnimator.ofFloat(_bottom, "translationY", target);
-                anim.addListener(new Animator.AnimatorListener() {
-                    @Override public void onAnimationStart(Animator animation) {  }
-                    @Override public void onAnimationCancel(Animator animation) {  }
-                    @Override public void onAnimationRepeat(Animator animation) {  }
+                anim.setInterpolator(new DecelerateInterpolator());
+
+                ObjectAnimator anim2 = ObjectAnimator.ofFloat(_below, "translationY", target);
+                anim2.setInterpolator(new DecelerateInterpolator());
+
+                ObjectAnimator anim3 = ObjectAnimator.ofFloat(_below, "alpha", 0, 1);
+                anim3.setInterpolator(new DecelerateInterpolator());
+
+                AnimatorSet set = new AnimatorSet();
+                set.playTogether(anim, anim2, anim3);
+                set.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+                    }
+
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        _expand.setVisibility(View.INVISIBLE);
+                        _below.setVisibility(View.VISIBLE);
+                    }
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
+                        _expand.setVisibility(View.VISIBLE);
                         _expand.setImageResource(target == 0 ? R.drawable.ic_action_collapse : R.drawable.ic_action_expand);
                     }
                 });
-                anim.setInterpolator(new DecelerateInterpolator());
-                anim.start();
+                set.start();
             }
         });
     }
