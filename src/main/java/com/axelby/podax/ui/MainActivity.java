@@ -22,11 +22,13 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.axelby.podax.BootReceiver;
@@ -40,7 +42,7 @@ import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ObjectAnimator;
+import com.nineoldandroids.animation.ValueAnimator;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -48,10 +50,10 @@ public class MainActivity extends ActionBarActivity {
     private DrawerLayout _drawerLayout;
 
     private View _bottom;
-    private View _play;
+    private View _bottombar;
+    private ImageButton _play;
     private TextView _episodeTitle;
     private ImageButton _expand;
-    private View _below;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,64 +135,83 @@ public class MainActivity extends ActionBarActivity {
                 R.string.open_drawer, R.string.close_drawer);
         _drawerLayout.setDrawerListener(_drawerToggle);
 
+
         // bottom bar controls
         _bottom = findViewById(R.id.bottom);
-        _play = findViewById(R.id.play);
+        _bottombar = findViewById(R.id.bottombar);
+        _play = (ImageButton) findViewById(R.id.play);
         _episodeTitle = (TextView) findViewById(R.id.episodeTitle);
         _expand = (ImageButton) findViewById(R.id.expand);
-        _below = findViewById(R.id.below);
+        getSupportFragmentManager().beginTransaction().add(R.id.nowplaying_fragment, new EpisodeDetailFragment()).commit();
 
+        PlayerStatus playerState = PlayerStatus.getCurrentState(this);
+
+        // set proper bottom margin on bottom bar
+        ViewTreeObserver.OnPreDrawListener predrawListener = new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) _bottom.getLayoutParams();
+                params.bottomMargin = _bottombar.getHeight() - _bottom.getHeight();
+                _bottom.requestLayout();
+                _bottom.getViewTreeObserver().removeOnPreDrawListener(this);
+                return false;
+            }
+        };
+        _bottom.getViewTreeObserver().addOnPreDrawListener(predrawListener);
+
+        int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
+        _play.setImageResource(playResource);
         _play.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {
                 Context context = MainActivity.this;
                 PlayerStatus playerState = PlayerStatus.getCurrentState(context);
-				if (playerState.isPlaying())
-					PlayerService.stop(context);
-				else
+				if (playerState.isPlaying()) {
+                    _play.setImageResource(R.drawable.ic_action_play);
+                    PlayerService.stop(context);
+                } else {
+                    _play.setImageResource(R.drawable.ic_action_pause);
                     PlayerService.play(context);
+                }
             }
         });
 
-        PlayerStatus playerState = PlayerStatus.getCurrentState(this);
         _episodeTitle.setText(playerState.getTitle());
 
         _expand.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                View parent = (View) _bottom.getParent();
+                int[] parentLoc = new int[2];
+                parent.getLocationInWindow(parentLoc);
                 int[] loc = new int[2];
                 _bottom.getLocationInWindow(loc);
-                int top = _bottom.getTop() - getSupportActionBar().getHeight();
-                final int target = loc[1] > 200 ? -top : 0;
-                ObjectAnimator anim = ObjectAnimator.ofFloat(_bottom, "translationY", target);
-                anim.setInterpolator(new DecelerateInterpolator());
 
-                ObjectAnimator anim2 = ObjectAnimator.ofFloat(_below, "translationY", target);
-                anim2.setInterpolator(new DecelerateInterpolator());
-
-                ObjectAnimator anim3 = ObjectAnimator.ofFloat(_below, "alpha", 0, 1);
-                anim3.setInterpolator(new DecelerateInterpolator());
+                final RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) _bottom.getLayoutParams();
+                final int target = parentLoc[1] + loc[1] - _bottom.getHeight();
+                ValueAnimator animator = ValueAnimator.ofInt(params.bottomMargin, target);
+                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator valueAnimator)
+                    {
+                        params.bottomMargin = (Integer) valueAnimator.getAnimatedValue();
+                        _bottom.requestLayout();
+                    }
+                });
+                animator.setInterpolator(new DecelerateInterpolator());
 
                 AnimatorSet set = new AnimatorSet();
-                set.playTogether(anim, anim2, anim3);
+                set.playTogether(animator);
                 set.addListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-                    }
+                    @Override public void onAnimationCancel(Animator animation) { }
+                    @Override public void onAnimationRepeat(Animator animation) { }
 
-                    @Override
-                    public void onAnimationRepeat(Animator animation) {
-                    }
-
-                    @Override
-                    public void onAnimationStart(Animator animation) {
+                    @Override public void onAnimationStart(Animator animation) {
                         _expand.setVisibility(View.INVISIBLE);
-                        _below.setVisibility(View.VISIBLE);
                     }
 
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
+                    @Override public void onAnimationEnd(Animator animation) {
                         _expand.setVisibility(View.VISIBLE);
-                        _expand.setImageResource(target == 0 ? R.drawable.ic_action_collapse : R.drawable.ic_action_expand);
+                        _expand.setImageResource(target == 0 ? R.drawable.ic_action_expand : R.drawable.ic_action_collapse);
                     }
                 });
                 set.start();

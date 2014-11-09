@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
+        android:layout_above="@+id/bottom"
         android:orientation="vertical">
 
         <android.support.v7.widget.Toolbar
@@ -44,24 +45,19 @@
 
     </LinearLayout>
 
-
-
-
-
     <LinearLayout
         android:id="@+id/bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="-240dp"
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/bottombar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
             android:orientation="horizontal">
-
             <ImageButton
                 android:id="@+id/play"
                 android:layout_width="wrap_content"
@@ -70,7 +66,6 @@
                 android:contentDescription="@string/play"
                 android:padding="10dp"
                 android:src="@drawable/ic_action_play" />
-
             <TextView
                 android:id="@+id/episodeTitle"
                 android:layout_width="0dp"
@@ -79,7 +74,6 @@
                 android:layout_weight="1"
                 android:textSize="20sp"
                 tools:text="Episode Title" />
-
             <ImageButton
                 android:id="@+id/expand"
                 android:layout_width="wrap_content"
@@ -90,23 +84,10 @@
                 android:src="@drawable/ic_action_collapse" />
         </LinearLayout>
 
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/nowplaying_fragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/below"
-                android:layout_width="match_parent"
-                android:text="@string/app_long_name"
-                android:textSize="30sp"
-                android:layout_height="wrap_content" />
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:src="@drawable/icon"
-                android:contentDescription="@string/app_long_name" />
-        </LinearLayout>
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 
