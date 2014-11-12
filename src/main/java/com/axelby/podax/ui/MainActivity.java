@@ -13,13 +13,16 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -28,7 +31,6 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.axelby.podax.BootReceiver;
@@ -41,7 +43,6 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ValueAnimator;
 
 public class MainActivity extends ActionBarActivity {
@@ -150,7 +151,7 @@ public class MainActivity extends ActionBarActivity {
         ViewTreeObserver.OnPreDrawListener predrawListener = new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
-                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) _bottom.getLayoutParams();
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
                 params.bottomMargin = _bottombar.getHeight() - _bottom.getHeight();
                 _bottom.requestLayout();
                 _bottom.getViewTreeObserver().removeOnPreDrawListener(this);
@@ -158,6 +159,35 @@ public class MainActivity extends ActionBarActivity {
             }
         };
         _bottom.getViewTreeObserver().addOnPreDrawListener(predrawListener);
+
+        // handle drag events
+        final GestureDetectorCompat _gestureDetector = new GestureDetectorCompat(this, new GestureDetector.SimpleOnGestureListener() {
+            // necessary for any events to fire
+            @Override public boolean onDown(MotionEvent e) { return true; }
+
+            @Override public boolean onScroll(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
+                params.bottomMargin -= e2.getY() - e.getY();
+                _bottom.requestLayout();
+                return true;
+            }
+            @Override public boolean onFling(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
+                if (velocityY < 0) {
+                    animateBottomBarUp();
+                    return true;
+                } else if (velocityY > 0) {
+                    animateBottomBarDown();
+                    return true;
+                }
+                return false;
+            }
+        });
+        _bottombar.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return _gestureDetector.onTouchEvent(motionEvent);
+            }
+        });
 
         int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
         _play.setImageResource(playResource);
@@ -186,37 +216,49 @@ public class MainActivity extends ActionBarActivity {
                 int[] loc = new int[2];
                 _bottom.getLocationInWindow(loc);
 
-                final RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) _bottom.getLayoutParams();
-                final int target = parentLoc[1] + loc[1] - _bottom.getHeight();
-                ValueAnimator animator = ValueAnimator.ofInt(params.bottomMargin, target);
-                animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator valueAnimator)
-                    {
-                        params.bottomMargin = (Integer) valueAnimator.getAnimatedValue();
-                        _bottom.requestLayout();
-                    }
-                });
-                animator.setInterpolator(new DecelerateInterpolator());
-
-                AnimatorSet set = new AnimatorSet();
-                set.playTogether(animator);
-                set.addListener(new Animator.AnimatorListener() {
-                    @Override public void onAnimationCancel(Animator animation) { }
-                    @Override public void onAnimationRepeat(Animator animation) { }
-
-                    @Override public void onAnimationStart(Animator animation) {
-                        _expand.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override public void onAnimationEnd(Animator animation) {
-                        _expand.setVisibility(View.VISIBLE);
-                        _expand.setImageResource(target == 0 ? R.drawable.ic_action_expand : R.drawable.ic_action_collapse);
-                    }
-                });
-                set.start();
+                int target = parentLoc[1] + loc[1] - _bottom.getHeight();
+                animateBottomBarTo(target);
             }
         });
+    }
+
+    private void animateBottomBarUp() { animateBottomBarTo(326); }
+    private void animateBottomBarDown() { animateBottomBarTo(-700); }
+
+    private void animateBottomBarTo(final int target) {
+        final ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
+        if (params.bottomMargin == target)
+            return;
+        ValueAnimator animator = ValueAnimator.ofInt(params.bottomMargin, target);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                params.bottomMargin = (Integer) valueAnimator.getAnimatedValue();
+                _bottom.requestLayout();
+            }
+        });
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                _expand.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                _expand.setVisibility(View.VISIBLE);
+                _expand.setImageResource(target == -700 ? R.drawable.ic_action_collapse : R.drawable.ic_action_expand);
+            }
+        });
+        animator.start();
     }
 
     private boolean isPlayerServiceRunning() {
