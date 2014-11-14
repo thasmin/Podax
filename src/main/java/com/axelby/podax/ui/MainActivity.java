@@ -50,11 +50,39 @@ public class MainActivity extends ActionBarActivity {
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
 
+    private View _main;
     private View _bottom;
     private View _bottombar;
     private ImageButton _play;
     private TextView _episodeTitle;
     private ImageButton _expand;
+
+    private int _downMargin;
+    private int _topMargin;
+
+    // handle drag events on bottom bar
+    private GestureDetectorCompat _bottomGestureDetector;
+    private GestureDetector.SimpleOnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
+       // necessary for any events to fire
+        @Override public boolean onDown(MotionEvent e) { return true; }
+        @Override public boolean onScroll(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
+            params.bottomMargin -= e2.getY() - e.getY();
+            _bottom.requestLayout();
+            return true;
+        }
+        @Override public boolean onFling(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
+            float totalVelocityY = e2.getY() - e.getY();
+            if (totalVelocityY < 16) {
+                animateBottomBarUp();
+                return true;
+            } else if (totalVelocityY > 16) {
+                animateBottomBarDown();
+                return true;
+            }
+            return false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +166,7 @@ public class MainActivity extends ActionBarActivity {
 
 
         // bottom bar controls
+        _main = findViewById(R.id.main);
         _bottom = findViewById(R.id.bottom);
         _bottombar = findViewById(R.id.bottombar);
         _play = (ImageButton) findViewById(R.id.play);
@@ -151,8 +180,11 @@ public class MainActivity extends ActionBarActivity {
         ViewTreeObserver.OnPreDrawListener predrawListener = new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
+                _downMargin = _bottombar.getHeight() - _bottom.getHeight();
+                _topMargin = _main.getHeight() - _bottom.getHeight();
+
                 ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
-                params.bottomMargin = _bottombar.getHeight() - _bottom.getHeight();
+                params.bottomMargin = _downMargin;
                 _bottom.requestLayout();
                 _bottom.getViewTreeObserver().removeOnPreDrawListener(this);
                 return false;
@@ -160,70 +192,60 @@ public class MainActivity extends ActionBarActivity {
         };
         _bottom.getViewTreeObserver().addOnPreDrawListener(predrawListener);
 
-        // handle drag events
-        final GestureDetectorCompat _gestureDetector = new GestureDetectorCompat(this, new GestureDetector.SimpleOnGestureListener() {
-            // necessary for any events to fire
-            @Override public boolean onDown(MotionEvent e) { return true; }
-
-            @Override public boolean onScroll(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
-                params.bottomMargin -= e2.getY() - e.getY();
-                _bottom.requestLayout();
-                return true;
-            }
-            @Override public boolean onFling(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
-                if (velocityY < 0) {
-                    animateBottomBarUp();
-                    return true;
-                } else if (velocityY > 0) {
-                    animateBottomBarDown();
-                    return true;
-                }
-                return false;
-            }
-        });
-        _bottombar.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                return _gestureDetector.onTouchEvent(motionEvent);
-            }
-        });
-
-        int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
-        _play.setImageResource(playResource);
-        _play.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View view) {
-                Context context = MainActivity.this;
-                PlayerStatus playerState = PlayerStatus.getCurrentState(context);
-				if (playerState.isPlaying()) {
-                    _play.setImageResource(R.drawable.ic_action_play);
-                    PlayerService.stop(context);
-                } else {
-                    _play.setImageResource(R.drawable.ic_action_pause);
-                    PlayerService.play(context);
-                }
-            }
-        });
-
-        _episodeTitle.setText(playerState.getTitle());
-
-        _expand.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                View parent = (View) _bottom.getParent();
-                int[] parentLoc = new int[2];
-                parent.getLocationInWindow(parentLoc);
-                int[] loc = new int[2];
-                _bottom.getLocationInWindow(loc);
-
-                int target = parentLoc[1] + loc[1] - _bottom.getHeight();
-                animateBottomBarTo(target);
-            }
-        });
+        _bottomGestureDetector = new GestureDetectorCompat(this, gestureListener);
+        initializeBottom(playerState);
     }
 
-    private void animateBottomBarUp() { animateBottomBarTo(326); }
-    private void animateBottomBarDown() { animateBottomBarTo(-700); }
+    private void initializeBottom(PlayerStatus playerState) {
+        if (playerState.hasActiveEpisode()) {
+            _bottombar.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    return _bottomGestureDetector.onTouchEvent(motionEvent);
+                }
+            });
+
+            int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
+            _play.setVisibility(View.VISIBLE);
+            _play.setImageResource(playResource);
+            _play.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Context context = MainActivity.this;
+                    PlayerStatus playerState = PlayerStatus.getCurrentState(context);
+                    if (playerState.isPlaying()) {
+                        _play.setImageResource(R.drawable.ic_action_play);
+                        PlayerService.stop(context);
+                    } else {
+                        _play.setImageResource(R.drawable.ic_action_pause);
+                        PlayerService.play(context);
+                    }
+                }
+            });
+
+            _episodeTitle.setText(playerState.getTitle());
+
+            _expand.setVisibility(View.VISIBLE);
+            _expand.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    animateBottomBarToggle();
+                }
+            });
+        } else {
+            _play.setVisibility(View.INVISIBLE);
+            _episodeTitle.setText(R.string.playlist_empty);
+            _expand.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void animateBottomBarToggle() {
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
+        int target = params.bottomMargin == _downMargin ? _topMargin : _downMargin;
+        animateBottomBarTo(target);
+    }
+    private void animateBottomBarUp() { animateBottomBarTo(_topMargin); }
+    private void animateBottomBarDown() { animateBottomBarTo(_downMargin); }
 
     private void animateBottomBarTo(final int target) {
         final ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
