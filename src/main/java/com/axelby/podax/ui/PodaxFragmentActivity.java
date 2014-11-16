@@ -3,6 +3,7 @@ package com.axelby.podax.ui;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -28,6 +29,13 @@ public class PodaxFragmentActivity extends ActionBarActivity {
     public final static long FRAGMENT_PREFERENCES = 2;
     public final static long FRAGMENT_ABOUT = 3;
     public final static long FRAGMENT_LOG_VIEWER = 4;
+    public final static long FRAGMENT_WELCOME = 5;
+
+    public static Intent createIntent(Context context, long fragmentId) {
+        Intent intent = new Intent(context, PodaxFragmentActivity.class);
+        intent.putExtra(Constants.EXTRA_FRAGMENT, fragmentId);
+        return intent;
+    }
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +56,10 @@ public class PodaxFragmentActivity extends ActionBarActivity {
             createFragment(AboutFragment.class, null);
         else if (fragmentCode == FRAGMENT_LOG_VIEWER)
             createFragment(LogViewerFragment.class, null);
+        else if (fragmentCode == FRAGMENT_WELCOME)
+            createFragment(WelcomeFragment.class, null);
+        else
+            finish();
 	}
 
 	@Override
