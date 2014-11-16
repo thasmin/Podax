@@ -311,5 +311,7 @@ limitations under the License.
     <string name="subscriptions_caps">SUBSCRIPTIONS</string>
     <string name="playlist_caps">PLAYLIST</string>
     <string name="expand">Expand</string>
+    <string name="subscribe_on_web">Subscribe on the Web</string>
+    <string name="your_code_is">Your code is</string>
 
 </resources>

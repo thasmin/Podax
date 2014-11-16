@@ -1,37 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:padding="10dp"
     >
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/icon"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_margin="10dp"
-        >
+        android:textColor="#66000000"
+        tools:text="C"
+        android:gravity="center"
+        android:textSize="20sp"
+        />
 
-        <TextView
-            android:id="@+id/icon"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:textColor="#66000000"
-            tools:text="C"
-            android:gravity="center"
-            android:textSize="20sp"
-            />
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        tools:text="Podcast One Network"
+        android:textSize="20sp"
+        />
 
-        <TextView
-            android:id="@+id/name"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            tools:text="Podcast One Network"
-            android:textSize="20sp"
-            />
+</LinearLayout>
 
-    </LinearLayout>
-
-</android.support.v7.widget.CardView>

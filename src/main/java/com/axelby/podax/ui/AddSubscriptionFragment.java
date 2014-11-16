@@ -21,7 +21,7 @@ import com.axelby.podax.UpdateService;
 import com.joanzapata.android.iconify.Iconify;
 
 public class AddSubscriptionFragment extends Fragment {
-     public AddSubscriptionFragment() {
+    public AddSubscriptionFragment() {
     }
 
     @Override
@@ -63,6 +63,13 @@ public class AddSubscriptionFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Helper.changeFragment(getActivity(), ITunesToplistFragment.class, Constants.EXTRA_CATEGORY_ID, id);
+            }
+        });
+
+        getActivity().findViewById(R.id.web_subscribe).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Helper.changeFragment(getActivity(), WebSubscriptionFragment.class, null);
             }
         });
 
