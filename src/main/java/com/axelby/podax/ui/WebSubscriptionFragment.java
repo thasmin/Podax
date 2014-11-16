@@ -204,7 +204,7 @@ public class WebSubscriptionFragment extends Fragment {
                     Thread.sleep(2000, 0);
                 } catch (InterruptedException ignored) { }
 
-                URL url = new URL("https://www.podaxapp.com/web_subscribe/url_check");
+                URL url = new URL("https://www.podaxapp.com/web_subscribe/url_grab");
                 conn = (HttpsURLConnection) url.openConnection();
                 conn.setRequestProperty("User-Agent", "podax/" + getContext().getResources().getString(R.string.app_version));
                 conn.connect();
