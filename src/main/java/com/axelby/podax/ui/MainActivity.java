@@ -23,7 +23,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -48,14 +47,11 @@ public class MainActivity extends ActionBarActivity {
     private DrawerLayout _drawerLayout;
 
     private View _main;
-    private View _bottom;
     private View _bottombar;
+    private View _nowplaying_fragment;
     private ImageButton _play;
     private TextView _episodeTitle;
     private ImageButton _expand;
-
-    private int _downMargin;
-    private int _topMargin;
 
     // handle drag events on bottom bar
     private GestureDetectorCompat _bottomGestureDetector;
@@ -63,9 +59,14 @@ public class MainActivity extends ActionBarActivity {
        // necessary for any events to fire
         @Override public boolean onDown(MotionEvent e) { return true; }
         @Override public boolean onScroll(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
-            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
             params.bottomMargin -= e2.getY() - e.getY();
-            _bottom.requestLayout();
+            _bottombar.requestLayout();
+
+            params = (ViewGroup.MarginLayoutParams) _nowplaying_fragment.getLayoutParams();
+            params.topMargin += e2.getY() - e.getY();
+            _nowplaying_fragment.requestLayout();
+
             return true;
         }
         @Override public boolean onFling(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
@@ -157,30 +158,14 @@ public class MainActivity extends ActionBarActivity {
 
         // bottom bar controls
         _main = findViewById(R.id.main);
-        _bottom = findViewById(R.id.bottom);
         _bottombar = findViewById(R.id.bottombar);
+        _nowplaying_fragment = findViewById(R.id.nowplaying_fragment);
         _play = (ImageButton) findViewById(R.id.play);
         _episodeTitle = (TextView) findViewById(R.id.episodeTitle);
         _expand = (ImageButton) findViewById(R.id.expand);
         getSupportFragmentManager().beginTransaction().add(R.id.nowplaying_fragment, new EpisodeDetailFragment()).commit();
 
         PlayerStatus playerState = PlayerStatus.getCurrentState(this);
-
-        // set proper bottom margin on bottom bar
-        ViewTreeObserver.OnPreDrawListener predrawListener = new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                _downMargin = _bottombar.getHeight() - _bottom.getHeight();
-                _topMargin = _main.getHeight() - _bottom.getHeight();
-
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
-                params.bottomMargin = _downMargin;
-                _bottom.requestLayout();
-                _bottom.getViewTreeObserver().removeOnPreDrawListener(this);
-                return false;
-            }
-        };
-        _bottom.getViewTreeObserver().addOnPreDrawListener(predrawListener);
 
         _bottomGestureDetector = new GestureDetectorCompat(this, gestureListener);
         initializeBottom(playerState);
@@ -230,26 +215,35 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void animateBottomBarToggle() {
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
-        int target = params.bottomMargin == _downMargin ? _topMargin : _downMargin;
-        animateBottomBarTo(target);
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
+        if (params.bottomMargin == 0)
+            animateBottomBarUp();
+        else
+            animateBottomBarDown();
     }
-    private void animateBottomBarUp() { animateBottomBarTo(_topMargin); }
-    private void animateBottomBarDown() { animateBottomBarTo(_downMargin); }
+    private void animateBottomBarUp() { animateBottomBarTo(_main.getHeight() - _bottombar.getHeight()); }
+    private void animateBottomBarDown() { animateBottomBarTo(0); }
 
     private void animateBottomBarTo(final int target) {
-        final ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottom.getLayoutParams();
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
         if (params.bottomMargin == target)
             return;
+
         ValueAnimator animator = ValueAnimator.ofInt(params.bottomMargin, target);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                params.bottomMargin = (Integer) valueAnimator.getAnimatedValue();
-                _bottom.requestLayout();
+                ViewGroup.MarginLayoutParams barParams = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
+                barParams.bottomMargin = (Integer) valueAnimator.getAnimatedValue();
+                _bottombar.requestLayout();
+
+                ViewGroup.MarginLayoutParams fragParams = (ViewGroup.MarginLayoutParams) _nowplaying_fragment.getLayoutParams();
+                fragParams.topMargin = (Integer) valueAnimator.getAnimatedValue() * -1;
+                _nowplaying_fragment.requestLayout();
             }
         });
         animator.setInterpolator(new DecelerateInterpolator());
+
         animator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationCancel(Animator animation) {
@@ -267,7 +261,7 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onAnimationEnd(Animator animation) {
                 _expand.setVisibility(View.VISIBLE);
-                _expand.setImageResource(target == -700 ? R.drawable.ic_action_collapse : R.drawable.ic_action_expand);
+                _expand.setImageResource(target == 0 ? R.drawable.ic_action_collapse : R.drawable.ic_action_expand);
             }
         });
         animator.start();
