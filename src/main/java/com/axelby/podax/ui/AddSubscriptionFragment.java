@@ -85,10 +85,7 @@ public class AddSubscriptionFragment extends Fragment {
                 if (!url.contains("://"))
                     url = "http://" + url;
 
-                ContentValues values = new ContentValues();
-                values.put(SubscriptionProvider.COLUMN_URL, url);
-                getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
-                UpdateService.updateSubscriptions(getActivity());
+                SubscriptionProvider.addNewSubscription(getActivity(), url);
                 rssText.setText("");
             }
         });

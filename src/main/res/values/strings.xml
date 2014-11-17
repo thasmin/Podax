@@ -313,5 +313,6 @@ limitations under the License.
     <string name="expand">Expand</string>
     <string name="subscribe_on_web">Subscribe on the Web</string>
     <string name="your_code_is">Your code is</string>
+    <string name="web_subscribe_instructions">Podax Web Subscribe lets you subscribe to a podcast without leaving your computer.\n\nGo to the link below on your computer and enter the podcast or website URL and the code below.</string>
 
 </resources>

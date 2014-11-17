@@ -4,6 +4,7 @@ import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -73,7 +74,14 @@ public class SubscriptionProvider extends ContentProvider {
 
 	DBAdapter _dbAdapter;
 
-	@Override
+    public static void addNewSubscription(Context context, String url) {
+        ContentValues values = new ContentValues(1);
+        values.put(COLUMN_URL, url);
+        Uri uri = context.getContentResolver().insert(URI, values);
+        UpdateService.updateSubscription(context, uri);
+    }
+
+    @Override
 	public boolean onCreate() {
 		_dbAdapter = new DBAdapter(getContext());
 		return true;

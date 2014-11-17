@@ -1,214 +1,218 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.axelby.podax">
+    package="com.axelby.podax" >
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <supports-screens
         android:anyDensity="true"
         android:largeScreens="true"
         android:normalScreens="true"
-        android:xlargeScreens="true"/>
+        android:xlargeScreens="true" />
 
     <application
-        android:name="PodaxApplication"
+        android:name="com.axelby.podax.PodaxApplication"
         android:allowBackup="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
-        android:theme="@style/Theme.Podax">
+        android:theme="@style/Theme.Podax" >
         <activity
-            android:name=".ui.MainActivity"
-            android:launchMode="singleTask"
-            android:label="@string/app_name">
+            android:name="com.axelby.podax.ui.MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTask" >
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="http"/>
-                <data android:host="*"/>
-                <data android:pathPattern=".*\\.xml"/>
-                <data android:pathPattern=".*\\.rss"/>
+                <data android:scheme="http" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.xml" />
+                <data android:pathPattern=".*\\.rss" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="http"/>
-                <data android:host="feeds.feedburner.com"/>
-                <data android:host="feedproxy.google.com"/>
-                <data android:host="feeds2.feedburner.com"/>
-                <data android:host="feedsproxy.google.com"/>
+                <data android:scheme="http" />
+                <data android:host="feeds.feedburner.com" />
+                <data android:host="feedproxy.google.com" />
+                <data android:host="feeds2.feedburner.com" />
+                <data android:host="feedsproxy.google.com" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="http"/>
-                <data android:mimeType="text/xml"/>
-                <data android:mimeType="application/rss+xml"/>
-                <data android:mimeType="application/atom+xml"/>
-                <data android:mimeType="application/xml"/>
+                <data android:scheme="http" />
+                <data android:mimeType="text/xml" />
+                <data android:mimeType="application/rss+xml" />
+                <data android:mimeType="application/atom+xml" />
+                <data android:mimeType="application/xml" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:host="com.axelby.podax"
-                    android:scheme="flattr4j"/>
+                    android:scheme="flattr4j" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".ui.PodaxFragmentActivity" />
-
+        <activity android:name="com.axelby.podax.ui.PodaxFragmentActivity" />
         <activity
             android:name="org.acra.CrashReportDialog"
-            android:theme="@android:style/Theme.Dialog"
-            android:launchMode="singleInstance"
             android:excludeFromRecents="true"
-            android:finishOnTaskLaunch="true"/>
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.Dialog" />
 
-        <service android:name=".UpdateService"/>
-        <service android:name=".PlayerService"/>
+        <service android:name="com.axelby.podax.UpdateService" />
+        <service android:name="com.axelby.podax.PlayerService" />
+        <service android:name="com.axelby.podax.RSSUrlFinderService" />
 
         <receiver
-            android:name=".ui.SmallWidgetProvider"
+            android:name="com.axelby.podax.ui.SmallWidgetProvider"
             android:exported="true"
-            android:label="Podax 4x1">
+            android:label="Podax 4x1" >
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/smallwidget"/>
+                android:resource="@xml/smallwidget" />
         </receiver>
         <receiver
-            android:name=".ui.LargeWidgetProvider"
+            android:name="com.axelby.podax.ui.LargeWidgetProvider"
             android:exported="true"
-            android:label="Podax 4x2">
+            android:label="Podax 4x2" >
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/largewidget"/>
+                android:resource="@xml/largewidget" />
         </receiver>
         <receiver
-            android:name=".BootReceiver"
-            android:exported="false">
+            android:name="com.axelby.podax.BootReceiver"
+            android:exported="false" >
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".MediaButtonIntentReceiver"
-            android:exported="false">
+            android:name="com.axelby.podax.MediaButtonIntentReceiver"
+            android:exported="false" >
             <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".ActiveEpisodeReceiver"
-            android:exported="false">
+            android:name="com.axelby.podax.ActiveEpisodeReceiver"
+            android:exported="false" >
             <intent-filter>
-                <action android:name="com.axelby.podax.ACTIVE_EPISODE"/>
+                <action android:name="com.axelby.podax.ACTIVE_EPISODE" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".DownloadCompletedReceiver"
-            android:exported="true">
+            android:name="com.axelby.podax.DownloadCompletedReceiver"
+            android:exported="true" >
             <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
-                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
             </intent-filter>
         </receiver>
 
         <provider
-            android:name=".SearchSuggestionProvider"
+            android:name="com.axelby.podax.SearchSuggestionProvider"
             android:authorities="com.axelby.podax.searchsuggestionprovider"
             android:exported="false"
-            android:label="Podax Search"/>
+            android:label="Podax Search" />
         <provider
-            android:name=".EpisodeProvider"
+            android:name="com.axelby.podax.EpisodeProvider"
             android:authorities="com.axelby.podax.podcastprovider"
             android:exported="false"
-            android:label="Episodes"/>
+            android:label="Episodes" />
         <provider
-            android:name=".SubscriptionProvider"
+            android:name="com.axelby.podax.SubscriptionProvider"
             android:authorities="com.axelby.podax.subscriptionprovider"
             android:exported="false"
-            android:label="Podcast Subscriptions"/>
+            android:label="Podcast Subscriptions" />
         <provider
-            android:name=".GPodderProvider"
+            android:name="com.axelby.podax.GPodderProvider"
             android:authorities="com.axelby.podax.gpodder_sync"
             android:exported="false"
-            android:label="@string/podcasts"/>
+            android:label="@string/podcasts" />
 
         <!-- GPodder section -->
         <activity
             android:name="com.axelby.gpodder.AuthenticatorActivity"
             android:exported="true"
-            android:label="@string/gpodder_authenticator_activity_title"/>
+            android:label="@string/gpodder_authenticator_activity_title" />
         <activity
             android:name="com.axelby.gpodder.AccountSettings"
             android:exported="true"
-            android:label="@string/gpodder_account_settings">
+            android:label="@string/gpodder_account_settings" >
             <intent-filter>
                 <action android:name="com.axelby.gpodder.account_settings" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <service
             android:name="com.axelby.gpodder.AuthenticationService"
-            android:exported="false">
+            android:exported="false" >
             <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator"/>
+                <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
 
             <meta-data
                 android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/gpodder_authenticator"/>
+                android:resource="@xml/gpodder_authenticator" />
         </service>
         <service
             android:name="com.axelby.gpodder.SyncService"
-            android:exported="false">
+            android:exported="false" >
             <intent-filter>
-                <action android:name="android.content.SyncAdapter"/>
+                <action android:name="android.content.SyncAdapter" />
             </intent-filter>
 
             <meta-data
                 android:name="android.content.SyncAdapter"
-                android:resource="@xml/gpodder_syncadapter"/>
+                android:resource="@xml/gpodder_syncadapter" />
         </service>
         <!-- end GPodder section -->
 
+        <service
+            android:name="com.axelby.podax.ui.RSSUrlFinderService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>

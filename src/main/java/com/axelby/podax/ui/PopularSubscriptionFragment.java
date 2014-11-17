@@ -25,6 +25,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.shredzone.flattr4j.model.Subscription;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -63,11 +64,7 @@ public class PopularSubscriptionFragment extends Fragment {
 		Button add_subscription = (Button) getActivity().findViewById(R.id.add_subscription);
 		add_subscription.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				ContentValues values = new ContentValues();
-				values.put(SubscriptionProvider.COLUMN_URL, getArguments().getString(Constants.EXTRA_URL));
-				getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
-				UpdateService.updateSubscriptions(getActivity());
-
+                SubscriptionProvider.addNewSubscription(getActivity(), getArguments().getString(Constants.EXTRA_URL));
 				getFragmentManager().popBackStack();
 			}
 		});

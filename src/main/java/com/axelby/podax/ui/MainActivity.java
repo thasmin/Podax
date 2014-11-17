@@ -3,14 +3,12 @@ package com.axelby.podax.ui;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GestureDetectorCompat;
@@ -41,7 +39,6 @@ import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.UpdateService;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ValueAnimator;
 
@@ -89,13 +86,9 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         // check if this was opened by android to save an RSS feed
-        final Intent intent = getIntent();
-        if (intent.getDataString() != null && intent.getData().getScheme().equals("http")) {
-            ContentValues values = new ContentValues();
-            values.put(SubscriptionProvider.COLUMN_URL, intent.getDataString());
-            Uri savedSubscription = getContentResolver().insert(SubscriptionProvider.URI, values);
-            UpdateService.updateSubscription(this, Integer.valueOf(savedSubscription.getLastPathSegment()));
-        }
+        Intent intent = getIntent();
+        if (intent.getDataString() != null && intent.getData().getScheme().equals("http"))
+            SubscriptionProvider.addNewSubscription(this, intent.getDataString());
 
         // clear RSS error notification
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

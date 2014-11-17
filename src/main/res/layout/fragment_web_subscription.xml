@@ -14,8 +14,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_margin="20dp"
-            android:textSize="18sp"
-            android:text="Podax Web Subscribe lets you subscribe to a podcast without leaving your computer.\n\nGo to the link below on your computer and enter the podcast URL and the code below." />
+            android:textSize="16sp"
+            android:text="@string/web_subscribe_instructions" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -44,7 +44,8 @@
 
         <ProgressBar
             android:id="@+id/progress"
-            style="?android:attr/progressBarStyleLarge"
+            style="?android:attr/progressBarStyle"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"

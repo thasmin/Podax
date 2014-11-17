@@ -206,10 +206,7 @@ public class ITunesToplistFragment
                                     int rssUrlEnd = resp.indexOf("\"", rssUrlStart);
                                     String rssUrl = resp.substring(rssUrlStart, rssUrlEnd);
 
-                                    ContentValues values = new ContentValues(1);
-                                    values.put(SubscriptionProvider.COLUMN_URL, rssUrl);
-                                    Uri uri = getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
-                                    UpdateService.updateSubscription(getActivity(), uri);
+                                    SubscriptionProvider.addNewSubscription(getContext(), rssUrl);
                                 } catch (IOException e) {
                                     Log.e("Podax", "error retrieving rss url from iTunes", e);
                                 } finally {

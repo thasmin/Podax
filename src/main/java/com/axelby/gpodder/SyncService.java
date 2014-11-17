@@ -133,12 +133,8 @@ public class SyncService extends Service {
 					showErrorNotification(client, R.string.gpodder_sync_retrieve_all_episodes);
 					return false;
 				}
-				for (Podcast sub : subs) {
-					ContentValues values = new ContentValues();
-					values.put(SubscriptionProvider.COLUMN_URL, sub.getUrl());
-					Uri newUri = _context.getContentResolver().insert(SubscriptionProvider.URI, values);
-					UpdateService.updateSubscription(_context, newUri);
-				}
+				for (Podcast sub : subs)
+                    SubscriptionProvider.addNewSubscription(_context, sub.getUrl());
 			}
 
 			// send subscription changes

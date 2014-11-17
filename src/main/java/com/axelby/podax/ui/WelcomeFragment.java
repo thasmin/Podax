@@ -45,10 +45,7 @@ public class WelcomeFragment extends Fragment {
 					return;
 				if (!url.contains("://"))
 					url = "http://" + url;
-				ContentValues values = new ContentValues();
-				values.put(SubscriptionProvider.COLUMN_URL, url);
-				getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
-				UpdateService.updateSubscriptions(getActivity());
+                SubscriptionProvider.addNewSubscription(getActivity(), url);
 				rssText.setText("");
 			}
 		});
@@ -63,10 +60,7 @@ public class WelcomeFragment extends Fragment {
 
 		@Override
 		public void onClick(View view) {
-			ContentValues values = new ContentValues();
-			values.put(SubscriptionProvider.COLUMN_URL, _rss);
-			getActivity().getContentResolver().insert(SubscriptionProvider.URI, values);
-			UpdateService.updateSubscriptions(getActivity());
+            SubscriptionProvider.addNewSubscription(getActivity(), _rss);
 		}
 	}
 

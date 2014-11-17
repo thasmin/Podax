@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.14.0'
+        classpath 'com.android.tools.build:gradle:0.14.2'
     }
 }
 apply plugin: 'com.android.application'
@@ -16,6 +16,7 @@ dependencies {
     compile 'com.joanzapata.android:android-iconify:1.0.6'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.google.code.gson:gson:2.3'
+    compile 'com.squareup.okhttp:okhttp:2.1.0'
     compile('ch.acra:acra:4.5.0') {
         exclude group: 'org.json'
     }
@@ -36,7 +37,7 @@ android {
 		mavenCentral()
 	}
     compileSdkVersion 21
-    buildToolsVersion "21.1"
+    buildToolsVersion "21.1.1"
 
     signingConfigs {
         release {

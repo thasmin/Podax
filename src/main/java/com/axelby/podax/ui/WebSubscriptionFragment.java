@@ -1,12 +1,16 @@
 package com.axelby.podax.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.axelby.podax.R;
+import com.axelby.podax.RSSUrlFinderService;
+import com.axelby.podax.SubscriptionProvider;
 import com.google.gson.stream.JsonReader;
 
 import java.io.IOException;
@@ -47,9 +53,8 @@ public class WebSubscriptionFragment extends Fragment {
         public Loader<MaybeString> onCreateLoader(int id, Bundle bundle) {
             if (id == LOADER_GETCODE)
                 return new WebCodeLoader(getActivity());
-            else if (id == LOADER_CHECKFORURL) {
+            else if (id == LOADER_CHECKFORURL)
                 return new UrlCheckerLoader(getActivity());
-            }
             return null;
         }
 
@@ -61,6 +66,7 @@ public class WebSubscriptionFragment extends Fragment {
                     return;
                 }
                 _webcode.setText(result.result);
+                _progressBar.setVisibility(View.VISIBLE);
                 getLoaderManager().initLoader(LOADER_CHECKFORURL, null, this);
             } else if (loader.getId() == LOADER_CHECKFORURL) {
                 if (result.error != null) {
@@ -69,7 +75,7 @@ public class WebSubscriptionFragment extends Fragment {
                 }
 
                 if (!result.result.equals(""))
-                    Toast.makeText(getActivity(), "got a url: " + result.result, Toast.LENGTH_SHORT).show();
+                    RSSUrlFinderService.findRSSUrl(getActivity(), result.result);
                 getLoaderManager().restartLoader(LOADER_CHECKFORURL, null, this);
             }
         }
@@ -77,8 +83,23 @@ public class WebSubscriptionFragment extends Fragment {
         @Override public void onLoaderReset(Loader<MaybeString> loader) { }
     };
 
-    public WebSubscriptionFragment() {
-    }
+    private BroadcastReceiver _rssUrlFinderReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(RSSUrlFinderService.ACTION_ERROR)) {
+                String reason = intent.getStringExtra(RSSUrlFinderService.EXTRA_REASON);
+                if (reason == null || reason.equals(""))
+                    return;
+                Toast.makeText(getActivity(), "Unable to find feed: " + reason, Toast.LENGTH_SHORT).show();
+            } else if (action.equals(RSSUrlFinderService.ACTION_SUCCESS)) {
+                String url = intent.getStringExtra(RSSUrlFinderService.EXTRA_URL);
+                SubscriptionProvider.addNewSubscription(getActivity(), url);
+            }
+        }
+    };
+
+    public WebSubscriptionFragment() { }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,6 +109,20 @@ public class WebSubscriptionFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_web_subscription, container, false);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(_rssUrlFinderReceiver);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        IntentFilter intentFilter = new IntentFilter(RSSUrlFinderService.ACTION_ERROR);
+        intentFilter.addAction(RSSUrlFinderService.ACTION_SUCCESS);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(_rssUrlFinderReceiver, intentFilter);
     }
 
     @Override
@@ -201,7 +236,7 @@ public class WebSubscriptionFragment extends Fragment {
             HttpsURLConnection conn = null;
             try {
                 try {
-                    Thread.sleep(2000, 0);
+                    Thread.sleep(4000, 0);
                 } catch (InterruptedException ignored) { }
 
                 URL url = new URL("https://www.podaxapp.com/web_subscribe/url_grab");
