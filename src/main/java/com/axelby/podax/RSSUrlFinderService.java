@@ -60,6 +60,7 @@ public class RSSUrlFinderService extends IntentService {
         String tagName = findFirstTagName(body);
         if (tagName.equals("rss") || tagName.equals("feed")) {
             sendSuccessBroadcast(urlStr);
+            return;
         }
 
         if (!tagName.equals("html")) {

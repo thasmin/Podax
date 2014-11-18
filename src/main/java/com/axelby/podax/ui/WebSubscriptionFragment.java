@@ -245,8 +245,13 @@ public class WebSubscriptionFragment extends Fragment {
                 conn.connect();
 
                 int code = conn.getResponseCode();
-                if (code != 200)
-                    return MaybeString.error("Server Error: " + conn.getResponseMessage());
+                if (code != 200) {
+                    byte[] b = new byte[1024];
+                    InputStream stream = conn.getErrorStream();
+                    stream.read(b);
+                    stream.close();
+                    return MaybeString.error("Server Error: " + new String(b));
+                }
 
                 JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
                 reader.beginArray();
