@@ -150,8 +150,7 @@ public class PreferenceListFragment extends ListFragment {
 		try {
 			Constructor<PreferenceManager> c = PreferenceManager.class.getDeclaredConstructor(Activity.class, int.class);
 			c.setAccessible(true);
-			PreferenceManager preferenceManager = c.newInstance(this.getActivity(), FIRST_REQUEST_CODE);
-			return preferenceManager;
+            return c.newInstance(this.getActivity(), FIRST_REQUEST_CODE);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

@@ -102,11 +102,6 @@ public class WebSubscriptionFragment extends Fragment {
     public WebSubscriptionFragment() { }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_web_subscription, container, false);
     }

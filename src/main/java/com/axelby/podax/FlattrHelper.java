@@ -55,9 +55,7 @@ public class FlattrHelper {
 		try {
 			Intent intent = auth.createAuthenticateIntent();
 			context.startActivity(intent);
-		} catch (FlattrException e) {
-			return;
-		}
+		} catch (FlattrException ignored) { }
 	}
 
 	public static void handleResumeActivityObtainToken(Activity context) {
@@ -74,12 +72,9 @@ public class FlattrHelper {
 					SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
 					Editor editor = settings.edit();
 					editor.putString(PREF_OAUTH_TOKEN, token.getToken());
-					editor.commit();
+					editor.apply();
 				}
-			} catch (FlattrException e) {
-				return;
-			}
-
+			} catch (FlattrException ignored) { }
 		}
 	}
 

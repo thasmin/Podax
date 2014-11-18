@@ -1,7 +1,6 @@
 package com.axelby.gpodder;
 
 import android.content.Context;
-import android.net.Uri;
 import android.util.Log;
 
 import com.axelby.gpodder.dto.Podcast;

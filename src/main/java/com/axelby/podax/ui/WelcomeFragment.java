@@ -1,7 +1,6 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,14 +11,8 @@ import android.widget.EditText;
 
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.UpdateService;
 
 public class WelcomeFragment extends Fragment {
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

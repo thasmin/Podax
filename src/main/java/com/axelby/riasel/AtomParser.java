@@ -42,9 +42,13 @@ public class AtomParser {
 		// grab podcasts from item tags
 		for (int eventType = parser.getEventType(); eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
 			if (eventType == XmlPullParser.START_TAG) {
-				if (isAtomElement(parser, "entry")) {
+				if (isAtomElement(parser, "entry"))
 					item = new FeedItem();
-				} else if (isAtomElement(parser, "id")) {
+
+                if (item == null)
+                    continue;
+
+				if (isAtomElement(parser, "id")) {
 					item.setUniqueId(parser.nextText());
 				} else if (isAtomElement(parser, "title")) {
 					item.setTitle(parser.nextText());

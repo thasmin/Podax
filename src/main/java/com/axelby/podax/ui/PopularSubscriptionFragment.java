@@ -1,7 +1,6 @@
 package com.axelby.podax.ui;
 
 import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.sax.Element;
@@ -19,13 +18,11 @@ import android.widget.TextView;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.UpdateService;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.shredzone.flattr4j.model.Subscription;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -41,11 +38,6 @@ public class PopularSubscriptionFragment extends Fragment {
 	}
 
 	ProgressDialog _dialog;
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

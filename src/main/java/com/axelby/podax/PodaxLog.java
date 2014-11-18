@@ -53,10 +53,8 @@ public class PodaxLog {
 			return false;
 
 		int flags = packageInfo.applicationInfo.flags;
-		if ((flags & ApplicationInfo.FLAG_DEBUGGABLE) == 0)
-			return false;
+        return (flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
 
-		return true;
-	}
+    }
 
 }

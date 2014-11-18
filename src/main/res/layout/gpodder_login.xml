@@ -3,7 +3,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
 <LinearLayout android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
+              android:layout_height="wrap_content"
               android:orientation="vertical"
               android:paddingLeft="20dip"
               android:paddingRight="20dip"
@@ -17,6 +17,7 @@
             android:text="@string/gpodder_authenticator_activity_title"
             style="@android:style/TextAppearance.Large"
             android:drawableLeft="@drawable/mygpo"
+            android:drawableStart="@drawable/mygpo"
             android:drawablePadding="10dp"
             android:textIsSelectable="true"/>
 
@@ -28,6 +29,7 @@
 
     <EditText
             android:id="@+id/username"
+            android:inputType="text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
@@ -57,6 +59,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="podax"
+            android:inputType="textShortMessage"
             android:singleLine="true"
             tools:ignore="HardcodedText"/>
 

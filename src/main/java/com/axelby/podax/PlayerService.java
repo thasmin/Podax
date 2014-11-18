@@ -15,6 +15,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.ui.MainActivity;
@@ -246,14 +247,13 @@ public class PlayerService extends Service {
 		Intent showIntent = new Intent(this, MainActivity.class);
 		PendingIntent showPendingIntent = PendingIntent.getActivity(this, 0, showIntent, 0);
 
-		Notification.Builder builder = new Notification.Builder(this)
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
 				.setSmallIcon(R.drawable.icon)
 				.setWhen(0)
 				.setContentTitle(playerStatus.getTitle())
 				.setContentText(playerStatus.getSubscriptionTitle())
 				.setContentIntent(showPendingIntent)
-				.setOngoing(true)
-				.setPriority(Notification.PRIORITY_DEFAULT);
+				.setOngoing(true);
 
 		// set up pause intent
 		Intent pauseIntent = new Intent(this, PlayerService.class);
@@ -278,7 +278,7 @@ public class PlayerService extends Service {
 			builder.addAction(R.drawable.ic_media_play_normal, getString(R.string.play), pausePendingIntent);
 		builder.addAction(R.drawable.ic_media_ff_normal, getString(R.string.fast_forward), forwardPendingIntent);
 
-		Notification notification = builder.getNotification();
+		Notification notification = builder.build();
 		startForeground(Constants.NOTIFICATION_PLAYING, notification);
 	}
 

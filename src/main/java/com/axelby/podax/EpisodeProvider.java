@@ -166,7 +166,7 @@ public class EpisodeProvider extends ContentProvider {
 					if (c.moveToFirst())
 						sqlBuilder.appendWhere("podcasts._id = " + activeId);
 					else {
-						prefs.edit().remove(PREF_ACTIVE).commit();
+						prefs.edit().remove(PREF_ACTIVE).apply();
 						sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
 					}
 					c.close();
@@ -303,7 +303,7 @@ public class EpisodeProvider extends ContentProvider {
 						editor.putLong(PREF_ACTIVE, values.getAsLong(COLUMN_ID));
 					else
 						editor.remove(PREF_ACTIVE);
-					editor.commit();
+					editor.apply();
 
 					// if we're clearing the active podcast or updating just the ID, don't go to the DB
 					if (activeEpisodeId == null || values.size() == 1) {
@@ -345,7 +345,7 @@ public class EpisodeProvider extends ContentProvider {
 			// if this was the active episode and it's no longer in the playlist or it was moved to the back
 			// don't restart on this episode
 			if (activeEpisodeId == episodeId && (newPosition == null || newPosition == Integer.MAX_VALUE)) {
-				prefs.edit().remove(PREF_ACTIVE).commit();
+				prefs.edit().remove(PREF_ACTIVE).apply();
 				activeEpisodeId = episodeId; // make sure the active episode notification is sent
 			}
 
@@ -387,21 +387,21 @@ public class EpisodeProvider extends ContentProvider {
 		if (oldPosition == null && newPosition == null)
 			return;
 
-		if (oldPosition == null && newPosition != null) {
+		if (oldPosition == null) { // newPosition != null
 			// new at 3: 1 2 3 4 5 do: 3++ 4++ 5++
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 "
 					+ "WHERE queuePosition >= ?", new Object[]{newPosition});
 
 			// download the newly added episode
 			UpdateService.downloadEpisodesSilently(getContext());
-		} else if (oldPosition != null && newPosition == null) {
+		} else if (newPosition == null) { // oldPosition != null
 			// remove 3: 1 2 3 4 5 do: 4-- 5--
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 "
 					+ "WHERE queuePosition > ?", new Object[]{oldPosition});
 
 			// delete the episode's file
 			deleteDownload(getContext(), episodeId);
-		} else if (oldPosition != newPosition) {
+		} else if (!oldPosition.equals(newPosition)) {
 			// moving up: 1 2 3 4 5 2 -> 4: 3-- 4-- 2->4
 			if (oldPosition < newPosition)
 				db.execSQL(

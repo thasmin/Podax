@@ -1,6 +1,5 @@
 package com.axelby.podax.ui;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -17,17 +16,10 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.UpdateService;
 import com.joanzapata.android.iconify.Iconify;
 
 public class AddSubscriptionFragment extends Fragment {
-    public AddSubscriptionFragment() {
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
+    public AddSubscriptionFragment() { }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

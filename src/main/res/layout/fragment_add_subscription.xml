@@ -76,6 +76,7 @@
         android:text="@string/find_a_podcast"
         android:textSize="14sp"
         android:paddingLeft="8dp"
+        android:paddingRight="8dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"
         android:textColor="#66000000"

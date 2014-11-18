@@ -53,13 +53,8 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 	private SearchResultsAdapter _adapter;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
-
-	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.search_fragment, null);
+		return inflater.inflate(R.layout.search_fragment, container);
 	}
 
 	@Override
@@ -466,7 +461,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 
 					SubscriptionCursor subscription = new SubscriptionCursor((Cursor) o);
 
-					view = _inflater.inflate(R.layout.search_subscription_listitem, null);
+					view = _inflater.inflate(R.layout.search_subscription_listitem, parent);
 					((TextView) view.findViewById(R.id.text)).setText(subscription.getTitle());
 					((ImageView) view.findViewById(R.id.thumbnail)).setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
 					view.findViewById(R.id.more).setOnClickListener(new OnClickListener() {
@@ -485,7 +480,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 
 					EpisodeCursor episode = new EpisodeCursor((Cursor) o);
 
-					view = _inflater.inflate(R.layout.playlist_list_item, null);
+					view = _inflater.inflate(R.layout.playlist_list_item, parent);
 					view.findViewById(R.id.drag).setVisibility(View.INVISIBLE);
 
 					// more button handler

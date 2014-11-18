@@ -1,8 +1,6 @@
 package com.axelby.podax.ui;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,7 +22,6 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.UpdateService;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -87,7 +84,7 @@ public class ITunesToplistFragment
 
         _progressDialog = ProgressDialogFragment.newInstance();
         _progressDialog.setMessage("Asking iTunes for list...");
-        _progressDialog.show(getActivity().getFragmentManager(), "progress");
+        _progressDialog.show(getActivity().getSupportFragmentManager(), "progress");
 
         return new ITunesPodcastLoader(getActivity(), bundle.getLong(Constants.EXTRA_CATEGORY_ID));
     }
@@ -102,7 +99,8 @@ public class ITunesToplistFragment
 
     @Override
     public void onLoadFinished(Loader<List<ITunesPodcast>> loader, List<ITunesPodcast> podcasts) {
-        _adapter.addAll(podcasts);
+        for (ITunesPodcast podcast : podcasts)
+            _adapter.add(podcast);
         _handler.sendEmptyMessage(206);
     }
 
@@ -167,7 +165,7 @@ public class ITunesToplistFragment
 
                         _progressDialog = ProgressDialogFragment.newInstance();
                         _progressDialog.setMessage("Retrieving RSS from iTunes...");
-                        _progressDialog.show(getActivity().getFragmentManager(), "progress");
+                        _progressDialog.show(getActivity().getSupportFragmentManager(), "progress");
 
                         final String url = (String) view.getTag();
                         new Thread(new Runnable() {
@@ -300,11 +298,6 @@ public class ITunesToplistFragment
                 forceLoad();
             else
                 deliverResult(_lastResult);
-        }
-
-        @Override
-        protected void onStopLoading() {
-            super.onStopLoading();
         }
 
         @Override

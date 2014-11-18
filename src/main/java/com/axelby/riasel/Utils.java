@@ -49,14 +49,14 @@ public class Utils {
 			format.setTimeZone(TimeZone.getTimeZone("UTC"));
 			try {
 				return format.parse(date);
-			} catch (ParseException e) {
+			} catch (ParseException ignored) {
 			}
 	
 			// try it again in english
 			try {
 				SimpleDateFormat enUSFormat = new SimpleDateFormat(format.toPattern(), Locale.US);
 				return enUSFormat.parse(date);
-			} catch (ParseException e) {
+			} catch (ParseException ignored) {
 			}
 		}
 	

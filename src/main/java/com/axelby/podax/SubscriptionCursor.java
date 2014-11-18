@@ -140,30 +140,6 @@ public class SubscriptionCursor {
 		}
 	}
 
-	public boolean getQueueNew() {
-		if (_playlistNewColumn == null)
-			_playlistNewColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_PLAYLIST_NEW);
-		if (_cursor.isNull(_playlistNewColumn))
-			return true;
-		return _cursor.getInt(_playlistNewColumn) != 0;
-	}
-
-	public String getTitleOverride() {
-		if (_titleOverrideColumn == null)
-			_titleOverrideColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
-		if (_cursor.isNull(_titleOverrideColumn))
-			return null;
-		return _cursor.getString(_titleOverrideColumn);
-	}
-
-	public Integer getExpirationDays() {
-		if (_expirationDaysColumn == null)
-			_expirationDaysColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_EXPIRATION);
-		if (_cursor.isNull(_expirationDaysColumn))
-			return null;
-		return _cursor.getInt(_expirationDaysColumn);
-	}
-
     public String getDescription() {
         if (_descriptionColumn == null)
             _descriptionColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_DESCRIPTION);

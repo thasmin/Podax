@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -19,7 +20,7 @@ public class URLImageGetter implements Html.ImageGetter {
 	}
 
 	public Drawable getDrawable(String source) {
-		final DelayedDrawable drawable = new DelayedDrawable();
+		final DelayedDrawable drawable = new DelayedDrawable(_container.getResources());
 
 		Helper.getImageLoader(_container.getContext()).get(source, new ImageLoader.ImageListener() {
 			@Override
@@ -46,6 +47,10 @@ public class URLImageGetter implements Html.ImageGetter {
 
 	public class DelayedDrawable extends BitmapDrawable {
 		private Drawable _drawable;
+
+        public DelayedDrawable(Resources resources) {
+            super(resources, (Bitmap) null);
+        }
 
 		public void setDrawable(Drawable drawable) {
 			_drawable = drawable;

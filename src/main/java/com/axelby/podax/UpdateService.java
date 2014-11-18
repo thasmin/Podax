@@ -85,7 +85,7 @@ public class UpdateService extends IntentService {
 		if (action == null)
 			return;
 
-		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && !Helper.ensureWifi(this)) {
+		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && !Helper.ensureWifiPref(this)) {
 			_uiHandler.post(new Runnable() {
 				public void run() {
 					Toast.makeText(UpdateService.this,

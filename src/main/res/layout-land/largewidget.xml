@@ -53,7 +53,9 @@
             <include
                 android:id="@+id/positionstring"
                 android:layout_margin="1dp"
-                layout="@layout/episode_progress" />
+                layout="@layout/episode_progress"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent" />
         </LinearLayout>
     </LinearLayout>
 

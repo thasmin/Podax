@@ -1,7 +1,6 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,13 +27,7 @@ import javax.annotation.Nonnull;
 
 public class GPodderPopularListFragment extends ListFragment {
 
-	public GPodderPopularListFragment() {
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
+	public GPodderPopularListFragment() { }
 
 	@Override
 	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

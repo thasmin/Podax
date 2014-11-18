@@ -3,6 +3,7 @@
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:paddingLeft="6dip"
+              android:paddingRight="6dip"
               android:gravity="center_vertical">
 
     <com.android.volley.toolbox.NetworkImageView
@@ -10,7 +11,8 @@
             android:layout_width="50dip"
             android:layout_height="50dip"
             android:contentDescription="@string/subscription_thumbnail"
-            android:paddingRight="5dip"/>
+            android:paddingRight="5dip"
+            android:paddingLeft="5dip"/>
 
     <TextView
             android:id="@+id/text"

@@ -12,6 +12,7 @@
         android:layout_height="100dip"
         android:contentDescription="@string/thumbnail"
         android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp"
         tools:src="@drawable/icon"
         />
 
@@ -20,10 +21,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/thumbnail"
+        android:layout_toEndOf="@id/thumbnail"
         android:layout_alignBottom="@id/thumbnail"
         android:textSize="24sp"
         tools:text="Subscription Name"
-        />
+        tools:ignore="RelativeOverlap" />
 
     <ListView
         android:id="@android:id/list"

@@ -3,15 +3,13 @@ package com.axelby.gpodder;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
-import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -22,7 +20,7 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.ui.ProgressDialogFragment;
 
-public class AuthenticatorActivity extends Activity {
+public class AuthenticatorActivity extends FragmentActivity {
 	public static final String PARAM_CONFIRMCREDENTIALS = "confirmCredentials";
 	public static final String PARAM_PASSWORD = "password";
 	public static final String PARAM_USERNAME = "username";
@@ -80,7 +78,7 @@ public class AuthenticatorActivity extends Activity {
 	}
 
 	protected void showProgress() {
-		FragmentManager fm = getFragmentManager();
+		android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
 		_progressDialog = ProgressDialogFragment.newInstance();
 		_progressDialog.show(fm, "progress");
 	}
@@ -89,7 +87,7 @@ public class AuthenticatorActivity extends Activity {
 		_progressDialog.dismiss();
 	}
 
-	public void handleLogin(View view) {
+	public void handleLogin() {
 		if (_requestNewAccount) {
 			_username = _usernameEdit.getText().toString();
 		}
@@ -110,7 +108,7 @@ public class AuthenticatorActivity extends Activity {
                             gpodderPrefs.edit()
                                     .putString("caption", _deviceNameEdit.getText().toString())
                                     .putString("type", getCheckedDeviceType())
-                                    .commit();
+                                    .apply();
 
                             _handler.post(new Runnable() {
                                 public void run() {
@@ -146,7 +144,7 @@ public class AuthenticatorActivity extends Activity {
 			}
 		} else {
 			if (_confirmCredentials) {
-				finishConfirmCredentials(isValid);
+				finishConfirmCredentials(true);
 			} else {
 				finishLogin();
 			}
@@ -163,7 +161,7 @@ public class AuthenticatorActivity extends Activity {
 			gpodderPrefs.edit()
 					.putString("deviceId", "podax_" + rdm)
 					.putBoolean("configurationNeedsUpdate", true)
-					.commit();
+					.apply();
 
 			accountManager.addAccountExplicitly(account, _password, null);
 			ContentResolver.requestSync(account, GPodderProvider.AUTHORITY, new Bundle());

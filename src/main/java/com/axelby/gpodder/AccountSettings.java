@@ -1,21 +1,21 @@
 package com.axelby.gpodder;
 
-import android.app.Activity;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.widget.FrameLayout;
 
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
+import com.axelby.podax.ui.PodaxPreferenceFragment;
 
-public class AccountSettings extends Activity {
+public class AccountSettings extends FragmentActivity {
 
 	@Override
 	protected void onCreate(Bundle icicle) {
@@ -25,11 +25,11 @@ public class AccountSettings extends Activity {
 		frame.setId(R.id.fragment);
 		setContentView(frame, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.add(R.id.fragment, new AccountSettingsFragment()).commit();
 	}
 
-	public static class AccountSettingsFragment extends PreferenceFragment {
+	public static class AccountSettingsFragment extends PodaxPreferenceFragment {
 		private SharedPreferences _gpodderPrefs;
 
 		public AccountSettingsFragment() {
@@ -52,7 +52,7 @@ public class AccountSettings extends Activity {
 					_gpodderPrefs.edit()
 							.putString("caption", value.toString())
 							.putBoolean("configurationNeedsUpdate", true)
-							.commit();
+							.apply();
 					preference.setSummary("Currently: " + value);
 					return true;
 				}
@@ -67,7 +67,7 @@ public class AccountSettings extends Activity {
 					_gpodderPrefs.edit()
 							.putString("type", value.toString())
 							.putBoolean("configurationNeedsUpdate", true)
-							.commit();
+							.apply();
 					preference.setSummary("Currently: " + value);
 					return true;
 				}

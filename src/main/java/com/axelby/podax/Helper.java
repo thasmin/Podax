@@ -35,7 +35,7 @@ public class Helper {
 	private static LruCache<String, Bitmap> _imageCache = new LruCache<String, Bitmap>(10);
 	private static DiskBasedCache _diskCache = null;
 
-	public static boolean ensureWifi(Context context) {
+	public static boolean ensureWifiPref(Context context) {
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		if (netInfo == null || !netInfo.isConnectedOrConnecting())

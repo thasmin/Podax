@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.Xml;
 
@@ -45,7 +46,7 @@ public class SubscriptionUpdater {
 	public void update(final long subscriptionId) {
 		Cursor cursor = null;
 		try {
-			if (!Helper.ensureWifi(_context))
+			if (!Helper.ensureWifiPref(_context))
 				return;
 
 			Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
@@ -241,7 +242,7 @@ public class SubscriptionUpdater {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
-		Notification notification = new Notification.Builder(_context)
+		Notification notification = new NotificationCompat.Builder(_context)
 				.setSmallIcon(R.drawable.icon)
 				.setTicker("Error Updating Subscription")
 				.setWhen(System.currentTimeMillis())
@@ -249,7 +250,7 @@ public class SubscriptionUpdater {
 				.setContentText(reason)
 				.setContentIntent(contentIntent)
 				.setOngoing(false)
-				.getNotification();
+				.build();
 
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(ns);
@@ -310,12 +311,12 @@ public class SubscriptionUpdater {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
-		Notification notification = new Notification.Builder(_context)
+		Notification notification = new NotificationCompat.Builder(_context)
 				.setSmallIcon(R.drawable.icon)
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Updating " + subscription.getTitle())
 				.setContentIntent(contentIntent)
-				.getNotification();
+				.build();
 
 		NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(Constants.NOTIFICATION_UPDATE, notification);

@@ -46,7 +46,9 @@ public class RSSParser {
 					continue;
 				} else if (parser.getDepth() != 3) {
 					continue;
-				} else if (name.equalsIgnoreCase("pubDate")) {
+				}
+
+                if (name.equalsIgnoreCase("pubDate")) {
 					Date date = Utils.parseDate(parser.nextText());
 					if (date != null)
 						feed.setPubDate(date);
@@ -82,9 +84,15 @@ public class RSSParser {
 			if (eventType == XmlPullParser.START_TAG) {
 				String name = parser.getName();
 				String namespace = parser.getNamespace();
-				if (name.equalsIgnoreCase("item")) {
+
+				if (name.equalsIgnoreCase("item"))
 					item = new FeedItem();
-				} else if (name.equalsIgnoreCase("guid")) {
+
+                // make sure we have an item before we operate on it
+                if (item == null)
+                    continue;
+
+                if (name.equalsIgnoreCase("guid")) {
 					item.setUniqueId(parser.nextText());
 				} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
 					item.setTitle(parser.nextText());

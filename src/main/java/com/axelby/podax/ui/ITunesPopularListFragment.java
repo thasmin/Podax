@@ -42,13 +42,7 @@ public class ITunesPopularListFragment extends ListFragment {
 
 	private boolean _loaded = false;
 
-	public ITunesPopularListFragment() {
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
+	public ITunesPopularListFragment() { }
 
 	@Override
 	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

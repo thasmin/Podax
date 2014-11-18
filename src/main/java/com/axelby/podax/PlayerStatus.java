@@ -40,7 +40,7 @@ public class PlayerStatus {
 
 	public static void updateState(Context context, PlayerStates state) {
 		SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
-		prefs.edit().putInt("playingState", state.toInt()).commit();
+		prefs.edit().putInt("playingState", state.toInt()).apply();
 		ActiveEpisodeReceiver.notifyExternal(context);
 	}
 

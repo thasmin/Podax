@@ -30,6 +30,7 @@ import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -714,7 +715,7 @@ public class DragSortListView extends ListView {
                     v = new DragSortItemView(getContext());
                 }
                 v.setLayoutParams(new AbsListView.LayoutParams(
-                        ViewGroup.LayoutParams.FILL_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT));
                 v.addView(child);
             }
@@ -764,7 +765,7 @@ public class DragSortListView extends ListView {
     }
 
     @Override
-    protected void dispatchDraw(Canvas canvas) {
+    protected void dispatchDraw(@NonNull Canvas canvas) {
         super.dispatchDraw(canvas);
 
         if (mDragState != IDLE) {
@@ -1589,7 +1590,7 @@ public class DragSortListView extends ListView {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent ev) {
+    public boolean onTouchEvent(@NonNull MotionEvent ev) {
         if (mIgnoreTouchEvent) {
             mIgnoreTouchEvent = false;
             return false;
@@ -1674,7 +1675,7 @@ public class DragSortListView extends ListView {
     private boolean mListViewIntercepted = false;
 
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
+    public boolean onInterceptTouchEvent(@NonNull MotionEvent ev) {
         if (!mDragEnabled) {
             return super.onInterceptTouchEvent(ev);
         }
@@ -2076,7 +2077,7 @@ public class DragSortListView extends ListView {
     private void measureItem(View item) {
         ViewGroup.LayoutParams lp = item.getLayoutParams();
         if (lp == null) {
-            lp = new AbsListView.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             item.setLayoutParams(lp);
         }
         int wspec = ViewGroup.getChildMeasureSpec(mWidthMeasureSpec, getListPaddingLeft()
