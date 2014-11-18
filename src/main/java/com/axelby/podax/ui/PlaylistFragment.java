@@ -62,21 +62,27 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 			boolean repost = false;
 			for (int i = 0; i < getListAdapter().getCount(); ++i) {
 				View view = getListView().getChildAt(i);
-				if (view == null)
-					continue;
+                // tag is on first child view
+                ViewGroup viewGroup = (ViewGroup) view;
+				if (viewGroup == null || viewGroup.getChildCount() == 0)
+                    continue;
+                view = viewGroup.getChildAt(0);
                 PlaylistListAdapter.ViewHolder holder = (PlaylistListAdapter.ViewHolder) view.getTag();
                 if (holder == null)
                     continue;
-                if (holder.downloaded.getText().subSequence(0, 3).equals("100"))
+                if (holder.downloaded.getText().equals(getString(R.string.downloaded)))
 					continue;
 
 				EpisodeCursor episode = new EpisodeCursor((Cursor) getListAdapter().getItem(i));
                 int filesizePct = 0;
-                if (episode.getFileSize() != null) {
-                    float downloaded = new File(episode.getFilename(getActivity())).length();
-                    filesizePct = Math.round(100.0f * downloaded / episode.getFileSize());
+                float downloaded = new File(episode.getFilename(getActivity())).length();
+                if (episode.getFileSize() != downloaded) {
+                    holder.downloaded.setTextColor(0xffcc0000); //android.R.color.holo_red_dark
+                    holder.downloaded.setText(R.string.not_downloaded);
+                } else {
+                    holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
+                    holder.downloaded.setText(R.string.downloaded);
                 }
-                holder.downloaded.setText(String.valueOf(filesizePct) + "% downloaded");
 
                 if (filesizePct < 100)
 					repost = true;
@@ -244,23 +250,21 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 		public void bindView(View view, Context context, Cursor cursor) {
 			EpisodeCursor episode = new EpisodeCursor(cursor);
 
-			//view.setTag(episode.getId());
             ViewHolder holder = (ViewHolder) view.getTag();
             holder.title.setText(episode.getTitle());
             holder.subscription.setText(episode.getSubscriptionTitle());
             holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
 
-            int filesizePct = 0;
-            if (episode.getFileSize() != null) {
-                long downloaded = new File(episode.getFilename(getActivity())).length();
-                filesizePct = Math.round(100.0f * downloaded / episode.getFileSize());
-            }
-            holder.downloaded.setText(String.valueOf(filesizePct) + "% downloaded");
-
-            if (filesizePct != 100) {
+            float downloaded = new File(episode.getFilename(getActivity())).length();
+            if (episode.getFileSize() != downloaded) {
+                holder.downloaded.setTextColor(0xffcc0000); //android.R.color.holo_red_dark
+                holder.downloaded.setText(R.string.not_downloaded);
                 // make sure list is refreshed to update downloading files
                 _handler.removeCallbacks(_refresher);
                 _handler.postDelayed(_refresher, 1000);
+            } else {
+                holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
+                holder.downloaded.setText(R.string.downloaded);
             }
 		}
 

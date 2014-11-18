@@ -9,7 +9,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.GravityCompat;
@@ -32,6 +35,7 @@ import android.widget.TextView;
 
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
+import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
@@ -79,6 +83,13 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             }
             return false;
+        }
+    };
+
+    private ContentObserver _activeEpisodeObserver = new ContentObserver(new Handler()) {
+        @Override public void onChange(boolean selfChange) { onChange(selfChange, null); }
+        @Override public void onChange(boolean selfChange, Uri uri) {
+            initializeBottom(PlayerStatus.getCurrentState(MainActivity.this));
         }
     };
 
@@ -213,7 +224,6 @@ public class MainActivity extends ActionBarActivity {
             _expand.setVisibility(View.INVISIBLE);
         }
     }
-
     private void animateBottomBarToggle() {
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
         if (params.bottomMargin == 0)
@@ -223,7 +233,6 @@ public class MainActivity extends ActionBarActivity {
     }
     private void animateBottomBarUp() { animateBottomBarTo(_main.getHeight() - _bottombar.getHeight()); }
     private void animateBottomBarDown() { animateBottomBarTo(0); }
-
     private void animateBottomBarTo(final int target) {
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
         if (params.bottomMargin == target)
@@ -276,13 +285,20 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        getContentResolver().unregisterContentObserver(_activeEpisodeObserver);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         Helper.registerMediaButtons(this);
 
-        if (getContentResolver().query(SubscriptionProvider.URI, null, null, null, null).getCount() == 0) {
+        if (getContentResolver().query(SubscriptionProvider.URI, null, null, null, null).getCount() == 0)
             Helper.changeFragment(this, AddSubscriptionFragment.class, null);
-        }
+
+        getContentResolver().registerContentObserver(EpisodeProvider.ACTIVE_EPISODE_URI, false, _activeEpisodeObserver);
     }
 
     @Override
