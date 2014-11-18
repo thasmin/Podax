@@ -13,7 +13,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.joanzapata.android.iconify.Iconify;
@@ -54,14 +53,14 @@ public class AddSubscriptionFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Helper.changeFragment(getActivity(), ITunesToplistFragment.class, Constants.EXTRA_CATEGORY_ID, id);
+                startActivity(PodaxFragmentActivity.createIntent(getActivity(), ITunesToplistFragment.class, Constants.EXTRA_CATEGORY_ID, id));
             }
         });
 
         getActivity().findViewById(R.id.web_subscribe).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Helper.changeFragment(getActivity(), WebSubscriptionFragment.class, null);
+                startActivity(PodaxFragmentActivity.createIntent(getActivity(), WebSubscriptionFragment.class, null));
             }
         });
 

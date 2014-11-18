@@ -296,7 +296,7 @@ public class MainActivity extends ActionBarActivity {
         Helper.registerMediaButtons(this);
 
         if (getContentResolver().query(SubscriptionProvider.URI, null, null, null, null).getCount() == 0)
-            Helper.changeFragment(this, AddSubscriptionFragment.class, null);
+            startActivity(PodaxFragmentActivity.createIntent(this, AddSubscriptionFragment.class, null));
 
         getContentResolver().registerContentObserver(EpisodeProvider.ACTIVE_EPISODE_URI, false, _activeEpisodeObserver);
     }

@@ -92,7 +92,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 
 	@Override
 	public void onListItemClick(ListView list, View view, int position, long id) {
-        Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id);
+        startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
 	}
 
 	@Override
@@ -153,7 +153,6 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();
                 PlayerService.play(view.getContext(), episodeId);
-                Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId);
             }
         };
 

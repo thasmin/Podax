@@ -28,6 +28,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="3dp"
+                    android:layout_marginStart="3dp"
                     android:text="@string/app_version"
                     android:textAppearance="?android:attr/textAppearanceMedium"/>
         </LinearLayout>
@@ -127,6 +128,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
                     android:text="@string/subscribe"/>
 
             <TextView

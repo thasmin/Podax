@@ -31,7 +31,6 @@ import android.widget.TextView;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
@@ -118,7 +117,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
 		getListView().setOnItemClickListener(new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id);
+                startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
 			}
 		});
 
@@ -148,7 +147,7 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
     @Override
     public void onListItemClick(ListView listview, View view, int position, long id) {
-        Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id);
+        startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
     }
 
     @Override
@@ -209,7 +208,6 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();
 				PlayerService.play(getActivity(), episodeId);
-                Helper.changeFragment(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId);
             }
         };
 

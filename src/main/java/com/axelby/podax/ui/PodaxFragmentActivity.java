@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
@@ -37,15 +38,35 @@ public class PodaxFragmentActivity extends ActionBarActivity {
         return intent;
     }
 
+    public static Intent createIntent(Context context, Class fragmentClass, String extraId, long id) {
+        Intent intent = new Intent(context, PodaxFragmentActivity.class);
+        intent.putExtra(Constants.EXTRA_FRAGMENT_CLASSNAME, fragmentClass.getCanonicalName());
+        Bundle args = new Bundle(1);
+        args.putLong(extraId, id);
+        intent.putExtra(Constants.EXTRA_ARGS, args);
+        return intent;
+    }
+
+    public static Intent createIntent(Context context, Class fragmentClass, Bundle args) {
+        Intent intent = new Intent(context, PodaxFragmentActivity.class);
+        intent.putExtra(Constants.EXTRA_FRAGMENT_CLASSNAME, fragmentClass.getCanonicalName());
+        intent.putExtra(Constants.EXTRA_ARGS, args);
+        return intent;
+    }
+
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.fragment_general);
+
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
 		    actionBar.setDisplayHomeAsUpEnabled(true);
 
-        long fragmentCode = getIntent().getLongExtra(Constants.EXTRA_FRAGMENT, -1);
+        Intent intent = getIntent();
+        long fragmentCode = intent.getLongExtra(Constants.EXTRA_FRAGMENT, -1);
         if (fragmentCode == FRAGMENT_GPODDER)
             handleGPodder();
         else if (fragmentCode == FRAGMENT_STATS)
@@ -58,8 +79,13 @@ public class PodaxFragmentActivity extends ActionBarActivity {
             createFragment(LogViewerFragment.class, null);
         else if (fragmentCode == FRAGMENT_WELCOME)
             createFragment(WelcomeFragment.class, null);
-        else
-            finish();
+        else {
+            String fragmentClassName = intent.getStringExtra(Constants.EXTRA_FRAGMENT_CLASSNAME);
+            if (fragmentClassName == null || fragmentClassName.equals(""))
+                finish();
+            Bundle bundle = intent.getBundleExtra(Constants.EXTRA_ARGS);
+            createFragment(fragmentClassName, bundle);
+        }
 	}
 
 	@Override
@@ -81,17 +107,16 @@ public class PodaxFragmentActivity extends ActionBarActivity {
 	}
 
     protected Fragment createFragment(Class<?> fragmentClass, Bundle arguments) {
-        FrameLayout frame = new FrameLayout(this);
-        frame.setId(R.id.fragment);
-        setContentView(frame, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        return createFragment(fragmentClass.getCanonicalName(), arguments);
+    }
 
-        Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
+    protected Fragment createFragment(String fragmentClassName, Bundle arguments) {
+        Fragment fragment = Fragment.instantiate(this, fragmentClassName);
         fragment.setArguments(arguments);
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.add(R.id.fragment, fragment);
         ft.commit();
-
         return fragment;
     }
 

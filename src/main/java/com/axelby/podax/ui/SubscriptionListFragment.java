@@ -24,7 +24,6 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
@@ -59,7 +58,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
         View.OnClickListener addListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Helper.changeFragment(getActivity(), AddSubscriptionFragment.class, null);
+                startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null));
             }
         };
         getActivity().findViewById(R.id.add).setOnClickListener(addListener);
@@ -103,7 +102,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        Helper.changeFragment(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, id);
+        startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, id));
     }
 
     @Override
@@ -135,7 +134,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
        private View.OnClickListener _settingsClickHandler = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Helper.changeFragment(getActivity(), SubscriptionSettingsFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (Long) view.getTag());
+                startActivity(PodaxFragmentActivity.createIntent(getActivity(), SubscriptionSettingsFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (Long) view.getTag()));
             }
         };
 
