@@ -159,7 +159,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
         OnClickListener _playlistListener = new OnClickListener() {
             @Override
             public void onClick(View view) {
-                long episodeId = (Long) view.getTag(R.id.episode);
+                long episodeId = (Long) view.getTag(R.id.episodeId);
                 Integer position = (Integer) view.getTag(R.id.playlist);
 
                 ContentValues values = new ContentValues(1);
@@ -195,7 +195,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
             } else
                 holder.duration.setVisibility(View.GONE);
             holder.play.setTag(episode.getId());
-            holder.playlist.setTag(R.id.episode, episode.getId());
+            holder.playlist.setTag(R.id.episodeId, episode.getId());
             Integer position = episode.getPlaylistPosition();
             if (position == null) {
                 holder.playlist.setTag(R.id.playlist, Integer.MAX_VALUE);

@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
@@ -167,14 +168,14 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
             public TextView description;
             public ImageView thumbnail;
             public Button settings;
-            public Button more;
+            public ImageButton more;
 
             public ViewHolder(View v) {
                 title = (TextView) v.findViewById(R.id.title);
                 description = (TextView) v.findViewById(R.id.description);
                 thumbnail = (ImageView) v.findViewById(R.id.thumbnail);
                 settings = (Button) v.findViewById(R.id.settings);
-                more = (Button) v.findViewById(R.id.more);
+                more = (ImageButton) v.findViewById(R.id.more);
             }
         }
 

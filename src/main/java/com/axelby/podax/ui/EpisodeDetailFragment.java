@@ -294,7 +294,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 
 		PlayerStatus status = PlayerStatus.getCurrentState(getActivity());
 		boolean isPlaying = status.isPlaying() && status.getEpisodeId() == _podcastId;
-		int playResource = isPlaying ? R.drawable.ic_media_pause : R.drawable.ic_media_play;
+		int playResource = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
 		_playButton.setImageResource(playResource);
 
 		if (episode.getPlaylistPosition() == null) {

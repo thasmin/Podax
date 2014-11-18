@@ -23,8 +23,6 @@
         <item name="colorAccent">@color/lightblue500</item>
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
-        <item name="android:buttonStyle">@style/Widget.Podax.Button</item>
-        <item name="android:buttonStyleSmall">@style/Widget.Podax.Button.Small</item>
     </style>
 
     <style name="Widget.Podax.Button.Small" parent="android:Widget.Button.Small">

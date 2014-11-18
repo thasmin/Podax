@@ -273,10 +273,10 @@ public class PlayerService extends Service {
 			builder.setLargeIcon(subscriptionBitmap);
 
 		if (playerStatus.getState() == PlayerStates.PLAYING)
-			builder.addAction(R.drawable.ic_media_pause_normal, getString(R.string.pause), pausePendingIntent);
+			builder.addAction(android.R.drawable.ic_media_pause, getString(R.string.pause), pausePendingIntent);
 		else
-			builder.addAction(R.drawable.ic_media_play_normal, getString(R.string.play), pausePendingIntent);
-		builder.addAction(R.drawable.ic_media_ff_normal, getString(R.string.fast_forward), forwardPendingIntent);
+			builder.addAction(android.R.drawable.ic_media_play, getString(R.string.play), pausePendingIntent);
+		builder.addAction(android.R.drawable.ic_media_ff, getString(R.string.fast_forward), forwardPendingIntent);
 
 		Notification notification = builder.build();
 		startForeground(Constants.NOTIFICATION_PLAYING, notification);

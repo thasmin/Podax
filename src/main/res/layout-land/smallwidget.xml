@@ -19,7 +19,7 @@
             android:contentDescription="@string/go_to_details"
             android:padding="6dp"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_widget_bouncearrow" />
+            android:src="@drawable/icon" />
 
         <FrameLayout
             android:layout_width="1dp"
@@ -69,7 +69,7 @@
                     android:contentDescription="@string/rewind"
                     android:padding="8dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/ic_media_rew" />
+                    android:src="@android:drawable/ic_media_rew" />
 
                 <ImageButton
                     android:id="@+id/play_btn"
@@ -80,7 +80,7 @@
                     android:contentDescription="@string/play"
                     android:padding="8dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/ic_media_play" />
+                    android:src="@android:drawable/ic_media_play" />
 
                 <ImageButton
                     android:id="@+id/skip_btn"
@@ -91,7 +91,7 @@
                     android:contentDescription="@string/fast_forward"
                     android:padding="8dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/ic_media_ff" />
+                    android:src="@android:drawable/ic_media_ff" />
 
                 <FrameLayout
                     android:layout_width="1dp"
@@ -108,7 +108,7 @@
                     android:contentDescription="@string/skip_to_end"
                     android:padding="8dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/ic_media_next" />
+                    android:src="@android:drawable/ic_media_next" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

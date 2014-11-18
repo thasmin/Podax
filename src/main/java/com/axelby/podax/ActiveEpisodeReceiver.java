@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.axelby.podax.ui.LargeWidgetProvider;
 import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class ActiveEpisodeReceiver extends BroadcastReceiver {
@@ -34,13 +33,7 @@ public class ActiveEpisodeReceiver extends BroadcastReceiver {
 		if (widgetManager == null)
 			return;
 
-		int[] widgetIds;
-
-		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(context, LargeWidgetProvider.class));
-		if (widgetIds.length > 0)
-			new LargeWidgetProvider().onUpdate(context, widgetManager, widgetIds);
-
-		widgetIds = widgetManager.getAppWidgetIds(new ComponentName(context, SmallWidgetProvider.class));
+		int[] widgetIds = widgetManager.getAppWidgetIds(new ComponentName(context, SmallWidgetProvider.class));
 		if (widgetIds.length > 0)
 			new SmallWidgetProvider().onUpdate(context, widgetManager, widgetIds);
 	}
