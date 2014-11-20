@@ -28,10 +28,43 @@
             android:layout_height="0dip"
             android:layout_weight="1">
 
-            <FrameLayout
-                android:id="@+id/mainlayout"
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorPrimary"
+                    android:weightSum="2">
+
+                    <Button
+                        android:id="@+id/toolbar_playlist_btn"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        style="@style/Widget.Podax.Button.Flat"
+                        android:text="@string/playlist_caps" />
+
+                    <Button
+                        android:id="@+id/toolbar_subscriptions_btn"
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        style="@style/Widget.Podax.Button.Flat"
+                        android:text="@string/subscriptions_caps" />
+
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/fragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
 
             <ListView
                 android:id="@+id/drawer"

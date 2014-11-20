@@ -50,6 +50,8 @@ public class MainActivity extends ActionBarActivity {
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
 
+    private int _fragment;
+
     private View _main;
     private View _bottombar;
     private View _nowplaying_fragment;
@@ -143,8 +145,6 @@ public class MainActivity extends ActionBarActivity {
 
         setContentView(R.layout.app);
 
-        getSupportFragmentManager().beginTransaction().add(R.id.mainlayout, new MainFragment()).commit();
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -166,6 +166,30 @@ public class MainActivity extends ActionBarActivity {
                 R.string.open_drawer, R.string.close_drawer);
         _drawerLayout.setDrawerListener(_drawerToggle);
 
+        // main section
+        findViewById(R.id.toolbar_playlist_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (_fragment == 0)
+                    return;
+                _fragment = 0;
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
+            }
+        });
+        findViewById(R.id.toolbar_subscriptions_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (_fragment == 1)
+                    return;
+                _fragment = 1;
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
+            }
+        });
+
+        if (_fragment == 1)
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment, new SubscriptionListFragment()).commit();
+        else
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment, new PlaylistFragment()).commit();
 
         // bottom bar controls
         _main = findViewById(R.id.main);
