@@ -51,28 +51,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#ccffffff"
-            tools:text="Greg Fitzsimmons's podcast. He's a comedian. His podcast is pretty good and you might want to listen to it. Or you might not like it so then you wouldn't want to listen to it."
+            tools:text="Greg Fitzsimmons's podcast. He's a comedian. His podcast is pretty good and you might want to listen to it. Or you might not like it so then you wouldn't want to listen to it. But then you'd be missing out on a great podcast. So check it out and if you don't like it, then stop listening. Go find another. Podax can help you."
             android:layout_alignTop="@id/thumbnail"
             android:layout_toRightOf="@id/thumbnail"
             android:layout_toEndOf="@id/thumbnail"
             android:ellipsize="end"
-            android:maxLines="3"
+            android:maxLines="6"
             />
 
-        <Button
-            android:id="@+id/settings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/settings"
-            android:textAllCaps="true"
-            style="@style/Widget.Podax.Button.Flat"
-            android:layout_alignBottom="@id/thumbnail"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:focusable="false"
-            />
-
-        <!-- fix for bug with relativelayout not using bottom margins -->
+       <!-- fix for bug with relativelayout not using bottom margins -->
         <View
             android:layout_width="wrap_content"
             android:layout_height="10dp"

@@ -155,6 +155,10 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
                 _drawerLayout.closeDrawer(GravityCompat.START);
+                if (id == R.id.add_subscription) {
+                    startActivity(PodaxFragmentActivity.createIntent(view.getContext(), AddSubscriptionFragment.class, null));
+                    return;
+                }
                 startActivity(PodaxFragmentActivity.createIntent(view.getContext(), id));
             }
         });
@@ -199,11 +203,7 @@ public class MainActivity extends ActionBarActivity {
         _episodeTitle = (TextView) findViewById(R.id.episodeTitle);
         _expand = (ImageButton) findViewById(R.id.expand);
         getSupportFragmentManager().beginTransaction().add(R.id.nowplaying_fragment, new EpisodeDetailFragment()).commit();
-
-        PlayerStatus playerState = PlayerStatus.getCurrentState(this);
-
         _bottomGestureDetector = new GestureDetectorCompat(this, gestureListener);
-        initializeBottom(playerState);
     }
 
     private void initializeBottom(PlayerStatus playerState) {
@@ -323,6 +323,7 @@ public class MainActivity extends ActionBarActivity {
             startActivity(PodaxFragmentActivity.createIntent(this, AddSubscriptionFragment.class, null));
 
         getContentResolver().registerContentObserver(EpisodeProvider.ACTIVE_EPISODE_URI, false, _activeEpisodeObserver);
+        initializeBottom(PlayerStatus.getCurrentState(this));
     }
 
     @Override
@@ -344,8 +345,9 @@ public class MainActivity extends ActionBarActivity {
 
     class PodaxDrawerAdapter extends BaseAdapter {
         Item _items[] = {
+                new Item(R.id.add_subscription, R.string.add_subscription, android.R.drawable.ic_menu_add),
                 new Item(PodaxFragmentActivity.FRAGMENT_GPODDER, R.string.gpodder_sync, R.drawable.ic_menu_mygpo),
-                new Item(PodaxFragmentActivity.FRAGMENT_STATS, R.string.stats, R.drawable.ic_menu_settings),
+                new Item(PodaxFragmentActivity.FRAGMENT_STATS, R.string.stats, R.drawable.ic_menu_trending_up),
                 new Item(PodaxFragmentActivity.FRAGMENT_PREFERENCES, R.string.preferences, R.drawable.ic_menu_configuration),
                 new Item(PodaxFragmentActivity.FRAGMENT_ABOUT, R.string.about, R.drawable.ic_menu_podax),
                 new Item(PodaxFragmentActivity.FRAGMENT_LOG_VIEWER, R.string.log_viewer, android.R.drawable.ic_menu_info_details),
@@ -383,7 +385,7 @@ public class MainActivity extends ActionBarActivity {
                 return null;
 
             TextView tv = (TextView) convertView;
-            final Item item = _items[position];
+            Item item = _items[position];
             tv.setText(item.label);
             tv.setCompoundDrawablesWithIntrinsicBounds(item.drawable, 0, 0, 0);
             return tv;

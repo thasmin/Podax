@@ -66,14 +66,37 @@
 
             </LinearLayout>
 
-            <ListView
-                android:id="@+id/drawer"
+            <RelativeLayout
                 android:layout_width="240dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"
-                android:background="#ffffff"
-                android:choiceMode="singleChoice"
-                android:divider="@android:color/transparent" />
+                >
+                <ImageView
+                    android:id="@+id/drawer_top"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:src="@drawable/drawer_top"
+                    android:scaleType="fitXY"
+                    />
+                <ListView
+                    android:id="@+id/drawer"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dip"
+                    android:background="#ffffff"
+                    android:choiceMode="singleChoice"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_below="@id/drawer_top"
+                    />
+           </RelativeLayout>
 
         </android.support.v4.widget.DrawerLayout>
 

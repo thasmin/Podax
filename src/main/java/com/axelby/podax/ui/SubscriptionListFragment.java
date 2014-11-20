@@ -132,13 +132,6 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	}
 
 	private class SubscriptionAdapter extends ResourceCursorAdapter {
-       private View.OnClickListener _settingsClickHandler = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(PodaxFragmentActivity.createIntent(getActivity(), SubscriptionSettingsFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (Long) view.getTag()));
-            }
-        };
-
         private View.OnClickListener _moreClickHandler = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -154,6 +147,9 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
                             Uri subscriptionUri= SubscriptionProvider.getContentUri(subscriptionId);
                             getActivity().getContentResolver().delete(subscriptionUri, null, null);
                             return true;
+                        } else if (menuItem.getItemId() == R.id.settings) {
+                            startActivity(PodaxFragmentActivity.createIntent(getActivity(), SubscriptionSettingsFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId));
+                            return true;
                         }
                         return false;
                     }
@@ -167,14 +163,12 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
             public TextView title;
             public TextView description;
             public ImageView thumbnail;
-            public Button settings;
             public ImageButton more;
 
             public ViewHolder(View v) {
                 title = (TextView) v.findViewById(R.id.title);
                 description = (TextView) v.findViewById(R.id.description);
                 thumbnail = (ImageView) v.findViewById(R.id.thumbnail);
-                settings = (Button) v.findViewById(R.id.settings);
                 more = (ImageButton) v.findViewById(R.id.more);
             }
         }
@@ -187,7 +181,6 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
         public View newView(Context context, Cursor cursor, ViewGroup parent) {
             View view = super.newView(context, cursor, parent);
             ViewHolder holder = new ViewHolder(view);
-            holder.settings.setOnClickListener(_settingsClickHandler);
             holder.more.setOnClickListener(_moreClickHandler);
             view.setTag(holder);
             return view;
@@ -204,7 +197,6 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
             else
                 holder.description.setText(R.string.description_not_available);
 			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
-            holder.settings.setTag(subscription.getId());
             holder.more.setTag(subscription.getId());
 		}
 

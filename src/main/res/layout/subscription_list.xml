@@ -22,6 +22,7 @@
         android:layout_margin="24dp"
         android:layout_alignParentBottom="true"
         android:background="@drawable/circle"
+        android:elevation="8dp"
         tools:ignore="HardcodedText"
         android:text="+"
         android:textSize="24sp"
