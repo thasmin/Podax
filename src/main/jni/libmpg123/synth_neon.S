@@ -74,7 +74,7 @@ ASM_NAME(synth_1to1_neon_asm):
 	vpadd.i32	d1, d16, d24
 
 	vld2.16		{d2,d3}, [SAMPLES]
-	vqshrn.s32	d1, q0, #13
+	vqrshrn.s32	d1, q0, #13
 	vst2.16		{d1,d3}, [SAMPLES]!
 
 	subs		r3, r3, #1
@@ -119,7 +119,7 @@ ASM_NAME(synth_1to1_neon_asm):
 	vpadd.i32	d1, d16, d24
 
 	vld2.16		{d2,d3}, [SAMPLES]
-	vqshrn.s32	d1, q0, #13
+	vqrshrn.s32	d1, q0, #13
 	vst2.16		{d1,d3}, [SAMPLES]!
 
 	subs		r3, r3, #1

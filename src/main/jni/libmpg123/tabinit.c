@@ -90,7 +90,7 @@ void prepare_decode_tables()
 }
 
 #ifdef OPT_MMXORSSE
-#if !defined(OPT_X86_64) && !defined(OPT_NEON) && !defined(OPT_AVX)
+#if !defined(OPT_X86_64) && !defined(OPT_NEON) && !defined(OPT_NEON64) && !defined(OPT_AVX)
 void make_decode_tables_mmx_asm(long scaleval, float* decwin_mmx, float *decwins);
 void make_decode_tables_mmx(mpg123_handle *fr)
 {
@@ -214,13 +214,14 @@ void make_decode_tables(mpg123_handle *fr)
 		scaleval = - scaleval;
 #endif
 	}
-#if defined(OPT_X86_64) || defined(OPT_ALTIVEC) || defined(OPT_SSE) || defined(OPT_SSE_VINTAGE) || defined(OPT_ARM) || defined(OPT_NEON) || defined(OPT_AVX)
+#if defined(OPT_X86_64) || defined(OPT_ALTIVEC) || defined(OPT_SSE) || defined(OPT_SSE_VINTAGE) || defined(OPT_ARM) || defined(OPT_NEON) || defined(OPT_NEON64) || defined(OPT_AVX)
 	if(  fr->cpu_opts.type == x86_64
 	  || fr->cpu_opts.type == altivec
 	  || fr->cpu_opts.type == sse
 	  || fr->cpu_opts.type == sse_vintage
 	  || fr->cpu_opts.type == arm
 	  || fr->cpu_opts.type == neon
+	  || fr->cpu_opts.type == neon64
 	  || fr->cpu_opts.type == avx )
 	{ /* for float SSE / AltiVec / ARM decoder */
 		for(i=512; i<512+32; i++)
@@ -231,8 +232,8 @@ void make_decode_tables(mpg123_handle *fr)
 		{
 			fr->decwin[512+32+i] = -fr->decwin[511-i];
 		}
-#ifdef OPT_NEON
-		if(fr->cpu_opts.type == neon)
+#if defined(OPT_NEON) || defined(OPT_NEON64)
+		if(fr->cpu_opts.type == neon || fr->cpu_opts.type == neon64)
 		{
 			for(i=0; i<512; i+=2)
 			{

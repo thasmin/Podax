@@ -165,6 +165,11 @@ public class EpisodeCursor {
 	public String getOldFilename(Context context) {
 		return EpisodeCursor.getOldStoragePath(context) + String.valueOf(getId()) + "." + EpisodeCursor.getExtension(getMediaUrl());
 	}
+	public String getIndexFilename(Context context) {
+		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
+		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
+		return podaxDir + String.valueOf(getId()) + ".index";
+	}
 
 	public boolean isDownloaded(Context context) {
 		if (getFileSize() == null)

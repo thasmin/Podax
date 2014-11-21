@@ -8,9 +8,11 @@
 
 #include "mangle.h"
 
+#ifndef __aarch64__
 	.code 32
 #ifndef __APPLE__
 	.fpu neon
+#endif
 #endif
 
 	.text
@@ -20,7 +22,12 @@
 #endif
 	ALIGN4
 ASM_NAME(check_neon):
+#ifdef __aarch64__
+	orr		v0.16b, v0.16b, v0.16b
+	ret
+#else
 	vorr	d0, d0, d0
 	bx		lr
+#endif
 
 NONEXEC_STACK

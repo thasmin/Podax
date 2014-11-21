@@ -69,7 +69,7 @@ ASM_NAME(synth_1to1_s_neon_asm):
 	vpadd.i32	d30, d30, d31
 	vpadd.i32	d24, d24, d26
 	vpadd.i32	d25, d28, d30
-	vqshrn.s32	d0, q12, #13
+	vqrshrn.s32	d0, q12, #13
 	vst1.16		{d0}, [SAMPLES]!
 	
 	vld1.16		{d0-d3}, [WINDOW], r5
@@ -101,7 +101,7 @@ ASM_NAME(synth_1to1_s_neon_asm):
 	vpadd.i32	d30, d30, d31
 	vpadd.i32	d24, d24, d26
 	vpadd.i32	d25, d28, d30
-	vqshrn.s32	d0, q12, #13
+	vqrshrn.s32	d0, q12, #13
 	vst1.16		{d0}, [SAMPLES]!
 
 	subs		r4, r4, #1
@@ -139,7 +139,7 @@ ASM_NAME(synth_1to1_s_neon_asm):
 	vpadd.i32	d30, d30, d31
 	vpadd.i32	d24, d24, d26
 	vpadd.i32	d25, d28, d30
-	vqshrn.s32	d0, q12, #13
+	vqrshrn.s32	d0, q12, #13
 	vst1.16		{d0}, [SAMPLES]!
 	
 	vld1.16		{d0-d3}, [WINDOW], r5
@@ -171,7 +171,7 @@ ASM_NAME(synth_1to1_s_neon_asm):
 	vpadd.i32	d30, d30, d31
 	vpadd.i32	d24, d24, d26
 	vpadd.i32	d25, d28, d30
-	vqshrn.s32	d0, q12, #13
+	vqrshrn.s32	d0, q12, #13
 	vst1.16		{d0}, [SAMPLES]!
 
 	subs		r4, r4, #1

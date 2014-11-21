@@ -12,7 +12,7 @@
 #include "mpg123lib_intern.h" /* includes optimize.h */
 #include "debug.h"
 
-#if ((defined OPT_X86) || (defined OPT_X86_64) || (defined OPT_NEON)) && (defined OPT_MULTI)
+#if ((defined OPT_X86) || (defined OPT_X86_64) || (defined OPT_NEON) || (defined OPT_NEON64)) && (defined OPT_MULTI)
 #include "getcpuflags.h"
 static struct cpuflags cpu_flags;
 #else
@@ -149,6 +149,7 @@ enum optcla decclass(const enum optdec type)
 		|| type == dreidnowext_vintage
 		|| type == x86_64
 		|| type == neon
+		|| type == neon64
 		|| type == avx
 	) ? mmxsse : normal;
 }
@@ -255,6 +256,9 @@ static int find_dectype(mpg123_handle *fr)
 #ifdef OPT_NEON
 	else if(basic_synth == synth_1to1_neon) type = neon;
 #endif
+#ifdef OPT_NEON64
+	else if(basic_synth == synth_1to1_neon64) type = neon64;
+#endif
 #ifdef OPT_GENERIC_DITHER
 	else if(basic_synth == synth_1to1_dither) type = generic_dither;
 #endif
@@ -290,6 +294,9 @@ static int find_dectype(mpg123_handle *fr)
 #ifdef OPT_NEON
 	else if(basic_synth == synth_1to1_real_neon) type = neon;
 #endif
+#ifdef OPT_NEON64
+	else if(basic_synth == synth_1to1_real_neon64) type = neon64;
+#endif
 
 #endif /* real */
 
@@ -311,6 +318,9 @@ static int find_dectype(mpg123_handle *fr)
 #endif
 #ifdef OPT_NEON
 	else if(basic_synth == synth_1to1_s32_neon) type = neon;
+#endif
+#ifdef OPT_NEON64
+	else if(basic_synth == synth_1to1_s32_neon64) type = neon64;
 #endif
 #endif /* 32bit */
 
@@ -452,6 +462,7 @@ int set_synth_functions(mpg123_handle *fr)
 	   && fr->cpu_opts.type != sse_vintage
 	   && fr->cpu_opts.type != x86_64
 	   && fr->cpu_opts.type != neon
+	   && fr->cpu_opts.type != neon64
 	   && fr->cpu_opts.type != avx
 #	endif
 	  )
@@ -510,7 +521,7 @@ int frame_cpu_opt(mpg123_handle *fr, const char* cpu)
 	fr->cpu_opts.type = nodec;
 #ifdef OPT_MULTI
 #ifndef NO_LAYER3
-#if (defined OPT_3DNOW_VINTAGE || defined OPT_3DNOWEXT_VINTAGE || defined OPT_SSE || defined OPT_X86_64 || defined OPT_AVX)
+#if (defined OPT_3DNOW_VINTAGE || defined OPT_3DNOWEXT_VINTAGE || defined OPT_SSE || defined OPT_X86_64 || defined OPT_AVX || defined OPT_NEON || defined OPT_NEON64)
 	fr->cpu_opts.the_dct36 = dct36;
 #endif
 #endif
@@ -801,6 +812,11 @@ int frame_cpu_opt(mpg123_handle *fr, const char* cpu)
 	{
 		chosen = dn_neon;
 		fr->cpu_opts.type = neon;
+#ifdef OPT_MULTI
+#		ifndef NO_LAYER3
+		fr->cpu_opts.the_dct36 = dct36_neon;
+#		endif
+#endif
 #		ifndef NO_16BIT
 		fr->synths.plain[r_1to1][f_16] = synth_1to1_neon;
 		fr->synths.stereo[r_1to1][f_16] = synth_1to1_stereo_neon;
@@ -824,6 +840,32 @@ int frame_cpu_opt(mpg123_handle *fr, const char* cpu)
 		fr->cpu_opts.type = arm;
 #		ifndef NO_16BIT
 		fr->synths.plain[r_1to1][f_16] = synth_1to1_arm;
+#		endif
+		done = 1;
+	}
+#	endif
+
+#	ifdef OPT_NEON64
+	if(!done && (auto_choose || want_dec == neon64) && cpu_neon(cpu_flags))
+	{
+		chosen = dn_neon64;
+		fr->cpu_opts.type = neon64;
+#ifdef OPT_MULTI
+#		ifndef NO_LAYER3
+		fr->cpu_opts.the_dct36 = dct36_neon64;
+#		endif
+#endif
+#		ifndef NO_16BIT
+		fr->synths.plain[r_1to1][f_16] = synth_1to1_neon64;
+		fr->synths.stereo[r_1to1][f_16] = synth_1to1_stereo_neon64;
+#		endif
+#		ifndef NO_REAL
+		fr->synths.plain[r_1to1][f_real] = synth_1to1_real_neon64;
+		fr->synths.stereo[r_1to1][f_real] = synth_1to1_real_stereo_neon64;
+#		endif
+#		ifndef NO_32BIT
+		fr->synths.plain[r_1to1][f_32] = synth_1to1_s32_neon64;
+		fr->synths.stereo[r_1to1][f_32] = synth_1to1_s32_stereo_neon64;
 #		endif
 		done = 1;
 	}
@@ -961,6 +1003,9 @@ static const char *mpg123_supported_decoder_list[] =
 	#ifdef OPT_NEON
 	NULL,
 	#endif
+	#ifdef OPT_NEON64
+	NULL,
+	#endif
 	#ifdef OPT_GENERIC_FLOAT
 	NULL,
 	#endif
@@ -1024,6 +1069,9 @@ static const char *mpg123_decoder_list[] =
 	#ifdef OPT_NEON
 	dn_neon,
 	#endif
+	#ifdef OPT_NEON64
+	dn_neon64,
+	#endif
 	#ifdef OPT_GENERIC
 	dn_generic,
 	#endif
@@ -1040,7 +1088,7 @@ void check_decoders(void )
 	return;
 #else
 	const char **d = mpg123_supported_decoder_list;
-#if (defined OPT_X86) || (defined OPT_X86_64) || (defined OPT_NEON)
+#if (defined OPT_X86) || (defined OPT_X86_64) || (defined OPT_NEON) || (defined OPT_NEON64)
 	getcpuflags(&cpu_flags);
 #endif
 #ifdef OPT_X86
@@ -1099,6 +1147,9 @@ void check_decoders(void )
 #endif
 #ifdef OPT_NEON
 	if(cpu_neon(cpu_flags)) *(d++) = dn_neon;
+#endif
+#ifdef OPT_NEON64
+	if(cpu_neon(cpu_flags)) *(d++) = dn_neon64;
 #endif
 #ifdef OPT_GENERIC
 	*(d++) = dn_generic;

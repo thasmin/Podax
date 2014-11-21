@@ -98,5 +98,24 @@
 #define IS_MSABI 1 /* Not using SYSV */
 #endif
 
+/* Macros for +-4GiB PC-relative addressing on AArch64 */
+#ifdef __APPLE__
+#define AARCH64_PCREL_HI(label) label@PAGE
+#define AARCH64_PCREL_LO(label) label@PAGEOFF
+#else
+#define AARCH64_PCREL_HI(label) label
+#define AARCH64_PCREL_LO(label) :lo12:label
+#endif
+
+#ifdef __APPLE__
+#define AARCH64_DUP_4S(dst, src, elem) dup.4s dst, src[elem]
+#define AARCH64_DUP_2D(dst, src, elem) dup.2d dst, src[elem]
+#define AARCH64_SQXTN2_8H(dst, src) sqxtn2.8h dst, src
+#else
+#define AARCH64_DUP_4S(dst, src, elem) dup dst.4s, src.s[elem]
+#define AARCH64_DUP_2D(dst, src, elem) dup dst.2d, src.d[elem]
+#define AARCH64_SQXTN2_8H(dst, src) sqxtn2 dst.8h, src.4s
+#endif
+
 #endif /* !__MANGLE_H */
 

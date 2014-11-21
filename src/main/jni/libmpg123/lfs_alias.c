@@ -72,7 +72,7 @@ typedef struct mpg123_handle_struct mpg123_handle;
 /*
 	Extract the list of functions we need wrappers for, pregenerating the wrappers for simple cases (inline script for nedit):
 perl -ne '
-if(/^\s*EXPORT\s+(\S+)\s+(mpg123_\S+)\((.*)\);\s*$/)
+if(/^\s*MPG123_EXPORT\s+(\S+)\s+(mpg123_\S+)\((.*)\);\s*$/)
 {
 	my $type = $1;
 	my $name = $2;

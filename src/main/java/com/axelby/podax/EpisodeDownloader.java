@@ -64,6 +64,9 @@ class EpisodeDownloader {
 			File mediaFile = new File(episode.getFilename(_context));
 			if (mediaFile.exists())
 				mediaFile.delete();
+			File indexFile = new File(episode.getIndexFilename(_context));
+			if (indexFile.exists())
+				indexFile.delete();
 
 			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(episode.getMediaUrl()));
 			int networks = DownloadManager.Request.NETWORK_WIFI;

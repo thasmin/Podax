@@ -1038,6 +1038,29 @@ static int handle_id3v2(mpg123_handle *fr, unsigned long newhead)
 	return PARSE_AGAIN;
 }
 
+/* Advance a byte in stream to get next possible header and forget 
+   buffered data if possible (for feed reader). */
+#define FORGET_INTERVAL 1024 /* Used by callers to set forget flag each <n> bytes. */
+static int forget_head_shift(mpg123_handle *fr, unsigned long *newheadp, int forget)
+{
+	int ret;
+	if((ret=fr->rd->head_shift(fr,newheadp))<=0) return ret;
+	/* Try to forget buffered data as early as possible to speed up parsing where
+	   new data needs to be added for resync (and things would be re-parsed again
+	   and again because of the start from beginning after hitting end). */
+	if(forget && fr->rd->forget != NULL)
+	{
+		/* Ensure that the last 4 bytes stay in buffers for reading the header
+		   anew. */
+		if(!fr->rd->back_bytes(fr, 4))
+		{
+			fr->rd->forget(fr);
+			fr->rd->back_bytes(fr, -4);
+		}
+	}
+	return ret; /* No surprise here, error already triggered early return. */
+}
+
 /* watch out for junk/tags on beginning of stream by invalid header */
 static int skip_junk(mpg123_handle *fr, unsigned long *newheadp, long *headcount)
 {
@@ -1045,6 +1068,7 @@ static int skip_junk(mpg123_handle *fr, unsigned long *newheadp, long *headcount
 	int freeformat_count = 0;
 	long limit = 65536;
 	unsigned long newhead = *newheadp;
+	unsigned int forgetcount = 0;
 	/* check for id3v2; first three bytes (of 4) are "ID3" */
 	if((newhead & (unsigned long) 0xffffff00) == (unsigned long) 0x49443300)
 	{
@@ -1061,7 +1085,8 @@ static int skip_junk(mpg123_handle *fr, unsigned long *newheadp, long *headcount
 
 		while(newhead != ('d'<<24)+('a'<<16)+('t'<<8)+'a')
 		{
-			if((ret=fr->rd->head_shift(fr,&newhead))<=0) return ret;
+			if(++forgetcount > FORGET_INTERVAL) forgetcount = 0;
+			if((ret=forget_head_shift(fr,&newhead,!forgetcount))<=0) return ret;
 		}
 		if((ret=fr->rd->head_read(fr,&newhead))<=0) return ret;
 
@@ -1090,7 +1115,8 @@ static int skip_junk(mpg123_handle *fr, unsigned long *newheadp, long *headcount
 		++(*headcount);
 		if(limit >= 0 && *headcount >= limit) break;				
 
-		if((ret=fr->rd->head_shift(fr,&newhead))<=0) return ret;
+		if(++forgetcount > FORGET_INTERVAL) forgetcount = 0;
+		if((ret=forget_head_shift(fr, &newhead, !forgetcount))<=0) return ret;
 
 		if(head_check(newhead) && (ret=decode_header(fr, newhead, &freeformat_count))) break;
 	} while(1);
@@ -1151,6 +1177,7 @@ static int wetwork(mpg123_handle *fr, unsigned long *newheadp)
 	{
 		long try = 0;
 		long limit = fr->p.resync_limit;
+		unsigned int forgetcount = 0;
 
 		/* If a resync is needed the bitreservoir of previous frames is no longer valid */
 		fr->bitreservoir = 0;
@@ -1162,7 +1189,8 @@ static int wetwork(mpg123_handle *fr, unsigned long *newheadp)
 			++try;
 			if(limit >= 0 && try >= limit) break;				
 
-			if((ret=fr->rd->head_shift(fr,&newhead)) <= 0)
+			if(++forgetcount > FORGET_INTERVAL) forgetcount = 0;
+			if((ret=forget_head_shift(fr,&newhead,!forgetcount)) <= 0)
 			{
 				*newheadp = newhead;
 				if(NOQUIET) fprintf (stderr, "Note: Hit end of (available) data during resync.\n");

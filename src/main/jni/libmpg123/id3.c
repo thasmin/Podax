@@ -693,7 +693,6 @@ int parse_new_id3(mpg123_handle *fr, unsigned long first4bytes)
 		res =  (((unsigned long) (buf)[0]) << 16) \
 		     | (((unsigned long) (buf)[1]) << 8) \
 		     |  ((unsigned long) (buf)[2]) \
-		,1 \
 	)
 
 	/* length-10 or length-20 (footer present); 4 synchsafe integers == 28 bit number  */

@@ -3,6 +3,9 @@
 #include <fcntl.h>
 #include <android/log.h>
 
+#include <string.h>
+#include <stdio.h>
+
 typedef struct _MP3File
 {
 	mpg123_handle* handle;
@@ -55,50 +58,77 @@ JNIEXPORT jlong JNICALL Java_com_axelby_podax_player_MPG123_openFile
         MP3File* mp3 = mp3file_init(mh);
         const char* fileString = (*env)->GetStringUTFChars(env, filename, NULL);
         err = mpg123_open(mh, fileString);
-        (*env)->ReleaseStringUTFChars(env, filename, fileString);
 
-        if (err == MPG123_OK)
+        if (err != MPG123_OK)
         {
-            int encoding;
-            if (mpg123_getformat(mh, &mp3->rate, &mp3->channels, &encoding) == MPG123_OK)
-            {
-                if(encoding == MPG123_ENC_SIGNED_16)
-                {
-                    // Signed 16 is the default output format anyway;
-                    // it would actually by only different if we forced it.
-                    // So this check is here just for this explanation.
+			(*env)->ReleaseStringUTFChars(env, filename, fileString);
+			mp3file_delete(mp3);
+			return err;
+		}
 
-                    // Ensure that this output format will not change
-                    // (it could, when we allow it).
-                    mpg123_format_none(mh);
-                    mpg123_format(mh, mp3->rate, mp3->channels, encoding);
+		char* index_fn = calloc(1, strlen(fileString) + 6 + 1);
+		strcpy(index_fn, fileString);
+		// remove last path (Podcasts/)
+		char* lastSlash = strrchr(index_fn, '/');
+		char* lastDir = strstr(index_fn, "/Podcasts/");
+		memmove(lastDir, lastSlash, index_fn + strlen(index_fn) - lastSlash + 1);
+		strcat(index_fn, ".index");
+		(*env)->ReleaseStringUTFChars(env, filename, fileString);
 
-                    mp3->buffer_size = mpg123_outblock(mh);
-                    mp3->buffer = (unsigned char*)malloc(mp3->buffer_size);
+		// save / restore index for fast seeking
+		size_t idx_fill;
+		off_t idx_step;
+		off_t* idx_offsets;
+		FILE* index_file = fopen(index_fn, "rb");
+		if (index_file != NULL) {
+			fread(&idx_fill, sizeof(size_t), 1, index_file);
+			fread(&idx_step, sizeof(off_t), 1, index_file);
+			idx_offsets = malloc(idx_fill * sizeof(off_t));
+			fread(idx_offsets, sizeof(off_t), idx_fill, index_file);
+			fclose(index_file);
+			mpg123_set_index(mh, idx_offsets, idx_step, idx_fill);
+		} else {
+			mpg123_scan(mh);
+			mpg123_index(mh, &idx_offsets, &idx_step, &idx_fill);
+			index_file = fopen(index_fn, "wb");
+			fwrite(&idx_fill, sizeof(size_t), 1, index_file);
+			fwrite(&idx_step, sizeof(off_t), 1, index_file);
+			fwrite(idx_offsets, sizeof(off_t), idx_fill, index_file);
+			fclose(index_file);
+		}
+		free(index_fn);
 
-                    mp3->num_samples = mpg123_length(mh);
-					mp3->samples_per_frame = mpg123_spf(mh);
-					mp3->secs_per_frame = mpg123_tpf(mh);
+		// determine format and length
+		int encoding;
+		if (mpg123_getformat(mh, &mp3->rate, &mp3->channels, &encoding) == MPG123_OK)
+		{
+			mpg123_format_none(mh);
+			mpg123_format(mh, mp3->rate, mp3->channels, encoding);
 
-                    if (mp3->num_samples == MPG123_ERR || mp3->samples_per_frame < 0)
-                        mp3->num_frames = 0;
-                    else
-                        mp3->num_frames = mp3->num_samples / mp3->samples_per_frame;
+			mp3->buffer_size = mpg123_outblock(mh);
+			mp3->buffer = (unsigned char*)malloc(mp3->buffer_size);
 
-					if (mp3->num_samples == MPG123_ERR || mp3->samples_per_frame < 0 || mp3->secs_per_frame < 0)
-						mp3->duration = 0;
-					else
-						mp3->duration = mp3->num_samples / mp3->samples_per_frame * mp3->secs_per_frame;
+			mp3->num_samples = mpg123_length(mh);
+			mp3->samples_per_frame = mpg123_spf(mh);
+			mp3->secs_per_frame = mpg123_tpf(mh);
 
-                    return (jlong)mp3;
-                }
-            }
-        }
+			if (mp3->num_samples == MPG123_ERR || mp3->samples_per_frame < 0)
+				mp3->num_frames = 0;
+			else
+				mp3->num_frames = mp3->num_samples / mp3->samples_per_frame;
+
+			if (mp3->num_samples == MPG123_ERR || mp3->samples_per_frame < 0 || mp3->secs_per_frame < 0)
+				mp3->duration = 0;
+			else
+				mp3->duration = mp3->num_samples / mp3->samples_per_frame * mp3->secs_per_frame;
+
+			return (jlong)mp3;
+		}
         mp3file_delete(mp3);
     } else {
 		__android_log_write(ANDROID_LOG_INFO, "podax-jni", mpg123_plain_strerror(err));
 	}
-    return 0;
+    return MPG123_OK;
 }
 
 JNIEXPORT void JNICALL Java_com_axelby_podax_player_MPG123_delete

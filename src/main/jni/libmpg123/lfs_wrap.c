@@ -34,7 +34,7 @@
 	Now, start off easy... translate simple API calls.
 	I need to deal with these here:
 perl -ne '
-if(/^\s*EXPORT\s+(\S+)\s+(mpg123_\S+)\((.*)\);\s*$/)
+if(/^\s*MPG123_EXPORT\s+(\S+)\s+(mpg123_\S+)\((.*)\);\s*$/)
 {
 	$type = $1;
 	$name = $2;

@@ -123,6 +123,8 @@
 #define dct36_sse INT123_dct36_sse
 #define dct36_x86_64 INT123_dct36_x86_64
 #define dct36_avx INT123_dct36_avx
+#define dct36_neon INT123_dct36_neon
+#define dct36_neon64 INT123_dct36_neon64
 #define synth_ntom_set_step INT123_synth_ntom_set_step
 #define ntom_val INT123_ntom_val
 #define ntom_frame_outsamples INT123_ntom_frame_outsamples
@@ -233,6 +235,8 @@
 #define dct64_real_avx INT123_dct64_real_avx
 #define dct64_neon INT123_dct64_neon
 #define dct64_real_neon INT123_dct64_real_neon
+#define dct64_neon64 INT123_dct64_neon64
+#define dct64_real_neon64 INT123_dct64_real_neon64
 #define do_equalizer_3dnow INT123_do_equalizer_3dnow
 #define synth_1to1_3dnow_asm INT123_synth_1to1_3dnow_asm
 #define synth_1to1_arm_asm INT123_synth_1to1_arm_asm
@@ -266,6 +270,14 @@
 #define synth_1to1_s_neon_accurate_asm INT123_synth_1to1_s_neon_accurate_asm
 #define synth_1to1_real_s_neon_asm INT123_synth_1to1_real_s_neon_asm
 #define synth_1to1_s32_s_neon_asm INT123_synth_1to1_s32_s_neon_asm
+#define synth_1to1_neon64_asm INT123_synth_1to1_neon64_asm
+#define synth_1to1_neon64_accurate_asm INT123_synth_1to1_neon64_accurate_asm
+#define synth_1to1_real_neon64_asm INT123_synth_1to1_real_neon64_asm
+#define synth_1to1_s32_neon64_asm INT123_synth_1to1_s32_neon64_asm
+#define synth_1to1_s_neon64_asm INT123_synth_1to1_s_neon64_asm
+#define synth_1to1_s_neon64_accurate_asm INT123_synth_1to1_s_neon64_accurate_asm
+#define synth_1to1_real_s_neon64_asm INT123_synth_1to1_real_s_neon64_asm
+#define synth_1to1_s32_s_neon64_asm INT123_synth_1to1_s32_s_neon64_asm
 #define costab_mmxsse INT123_costab_mmxsse
 #define make_decode_tables_mmx_asm INT123_make_decode_tables_mmx_asm
 #define check_neon INT123_check_neon

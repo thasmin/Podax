@@ -108,6 +108,7 @@ enum optdec
 	,x86_64
 	,arm
 	,neon
+	,neon64
 	,avx
 	,dreidnow_vintage
 	,dreidnowext_vintage
@@ -130,6 +131,7 @@ static const char dn_sse[] = "SSE";
 static const char dn_x86_64[] = "x86-64";
 static const char dn_arm[] = "ARM";
 static const char dn_neon[] = "NEON";
+static const char dn_neon64[] = "NEON64";
 static const char dn_avx[] = "AVX";
 static const char dn_dreidnow_vintage[] = "3DNow_vintage";
 static const char dn_dreidnowext_vintage[] = "3DNowExt_vintage";
@@ -152,6 +154,7 @@ static const char* decname[] =
 	,dn_x86_64
 	,dn_arm
 	,dn_neon
+	,dn_neon64
 	,dn_avx
 	,dn_dreidnow_vintage
 	,dn_dreidnowext_vintage
@@ -190,7 +193,8 @@ enum optcla decclass(const enum optdec);
  || (defined OPT_3DNOW) || (defined OPT_3DNOWEXT) || (defined OPT_X86_64) \
  || (defined OPT_3DNOW_VINTAGE) || (defined OPT_3DNOWEXT_VINTAGE) \
  || (defined OPT_SSE_VINTAGE) \
- || (defined OPT_NEON) || (defined OPT_AVX) || (defined OPT_GENERIC_DITHER)
+ || (defined OPT_NEON) || (defined OPT_NEON64) || (defined OPT_AVX) \
+ || (defined OPT_GENERIC_DITHER)
 #error "Bad decoder choice together with fixed point math!"
 #endif
 #endif
@@ -348,6 +352,15 @@ extern const int costab_mmxsse[];
 #define OPT_MMXORSSE
 #ifndef OPT_MULTI
 #	define defopt neon
+#	define opt_dct36(fr) dct36_neon
+#endif
+#endif
+
+#ifdef OPT_NEON64
+#define OPT_MMXORSSE
+#ifndef OPT_MULTI
+#	define defopt neon64
+#	define opt_dct36(fr) dct36_neon64
 #endif
 #endif
 
@@ -364,7 +377,7 @@ void check_decoders(void);
 
 #	define defopt nodec
 
-#	if (defined OPT_3DNOW_VINTAGE || defined OPT_3DNOWEXT_VINTAGE || defined OPT_SSE || defined OPT_X86_64 || defined OPT_AVX)
+#	if (defined OPT_3DNOW_VINTAGE || defined OPT_3DNOWEXT_VINTAGE || defined OPT_SSE || defined OPT_X86_64 || defined OPT_AVX || defined OPT_NEON || defined OPT_NEON64)
 #		define opt_dct36(fr) ((fr)->cpu_opts.the_dct36)
 #	endif
 
