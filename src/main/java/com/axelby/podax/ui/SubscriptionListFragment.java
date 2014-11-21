@@ -9,15 +9,12 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.PopupMenu;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -80,26 +77,6 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
         }
         return false;
     }
-
-    @Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-		menu.add(0, 0, 0, R.string.unsubscribe);
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case 0:
-				AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-				Cursor cursor = (Cursor) _adapter.getItem(menuInfo.position);
-				SubscriptionCursor subscription = new SubscriptionCursor(cursor);
-				getActivity().getContentResolver().delete(subscription.getContentUri(), null, null);
-				break;
-			default:
-				return super.onContextItemSelected(item);
-		}
-		return true;
-	}
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
