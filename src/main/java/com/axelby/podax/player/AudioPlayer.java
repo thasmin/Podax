@@ -6,19 +6,22 @@ import android.media.AudioTrack;
 import android.util.Log;
 
 public class AudioPlayer implements Runnable {
-	IMediaDecoder _decoder;
-	AudioTrack _track;
+	protected IMediaDecoder _decoder;
+	protected AudioTrack _track;
 
 	// avoid tying up main thread by having thread check these variables to make changes
-	boolean _stopping = false;
-	Float _seekTo = null;
+	protected boolean _stopping = false;
+	protected Float _seekTo = null;
 
-	private boolean _isPlaying = false;
-	private float _seekbase = 0;
-	private float _playbackRate = 1f;
+	protected boolean _isPlaying = false;
+	protected float _seekbase = 0;
+	protected float _playbackRate = 1f;
 
-	public AudioPlayer(String audioFile, float positionInSeconds, float playbackRate) {
+	protected AudioPlayer(float playbackRate) {
 		_playbackRate = playbackRate;
+	}
+	public AudioPlayer(String audioFile, float positionInSeconds, float playbackRate) {
+		this(playbackRate);
 		_decoder = loadFile(audioFile);
 		if (_decoder == null)
 			throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
@@ -51,7 +54,7 @@ public class AudioPlayer implements Runnable {
 		return null;
 	}
 
-	private static AudioTrack createTrackFromDecoder(IMediaDecoder decoder) {
+	protected static AudioTrack createTrackFromDecoder(IMediaDecoder decoder) {
 		AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC,
 				decoder.getRate(),
 				decoder.getNumChannels() == 2 ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
@@ -67,18 +70,18 @@ public class AudioPlayer implements Runnable {
 	}
 
 	public static interface OnCompletionListener { public void onCompletion(); }
-	private OnCompletionListener _completionListener = null;
+	protected OnCompletionListener _completionListener = null;
 	public void setOnCompletionListener(OnCompletionListener completionListener) {
 		this._completionListener = completionListener;
 	}
 
 	public static interface PeriodicListener { public void pulse(float position); }
-	private PeriodicListener _periodicListener = null;
+	protected PeriodicListener _periodicListener = null;
 	public void setPeriodicListener(PeriodicListener periodicListener) {
 		this._periodicListener = periodicListener;
 	}
 
-	private AudioTrack.OnPlaybackPositionUpdateListener _playbackPositionListener =
+	protected AudioTrack.OnPlaybackPositionUpdateListener _playbackPositionListener =
 			new AudioTrack.OnPlaybackPositionUpdateListener() {
 		@Override
 		public void onMarkerReached(AudioTrack audioTrack) { }
@@ -129,7 +132,6 @@ public class AudioPlayer implements Runnable {
 	}
 
 	public float getPosition() {
-		// not sure why track is null but it's happening
 		if (_track == null)
 			return _seekbase;
 		if (_decoder == null)
@@ -137,13 +139,15 @@ public class AudioPlayer implements Runnable {
 		return _seekbase + _playbackRate * _track.getPlaybackHeadPosition() / _track.getSampleRate();
 	}
 
-	private void changeTrackOffset(float offsetInSeconds) {
+	protected void changeTrackOffset(float offsetInSeconds) {
 		if (_decoder == null)
 			return;
 
 		// close the current AudioTrack
-		_track.pause();
-		_track.flush();
+		if (_track != null) {
+			_track.pause();
+			_track.flush();
+		}
 
 		_seekbase = offsetInSeconds;
 		_decoder.seek(offsetInSeconds);
@@ -152,11 +156,15 @@ public class AudioPlayer implements Runnable {
 		_track = createTrackFromDecoder(_decoder);
 		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
 		_track.play();
-		toRelease.release();
+		if (toRelease != null)
+			toRelease.release();
 	}
 
 	@Override
 	public void run() {
+		if (_track == null)
+			return;
+
 		_track.play();
 		_isPlaying = true;
 
@@ -177,7 +185,12 @@ public class AudioPlayer implements Runnable {
 					Thread.sleep(50);
 					continue;
 				}
-				int sampleCount = _decoder.readSamples(pcm, 0, pcm.length);
+				int sampleCount = _decoder.readSamples(pcm);
+				// handle need more data
+				if (sampleCount == -1) {
+					Thread.sleep(50);
+					continue;
+				}
 				if (sampleCount == 0)
 					break;
 				short[] wsolapcm = wsola.stretch(pcm, _decoder.getRate(), _decoder.getNumChannels() == 2, _playbackRate, 1, wsolaError);
@@ -211,7 +224,7 @@ public class AudioPlayer implements Runnable {
 		}
 	}
 
-	private void waitAndCloseTrack() {
+	protected void waitAndCloseTrack() {
 		if (_track == null)
 			return;
 
@@ -228,5 +241,8 @@ public class AudioPlayer implements Runnable {
 
 		_track.release();
 		_track = null;
+	}
+
+	public void release() {
 	}
 }

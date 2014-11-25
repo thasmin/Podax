@@ -2,8 +2,7 @@ package com.axelby.podax.player;
 
 public interface IMediaDecoder {
 	void close();
-	int readSamples(short[] buffer, int offset, int numSamples);
-	int skipSamples(int numSamples);
+	int readSamples(short[] buffer);
 	int seek(float offsetInSeconds);
 	float getPosition();
 	int getNumChannels();
