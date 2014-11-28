@@ -109,11 +109,10 @@ public class RSSParser {
 					item.setPublicationDate(Utils.parseDate(parser.nextText()));
 				} else if (name.equalsIgnoreCase("enclosure")) {
 					item.setMediaURL(parser.getAttributeValue(null, "url"));
-					try {
+					if (parser.getAttributeValue(null, "length") != null)
 						item.setMediaSize(Long.valueOf(parser.getAttributeValue(null, "length")));
-					} catch (Exception e) {
+					else
 						item.setMediaSize(0L);
-					}
 				}
 			} else if (eventType == XmlPullParser.END_TAG) {
 				String name = parser.getName();

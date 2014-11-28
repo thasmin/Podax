@@ -15,6 +15,7 @@ public class PlayerStatus {
 				EpisodeProvider.COLUMN_LAST_POSITION,
 				EpisodeProvider.COLUMN_DURATION,
 				EpisodeProvider.COLUMN_MEDIA_URL,
+				EpisodeProvider.COLUMN_FILE_SIZE,
 		};
 		Cursor cursor = context.getContentResolver().query(EpisodeProvider.ACTIVE_EPISODE_URI, projection, null, null, null);
 		PlayerStatus status = new PlayerStatus();
@@ -33,6 +34,7 @@ public class PlayerStatus {
 			status._position = episode.getLastPosition();
 			status._duration = episode.getDuration();
 			status._filename = episode.getFilename(context);
+			status._isDownloaded = episode.isDownloaded(context);
 		}
 		cursor.close();
 		return status;
@@ -83,6 +85,7 @@ public class PlayerStatus {
 	private String _title;
 	private String _subscriptionTitle;
 	private String _filename;
+	private boolean _isDownloaded;
 
 	private PlayerStatus() {
 		_state = PlayerStates.PLAYLISTEMPTY;
@@ -92,38 +95,14 @@ public class PlayerStatus {
 	public PlayerStates getState() {
 		return _state;
 	}
-
 	public boolean isPlaying() { return _state == PlayerStates.PLAYING; }
-
-	public long getEpisodeId() {
-		return _episodeId;
-	}
-
-	public long getSubscriptionId() {
-		return _subscriptionId;
-	}
-
+	public long getEpisodeId() { return _episodeId; }
+	public long getSubscriptionId() { return _subscriptionId; }
 	public int getPosition() { return _position; }
-
-	public int getDuration() {
-		return _duration;
-	}
-
-	public String getTitle() {
-		return _title;
-	}
-
-	public String getSubscriptionTitle() {
-		return _subscriptionTitle;
-	}
-
+	public int getDuration() { return _duration; }
+	public String getTitle() { return _title; }
+	public String getSubscriptionTitle() { return _subscriptionTitle; }
 	public String getFilename() { return _filename; }
-
-	public boolean hasActiveEpisode() {
-		return getState() != PlayerStates.PLAYLISTEMPTY;
-	}
-
-	public boolean isPlayerServiceActive() {
-		return getState() == PlayerStates.PLAYING || getState() == PlayerStates.PAUSED;
-	}
+	public boolean isEpisodeDownloaded() { return _isDownloaded; }
+	public boolean hasActiveEpisode() { return getState() != PlayerStates.PLAYLISTEMPTY; }
 }

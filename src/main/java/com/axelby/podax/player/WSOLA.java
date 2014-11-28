@@ -49,14 +49,13 @@ public class WSOLA
 	// On success, returns a short array with time-stretched audio data. The length of the output array is input length / speedRatio.
 	// On failure, returns null. The err parameter holds error information.
 	//
-	public short[] stretch(short[] audioBuffer, int sampleRate, boolean stereo, float speedRatio, int quality, Error err) {
+	public short[] stretch(short[] audioBuffer, int plainSize, int sampleRate, boolean stereo, float speedRatio, int quality, Error err) {
 		short[] stretchBuffer;
-		int plainSize;
 		int stretchSize;
 		int errCode;
 
 		if (audioBuffer == null
-				|| (plainSize = audioBuffer.length) == 0
+				|| plainSize == 0
 				|| sampleRate <= 0
 				|| speedRatio <= 0.0f) {
 			if (err != null)
@@ -78,7 +77,7 @@ public class WSOLA
 			return null;
 		}
 
-		errCode = wsolaStretchJNI(audioBuffer, stretchBuffer, sampleRate, stereo, speedRatio, quality);
+		errCode = wsolaStretchJNI(audioBuffer, plainSize, stretchBuffer, sampleRate, stereo, speedRatio, quality);
 
 		if (errCode != Error.SUCCESS)
 			stretchBuffer = null;
@@ -95,7 +94,7 @@ public class WSOLA
 	public native void close();
 
 	// NDK WSOLA time-stretch function:
-	private native int wsolaStretchJNI(short[] plainBuffer, short[] stretchBuffer,
+	private native int wsolaStretchJNI(short[] plainBuffer, int sampleCount, short[] stretchBuffer,
 									   int sampleRate, boolean stereo, float speedRatio, int quality);
 
 	static {

@@ -55,6 +55,10 @@ public class AudioPlayer implements Runnable {
 	}
 
 	protected static AudioTrack createTrackFromDecoder(IMediaDecoder decoder) {
+		// streaming decoder will return rate as 0 if not enough data has been loaded
+		if (decoder.getRate() == 0)
+			return null;
+
 		AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC,
 				decoder.getRate(),
 				decoder.getNumChannels() == 2 ? AudioFormat.CHANNEL_OUT_STEREO : AudioFormat.CHANNEL_OUT_MONO,
@@ -147,23 +151,34 @@ public class AudioPlayer implements Runnable {
 		if (_track != null) {
 			_track.pause();
 			_track.flush();
+			_track.release();
 		}
 
 		_seekbase = offsetInSeconds;
 		_decoder.seek(offsetInSeconds);
 
-		AudioTrack toRelease = _track;
+		// create new track
 		_track = createTrackFromDecoder(_decoder);
-		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
-		_track.play();
-		if (toRelease != null)
-			toRelease.release();
+		if (_track != null) {
+			_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
+			_track.play();
+		}
 	}
 
 	@Override
 	public void run() {
-		if (_track == null)
+		try {
+			while (_track == null) {
+				Thread.sleep(50);
+				_track = createTrackFromDecoder(_decoder);
+				if (_track == null)
+					continue;
+				_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
+			}
+		} catch (InterruptedException e) {
+			Log.d("Podax", "interrupted while creating track", e);
 			return;
+		}
 
 		_track.play();
 		_isPlaying = true;
@@ -193,7 +208,7 @@ public class AudioPlayer implements Runnable {
 				}
 				if (sampleCount == 0)
 					break;
-				short[] wsolapcm = wsola.stretch(pcm, _decoder.getRate(), _decoder.getNumChannels() == 2, _playbackRate, 1, wsolaError);
+				short[] wsolapcm = wsola.stretch(pcm, sampleCount, _decoder.getRate(), _decoder.getNumChannels() == 2, _playbackRate, 1, wsolaError);
 				if (wsolaError.code == WSOLA.Error.SUCCESS)
 					_track.write(wsolapcm, 0, wsolapcm.length);
 			} while (_track != null);
@@ -241,6 +256,8 @@ public class AudioPlayer implements Runnable {
 
 		_track.release();
 		_track = null;
+
+		release();
 	}
 
 	public void release() {

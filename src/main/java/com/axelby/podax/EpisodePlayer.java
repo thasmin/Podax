@@ -7,8 +7,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.axelby.podax.Constants;
 import com.axelby.podax.player.AudioPlayer;
+import com.axelby.podax.player.StreamAudioPlayer;
 
 import java.util.ArrayList;
 
@@ -29,7 +29,7 @@ public class EpisodePlayer {
 	};
 
 	protected Context _context;
-	private ArrayList<Boolean> _pausingFor = new ArrayList<Boolean>(2);
+	private ArrayList<Boolean> _pausingFor = new ArrayList<>(2);
 
 	private OnPauseListener _onPauseListener = null;
 	private OnPlayListener _onPlayListener = null;
@@ -47,7 +47,7 @@ public class EpisodePlayer {
 		_pausingFor.add(false);
 	}
 
-	public boolean changeEpisode(String filename, float positionInSeconds) {
+	public boolean changeEpisode(String filename, float positionInSeconds, boolean stream) {
 		if (_player != null) {
 			_player.stop();
 			_player = null;
@@ -68,7 +68,12 @@ public class EpisodePlayer {
 				Toast.makeText(_context, "This episode is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
 				return false;
 			}
-			_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
+
+			if (stream)
+				_player = new StreamAudioPlayer(filename, positionInSeconds, playbackRate);
+			else
+				_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
+
 			_playerThread = new Thread(_player, "AudioPlayer");
 
 			_player.setOnCompletionListener(new AudioPlayer.OnCompletionListener() {

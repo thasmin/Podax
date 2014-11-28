@@ -234,10 +234,14 @@ public class PlayerService extends Service {
 			return;
 		}
 
-		if (status.getEpisodeId() != _currentEpisodeId) {
-			_player.changeEpisode(status.getFilename(), status.getPosition() / 1000.0f);
-		} else
+		if (status.getEpisodeId() == _currentEpisodeId)
 			_player.seekTo(status.getPosition() / 1000.0f);
+		else if (status.isEpisodeDownloaded())
+			_player.changeEpisode(status.getFilename(), status.getPosition() / 1000.0f, false);
+		else {
+			EpisodeDownloader.download(this, status.getEpisodeId());
+			_player.changeEpisode(status.getFilename(), status.getPosition() / 1000.0f, true);
+		}
 	}
 
 	private void showNotification() {

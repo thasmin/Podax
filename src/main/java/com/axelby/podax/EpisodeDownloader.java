@@ -56,6 +56,7 @@ class EpisodeDownloader {
 						status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
 					c.close();
 				}
+				// paused, pending, and running means it's already downloading
 				if (status != DownloadManager.STATUS_FAILED && status != DownloadManager.STATUS_SUCCESSFUL)
 					return;
 				downloadManager.remove(episode.getDownloadId());
@@ -85,6 +86,8 @@ class EpisodeDownloader {
 			ContentValues values = new ContentValues();
 			values.put(EpisodeProvider.COLUMN_DOWNLOAD_ID, downloadId);
 			_context.getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
+
+			new File(EpisodeCursor.getDownloadingIndicatorFilename(_context, episodeId)).createNewFile();
 		} catch (Exception e) {
 			Log.e("Podax", "error while downloading", e);
 		} finally {

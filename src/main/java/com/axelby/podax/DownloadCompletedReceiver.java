@@ -12,6 +12,8 @@ import android.support.v4.app.NotificationCompat;
 
 import com.axelby.podax.ui.MainActivity;
 
+import java.io.File;
+
 public class DownloadCompletedReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -34,6 +36,9 @@ public class DownloadCompletedReceiver extends BroadcastReceiver {
 							int totalSize = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
 							values.put(EpisodeProvider.COLUMN_FILE_SIZE, totalSize);
 							context.getContentResolver().update(EpisodeProvider.getContentUri(episode.getId()), values, null, null);
+
+							// tell watchers that this file is finished being downloaded
+							new File(episode.getDownloadingIndicatorFilename(context)).delete();
 						}
 						pc.close();
 					}

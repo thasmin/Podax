@@ -201,6 +201,9 @@ public class SubscriptionUpdater {
 	}
 
 	private void downloadThumbnail(long subscriptionId, String thumbnailUrl) {
+		if (thumbnailUrl == null)
+			return;
+
 		try {
 			HttpURLConnection conn = (HttpURLConnection) new URL(thumbnailUrl).openConnection();
 			if (conn.getResponseCode() != HttpURLConnection.HTTP_OK)

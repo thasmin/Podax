@@ -20,7 +20,6 @@ public class EpisodeCursor {
 	private Integer _titleColumn = null;
 	private Integer _subscriptionIdColumn = null;
 	private Integer _subscriptionTitleColumn = null;
-	private Integer _subscriptionThumbnailColumn = null;
 	private Integer _subscriptionUrlColumn = null;
 	private Integer _playlistPositionColumn = null;
 	private Integer _mediaUrlColumn = null;
@@ -165,10 +164,34 @@ public class EpisodeCursor {
 	public String getOldFilename(Context context) {
 		return EpisodeCursor.getOldStoragePath(context) + String.valueOf(getId()) + "." + EpisodeCursor.getExtension(getMediaUrl());
 	}
-	public String getIndexFilename(Context context) {
+
+	public static String getIndexFilename(Context context, long id) {
 		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
 		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
-		return podaxDir + String.valueOf(getId()) + ".index";
+		return podaxDir + String.valueOf(id) + ".index";
+	}
+	public String getIndexFilename(Context context) {
+		return EpisodeCursor.getIndexFilename(context, getId());
+	}
+
+	public static String getDownloadingIndicatorFilename(String externalPath, long id) {
+		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
+		return podaxDir + String.valueOf(id) + ".downloading";
+	}
+	public static String getDownloadingIndicatorFilename(Context context, long id) {
+		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
+		return getDownloadingIndicatorFilename(externalPath, id);
+	}
+	public String getDownloadingIndicatorFilename(Context context) {
+		return getDownloadingIndicatorFilename(context, getId());
+	}
+
+	public static String extractExternalStorageDirectory(String filename) {
+		int podaxSpecificStart = filename.indexOf("/Android/data/com.axelby.podax/files/");
+		return filename.substring(0, podaxSpecificStart);
+	}
+	public static long extractIdFromFilename(String filename) {
+		return 0l;
 	}
 
 	public boolean isDownloaded(Context context) {
@@ -227,12 +250,6 @@ public class EpisodeCursor {
 	public void addToPlaylist(Context context) {
 		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
-		context.getContentResolver().update(getContentUri(), values, null, null);
-	}
-
-	public void moveToFirstInPlaylist(Context context) {
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 

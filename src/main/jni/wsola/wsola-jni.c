@@ -25,15 +25,14 @@ Java_com_axelby_podax_player_WSOLA_close(JNIEnv* env, jobject thiz)
 
 JNIEXPORT jint JNICALL
 Java_com_axelby_podax_player_WSOLA_wsolaStretchJNI(JNIEnv* env, jobject thiz, 
-	jshortArray plainBuffer, jshortArray stretchBuffer,
+	jshortArray plainBuffer, jint inSize, jshortArray stretchBuffer,
 	jint sampleRate, jboolean stereo, jfloat speedRatio, jint quality)
 {
 	short *inBuf, *outBuf;
-	int inSize, outSize;
+	int outSize;
 	int errCode = ERR_INVALIDPARAMS;
 
 	if ((inBuf = (*env)->GetShortArrayElements(env, plainBuffer, NULL)) != NULL) {
-		inSize = (*env)->GetArrayLength(env, plainBuffer);
 		if ((outBuf = (*env)->GetShortArrayElements(env, stretchBuffer, NULL)) != NULL) {
 			outSize = (*env)->GetArrayLength(env, stretchBuffer);
 			
