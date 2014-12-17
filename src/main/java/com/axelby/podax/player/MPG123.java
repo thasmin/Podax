@@ -1,23 +1,15 @@
 package com.axelby.podax.player;
 
 public class MPG123 implements IMediaDecoder {
-	static boolean _initted = false;
 	static {
-		MPG123.initializeLibrary();
-	}
-
-	public static void initializeLibrary() {
-		if (!_initted) {
-			System.loadLibrary("mpg123");
-			MPG123.init();
-			_initted = true;
-		}
+		System.loadLibrary("mpg123");
+		MPG123.init();
 	}
 
 	protected static native int init();
 	protected static native long openFile(String filename);
 	protected static native void delete(long handle);
-	protected static native int readSamples(long handle, short[] buffer);
+	protected static native boolean skipFrame(long handle);
 	protected static native int seek(long handle, float offsetInSeconds);
 	protected static native float getPosition(long handle);
 	protected static native int getNumChannels(long handle);
@@ -25,11 +17,14 @@ public class MPG123 implements IMediaDecoder {
 	protected static native float getDuration(long handle);
 
 	protected static native long openStream();
-	protected static native void feed(long handle, byte[] buffer);
+	protected static native void feed(long handle, byte[] buffer, int count);
 	protected static native int readFrame(long handle, short[] buffer);
+	protected static native int getSeekFrameOffset(long handle, float position);
 
-	long _handle = 0;
-	protected MPG123() { }
+	protected boolean _streamComplete = false;
+
+	protected long _handle = 0;
+	public MPG123() { _handle = openStream(); }
 	public MPG123(String filename) { _handle = openFile(filename); }
 
 	public void close() {
@@ -37,13 +32,16 @@ public class MPG123 implements IMediaDecoder {
 			MPG123.delete(_handle);
 	}
 
-	public int readSamples(short[] buffer) {
-		return MPG123.readSamples(_handle, buffer);
-	}
+	public int readFrame(short[] buffer) { return MPG123.readFrame(_handle, buffer); }
+	public boolean skipFrame() { return MPG123.skipFrame(_handle); }
 	public int seek(float offset) { return MPG123.seek(_handle, offset); }
 	public float getPosition() { return MPG123.getPosition(_handle); }
 	public int getNumChannels() { return MPG123.getNumChannels(_handle); }
 	public int getRate() { return MPG123.getRate(_handle); }
 	public float getDuration() { return MPG123.getDuration(_handle); }
+	public int getSeekFrameOffset(float position) { return MPG123.getSeekFrameOffset(_handle, position); }
+	public void feed(byte[] buffer, int count) { MPG123.feed(_handle, buffer, count); }
+	public void completeStream() { _streamComplete = true; }
+	public boolean isStreamComplete() { return _streamComplete; }
 }
 

@@ -7,17 +7,18 @@ public class Vorbis implements IMediaDecoder {
 
 	private static native long openFile(String filename);
 	private static native void delete(long handle);
-	private static native int readSamples(long handle, short[] buffer);
+	private static native int readFrame(long handle, short[] buffer);
+	private static native boolean skipFrame(long handle);
 	private static native int seek(long handle, float offset);
 	private static native float getPosition(long handle);
 	private static native int getNumChannels(long handle);
 	private static native int getRate(long handle);
 	private static native float getDuration(long handle);
 
+	protected boolean _streamComplete = false;
+
 	long _handle = 0;
-	public Vorbis(String filename) {
-		_handle = openFile(filename);
-	}
+	public Vorbis(String filename) { _handle = openFile(filename); _streamComplete = true; }
 
 	@Override
 	public void close() {
@@ -25,16 +26,18 @@ public class Vorbis implements IMediaDecoder {
 			Vorbis.delete(_handle);
 	}
 
-	@Override public int readSamples(short[] buffer) { return Vorbis.readSamples(_handle, buffer); }
+	@Override public int readFrame(short[] buffer) { return Vorbis.readFrame(_handle, buffer); }
+	@Override public boolean skipFrame() { return Vorbis.skipFrame(_handle); }
 	@Override public int seek(float offset) { return Vorbis.seek(_handle, offset); }
-	@Override public float getPosition() {
-		return Vorbis.getPosition(_handle);
-	}
-	@Override public int getNumChannels() {
-		return Vorbis.getNumChannels(_handle);
-	}
-	@Override public int getRate() {
-		return Vorbis.getRate(_handle);
-	}
+	@Override public float getPosition() { return Vorbis.getPosition(_handle); }
+	@Override public int getNumChannels() { return Vorbis.getNumChannels(_handle); }
+	@Override public int getRate() { return Vorbis.getRate(_handle); }
 	@Override public float getDuration() { return Vorbis.getDuration(_handle); }
+
+	// vorbis streaming not implemented
+	@Override public int getSeekFrameOffset(float position) { return 0; }
+	@Override public void feed(byte[] buffer, int count) {  }
+	@Override public void completeStream() { _streamComplete = true; }
+	@Override public boolean isStreamComplete() { return _streamComplete; }
 }
+

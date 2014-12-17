@@ -64,15 +64,18 @@ public class EpisodePlayer {
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
-			if (!AudioPlayer.supports(filename)) {
+			if (!AudioPlayer.supports(filename, stream)) {
 				Toast.makeText(_context, "This episode is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
 				return false;
 			}
 
 			if (stream)
-				_player = new StreamAudioPlayer(filename, positionInSeconds, playbackRate);
+				_player = new StreamAudioPlayer(filename, playbackRate);
 			else
-				_player = new AudioPlayer(filename, positionInSeconds, playbackRate);
+				_player = new AudioPlayer(filename, playbackRate);
+
+			if (positionInSeconds != 0)
+				_player.seekTo(positionInSeconds);
 
 			_playerThread = new Thread(_player, "AudioPlayer");
 

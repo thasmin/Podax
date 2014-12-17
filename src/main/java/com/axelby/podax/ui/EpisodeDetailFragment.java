@@ -117,19 +117,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 					PlayerService.stop(activity);
 					return;
 				}
-				Cursor c = activity.getContentResolver().query(EpisodeProvider.getContentUri(_podcastId), null, null, null, null);
-				if (c == null)
-					return;
-				if (!c.moveToFirst()) {
-					c.close();
-					return;
-				}
-				EpisodeCursor p = new EpisodeCursor(c);
-				if (p.isDownloaded(activity))
-					PlayerService.play(activity, _podcastId);
-				else
-					Toast.makeText(activity, R.string.episode_not_downloaded, Toast.LENGTH_LONG).show();
-				c.close();
+				PlayerService.play(activity, _podcastId);
 			}
 		});
 

@@ -1,121 +1,93 @@
 package com.axelby.podax.player;
 
-import android.os.FileObserver;
-import android.util.Log;
-
 import com.axelby.podax.EpisodeCursor;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 public class StreamAudioPlayer extends AudioPlayer {
-	private final Thread _watcher;
 	private final String _filename;
-	private final MPG123Stream _audioStream;
+	private final String _downloadingIndicatorFilename;
 
-	private boolean _fileClosed = false;
-	private FileObserver _observer = null;
+	private StreamFeeder _feeder;
 
-	public StreamAudioPlayer(String filename, float positionInSeconds, float playbackRate) {
+	private IMediaDecoder _rabbitDecoder;
+	private StreamSkipper _skipper;
+	private StreamFeeder _rabbitFeeder;
+
+	public StreamAudioPlayer(String filename, float playbackRate) {
 		super(playbackRate);
 		_filename = filename;
-		_decoder = _audioStream = new MPG123Stream();
-		_watcher = new Thread(_watchFile, "StreamAudioPlayer-filewatcher");
-		_watcher.start();
+		_downloadingIndicatorFilename = getDownloadingIndicatorFilename();
+
+		_rabbitDecoder = _decoder = new MPG123();
+		_rabbitFeeder = _feeder = new StreamFeeder(_filename, _downloadingIndicatorFilename, _decoder);
 	}
 
-	// stream from the file to the audio stream
-	// handle cases when file is completely downloaded, partially downloaded, and not created yet
-	private final Runnable _watchFile = new Runnable() {
-		@Override public void run() {
-			try {
-				InputStream stream = null;
-				File streamingFile = new File(_filename);
+	private String getDownloadingIndicatorFilename() {
+		// alternatively, send the context here and use the content resolver
+		String externalPath = EpisodeCursor.extractExternalStorageDirectory(_filename);
+		long id = EpisodeCursor.extractIdFromFilename(_filename);
+		return EpisodeCursor.getDownloadingIndicatorFilename(externalPath, id);
+	}
 
-				// read everything we can from the file
-				if (streamingFile.exists()) {
-					stream = new BufferedInputStream(new FileInputStream(_filename));
-					int available;
-					while ((available = stream.available()) > 0) {
-						byte[] b = new byte[available];
-						stream.read(b);
-						_audioStream.feed(b);
-					}
-				}
+	@Override protected void changeTrackOffset(float offsetInSeconds) {
+		if (_decoder == null)
+			return;
 
-				// wait for the android downloader to create the file
-				while (!streamingFile.exists())
-					Thread.sleep(100);
-				Thread.sleep(100);
-Log.d("Podax", "watched streaming file exists");
+		try {
+			closeAudioTrack(_track);
+			_track = null;
 
-				// alternatively, send the context here and use the content resolver
-				String externalPath = EpisodeCursor.extractExternalStorageDirectory(_filename);
-				long id = EpisodeCursor.extractIdFromFilename(_filename);
-				String downloadingIndicatorFile = EpisodeCursor.getDownloadingIndicatorFilename(externalPath, id);
+			// keep feeding until the offset is available
+			long fileOffset = findSeekFileOffset(_rabbitDecoder, offsetInSeconds);
 
-				// if the downloading indicator file doesn't exist by now, we're not downloading it
-				if (!new File(downloadingIndicatorFile).exists())
-					return;
+			// switch the rabbit decoder to skip all frames to get future seek offsets
+			if (_decoder == _rabbitDecoder)
+				_skipper = new StreamSkipper(_rabbitDecoder);
 
-				_observer = new FileObserver(downloadingIndicatorFile, FileObserver.DELETE_SELF) {
-					@Override
-					public void onEvent(int event, String path) {
-Log.d("Podax", "watched streaming file closed");
-						_fileClosed = true;
-					}
-				};
-				_observer.startWatching();
+			// start a new feeder at the offset
+			_seekbase = offsetInSeconds;
+			_decoder = new MPG123();
+			_feeder = new StreamFeeder(_filename, _downloadingIndicatorFilename, _decoder, fileOffset);
 
-				if (stream == null)
-					stream = new BufferedInputStream(new FileInputStream(_filename));
-
-				int read;
-				byte[] c = new byte[1024*100]; // default bufferedinputstream buffer size
-				while (true) {
-					int available = stream.available();
-					if (_fileClosed && available == 0)
-						break;
-					if (available == 0) {
-						Thread.sleep(100);
-						continue;
-					}
-
-//Log.d("Podax", "feeding data from watched file");
-					read = stream.read(c);
-
-					// shouldn't happen because data is available, but handle it gracefully anyway
-					if (read == -1)
-						continue;
-					if (read == c.length)
-						_audioStream.feed(c);
-					else {
-						byte[] d = new byte[read];
-						System.arraycopy(c, 0, d, 0, read);
-						_audioStream.feed(d);
-					}
-				}
-			} catch (IOException e) {
-				Log.d("Podax", "IOException while watching streaming file", e);
-			} catch (InterruptedException ignored) {
-Log.d("Podax", "interrupted - stopped reading");
+			// create new track
+			_track = createTrackFromDecoder(_decoder, _playbackPositionListener);
+			while (_track == null) {
+				Thread.sleep(50);
+				_track = createTrackFromDecoder(_decoder, _playbackPositionListener);
 			}
-Log.d("Podax", "done watching file");
+			_track.play();
+		} catch (InterruptedException ignored) {
+			// assume that this will be released by its interruptor
 		}
-	};
+	}
+
+	private static long findSeekFileOffset(IMediaDecoder decoder, float seekToSeconds) throws InterruptedException {
+		long fileOffset = decoder.getSeekFrameOffset(seekToSeconds);
+		// keep trying to skip frame until offset is found or out of data
+		while (fileOffset == -1) {
+			boolean skippedFrame = decoder.skipFrame();
+			if (skippedFrame) {
+				fileOffset = decoder.getSeekFrameOffset(seekToSeconds);
+				continue;
+			}
+
+			// check for out of data
+			if (decoder.isStreamComplete())
+				break;
+			// sleep to wait for more data
+			Thread.sleep(50);
+		}
+		return fileOffset;
+	}
 
 	@Override
 	public void release() {
-		super.release();
+		if (_skipper != null)
+			_skipper.close();
+		if (_rabbitFeeder != null && _rabbitFeeder != _feeder)
+			_rabbitFeeder.finish();
+		if (_rabbitDecoder != null && _rabbitDecoder != _decoder)
+			_rabbitDecoder.close();
 
-		try {
-			if (_observer != null)
-				_observer.stopWatching();
-			_watcher.interrupt();
-			_watcher.join();
-		} catch (InterruptedException ignored) { }
+		super.release();
 	}
 }

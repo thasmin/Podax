@@ -20,25 +20,24 @@ public class AudioPlayer implements Runnable {
 	protected AudioPlayer(float playbackRate) {
 		_playbackRate = playbackRate;
 	}
-	public AudioPlayer(String audioFile, float positionInSeconds, float playbackRate) {
+	public AudioPlayer(String audioFile, float playbackRate) {
 		this(playbackRate);
 		_decoder = loadFile(audioFile);
 		if (_decoder == null)
 			throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
-		if (positionInSeconds != 0) {
-			_seekbase = positionInSeconds;
-			_decoder.seek(positionInSeconds);
-		}
-		_track = createTrackFromDecoder(_decoder);
-		_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
+		_track = createTrackFromDecoder(_decoder, _playbackPositionListener);
 	}
 
-	public static boolean supports(String audioFile) {
+	public static boolean supports(String audioFile, boolean streaming) {
 		int lastDot = audioFile.lastIndexOf('.');
 		if (lastDot <= 0)
 			return false;
 		String extension = audioFile.substring(lastDot + 1);
-		return extension.equals("mp3") || extension.equals("ogg") || extension.equals("oga");
+		if (extension.equals("mp3"))
+			return true;
+		if (extension.equals("ogg") || extension.equals("oga"))
+			return !streaming;
+		return false;
 	}
 
 	public static IMediaDecoder loadFile(String audioFile) {
@@ -54,7 +53,7 @@ public class AudioPlayer implements Runnable {
 		return null;
 	}
 
-	protected static AudioTrack createTrackFromDecoder(IMediaDecoder decoder) {
+	protected static AudioTrack createTrackFromDecoder(IMediaDecoder decoder, AudioTrack.OnPlaybackPositionUpdateListener playbackPositionListener) {
 		// streaming decoder will return rate as 0 if not enough data has been loaded
 		if (decoder.getRate() == 0)
 			return null;
@@ -66,6 +65,7 @@ public class AudioPlayer implements Runnable {
 				decoder.getRate() * 2,
 				AudioTrack.MODE_STREAM);
 		track.setPositionNotificationPeriod(decoder.getRate());
+		track.setPlaybackPositionUpdateListener(playbackPositionListener);
 		return track;
 	}
 
@@ -121,13 +121,8 @@ public class AudioPlayer implements Runnable {
 		_isPlaying = true;
 	}
 
-	public void seekTo(float offsetInSeconds) {
-		_seekTo = offsetInSeconds;
-	}
-
-	public void stop() {
-		_stopping = true;
-	}
+	public void seekTo(float offsetInSeconds) { _seekTo = offsetInSeconds; }
+	public void stop() { _stopping = true; }
 
 	public float getDuration() {
 		if (_decoder == null)
@@ -147,21 +142,24 @@ public class AudioPlayer implements Runnable {
 		if (_decoder == null)
 			return;
 
-		// close the current AudioTrack
-		if (_track != null) {
-			_track.pause();
-			_track.flush();
-			_track.release();
-		}
+		closeAudioTrack(_track);
+		_track = null;
 
 		_seekbase = offsetInSeconds;
 		_decoder.seek(offsetInSeconds);
 
 		// create new track
-		_track = createTrackFromDecoder(_decoder);
-		if (_track != null) {
-			_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
+		_track = createTrackFromDecoder(_decoder, _playbackPositionListener);
+		if (_track != null)
 			_track.play();
+	}
+
+	protected void closeAudioTrack(AudioTrack track) {
+		// close the current AudioTrack
+		if (track != null) {
+			track.pause();
+			track.flush();
+			track.release();
 		}
 	}
 
@@ -170,10 +168,9 @@ public class AudioPlayer implements Runnable {
 		try {
 			while (_track == null) {
 				Thread.sleep(50);
-				_track = createTrackFromDecoder(_decoder);
-				if (_track == null)
-					continue;
-				_track.setPlaybackPositionUpdateListener(_playbackPositionListener);
+				_track = createTrackFromDecoder(_decoder, _playbackPositionListener);
+				if (_track != null)
+					break;
 			}
 		} catch (InterruptedException e) {
 			Log.d("Podax", "interrupted while creating track", e);
@@ -200,7 +197,7 @@ public class AudioPlayer implements Runnable {
 					Thread.sleep(50);
 					continue;
 				}
-				int sampleCount = _decoder.readSamples(pcm);
+				int sampleCount = _decoder.readFrame(pcm);
 				// handle need more data
 				if (sampleCount == -1) {
 					Thread.sleep(50);
