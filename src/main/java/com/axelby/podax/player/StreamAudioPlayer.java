@@ -1,8 +1,11 @@
 package com.axelby.podax.player;
 
+import android.content.Context;
+
 import com.axelby.podax.EpisodeCursor;
 
 public class StreamAudioPlayer extends AudioPlayer {
+	private final Context _context;
 	private final String _filename;
 	private final String _downloadingIndicatorFilename;
 
@@ -12,8 +15,9 @@ public class StreamAudioPlayer extends AudioPlayer {
 	private StreamSkipper _skipper;
 	private StreamFeeder _rabbitFeeder;
 
-	public StreamAudioPlayer(String filename, float playbackRate) {
+	public StreamAudioPlayer(Context context, String filename, float playbackRate) {
 		super(playbackRate);
+		_context = context;
 		_filename = filename;
 		_downloadingIndicatorFilename = getDownloadingIndicatorFilename();
 
@@ -23,7 +27,7 @@ public class StreamAudioPlayer extends AudioPlayer {
 
 	private String getDownloadingIndicatorFilename() {
 		// alternatively, send the context here and use the content resolver
-		String externalPath = EpisodeCursor.extractExternalStorageDirectory(_filename);
+		String externalPath = EpisodeCursor.getStoragePath(_context);
 		long id = EpisodeCursor.extractIdFromFilename(_filename);
 		return EpisodeCursor.getDownloadingIndicatorFilename(externalPath, id);
 	}

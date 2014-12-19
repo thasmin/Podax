@@ -186,12 +186,10 @@ public class EpisodeCursor {
 		return getDownloadingIndicatorFilename(context, getId());
 	}
 
-	public static String extractExternalStorageDirectory(String filename) {
-		int podaxSpecificStart = filename.indexOf("/Android/data/com.axelby.podax/files/");
-		return filename.substring(0, podaxSpecificStart);
-	}
 	public static long extractIdFromFilename(String filename) {
-		return 0l;
+		String name = new File(filename).getName();
+		String id = name.substring(0, name.lastIndexOf("."));
+		return Long.valueOf(id);
 	}
 
 	public boolean isDownloaded(Context context) {

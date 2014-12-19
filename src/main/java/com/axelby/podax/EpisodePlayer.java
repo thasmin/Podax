@@ -70,7 +70,7 @@ public class EpisodePlayer {
 			}
 
 			if (stream)
-				_player = new StreamAudioPlayer(filename, playbackRate);
+				_player = new StreamAudioPlayer(_context, filename, playbackRate);
 			else
 				_player = new AudioPlayer(filename, playbackRate);
 
