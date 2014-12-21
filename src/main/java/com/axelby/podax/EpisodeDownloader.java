@@ -1,23 +1,42 @@
 package com.axelby.podax;
 
-import android.app.DownloadManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
-import android.os.Environment;
-import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.axelby.podax.ui.MainActivity;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 
-class EpisodeDownloader {
-	private EpisodeDownloader() {
-	}
+import okio.BufferedSource;
 
-	public static void download(Context _context, long episodeId) {
+public class EpisodeDownloader {
+	private final static ArrayList<String> _currentlyDownloading = new ArrayList<>(5);
+	public static boolean isDownloading(String filename) { return _currentlyDownloading.contains(filename); }
+
+	private EpisodeDownloader() { }
+
+	public static void download(Context context, long episodeId) {
 		Cursor cursor = null;
+		FileOutputStream outStream = null;
+		File mediaFile = null;
 		try {
+			if (!Helper.ensureWifiPref(context))
+				return;
+
 			String[] projection = {
 					EpisodeProvider.COLUMN_ID,
 					EpisodeProvider.COLUMN_TITLE,
@@ -26,73 +45,93 @@ class EpisodeDownloader {
 					EpisodeProvider.COLUMN_FILE_SIZE,
 					EpisodeProvider.COLUMN_DOWNLOAD_ID,
 			};
-			cursor = _context.getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection,
+			cursor = context.getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection,
 					"podcasts._id = ?",
 					new String[]{String.valueOf(episodeId)}, null);
 			if (cursor == null || !cursor.moveToNext())
 				return;
 
 			EpisodeCursor episode = new EpisodeCursor(cursor);
-			if (episode.isDownloaded(_context))
+			if (episode.isDownloaded(context))
 				return;
 
-			if (new File(episode.getOldFilename(_context)).exists()) {
-				if (!new File(episode.getOldFilename(_context)).renameTo(new File(episode.getFilename(_context))))
-					PodaxLog.log(_context, "unable to move downloaded episode to new folder");
+			// handle two requests
+			if (isDownloading(episode.getFilename(context)))
+				return;
+
+			if (new File(episode.getOldFilename(context)).exists()) {
+				if (!new File(episode.getOldFilename(context)).renameTo(new File(episode.getFilename(context))))
+					PodaxLog.log(context, "unable to move downloaded episode to new folder");
 				return;
 			}
 
-			DownloadManager downloadManager = (DownloadManager) _context.getSystemService(Context.DOWNLOAD_SERVICE);
+			mediaFile = new File(episode.getFilename(context));
+			_currentlyDownloading.add(mediaFile.getAbsolutePath());
+			outStream = new FileOutputStream(mediaFile, true);
 
-			// if download id is already set, download has been queued
-			// only continue if download will not be finished itself (failed or successful)
-			if (episode.getDownloadId() != null) {
-				DownloadManager.Query query = new DownloadManager.Query();
-				query.setFilterById(episode.getDownloadId());
-				int status = DownloadManager.STATUS_FAILED;
-				Cursor c = downloadManager.query(query);
-				if (c != null) {
-					if (c.moveToFirst())
-						status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
-					c.close();
-				}
-				// paused, pending, and running means it's already downloading
-				if (status != DownloadManager.STATUS_FAILED && status != DownloadManager.STATUS_SUCCESSFUL)
-					return;
-				downloadManager.remove(episode.getDownloadId());
-			}
-
-			File mediaFile = new File(episode.getFilename(_context));
-			if (mediaFile.exists())
-				mediaFile.delete();
-			File indexFile = new File(episode.getIndexFilename(_context));
+			File indexFile = new File(episode.getIndexFilename(context));
 			if (indexFile.exists())
 				indexFile.delete();
 
-			DownloadManager.Request request = new DownloadManager.Request(Uri.parse(episode.getMediaUrl()));
-			int networks = DownloadManager.Request.NETWORK_WIFI;
-			if (!PreferenceManager.getDefaultSharedPreferences(_context).getBoolean("wifiPref", true))
-				networks |= DownloadManager.Request.NETWORK_MOBILE;
-			request.setAllowedNetworkTypes(networks);
-			/*
-			request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
-			request.allowScanningByMediaScanner();
-			*/
-			request.setTitle("Downloading " + episode.getTitle());
-			request.setDescription(episode.getSubscriptionTitle());
-			request.setDestinationInExternalFilesDir(_context, Environment.DIRECTORY_PODCASTS, mediaFile.getName());
+			showNotification(context, episode);
 
-			long downloadId = downloadManager.enqueue(request);
-			ContentValues values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_DOWNLOAD_ID, downloadId);
-			_context.getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
+			OkHttpClient client = new OkHttpClient();
+			Request.Builder url = new Request.Builder().url(episode.getMediaUrl());
+			if (mediaFile.exists())
+				url.addHeader("Range", "bytes=" + mediaFile.length() + "-");
+			Response response = client.newCall(url.build()).execute();
+			if (response.code() != 200 && response.code() != 206)
+				return;
 
-			new File(EpisodeCursor.getDownloadingIndicatorFilename(_context, episodeId)).createNewFile();
+			ResponseBody body = response.body();
+			ContentValues values = new ContentValues(1);
+			values.put(EpisodeProvider.COLUMN_FILE_SIZE, body.contentLength());
+			context.getContentResolver().update(episode.getContentUri(), values, null, null);
+
+			BufferedSource source = body.source();
+			byte[] b = new byte[100000];
+			while (!source.exhausted()) {
+				int read = source.read(b);
+				outStream.write(b, 0, read);
+			}
 		} catch (Exception e) {
 			Log.e("Podax", "error while downloading", e);
 		} finally {
+			if (mediaFile != null)
+				_currentlyDownloading.remove(mediaFile.getAbsolutePath());
+			hideNotification(context);
+
 			if (cursor != null)
 				cursor.close();
+
+			try {
+				if (outStream != null)
+					outStream.close();
+			} catch (IOException e) {
+				Log.e("EpisodeDownloader", "unable to close output stream", e);
+			}
 		}
+	}
+
+	private static void showNotification(Context context, EpisodeCursor podcast) {
+		Intent notificationIntent = new Intent(context, MainActivity.class);
+		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+		Notification notification = new NotificationCompat.Builder(context)
+				.setSmallIcon(R.drawable.icon)
+				.setTicker("Downloading podcast: " + podcast.getTitle())
+				.setWhen(System.currentTimeMillis())
+				.setContentTitle("Downloading Podcast")
+				.setContentText(podcast.getTitle())
+				.setContentIntent(contentIntent)
+				.setOngoing(true)
+				.build();
+		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(Constants.NOTIFICATION_DOWNLOADING, notification);
+	}
+
+	private static void hideNotification(Context context) {
+		String ns = Context.NOTIFICATION_SERVICE;
+		NotificationManager notificationManager = (NotificationManager) context.getSystemService(ns);
+		notificationManager.cancel(Constants.NOTIFICATION_DOWNLOADING);
 	}
 }

@@ -8,6 +8,7 @@ public class Constants {
 	public static final int NOTIFICATION_PLAYING = 3;
 	public static final int NOTIFICATION_GPODDER_ERROR = 4;
 	public static final int NOTIFICATION_DOWNLOAD_ERROR = 5;
+	public static final int NOTIFICATION_DOWNLOADING = 6;
 
 	// active episode related
 	public static final Uri ACTIVE_EPISODE_DATA_RESTART = Uri.parse("podax://activeepisode/restart");

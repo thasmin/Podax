@@ -1,7 +1,8 @@
 package com.axelby.podax.player;
 
-import android.os.FileObserver;
 import android.util.Log;
+
+import com.axelby.podax.EpisodeDownloader;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,49 +19,22 @@ public class StreamFeeder {
 	Thread _feederThread = null;
 	long _fileOffset = 0;
 
-	private boolean _doneDownloading = false;
-	private FileObserver _observer = null;
-
-	public StreamFeeder(String filename, String downloadingIndicatorFilename, IMediaDecoder decoder) {
-		this(filename, downloadingIndicatorFilename, decoder, 0);
+	public StreamFeeder(String filename, IMediaDecoder decoder) {
+		this(filename, decoder, 0);
 	}
 
-	public StreamFeeder(String filename, String downloadingIndicatorFilename, IMediaDecoder decoder, long initialOffset) {
+	public StreamFeeder(String filename, IMediaDecoder decoder, long initialOffset) {
 		_filename = filename;
 		_decoder = decoder;
 		_fileOffset = initialOffset;
-
-		watchDownloadingIndicatorFile(downloadingIndicatorFilename);
 
 		_feederThread = new Thread(_feederRunnable, "feeder");
 		_feederThread.start();
 	}
 
-	// watches the download indicator file and marks when downloading is finished
-	// assumes download indicator file is created before feeder
-	private void watchDownloadingIndicatorFile(String indicatorFile) {
-		// if the downloading indicator file doesn't exist by now, we're not downloading it
-		if (!new File(indicatorFile).exists()) {
-			_doneDownloading = true;
-		} else {
-			_observer = new FileObserver(indicatorFile, FileObserver.DELETE_SELF) {
-				@Override
-				public void onEvent(int event, String path) {
-					_doneDownloading = true;
-					_observer.stopWatching();
-					_observer = null;
-				}
-			};
-			_observer.startWatching();
-		}
-	}
-
 	public String getFilename() { return _filename; }
 
 	public void finish() {
-		if (_observer != null)
-			_observer.stopWatching();
-
 		_feederThread.interrupt();
 		try {
 			_feederThread.join();
@@ -91,7 +65,7 @@ public class StreamFeeder {
 					// read the available bytes from the file and feed them to the mp3 decoder
 					long length = file.length();
 					int size = (int) (length - file.getFilePointer());
-					if (size == 0 && _doneDownloading)
+					if (size == 0 && !EpisodeDownloader.isDownloading(_filename))
 						break;
 					if (size == 0) {
 						Thread.sleep(50);

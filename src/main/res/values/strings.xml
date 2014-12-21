@@ -316,5 +316,6 @@ limitations under the License.
     <string name="web_subscribe_instructions">Podax Web Subscribe lets you subscribe to a podcast without leaving your computer.\n\nGo to the link below on your computer and enter the podcast or website URL and the code below.</string>
     <string name="not_downloaded">Not downloaded</string>
     <string name="downloaded">Downloaded</string>
+    <string name="stream">Stream</string>
 
 </resources>

@@ -28,7 +28,6 @@ public class EpisodeCursor {
 	private Integer _lastPositionColumn = null;
 	private Integer _durationColumn = null;
 	private Integer _pubDateColumn = null;
-	private Integer _downloadIdColumn = null;
 	private Integer _gpodderUpdateTimestampColumn = null;
 	private Integer _paymentColumn = null;
 
@@ -142,14 +141,6 @@ public class EpisodeCursor {
 		return new Date(_cursor.getLong(_pubDateColumn) * 1000);
 	}
 
-	public Long getDownloadId() {
-		if (_downloadIdColumn == null)
-			_downloadIdColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_DOWNLOAD_ID);
-		if (_cursor.isNull(_downloadIdColumn))
-			return null;
-		return _cursor.getLong(_downloadIdColumn);
-	}
-
 	public Date getGPodderUpdateTimestamp() {
 		if (_gpodderUpdateTimestampColumn == null)
 			_gpodderUpdateTimestampColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP);
@@ -172,24 +163,6 @@ public class EpisodeCursor {
 	}
 	public String getIndexFilename(Context context) {
 		return EpisodeCursor.getIndexFilename(context, getId());
-	}
-
-	public static String getDownloadingIndicatorFilename(String externalPath, long id) {
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
-		return podaxDir + String.valueOf(id) + ".downloading";
-	}
-	public static String getDownloadingIndicatorFilename(Context context, long id) {
-		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
-		return getDownloadingIndicatorFilename(externalPath, id);
-	}
-	public String getDownloadingIndicatorFilename(Context context) {
-		return getDownloadingIndicatorFilename(context, getId());
-	}
-
-	public static long extractIdFromFilename(String filename) {
-		String name = new File(filename).getName();
-		String id = name.substring(0, name.lastIndexOf("."));
-		return Long.valueOf(id);
 	}
 
 	public boolean isDownloaded(Context context) {

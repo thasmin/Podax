@@ -199,6 +199,8 @@ public class AudioPlayer implements Runnable {
 				}
 				int sampleCount = _decoder.readFrame(pcm);
 				// handle need more data
+				if (sampleCount == -1 && _decoder.isStreamComplete())
+					break;
 				if (sampleCount == -1) {
 					Thread.sleep(50);
 					continue;

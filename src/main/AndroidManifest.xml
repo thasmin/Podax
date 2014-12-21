@@ -128,14 +128,6 @@
                 <action android:name="com.axelby.podax.ACTIVE_EPISODE" />
             </intent-filter>
         </receiver>
-        <receiver
-            android:name="com.axelby.podax.DownloadCompletedReceiver"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
-                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
-            </intent-filter>
-        </receiver>
 
         <provider
             android:name="com.axelby.podax.SearchSuggestionProvider"

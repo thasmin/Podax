@@ -43,6 +43,13 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
+	public static void downloadEpisode(Context context, long episodeId) {
+		Intent intent = new Intent(context, UpdateService.class);
+		intent.setAction(Constants.ACTION_DOWNLOAD_EPISODE);
+		intent.putExtra(Constants.EXTRA_EPISODE_ID, episodeId);
+		context.startService(intent);
+	}
+
 	public static void downloadEpisodes(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_DOWNLOAD_EPISODES);
@@ -63,10 +70,10 @@ public class UpdateService extends IntentService {
 		return intent;
 	}
 
-	private static Intent createDownloadEpisodeIntent(Context context, long subscriptionId) {
+	private static Intent createDownloadEpisodeIntent(Context context, long episodeId) {
 		Intent intent = new Intent(context, UpdateService.class);
 		intent.setAction(Constants.ACTION_DOWNLOAD_EPISODE);
-		intent.putExtra(Constants.EXTRA_EPISODE_ID, subscriptionId);
+		intent.putExtra(Constants.EXTRA_EPISODE_ID, episodeId);
 		return intent;
 	}
 

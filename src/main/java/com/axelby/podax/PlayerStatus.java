@@ -46,11 +46,6 @@ public class PlayerStatus {
 		ActiveEpisodeReceiver.notifyExternal(context);
 	}
 
-	public static PlayerStates getPlayerState(Context context) {
-		SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
-		return PlayerStates.fromInt(prefs.getInt("playingState", -1));
-	}
-
 	// instance variables
 	public enum PlayerStates {
 		INVALID(-1),
@@ -104,5 +99,6 @@ public class PlayerStatus {
 	public String getSubscriptionTitle() { return _subscriptionTitle; }
 	public String getFilename() { return _filename; }
 	public boolean isEpisodeDownloaded() { return _isDownloaded; }
+	public boolean isEpisodeDownloading() { return EpisodeDownloader.isDownloading(_filename); }
 	public boolean hasActiveEpisode() { return getState() != PlayerStates.PLAYLISTEMPTY; }
 }

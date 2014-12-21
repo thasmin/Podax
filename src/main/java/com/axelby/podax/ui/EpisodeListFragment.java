@@ -153,6 +153,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();
                 PlayerService.play(view.getContext(), episodeId);
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
             }
         };
 
@@ -187,6 +188,7 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 		public void bindView(View view, Context context, Cursor cursor) {
             ViewHolder holder = (ViewHolder) view.getTag();
             EpisodeCursor episode = new EpisodeCursor(cursor);
+
             holder.title.setText(episode.getTitle());
             holder.date.setText(context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
             if (episode.getDuration() > 0) {
@@ -196,16 +198,20 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
                 holder.duration.setVisibility(View.GONE);
             holder.play.setTag(episode.getId());
             holder.playlist.setTag(R.id.episodeId, episode.getId());
+
             Integer position = episode.getPlaylistPosition();
             if (position == null) {
                 holder.playlist.setTag(R.id.playlist, Integer.MAX_VALUE);
                 holder.playlist.setText(R.string.add_to_playlist);
-                holder.play.setVisibility(View.GONE);
             } else {
                 holder.playlist.setTag(R.id.playlist, null);
                 holder.playlist.setText(R.string.remove_from_playlist);
-                holder.play.setVisibility(View.VISIBLE);
             }
+
+			if (episode.isDownloaded(context))
+				holder.play.setText(R.string.play);
+			else
+				holder.play.setText(R.string.stream);
 		}
 	}
 }

@@ -239,7 +239,12 @@ public class PlayerService extends Service {
 		else if (status.isEpisodeDownloaded())
 			_player.changeEpisode(status.getFilename(), status.getPosition() / 1000.0f, false);
 		else {
-			EpisodeDownloader.download(this, status.getEpisodeId());
+			UpdateService.downloadEpisode(this, status.getEpisodeId());
+			try {
+				while (!status.isEpisodeDownloading() && !status.isEpisodeDownloaded())
+					Thread.sleep(50);
+			} catch (InterruptedException ignored) {
+			}
 			_player.changeEpisode(status.getFilename(), status.getPosition() / 1000.0f, true);
 		}
 	}
