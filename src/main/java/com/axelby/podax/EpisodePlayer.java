@@ -47,35 +47,41 @@ public class EpisodePlayer {
 		_pausingFor.add(false);
 	}
 
-	public boolean changeEpisode(String filename, float positionInSeconds, boolean stream) {
-		if (_player != null) {
-			_player.stop();
-			_player = null;
-		}
-		if (_playerThread != null) {
-			try {
-				_playerThread.join();
-			} catch (InterruptedException ex) {
-				Log.e("Podax", "player thread interrupted", ex);
-			}
-			_playerThread = null;
-		}
+	public boolean changeEpisode(long episodeId) {
+		EpisodeCursor episode = EpisodeCursor.getCursor(_context, episodeId);
+		if (episode == null)
+			return false;
 
 		try {
+			if (_player != null) {
+				_player.stop();
+				_player = null;
+			}
+			if (_playerThread != null) {
+				try {
+					_playerThread.join();
+				} catch (InterruptedException ex) {
+					Log.e("Podax", "player thread interrupted", ex);
+				}
+				_playerThread = null;
+			}
+
+			boolean stream = !episode.isDownloaded(_context);
+
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
-			if (!AudioPlayer.supports(filename, stream)) {
+			if (!AudioPlayer.supports(episode.getFilename(_context), stream)) {
 				Toast.makeText(_context, "This episode is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
 				return false;
 			}
 
 			if (stream)
-				_player = new StreamAudioPlayer(filename, playbackRate);
+				_player = new StreamAudioPlayer(episode.getFilename(_context), playbackRate);
 			else
-				_player = new AudioPlayer(filename, playbackRate);
+				_player = new AudioPlayer(episode.getFilename(_context), playbackRate);
 
-			if (positionInSeconds != 0)
-				_player.seekTo(positionInSeconds);
+			if (episode.getLastPosition() != 0)
+				_player.seekTo(episode.getLastPosition());
 
 			_playerThread = new Thread(_player, "AudioPlayer");
 
@@ -100,6 +106,8 @@ public class EpisodePlayer {
 		} catch (Exception ex) {
 			Log.e("Podax", "unable to change to new episode", ex);
 			return false;
+		} finally {
+			episode.closeCursor();
 		}
 	}
 
@@ -191,6 +199,10 @@ public class EpisodePlayer {
 		// make sure we're not pausing
 		if (_pausingFor.contains(true))
 			return;
+
+		PlayerStatus status = PlayerStatus.getCurrentState(_context);
+		if (!status.isEpisodeDownloaded())
+			UpdateService.downloadEpisode(_context, status.getEpisodeId());
 
 		_player.resume();
 		if (_playerThread.getState() == Thread.State.NEW)

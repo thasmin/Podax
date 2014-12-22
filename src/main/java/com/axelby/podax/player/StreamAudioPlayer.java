@@ -1,5 +1,7 @@
 package com.axelby.podax.player;
 
+import com.axelby.podax.UpdateService;
+
 public class StreamAudioPlayer extends AudioPlayer {
 	private final String _filename;
 

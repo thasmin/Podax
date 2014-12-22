@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -30,32 +29,20 @@ public class EpisodeDownloader {
 	private EpisodeDownloader() { }
 
 	public static void download(Context context, long episodeId) {
-		Cursor cursor = null;
+		EpisodeCursor episode = null;
 		FileOutputStream outStream = null;
 		File mediaFile = null;
 		try {
 			if (!Helper.ensureWifiPref(context))
 				return;
 
-			String[] projection = {
-					EpisodeProvider.COLUMN_ID,
-					EpisodeProvider.COLUMN_TITLE,
-					EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
-					EpisodeProvider.COLUMN_MEDIA_URL,
-					EpisodeProvider.COLUMN_FILE_SIZE,
-					EpisodeProvider.COLUMN_DOWNLOAD_ID,
-			};
-			cursor = context.getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection,
-					"podcasts._id = ?",
-					new String[]{String.valueOf(episodeId)}, null);
-			if (cursor == null || !cursor.moveToNext())
+			episode = EpisodeCursor.getCursor(context, episodeId);
+			if (episode == null)
 				return;
-
-			EpisodeCursor episode = new EpisodeCursor(cursor);
 			if (episode.isDownloaded(context))
 				return;
 
-			// handle two requests
+			// don't do two downloads simultaneously
 			if (isDownloading(episode.getFilename(context)))
 				return;
 
@@ -77,7 +64,7 @@ public class EpisodeDownloader {
 
 			OkHttpClient client = new OkHttpClient();
 			Request.Builder url = new Request.Builder().url(episode.getMediaUrl());
-			if (mediaFile.exists())
+			if (mediaFile.exists() && mediaFile.length() > 0)
 				url.addHeader("Range", "bytes=" + mediaFile.length() + "-");
 			Response response = client.newCall(url.build()).execute();
 			if (response.code() != 200 && response.code() != 206)
@@ -101,8 +88,8 @@ public class EpisodeDownloader {
 				_currentlyDownloading.remove(mediaFile.getAbsolutePath());
 			hideNotification(context);
 
-			if (cursor != null)
-				cursor.close();
+			if (episode != null)
+				episode.closeCursor();
 
 			try {
 				if (outStream != null)

@@ -201,7 +201,6 @@ public class PlayerService extends Service {
 				_player.playPause(pauseReason);
 				break;
 			case Constants.PLAYER_COMMAND_PLAY:
-                ensurePlayerStatus();
 				_player.play();
 				break;
 			case Constants.PLAYER_COMMAND_PLAYSTOP:
@@ -236,17 +235,8 @@ public class PlayerService extends Service {
 
 		if (status.getEpisodeId() == _currentEpisodeId)
 			_player.seekTo(status.getPosition() / 1000.0f);
-		else if (status.isEpisodeDownloaded())
-			_player.changeEpisode(status.getFilename(), status.getPosition() / 1000.0f, false);
-		else {
-			UpdateService.downloadEpisode(this, status.getEpisodeId());
-			try {
-				while (!status.isEpisodeDownloading() && !status.isEpisodeDownloaded())
-					Thread.sleep(50);
-			} catch (InterruptedException ignored) {
-			}
-			_player.changeEpisode(status.getFilename(), status.getPosition() / 1000.0f, true);
-		}
+		else
+			_player.changeEpisode(status.getEpisodeId());
 	}
 
 	private void showNotification() {

@@ -8,11 +8,15 @@ import android.preference.PreferenceManager;
 import java.io.File;
 
 public class Storage {
-	public static File getExternalStorageDirectory(Context context) {
+	public static String getExternalStorageDirectory(Context context) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		String storageCard = prefs.getString("storageCard", "/storage/sdcard0");
+		String storageCard = prefs.getString("storageCard", "/sdcard");
 		if (new File(storageCard).exists())
-			return new File(storageCard);
-		return Environment.getExternalStorageDirectory();
+			return storageCard;
+		return Environment.getExternalStorageDirectory().getAbsolutePath();
+	}
+
+	public static String getStorageDir(Context context) {
+		return getExternalStorageDirectory(context) + "/Android/data/com.axelby.podax/files/";
 	}
 }

@@ -24,8 +24,8 @@ public class PodaxPreferenceFragment extends PreferenceListFragment implements P
 		if (sdcard != null) {
 			CharSequence[] entries = sdcard.getEntries();
 			CharSequence[] values = sdcard.getEntryValues();
-			ArrayList<String> validEntries = new ArrayList<String>(entries.length);
-			ArrayList<String> validValues = new ArrayList<String>(values.length);
+			ArrayList<String> validEntries = new ArrayList<>(entries.length);
+			ArrayList<String> validValues = new ArrayList<>(values.length);
 			for (int i = 0; i < values.length; ++i) {
 				if (new File(values[i].toString()).exists()) {
 					validEntries.add(entries[i].toString());
@@ -77,8 +77,8 @@ public class PodaxPreferenceFragment extends PreferenceListFragment implements P
 	}
 
 	private boolean moveFilesToNewStorage(String newStorage) {
-		File oldStorage = Storage.getExternalStorageDirectory(getActivity());
-		if (oldStorage.getAbsolutePath().equals(newStorage))
+		String oldStorage = Storage.getExternalStorageDirectory(getActivity());
+		if (oldStorage.equals(newStorage))
 			return true;
 
 		String addition = "/Android/data/com.axelby.podax/files";

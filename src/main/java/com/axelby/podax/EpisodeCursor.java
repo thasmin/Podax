@@ -25,6 +25,7 @@ public class EpisodeCursor {
 	private Integer _mediaUrlColumn = null;
 	private Integer _fileSizeColumn = null;
 	private Integer _descriptionColumn = null;
+	private Integer _linkColumn = null;
 	private Integer _lastPositionColumn = null;
 	private Integer _durationColumn = null;
 	private Integer _pubDateColumn = null;
@@ -39,12 +40,27 @@ public class EpisodeCursor {
 			_cursor.moveToFirst();
 	}
 
+	public static EpisodeCursor getCursor(Context context, long episodeId) {
+		Cursor c = context.getContentResolver().query(EpisodeCursor.getContentUri(episodeId), null, null, null, null);
+		if (c == null)
+			return null;
+		return new EpisodeCursor(c);
+	}
+
+	public static Uri getContentUri(long id) {
+		return ContentUris.withAppendedId(EpisodeProvider.URI, id);
+	}
+
+	public void closeCursor() {
+		_cursor.close();
+	}
+
 	public boolean isNull() {
 		return _cursor.isAfterLast();
 	}
 
 	public Uri getContentUri() {
-		return ContentUris.withAppendedId(EpisodeProvider.URI, getId());
+		return EpisodeCursor.getContentUri(getId());
 	}
 
 	public long getId() {
@@ -117,6 +133,14 @@ public class EpisodeCursor {
 		return _cursor.getString(_descriptionColumn);
 	}
 
+	public String getLink() {
+		if (_linkColumn == null)
+			_linkColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_LINK);
+		if (_cursor.isNull(_linkColumn))
+			return null;
+		return _cursor.getString(_linkColumn);
+	}
+
 	public Integer getLastPosition() {
 		if (_lastPositionColumn == null)
 			_lastPositionColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_LAST_POSITION);
@@ -157,9 +181,7 @@ public class EpisodeCursor {
 	}
 
 	public static String getIndexFilename(Context context, long id) {
-		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
-		return podaxDir + String.valueOf(id) + ".index";
+		return Storage.getStorageDir(context) + String.valueOf(id) + ".index";
 	}
 	public String getIndexFilename(Context context) {
 		return EpisodeCursor.getIndexFilename(context, getId());
@@ -188,7 +210,7 @@ public class EpisodeCursor {
 	}
 
 	public static String getStoragePath(Context context) {
-		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
+		String externalPath = Storage.getExternalStorageDirectory(context);
 		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/Podcasts/";
 		File podaxFile = new File(podaxDir);
 		if (!podaxFile.exists())
@@ -196,7 +218,7 @@ public class EpisodeCursor {
 		return podaxDir;
 	}
 	public static String getOldStoragePath(Context context) {
-		String externalPath = Storage.getExternalStorageDirectory(context).getAbsolutePath();
+		String externalPath = Storage.getExternalStorageDirectory(context);
 		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/";
 		File podaxFile = new File(podaxDir);
 		if (!podaxFile.exists())
