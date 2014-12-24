@@ -81,7 +81,7 @@ public class EpisodePlayer {
 				_player = new AudioPlayer(episode.getFilename(_context), playbackRate);
 
 			if (episode.getLastPosition() != 0)
-				_player.seekTo(episode.getLastPosition());
+				_player.seekTo(episode.getLastPosition() / 1000f);
 
 			_playerThread = new Thread(_player, "AudioPlayer");
 

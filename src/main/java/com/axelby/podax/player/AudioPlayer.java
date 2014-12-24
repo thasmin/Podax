@@ -11,7 +11,7 @@ public class AudioPlayer implements Runnable {
 
 	// avoid tying up main thread by having thread check these variables to make changes
 	protected boolean _stopping = false;
-	protected Float _seekTo = null;
+	protected Float _seekToSeconds = null;
 
 	protected boolean _isPlaying = false;
 	protected float _seekbase = 0;
@@ -121,7 +121,7 @@ public class AudioPlayer implements Runnable {
 		_isPlaying = true;
 	}
 
-	public void seekTo(float offsetInSeconds) { _seekTo = offsetInSeconds; }
+	public void seekTo(float offsetInSeconds) { _seekToSeconds = offsetInSeconds; }
 	public void stop() { _stopping = true; }
 
 	public float getDuration() {
@@ -187,9 +187,9 @@ public class AudioPlayer implements Runnable {
 		try {
 			short[] pcm = new short[1024 * 5];
 			do {
-				if (_seekTo != null) {
-					changeTrackOffset(_seekTo);
-					_seekTo = null;
+				if (_seekToSeconds != null) {
+					changeTrackOffset(_seekToSeconds);
+					_seekToSeconds = null;
 				}
 				if (_stopping)
 					return;

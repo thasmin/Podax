@@ -33,22 +33,24 @@ public class EpisodeDownloader {
 		FileOutputStream outStream = null;
 		File mediaFile = null;
 		try {
-			if (!Helper.ensureWifiPref(context))
+			if (!Helper.ensureWifiPref(context)) {
+				Log.d("EpisodeDownloader", "not downloading for wifi pref");
 				return;
+			}
 
 			episode = EpisodeCursor.getCursor(context, episodeId);
-			if (episode == null)
+			if (episode == null) {
+				Log.d("EpisodeDownloader", "episode cursor is null");
 				return;
-			if (episode.isDownloaded(context))
+			}
+			if (episode.isDownloaded(context)) {
+				Log.d("EpisodeDownloader", "episode is already downloaded");
 				return;
+			}
 
 			// don't do two downloads simultaneously
-			if (isDownloading(episode.getFilename(context)))
-				return;
-
-			if (new File(episode.getOldFilename(context)).exists()) {
-				if (!new File(episode.getOldFilename(context)).renameTo(new File(episode.getFilename(context))))
-					PodaxLog.log(context, "unable to move downloaded episode to new folder");
+			if (isDownloading(episode.getFilename(context))) {
+				Log.d("EpisodeDownloader", "episode is already being downloaded");
 				return;
 			}
 
@@ -67,8 +69,10 @@ public class EpisodeDownloader {
 			if (mediaFile.exists() && mediaFile.length() > 0)
 				url.addHeader("Range", "bytes=" + mediaFile.length() + "-");
 			Response response = client.newCall(url.build()).execute();
-			if (response.code() != 200 && response.code() != 206)
+			if (response.code() != 200 && response.code() != 206) {
+				Log.d("EpisodeDownloader", "response not 200 or 206");
 				return;
+			}
 
 			ResponseBody body = response.body();
 			ContentValues values = new ContentValues(1);
@@ -81,6 +85,8 @@ public class EpisodeDownloader {
 				int read = source.read(b);
 				outStream.write(b, 0, read);
 			}
+
+			episode.determineDuration(context);
 		} catch (Exception e) {
 			Log.e("Podax", "error while downloading", e);
 		} finally {
