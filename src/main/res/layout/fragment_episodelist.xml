@@ -27,13 +27,12 @@
         tools:text="Subscription Name"
         tools:ignore="RelativeOverlap" />
 
-    <ListView
-        android:id="@android:id/list"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/thumbnail"
         android:layout_marginTop="5dp"
-        tools:listitem="@layout/fragment_episoidelist_item"
         />
 
 </RelativeLayout>

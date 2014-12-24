@@ -6,18 +6,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
@@ -33,7 +34,7 @@ import java.text.DateFormat;
 
 import javax.annotation.Nonnull;
 
-public class EpisodeListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EpisodeListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private PodcastAdapter _adapter = null;
 
 	@Override
@@ -41,10 +42,6 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 		super.onCreate(savedInstanceState);
 
 		setHasOptionsMenu(true);
-
-		getLoaderManager().initLoader(0, getArguments(), this);
-		_adapter = new PodcastAdapter(getActivity(), null);
-		setListAdapter(_adapter);
 	}
 
 	@Override
@@ -55,6 +52,13 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
+		getLoaderManager().initLoader(0, getArguments(), this);
+		_adapter = new PodcastAdapter(getActivity(), null);
+		RecyclerView listView = (RecyclerView) getActivity().findViewById(R.id.list);
+		listView.setLayoutManager(new LinearLayoutManager(getActivity()));
+		listView.setItemAnimator(new DefaultItemAnimator());
+		listView.setAdapter(_adapter);
 
         setTitle();
 	}
@@ -91,11 +95,6 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 	}
 
 	@Override
-	public void onListItemClick(ListView list, View view, int position, long id) {
-        startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
-	}
-
-	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, args.getLong(Constants.EXTRA_SUBSCRIPTION_ID));
 		uri = Uri.withAppendedPath(uri, "podcasts");
@@ -124,11 +123,14 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
 		_adapter.changeCursor(null);
 	}
 
-	private class PodcastAdapter extends ResourceCursorAdapter {
+	private class PodcastAdapter extends RecyclerView.Adapter<PodcastAdapter.ViewHolder> {
 
         private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
+		private final Context _context;
+		private Cursor _cursor;
 
-        class ViewHolder {
+        class ViewHolder extends RecyclerView.ViewHolder {
+			public View view;
             public TextView title;
             public TextView date;
             public TextView duration;
@@ -136,17 +138,31 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
             public Button playlist;
 
             public ViewHolder (View view) {
+				super(view);
+
+				this.view = view;
                 title = (TextView) view.findViewById(R.id.title);
                 date = (TextView) view.findViewById(R.id.date);
                 duration = (TextView) view.findViewById(R.id.duration);
                 play = (Button) view.findViewById(R.id.play);
                 playlist = (Button) view.findViewById(R.id.playlist);
+
+				play.setOnClickListener(_playListener);
+				playlist.setOnClickListener(_playlistListener);
+				view.setOnClickListener(_clickListener);
             }
         }
 
 		public PodcastAdapter(Context context, Cursor cursor) {
-			super(context, R.layout.fragment_episoidelist_item, cursor, true);
+			_context = context;
+			_cursor = cursor;
+			setHasStableIds(true);
         }
+
+		public void changeCursor(Cursor cursor) {
+			_cursor = cursor;
+			notifyDataSetChanged();
+		}
 
         OnClickListener _playListener = new OnClickListener() {
             @Override
@@ -169,38 +185,40 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
             }
         };
 
-        @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            View view = super.newView(context, cursor, parent);
-            ViewHolder holder = new ViewHolder(view);
-            holder.play.setOnClickListener(_playListener);
-            holder.playlist.setOnClickListener(_playlistListener);
-            view.setTag(holder);
-            return view;
-        }
+		OnClickListener _clickListener = new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				long episodeId = (Long) view.getTag();
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
+			}
+		};
 
-        @Override
-        public long getItemId(int position) {
-            return new EpisodeCursor((Cursor)getItem(position)).getId();
-        }
+		@Override
+		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_episoidelist_item, parent, false);
+			return new ViewHolder(view);
+		}
 
-        @Override
-		public void bindView(View view, Context context, Cursor cursor) {
-            ViewHolder holder = (ViewHolder) view.getTag();
-            EpisodeCursor episode = new EpisodeCursor(cursor);
+		@Override
+		public void onBindViewHolder(ViewHolder holder, int position) {
+			if (_cursor == null)
+				return;
+			_cursor.moveToPosition(position);
+			EpisodeCursor episode = new EpisodeCursor(_cursor);
 
+			holder.view.setTag(episode.getId());
             holder.title.setText(episode.getTitle());
-            holder.date.setText(context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
+            holder.date.setText(_context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
             if (episode.getDuration() > 0) {
-                holder.duration.setText(Helper.getVerboseTimeString(context, episode.getDuration() / 1000f) + " " + context.getString(R.string.in_duration));
+                holder.duration.setText(Helper.getVerboseTimeString(_context, episode.getDuration() / 1000f) + " " + _context.getString(R.string.in_duration));
                 holder.duration.setVisibility(View.VISIBLE);
             } else
                 holder.duration.setVisibility(View.GONE);
             holder.play.setTag(episode.getId());
             holder.playlist.setTag(R.id.episodeId, episode.getId());
 
-            Integer position = episode.getPlaylistPosition();
-            if (position == null) {
+            Integer inPlaylist = episode.getPlaylistPosition();
+            if (inPlaylist == null) {
                 holder.playlist.setTag(R.id.playlist, Integer.MAX_VALUE);
                 holder.playlist.setText(R.string.add_to_playlist);
             } else {
@@ -208,10 +226,25 @@ public class EpisodeListFragment extends ListFragment implements LoaderManager.L
                 holder.playlist.setText(R.string.remove_from_playlist);
             }
 
-			if (episode.isDownloaded(context))
+			if (episode.isDownloaded(_context))
 				holder.play.setText(R.string.play);
 			else
 				holder.play.setText(R.string.stream);
+		}
+
+		@Override
+        public long getItemId(int position) {
+			if (_cursor == null)
+				return -1l;
+			_cursor.moveToPosition(position);
+            return new EpisodeCursor(_cursor).getId();
+        }
+
+		@Override
+		public int getItemCount() {
+			if (_cursor == null)
+				return 0;
+			return _cursor.getCount();
 		}
 	}
 }
