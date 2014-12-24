@@ -1,19 +1,15 @@
 package com.axelby.podax.ui;
 
-import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,11 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
@@ -35,63 +27,12 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.UpdateService;
-import com.mobeta.android.dslv.DragSortController;
-import com.mobeta.android.dslv.DragSortListView;
-import com.mobeta.android.dslv.DragSortListView.DragListener;
-import com.mobeta.android.dslv.DragSortListView.DropListener;
-import com.mobeta.android.dslv.DragSortListView.RemoveListener;
 
 import java.io.File;
 
 import javax.annotation.Nonnull;
 
-public class PlaylistFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	// make sure list is refreshed to update downloading files
-	Runnable _refresher = new Runnable() {
-		public void run() {
-			if (getActivity() == null)
-				return;
-
-			// make sure the listview is populated
-			if (getListView().getChildCount() == 0) {
-				_handler.postDelayed(_refresher, 1000);
-				return;
-			}
-
-			boolean repost = false;
-			for (int i = 0; i < getListAdapter().getCount(); ++i) {
-				View view = getListView().getChildAt(i);
-                // tag is on first child view
-                ViewGroup viewGroup = (ViewGroup) view;
-				if (viewGroup == null || viewGroup.getChildCount() == 0)
-                    continue;
-                view = viewGroup.getChildAt(0);
-                PlaylistListAdapter.ViewHolder holder = (PlaylistListAdapter.ViewHolder) view.getTag();
-                if (holder == null)
-                    continue;
-                if (holder.downloaded.getText().equals(getString(R.string.downloaded)))
-					continue;
-
-				EpisodeCursor episode = new EpisodeCursor((Cursor) getListAdapter().getItem(i));
-                int filesizePct = 0;
-                float downloaded = new File(episode.getFilename(getActivity())).length();
-                if (episode.getFileSize() != downloaded) {
-                    holder.downloaded.setTextColor(0xffcc0000); //android.R.color.holo_red_dark
-                    holder.downloaded.setText(R.string.not_downloaded);
-                } else {
-                    holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
-                    holder.downloaded.setText(R.string.downloaded);
-                }
-
-                if (filesizePct < 100)
-					repost = true;
-			}
-
-			if (repost)
-				_handler.postDelayed(_refresher, 1000);
-		}
-	};
-	Handler _handler = new Handler();
+public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	PlaylistListAdapter _adapter;
 
 	@Override
@@ -100,10 +41,8 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 
 		setHasOptionsMenu(true);
 
+		_adapter = new PlaylistListAdapter();
 		getLoaderManager().initLoader(0, null, this);
-
-		_adapter = new PlaylistListAdapter(getActivity(), null);
-		setListAdapter(_adapter);
 	}
 
 	@Override
@@ -115,20 +54,17 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		getListView().setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
-			}
-		});
+		RecyclerView listView = (RecyclerView) getActivity().findViewById(R.id.list);
+		listView.setLayoutManager(new LinearLayoutManager(getActivity()));
+		listView.setItemAnimator(new DefaultItemAnimator());
+		listView.setAdapter(_adapter);
 
-        DragSortListView dragSortListView = (DragSortListView) getListView();
-        DragSortController dragSortController = (DragSortController) dragSortListView.getFloatViewManager();
-        dragSortController.setBackgroundColor(Color.WHITE);
-
+		/* TODO
 		// disable swipe to remove according to preference
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		if (!preferences.getBoolean("allowPlaylistSwipeToRemove", true))
 			dragSortController.setRemoveEnabled(false);
+		*/
 	}
 
 	@Override
@@ -143,23 +79,6 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-    @Override
-    public void onListItemClick(ListView listview, View view, int position, long id) {
-        startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
-    }
-
-    @Override
-	public void onPause() {
-		super.onPause();
-		_handler.removeCallbacks(_refresher);
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		_refresher.run();
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -187,21 +106,46 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 		_adapter.changeCursor(null);
 	}
 
-	private class PlaylistListAdapter extends ResourceCursorAdapter implements DragListener, DropListener, RemoveListener {
+	private class PlaylistListAdapter extends RecyclerView.Adapter<PlaylistListAdapter.ViewHolder> {
 
-        class ViewHolder {
+		private Cursor _cursor = null;
+
+		class ViewHolder extends RecyclerView.ViewHolder {
+			public View container;
             public TextView title;
             public TextView subscription;
             public ImageView thumbnail;
             public TextView downloaded;
+			public View play;
+			public View remove;
 
             public ViewHolder(View view) {
+				super(view);
+
+				container = view;
                 title = (TextView) view.findViewById(R.id.title);
                 subscription = (TextView) view.findViewById(R.id.subscription);
                 thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
                 downloaded = (TextView) view.findViewById(R.id.downloaded);
+
+				container.setOnClickListener(_clickHandler);
+
+				play = view.findViewById(R.id.play);
+				play.setOnClickListener(_playHandler);
+
+				remove = view.findViewById(R.id.remove);
+				remove.setOnClickListener(_removeHandler);
+
             }
         }
+
+		private OnClickListener _clickHandler = new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				long episodeId = (Long) view.getTag();
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
+			}
+		};
 
         private OnClickListener _playHandler = new OnClickListener() {
             @Override
@@ -222,33 +166,32 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
             }
         };
 
-		public PlaylistListAdapter(Context context, Cursor cursor) {
-			super(context, R.layout.playlist_list_item, cursor, true);
+		public PlaylistListAdapter() {
+			setHasStableIds(true);
+		}
+
+		public void changeCursor(Cursor cursor) {
+			_cursor = cursor;
+			notifyDataSetChanged();
+		}
+
+		@Override
+		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_list_item, parent, false);
+			return new ViewHolder(view);
 		}
 
         @Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent) {
-            View view = super.newView(context, cursor, parent);
-            view.setTag(new ViewHolder(view));
+		public void onBindViewHolder(ViewHolder holder, int position) {
+			if (_cursor == null)
+				return;
+			_cursor.moveToPosition(position);
+			EpisodeCursor episode = new EpisodeCursor(_cursor);
 
-            EpisodeCursor episode = new EpisodeCursor(cursor);
+			holder.play.setTag(episode.getId());
+			holder.remove.setTag(episode.getId());
+			holder.container.setTag(episode.getId());
 
-            View play = view.findViewById(R.id.play);
-            play.setTag(episode.getId());
-            play.setOnClickListener(_playHandler);
-
-            View remove = view.findViewById(R.id.remove);
-            remove.setTag(episode.getId());
-            remove.setOnClickListener(_removeHandler);
-
-            return view;
-        }
-
-        @Override
-		public void bindView(View view, Context context, Cursor cursor) {
-			EpisodeCursor episode = new EpisodeCursor(cursor);
-
-            ViewHolder holder = (ViewHolder) view.getTag();
             holder.title.setText(episode.getTitle());
             holder.subscription.setText(episode.getSubscriptionTitle());
             holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
@@ -257,15 +200,26 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
             if (episode.getFileSize() != downloaded) {
                 holder.downloaded.setTextColor(0xffcc0000); //android.R.color.holo_red_dark
                 holder.downloaded.setText(R.string.not_downloaded);
-                // make sure list is refreshed to update downloading files
-                _handler.removeCallbacks(_refresher);
-                _handler.postDelayed(_refresher, 1000);
             } else {
                 holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
                 holder.downloaded.setText(R.string.downloaded);
             }
 		}
 
+		@Override
+		public int getItemCount() {
+			if (_cursor == null)
+				return 0;
+			return _cursor.getCount();
+		}
+
+		@Override
+		public long getItemId(int position) {
+			_cursor.moveToPosition(position);
+			return new EpisodeCursor(_cursor).getId();
+		}
+
+		/* TODO
 		@Override
 		public void drop(int from, int to) {
 			Long podcastId = _adapter.getItemId(from);
@@ -287,5 +241,6 @@ public class PlaylistFragment extends ListFragment implements LoaderManager.Load
 			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
 		}
+		*/
 	}
 }

@@ -1,20 +1,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:podax="http://schemas.android.com/apk/res-auto"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
               android:layout_alignParentTop="true"
               android:orientation="vertical">
 
-    <com.mobeta.android.dslv.DragSortListView
-            android:id="@+id/android:list"
+    <android.support.v7.widget.RecyclerView
+            android:id="@+id/list"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            podax:remove_enabled="true"
-            podax:remove_mode="flingRemove"
-            podax:drag_handle_id="@+id/drag"/>
+            />
 
     <TextView
-            android:id="@+id/android:empty"
+            android:id="@+id/empty"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:text="@string/no_episodes_in_playlist"/>
