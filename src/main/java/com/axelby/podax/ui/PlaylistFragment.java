@@ -2,6 +2,10 @@ package com.axelby.podax.ui;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -14,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -33,7 +38,78 @@ import java.io.File;
 import javax.annotation.Nonnull;
 
 public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	PlaylistListAdapter _adapter;
+	private PlaylistListAdapter _adapter;
+
+	private ImageView _overlay;
+	private boolean _isDragging;
+	private long _dragEpisodeId;
+
+	private RecyclerView.OnItemTouchListener _touchListener = new RecyclerView.OnItemTouchListener() {
+		float _dragStartMouseY;
+		int _dragStartTop;
+		Rect _dragStartBounds;
+
+		@Override
+		public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+			if (_isDragging)
+				return true;
+
+			View itemView = rv.findChildViewUnder(e.getX(), e.getY());
+			int itemTop = itemView.getTop();
+			View dragHandle = itemView.findViewById(R.id.drag);
+			Rect r = new Rect();
+			dragHandle.getHitRect(r);
+			if (r.contains((int) e.getX(), (int) e.getY() - itemTop)) {
+				_isDragging = true;
+
+				_dragStartMouseY = e.getY();
+				_dragStartTop = itemTop;
+				_dragStartBounds = new Rect(itemView.getLeft(), itemView.getTop(), itemView.getRight(), itemView.getBottom());
+				_dragEpisodeId = rv.getChildItemId(itemView);
+
+				_overlay.setImageBitmap(viewToBitmap(itemView));
+				_overlay.setPadding(0, _dragStartTop, 0, 0);
+				_overlay.setVisibility(View.VISIBLE);
+				itemView.setVisibility(View.INVISIBLE);
+
+				return true;
+			}
+			return false;
+		}
+
+		@Override
+		public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+			if (e.getAction() == MotionEvent.ACTION_UP) {
+				_isDragging = false;
+				_overlay.setVisibility(View.GONE);
+
+				int position = _adapter.getPositionForId(_dragEpisodeId);
+				View draggedView = rv.getChildAt(position);
+				draggedView.setVisibility(View.VISIBLE);
+			} else if (e.getAction() == MotionEvent.ACTION_CANCEL) {
+				_isDragging = false;
+				_overlay.setVisibility(View.GONE);
+
+				int position = _adapter.getPositionForId(_dragEpisodeId);
+				View draggedView = rv.getChildAt(position);
+				draggedView.setVisibility(View.VISIBLE);
+			} else if (e.getAction() == MotionEvent.ACTION_MOVE) {
+				// switch if the overlay isn't on top of the original view
+				View underView = rv.findChildViewUnder(0, (int) e.getY());
+				if (underView != null && rv.getChildItemId(underView) != _dragEpisodeId)
+					_adapter.moveItem(_dragEpisodeId, rv.getChildPosition(underView));
+
+				// scroll down if overlay is below bottom
+				int overlayPaddingTop = (int) (_dragStartTop + e.getY() - _dragStartMouseY);
+				int maxPadding = rv.getHeight() - (_overlay.getHeight() - _overlay.getPaddingTop());
+				if (overlayPaddingTop > maxPadding) {
+					rv.scrollBy(0, overlayPaddingTop - maxPadding);
+					overlayPaddingTop = maxPadding;
+				}
+				_overlay.setPadding(0, overlayPaddingTop, 0, 0);
+			}
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -54,9 +130,12 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
+		_overlay = (ImageView) getActivity().findViewById(R.id.overlay);
+
 		RecyclerView listView = (RecyclerView) getActivity().findViewById(R.id.list);
 		listView.setLayoutManager(new LinearLayoutManager(getActivity()));
 		listView.setItemAnimator(new DefaultItemAnimator());
+		listView.addOnItemTouchListener(_touchListener);
 		listView.setAdapter(_adapter);
 
 		/* TODO
@@ -106,6 +185,13 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 		_adapter.changeCursor(null);
 	}
 
+	private Bitmap viewToBitmap(View view) {
+		Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(bitmap);
+		view.draw(canvas);
+		return bitmap;
+	}
+
 	private class PlaylistListAdapter extends RecyclerView.Adapter<PlaylistListAdapter.ViewHolder> {
 
 		private Cursor _cursor = null;
@@ -118,17 +204,18 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
             public TextView downloaded;
 			public View play;
 			public View remove;
+			public View drag;
 
             public ViewHolder(View view) {
 				super(view);
 
 				container = view;
+				container.setOnClickListener(_clickHandler);
+
                 title = (TextView) view.findViewById(R.id.title);
                 subscription = (TextView) view.findViewById(R.id.subscription);
                 thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
                 downloaded = (TextView) view.findViewById(R.id.downloaded);
-
-				container.setOnClickListener(_clickHandler);
 
 				play = view.findViewById(R.id.play);
 				play.setOnClickListener(_playHandler);
@@ -136,6 +223,8 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 				remove = view.findViewById(R.id.remove);
 				remove.setOnClickListener(_removeHandler);
 
+				drag = view.findViewById(R.id.drag);
+				//drag.setOnTouchListener(_dragHandleListener);
             }
         }
 
@@ -204,6 +293,12 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
                 holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
                 holder.downloaded.setText(R.string.downloaded);
             }
+
+			// handle dragging status
+			if (!_isDragging || episode.getId() != _dragEpisodeId)
+				holder.container.setVisibility(View.VISIBLE);
+			else
+				holder.container.setVisibility(View.GONE);
 		}
 
 		@Override
@@ -221,19 +316,6 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 
 		/* TODO
 		@Override
-		public void drop(int from, int to) {
-			Long podcastId = _adapter.getItemId(from);
-			ContentValues values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, to);
-			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
-			getActivity().getContentResolver().update(podcastUri, values, null, null);
-		}
-
-		@Override
-		public void drag(int from, int to) {
-		}
-
-		@Override
 		public void remove(int which) {
 			Long podcastId = _adapter.getItemId(which);
 			ContentValues values = new ContentValues();
@@ -242,5 +324,20 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
 		}
 		*/
+
+		public int getPositionForId(long id) {
+			for (int i = 0; i < getItemCount(); ++i)
+				if (getItemId(i) == id)
+					return i;
+			return -1;
+		}
+
+		public void moveItem(long id, int newPosition) {
+			ContentValues values = new ContentValues();
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, newPosition);
+			Uri podcastUri = EpisodeProvider.getContentUri(id);
+			getActivity().getContentResolver().update(podcastUri, values, null, null);
+			notifyItemMoved(getPositionForId(id), newPosition);
+		}
 	}
 }
