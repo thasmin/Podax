@@ -49,21 +49,25 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 		int _dragStartTop;
 		Rect _dragStartBounds;
 
+		private boolean containsDragHandle(View itemView, MotionEvent e) {
+			int itemTop = itemView.getTop();
+			View dragHandle = itemView.findViewById(R.id.drag);
+			Rect r = new Rect();
+			dragHandle.getHitRect(r);
+			return r.contains((int) e.getX(), (int) e.getY() - itemTop);
+		}
+
 		@Override
 		public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
 			if (_isDragging)
 				return true;
 
 			View itemView = rv.findChildViewUnder(e.getX(), e.getY());
-			int itemTop = itemView.getTop();
-			View dragHandle = itemView.findViewById(R.id.drag);
-			Rect r = new Rect();
-			dragHandle.getHitRect(r);
-			if (r.contains((int) e.getX(), (int) e.getY() - itemTop)) {
+			if (containsDragHandle(itemView, e)) {
 				_isDragging = true;
 
 				_dragStartMouseY = e.getY();
-				_dragStartTop = itemTop;
+				_dragStartTop = itemView.getTop();
 				_dragStartBounds = new Rect(itemView.getLeft(), itemView.getTop(), itemView.getRight(), itemView.getBottom());
 				_dragEpisodeId = rv.getChildItemId(itemView);
 
@@ -137,13 +141,6 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 		listView.setItemAnimator(new DefaultItemAnimator());
 		listView.addOnItemTouchListener(_touchListener);
 		listView.setAdapter(_adapter);
-
-		/* TODO
-		// disable swipe to remove according to preference
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		if (!preferences.getBoolean("allowPlaylistSwipeToRemove", true))
-			dragSortController.setRemoveEnabled(false);
-		*/
 	}
 
 	@Override
@@ -313,17 +310,6 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 			_cursor.moveToPosition(position);
 			return new EpisodeCursor(_cursor).getId();
 		}
-
-		/* TODO
-		@Override
-		public void remove(int which) {
-			Long podcastId = _adapter.getItemId(which);
-			ContentValues values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
-			getActivity().getContentResolver().update(podcastUri, values, null, null);
-		}
-		*/
 
 		public int getPositionForId(long id) {
 			for (int i = 0; i < getItemCount(); ++i)
