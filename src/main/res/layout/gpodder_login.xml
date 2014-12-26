@@ -113,7 +113,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_gravity="center_horizontal"
-            android:onClick="handleLogin"
             android:text="@string/login"/>
 
     <TextView

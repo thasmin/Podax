@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -22,7 +23,6 @@ import com.axelby.podax.ui.ProgressDialogFragment;
 
 public class AuthenticatorActivity extends FragmentActivity {
 	public static final String PARAM_CONFIRMCREDENTIALS = "confirmCredentials";
-	public static final String PARAM_PASSWORD = "password";
 	public static final String PARAM_USERNAME = "username";
 	public static final String PARAM_AUTHTOKEN_TYPE = "authtokenType";
 	private final Handler _handler = new Handler();
@@ -31,7 +31,7 @@ public class AuthenticatorActivity extends FragmentActivity {
 	String _authtokenType;
 	boolean _requestNewAccount;
 	boolean _confirmCredentials;
-    private TextView _messageText;
+	private TextView _messageText;
 	private EditText _usernameEdit;
 	private EditText _passwordEdit;
 	private EditText _deviceNameEdit;
@@ -51,12 +51,52 @@ public class AuthenticatorActivity extends FragmentActivity {
 		_confirmCredentials = intent.getBooleanExtra(PARAM_CONFIRMCREDENTIALS, false);
 
 		setContentView(R.layout.gpodder_login);
+
 		_messageText = (TextView) findViewById(R.id.message);
 		_usernameEdit = (EditText) findViewById(R.id.username);
 		_passwordEdit = (EditText) findViewById(R.id.password);
 		_deviceNameEdit = (EditText) findViewById(R.id.devicename);
 		_deviceTypeList = (RadioGroup) findViewById(R.id.devicetype);
 		_deviceTypeList.check(Helper.isTablet(this) ? R.id.radioLaptop : R.id.radioMobile);
+
+		findViewById(R.id.ok_button).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (_requestNewAccount)
+					_username = _usernameEdit.getText().toString();
+				_password = _passwordEdit.getText().toString();
+				if (TextUtils.isEmpty(_username) || TextUtils.isEmpty(_password)) {
+					_messageText.setText(getMessage());
+					return;
+				}
+
+				showProgress();
+				final Client client = new Client(AuthenticatorActivity.this, _username, _password);
+
+				Thread _authThread = new Thread() {
+					@Override
+					public void run() {
+						new Runnable() {
+							public void run() {
+								final boolean isValid = client.authenticate();
+								SharedPreferences gpodderPrefs = getSharedPreferences("gpodder", MODE_PRIVATE);
+								gpodderPrefs.edit()
+										.putString("caption", _deviceNameEdit.getText().toString())
+										.putString("type", getCheckedDeviceType())
+										.apply();
+
+								_handler.post(new Runnable() {
+									public void run() {
+										onAuthenticationResult(isValid);
+									}
+								});
+							}
+						}.run();
+					}
+				};
+				_authThread.start();
+			}
+		});
 
 		// taken from AccountAuthenticatorActivity source code
 		_accountAuthenticatorResponse = getIntent().getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
@@ -87,42 +127,6 @@ public class AuthenticatorActivity extends FragmentActivity {
 		_progressDialog.dismiss();
 	}
 
-	public void handleLogin() {
-		if (_requestNewAccount) {
-			_username = _usernameEdit.getText().toString();
-		}
-		_password = _passwordEdit.getText().toString();
-		if (TextUtils.isEmpty(_username) || TextUtils.isEmpty(_password)) {
-			_messageText.setText(getMessage());
-		} else {
-			showProgress();
-			final Client client = new Client(this, _username, _password);
-
-            Thread _authThread = new Thread() {
-                @Override
-                public void run() {
-                    new Runnable() {
-                        public void run() {
-                            final boolean isValid = client.authenticate();
-                            SharedPreferences gpodderPrefs = getSharedPreferences("gpodder", MODE_PRIVATE);
-                            gpodderPrefs.edit()
-                                    .putString("caption", _deviceNameEdit.getText().toString())
-                                    .putString("type", getCheckedDeviceType())
-                                    .apply();
-
-                            _handler.post(new Runnable() {
-                                public void run() {
-                                    onAuthenticationResult(isValid);
-                                }
-                            });
-                        }
-                    }.run();
-                }
-            };
-			_authThread.start();
-		}
-	}
-
 	private String getCheckedDeviceType() {
 		switch (_deviceTypeList.getCheckedRadioButtonId()) {
 			case R.id.radioDesktop: return "desktop";
@@ -137,17 +141,15 @@ public class AuthenticatorActivity extends FragmentActivity {
 	public void onAuthenticationResult(boolean isValid) {
 		hideProgress();
 		if (!isValid) {
-			if (_requestNewAccount) {
+			if (_requestNewAccount)
 				_messageText.setText("That username and password did not work on gpodder.net.");
-			} else {
+			else
 				_messageText.setText("That password did not work on gpodder.net.");
-			}
 		} else {
-			if (_confirmCredentials) {
+			if (_confirmCredentials)
 				finishConfirmCredentials(true);
-			} else {
+			else
 				finishLogin();
-			}
 		}
 	}
 
