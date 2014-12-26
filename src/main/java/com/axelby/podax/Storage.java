@@ -10,7 +10,7 @@ import java.io.File;
 public class Storage {
 	public static String getExternalStorageDirectory(Context context) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		String storageCard = prefs.getString("storageCard", "/sdcard");
+		String storageCard = prefs.getString("storageCard", Environment.getExternalStorageDirectory().getPath());
 		if (new File(storageCard).exists())
 			return storageCard;
 		return Environment.getExternalStorageDirectory().getAbsolutePath();
