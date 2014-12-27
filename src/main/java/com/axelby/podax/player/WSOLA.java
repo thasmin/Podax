@@ -3,7 +3,7 @@ package com.axelby.podax.player;
 //	Slamnig Audio Utilities project
 //	Created: 2014/05/18 D.Slamnig
 
-public class WSOLA
+class WSOLA
 {
 	public static class Error {
 		public static final int SUCCESS = 0;

@@ -6,6 +6,7 @@ import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
+@SuppressWarnings("WeakerAccess")
 @ReportsCrashes(formKey = "",
 		formUri = "http://podax.axelby.com/error",
 		mode = ReportingInteractionMode.DIALOG,

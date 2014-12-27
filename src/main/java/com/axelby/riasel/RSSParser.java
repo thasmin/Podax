@@ -6,7 +6,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.util.Date;
 
-public class RSSParser {
+class RSSParser {
 	private static final String NAMESPACE_MEDIA = "http://search.yahoo.com/mrss/";
 	private static final String NAMESPACE_ITUNES = "http://www.itunes.com/dtds/podcast-1.0.dtd";
 

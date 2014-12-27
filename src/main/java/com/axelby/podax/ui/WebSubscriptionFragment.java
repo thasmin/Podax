@@ -34,8 +34,8 @@ import javax.annotation.Nonnull;
 import javax.net.ssl.HttpsURLConnection;
 
 public class WebSubscriptionFragment extends Fragment {
-    private int LOADER_GETCODE = 0;
-    private int LOADER_CHECKFORURL = 1;
+    private final int LOADER_GETCODE = 0;
+    private final int LOADER_CHECKFORURL = 1;
 
     private ProgressBar _progressBar;
     private TextView _webcode;
@@ -44,11 +44,11 @@ public class WebSubscriptionFragment extends Fragment {
         private MaybeString(String r, String e) { result = r; error = e; }
         public static MaybeString result(String result) { return new MaybeString(result, null); }
         public static MaybeString error(String error) { return new MaybeString(null, error); }
-        public String result;
-        public String error;
+        public final String result;
+        public final String error;
     }
 
-    private LoaderManager.LoaderCallbacks<MaybeString> _loaderCallbacks = new LoaderManager.LoaderCallbacks<MaybeString>() {
+    private final LoaderManager.LoaderCallbacks<MaybeString> _loaderCallbacks = new LoaderManager.LoaderCallbacks<MaybeString>() {
         @Override
         public Loader<MaybeString> onCreateLoader(int id, Bundle bundle) {
             if (id == LOADER_GETCODE)
@@ -83,7 +83,7 @@ public class WebSubscriptionFragment extends Fragment {
         @Override public void onLoaderReset(Loader<MaybeString> loader) { }
     };
 
-    private BroadcastReceiver _rssUrlFinderReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver _rssUrlFinderReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();

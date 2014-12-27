@@ -64,7 +64,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
         setTitle();
 	}
 
-	public void setTitle() {
+	void setTitle() {
 		if (getView() == null)
 			return;
 
@@ -130,12 +130,12 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 		private Cursor _cursor;
 
         class ViewHolder extends RecyclerView.ViewHolder {
-			public View container;
-            public TextView title;
-            public TextView date;
-            public TextView duration;
-            public Button play;
-            public Button playlist;
+			public final View container;
+            public final TextView title;
+            public final TextView date;
+            public final TextView duration;
+            public final Button play;
+            public final Button playlist;
 
             public ViewHolder (View view) {
 				super(view);
@@ -162,7 +162,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 			notifyDataSetChanged();
 		}
 
-        OnClickListener _playHandler = new OnClickListener() {
+        final OnClickListener _playHandler = new OnClickListener() {
             @Override
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();
@@ -171,7 +171,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
             }
         };
 
-        OnClickListener _playlistHandler = new OnClickListener() {
+        final OnClickListener _playlistHandler = new OnClickListener() {
             @Override
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag(R.id.episodeId);
@@ -183,7 +183,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
             }
         };
 
-		OnClickListener _clickHandler = new OnClickListener() {
+		final OnClickListener _clickHandler = new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				long episodeId = (Long) view.getTag();

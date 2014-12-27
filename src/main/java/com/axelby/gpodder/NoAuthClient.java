@@ -19,11 +19,11 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class NoAuthClient {
 
-	protected static Config _config;
-	protected static Calendar _configRefresh = null;
-	protected Context _context;
+	static Config _config;
+	private static Calendar _configRefresh = null;
+	final Context _context;
 
-	protected String _errorMessage;
+	private String _errorMessage;
 
 	public NoAuthClient(Context context) {
 		_context = context;
@@ -32,14 +32,14 @@ public class NoAuthClient {
 	public String getErrorMessage() {
 		return _errorMessage;
 	}
-	protected void setErrorMessage(String errorMessage) {
+	void setErrorMessage(String errorMessage) {
 		_errorMessage = errorMessage;
 	}
-	protected void clearErrorMessage() {
+	void clearErrorMessage() {
 		_errorMessage = null;
 	}
 
-	protected static void verifyCurrentConfig() {
+	static void verifyCurrentConfig() {
 		if (_configRefresh == null || _configRefresh.before(new GregorianCalendar())) {
 			_config = retrieveGPodderConfig();
 
@@ -71,18 +71,22 @@ public class NoAuthClient {
 			reader.beginObject();
 			while (reader.hasNext()) {
 				String name = reader.nextName();
-				if (name.equals("mygpo")) {
-					reader.beginObject();
-					reader.nextName();
-					config.mygpo = reader.nextString();
-					reader.endObject();
-				} else if (name.equals("mygpo-feedservice")) {
-					reader.beginObject();
-					reader.nextName();
-					config.mygpo_feedservice = reader.nextString();
-					reader.endObject();
-				} else if (name.equals("update_timeout")) {
-					config.update_timeout = reader.nextLong();
+				switch (name) {
+					case "mygpo":
+						reader.beginObject();
+						reader.nextName();
+						config.mygpo = reader.nextString();
+						reader.endObject();
+						break;
+					case "mygpo-feedservice":
+						reader.beginObject();
+						reader.nextName();
+						config.mygpo_feedservice = reader.nextString();
+						reader.endObject();
+						break;
+					case "update_timeout":
+						config.update_timeout = reader.nextLong();
+						break;
 				}
 			}
 			reader.endObject();
@@ -97,7 +101,7 @@ public class NoAuthClient {
 		return config;
 	}
 
-	protected HttpsURLConnection createConnection(URL url) throws IOException {
+	HttpsURLConnection createConnection(URL url) throws IOException {
 		HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
 		conn.setRequestProperty("User-Agent", "podax/6.0");
 		return conn;
@@ -119,7 +123,7 @@ public class NoAuthClient {
 				return null;
 			}
 
-			ArrayList<Podcast> toplist = new ArrayList<Podcast>();
+			ArrayList<Podcast> toplist = new ArrayList<>();
 			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
 			reader.beginArray();
 			while (reader.hasNext())
@@ -140,7 +144,7 @@ public class NoAuthClient {
 		}
 	}
 
-	protected static class Config {
+	static class Config {
 		public String mygpo = "https://gpodder.net/";
 		public String mygpo_feedservice = "https://mygpo-feedservice.appspot.com/";
 		public long update_timeout = 604800L;

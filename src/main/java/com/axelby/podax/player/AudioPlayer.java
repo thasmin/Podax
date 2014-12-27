@@ -6,18 +6,18 @@ import android.media.AudioTrack;
 import android.util.Log;
 
 public class AudioPlayer implements Runnable {
-	protected IMediaDecoder _decoder;
-	protected AudioTrack _track;
+	IMediaDecoder _decoder;
+	AudioTrack _track;
 
 	// avoid tying up main thread by having thread check these variables to make changes
-	protected boolean _stopping = false;
-	protected Float _seekToSeconds = null;
+	private boolean _stopping = false;
+	private Float _seekToSeconds = null;
 
-	protected boolean _isPlaying = false;
-	protected float _seekbase = 0;
-	protected float _playbackRate = 1f;
+	private boolean _isPlaying = false;
+	float _seekbase = 0;
+	private float _playbackRate = 1f;
 
-	protected AudioPlayer(float playbackRate) {
+	AudioPlayer(float playbackRate) {
 		_playbackRate = playbackRate;
 	}
 	public AudioPlayer(String audioFile, float playbackRate) {
@@ -53,7 +53,7 @@ public class AudioPlayer implements Runnable {
 		return null;
 	}
 
-	protected static AudioTrack createTrackFromDecoder(IMediaDecoder decoder, AudioTrack.OnPlaybackPositionUpdateListener playbackPositionListener) {
+	static AudioTrack createTrackFromDecoder(IMediaDecoder decoder, AudioTrack.OnPlaybackPositionUpdateListener playbackPositionListener) {
 		// streaming decoder will return rate as 0 if not enough data has been loaded
 		if (decoder.getRate() == 0)
 			return null;
@@ -74,18 +74,18 @@ public class AudioPlayer implements Runnable {
 	}
 
 	public static interface OnCompletionListener { public void onCompletion(); }
-	protected OnCompletionListener _completionListener = null;
+	private OnCompletionListener _completionListener = null;
 	public void setOnCompletionListener(OnCompletionListener completionListener) {
 		this._completionListener = completionListener;
 	}
 
 	public static interface PeriodicListener { public void pulse(float position); }
-	protected PeriodicListener _periodicListener = null;
+	private PeriodicListener _periodicListener = null;
 	public void setPeriodicListener(PeriodicListener periodicListener) {
 		this._periodicListener = periodicListener;
 	}
 
-	protected AudioTrack.OnPlaybackPositionUpdateListener _playbackPositionListener =
+	final AudioTrack.OnPlaybackPositionUpdateListener _playbackPositionListener =
 			new AudioTrack.OnPlaybackPositionUpdateListener() {
 		@Override
 		public void onMarkerReached(AudioTrack audioTrack) { }
@@ -138,7 +138,7 @@ public class AudioPlayer implements Runnable {
 		return _seekbase + _playbackRate * _track.getPlaybackHeadPosition() / _track.getSampleRate();
 	}
 
-	protected void changeTrackOffset(float offsetInSeconds) {
+	void changeTrackOffset(float offsetInSeconds) {
 		if (_decoder == null)
 			return;
 
@@ -154,7 +154,7 @@ public class AudioPlayer implements Runnable {
 			_track.play();
 	}
 
-	protected void closeAudioTrack(AudioTrack track) {
+	void closeAudioTrack(AudioTrack track) {
 		// close the current AudioTrack
 		if (track != null) {
 			track.pause();
@@ -238,7 +238,7 @@ public class AudioPlayer implements Runnable {
 		}
 	}
 
-	protected void waitAndCloseTrack() {
+	void waitAndCloseTrack() {
 		if (_track == null)
 			return;
 
@@ -259,6 +259,6 @@ public class AudioPlayer implements Runnable {
 		release();
 	}
 
-	public void release() {
+	void release() {
 	}
 }

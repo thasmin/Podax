@@ -30,7 +30,8 @@
             android:layout_toEndOf="@+id/add_rss_text"
             android:inputType="textUri"
             android:layout_toLeftOf="@+id/add_rss"
-            android:layout_toStartOf="@+id/add_rss" />
+            android:layout_toStartOf="@+id/add_rss"
+            tools:ignore="RelativeOverlap"/>
 
         <Button
             android:layout_width="wrap_content"

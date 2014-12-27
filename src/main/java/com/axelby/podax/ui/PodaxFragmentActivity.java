@@ -13,8 +13,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.Toast;
 
 import com.axelby.gpodder.AuthenticatorActivity;
@@ -25,12 +23,7 @@ import com.axelby.podax.R;
 
 public class PodaxFragmentActivity extends ActionBarActivity {
 
-    public final static long FRAGMENT_GPODDER = 0;
-    public final static long FRAGMENT_STATS = 1;
-    public final static long FRAGMENT_PREFERENCES = 2;
-    public final static long FRAGMENT_ABOUT = 3;
-    public final static long FRAGMENT_LOG_VIEWER = 4;
-    public final static long FRAGMENT_WELCOME = 5;
+    public final static long FRAGMENT_GPODDER = -2;
 
     public static Intent createIntent(Context context, long fragmentId) {
         Intent intent = new Intent(context, PodaxFragmentActivity.class);
@@ -69,16 +62,6 @@ public class PodaxFragmentActivity extends ActionBarActivity {
         long fragmentCode = intent.getLongExtra(Constants.EXTRA_FRAGMENT, -1);
         if (fragmentCode == FRAGMENT_GPODDER)
             handleGPodder();
-        else if (fragmentCode == FRAGMENT_STATS)
-            createFragment(StatsFragment.class, null);
-        else if (fragmentCode == FRAGMENT_PREFERENCES)
-            createFragment(PodaxPreferenceFragment.class, null);
-        else if (fragmentCode == FRAGMENT_ABOUT)
-            createFragment(AboutFragment.class, null);
-        else if (fragmentCode == FRAGMENT_LOG_VIEWER)
-            createFragment(LogViewerFragment.class, null);
-        else if (fragmentCode == FRAGMENT_WELCOME)
-            createFragment(WelcomeFragment.class, null);
         else {
             String fragmentClassName = intent.getStringExtra(Constants.EXTRA_FRAGMENT_CLASSNAME);
             if (fragmentClassName == null || fragmentClassName.equals(""))
@@ -106,11 +89,7 @@ public class PodaxFragmentActivity extends ActionBarActivity {
 		}
 	}
 
-    protected Fragment createFragment(Class<?> fragmentClass, Bundle arguments) {
-        return createFragment(fragmentClass.getCanonicalName(), arguments);
-    }
-
-    protected Fragment createFragment(String fragmentClassName, Bundle arguments) {
+    Fragment createFragment(String fragmentClassName, Bundle arguments) {
         Fragment fragment = Fragment.instantiate(this, fragmentClassName);
         fragment.setArguments(arguments);
         FragmentManager fm = getSupportFragmentManager();

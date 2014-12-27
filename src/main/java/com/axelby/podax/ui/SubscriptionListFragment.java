@@ -39,7 +39,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 		setHasOptionsMenu(true);
 
 		getLoaderManager().initLoader(0, null, this);
-		_adapter = new SubscriptionAdapter(getActivity(), null);
+		_adapter = new SubscriptionAdapter(getActivity());
 	}
 
 	@Override
@@ -109,7 +109,7 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
 	}
 
 	private class SubscriptionAdapter extends ResourceCursorAdapter {
-        private View.OnClickListener _moreClickHandler = new View.OnClickListener() {
+        private final View.OnClickListener _moreClickHandler = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final long subscriptionId = (Long) view.getTag();
@@ -137,10 +137,10 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
         };
 
         public class ViewHolder {
-            public TextView title;
-            public TextView description;
-            public ImageView thumbnail;
-            public ImageButton more;
+            public final TextView title;
+            public final TextView description;
+            public final ImageView thumbnail;
+            public final ImageButton more;
 
             public ViewHolder(View v) {
                 title = (TextView) v.findViewById(R.id.title);
@@ -150,8 +150,8 @@ public class SubscriptionListFragment extends ListFragment implements LoaderMana
             }
         }
 
-		public SubscriptionAdapter(Context context, Cursor cursor) {
-			super(context, R.layout.subscription_list_item, cursor, true);
+		public SubscriptionAdapter(Context context) {
+			super(context, R.layout.subscription_list_item, null, true);
 		}
 
         @Override

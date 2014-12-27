@@ -63,7 +63,7 @@
             android:layout_toEndOf="@id/drag"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:layout_marginTop="10dp"
-            />
+            tools:ignore="UnusedAttribute"/>
 
         <Button
             android:id="@+id/play"
@@ -76,7 +76,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:focusable="false"
-            />
+            tools:ignore="UnusedAttribute"/>
 
         <Button
             android:id="@+id/remove"
@@ -89,7 +89,7 @@
             android:layout_toLeftOf="@id/play"
             android:layout_toStartOf="@id/play"
             android:focusable="false"
-            />
+            tools:ignore="UnusedAttribute"/>
 
         <View
             android:layout_height="10dp"

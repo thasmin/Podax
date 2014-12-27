@@ -44,10 +44,9 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 	private boolean _isDragging;
 	private long _dragEpisodeId;
 
-	private RecyclerView.OnItemTouchListener _touchListener = new RecyclerView.OnItemTouchListener() {
+	private final RecyclerView.OnItemTouchListener _touchListener = new RecyclerView.OnItemTouchListener() {
 		float _dragStartMouseY;
 		int _dragStartTop;
-		Rect _dragStartBounds;
 
 		private boolean containsDragHandle(View itemView, MotionEvent e) {
 			int itemTop = itemView.getTop();
@@ -68,7 +67,6 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 
 				_dragStartMouseY = e.getY();
 				_dragStartTop = itemView.getTop();
-				_dragStartBounds = new Rect(itemView.getLeft(), itemView.getTop(), itemView.getRight(), itemView.getBottom());
 				_dragEpisodeId = rv.getChildItemId(itemView);
 
 				_overlay.setImageBitmap(viewToBitmap(itemView));
@@ -194,14 +192,14 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 		private Cursor _cursor = null;
 
 		class ViewHolder extends RecyclerView.ViewHolder {
-			public View container;
-            public TextView title;
-            public TextView subscription;
-            public ImageView thumbnail;
-            public TextView downloaded;
-			public View play;
-			public View remove;
-			public View drag;
+			public final View container;
+            public final TextView title;
+            public final TextView subscription;
+            public final ImageView thumbnail;
+            public final TextView downloaded;
+			public final View play;
+			public final View remove;
+			public final View drag;
 
             public ViewHolder(View view) {
 				super(view);
@@ -225,7 +223,7 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
             }
         }
 
-		private OnClickListener _clickHandler = new OnClickListener() {
+		private final OnClickListener _clickHandler = new OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				long episodeId = (Long) view.getTag();
@@ -233,7 +231,7 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 			}
 		};
 
-        private OnClickListener _playHandler = new OnClickListener() {
+        private final OnClickListener _playHandler = new OnClickListener() {
             @Override
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();
@@ -241,7 +239,7 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
             }
         };
 
-        private OnClickListener _removeHandler = new OnClickListener() {
+        private final OnClickListener _removeHandler = new OnClickListener() {
             @Override
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();

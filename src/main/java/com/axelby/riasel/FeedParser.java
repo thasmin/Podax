@@ -19,9 +19,6 @@ public class FeedParser {
 		public UnknownFeedException() {
 			super("This is not a RSS or Atom feed and is unsupported by Riasel.");
 		}
-		public UnknownFeedException(Throwable throwable) {
-			super("This is not a RSS or Atom feed and is unsupported by Riasel.", throwable);
-		}
 	}
 
 	private FeedInfoHandler _feedInfoHandler;

@@ -26,10 +26,10 @@ import com.axelby.podax.ui.MainActivity;
 // player events are: started playing, stopped playing, paused, finished episode
 public class PlayerService extends Service {
 	private long _currentEpisodeId;
-	protected EpisodePlayer _player;
-	private LockscreenManager _lockscreenManager = new LockscreenManager();
+	private EpisodePlayer _player;
+	private final LockscreenManager _lockscreenManager = new LockscreenManager();
 
-	private ContentObserver _episodeChangeObserver = new ContentObserver(new Handler()) {
+	private final ContentObserver _episodeChangeObserver = new ContentObserver(new Handler()) {
 		@Override
 		public boolean deliverSelfNotifications() {
 			return false;
@@ -46,7 +46,7 @@ public class PlayerService extends Service {
 		}
 	};
 
-	private BroadcastReceiver _stopReceiver = new BroadcastReceiver() {
+	private final BroadcastReceiver _stopReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			PodaxLog.log(PlayerService.this, "stopping for intent " + intent.getAction());
@@ -64,16 +64,16 @@ public class PlayerService extends Service {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY);
 	}
 
-	public static void pause(Context context, int pause_reason) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PAUSE, pause_reason);
+	public static void pause(Context context) {
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PAUSE, Constants.PAUSE_MEDIABUTTON);
 	}
 
 	public static void stop(Context context) {
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_STOP);
 	}
 
-	public static void playpause(Context context, int pause_reason) {
-		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAYPAUSE, pause_reason);
+	public static void playpause(Context context) {
+		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAYPAUSE, Constants.PAUSE_MEDIABUTTON);
 	}
 
 	private static void sendCommand(Context context, int command) {
@@ -167,7 +167,7 @@ public class PlayerService extends Service {
 			updateActiveEpisodePosition(positionInSeconds);
 		}
 	}
-	private EpisodeEventHandler _episodeEventHandler = new EpisodeEventHandler();
+	private final EpisodeEventHandler _episodeEventHandler = new EpisodeEventHandler();
 
 	private void createPlayer() {
 		if (_player == null) {
@@ -247,7 +247,7 @@ public class PlayerService extends Service {
 		PendingIntent showPendingIntent = PendingIntent.getActivity(this, 0, showIntent, 0);
 
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-				.setSmallIcon(R.drawable.icon)
+				.setSmallIcon(R.drawable.ic_stat_icon)
 				.setWhen(0)
 				.setContentTitle(playerStatus.getTitle())
 				.setContentText(playerStatus.getSubscriptionTitle())

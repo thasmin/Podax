@@ -76,28 +76,26 @@ public class PodaxPreferenceFragment extends PreferenceListFragment implements P
 		return false;
 	}
 
-	private boolean moveFilesToNewStorage(String newStorage) {
+	private void moveFilesToNewStorage(String newStorage) {
 		String oldStorage = Storage.getExternalStorageDirectory(getActivity());
 		if (oldStorage.equals(newStorage))
-			return true;
+			return;
 
 		String addition = "/Android/data/com.axelby.podax/files";
 		File oldStorageDir = new File(oldStorage, addition);
 		if (!oldStorageDir.exists())
-			return true;
+			return;
 
 		File newStorageDir = new File(newStorage, addition);
 		if (!newStorageDir.exists())
 			if (!newStorageDir.mkdirs())
-				return false;
+				return;
 
 		File[] filesToMove = oldStorageDir.listFiles();
 		if (filesToMove == null)
-			return false;
+			return;
 
-		boolean allgood = true;
 		for (File from : filesToMove)
-			allgood = allgood && from.renameTo(new File(newStorageDir, from.getName()));
-		return allgood;
+			from.renameTo(new File(newStorageDir, from.getName()));
 	}
 }

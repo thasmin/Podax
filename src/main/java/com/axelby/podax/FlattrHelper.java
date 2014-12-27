@@ -32,7 +32,7 @@ public class FlattrHelper {
 	}
 
 
-	public static AccessToken getOAuthToken(Context context) {
+	private static AccessToken getOAuthToken(Context context) {
 		SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
 		String token = settings.getString(PREF_OAUTH_TOKEN, null);
 		if (token == null)

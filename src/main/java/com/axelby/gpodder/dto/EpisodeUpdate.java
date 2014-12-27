@@ -12,11 +12,10 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class EpisodeUpdate {
-	private static DateFormat ISO8601 = null;
+	private static final DateFormat ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 	static {
 		TimeZone tz = TimeZone.getTimeZone("UTC");
-		ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		ISO8601.setTimeZone(tz);
 	}
 
@@ -32,19 +31,19 @@ public class EpisodeUpdate {
 	private EpisodeUpdate() {
 	}
 
-	public EpisodeUpdate(String podcast, String episode, String action, Date timestamp) {
+	private EpisodeUpdate(String podcast, String episode, String action, Date timestamp) {
 		this.podcast = podcast;
 		this.episode = episode;
 		this.action = action;
 		this.timestamp = timestamp;
 	}
 
-	public EpisodeUpdate(String podcast, String episode, String action, Date timestamp, int position) {
+	private EpisodeUpdate(String podcast, String episode, String action, Date timestamp, int position) {
 		this(podcast, episode, action, timestamp);
 		this.position = position;
 	}
 
-	public EpisodeUpdate(String podcast, String episode, String action, Date timestamp, int started, int position, int total) {
+	private EpisodeUpdate(String podcast, String episode, String action, Date timestamp, int started, int position, int total) {
 		this(podcast, episode, action, timestamp, position);
 		this.started = started;
 		this.total = total;

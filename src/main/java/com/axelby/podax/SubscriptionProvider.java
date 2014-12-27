@@ -16,14 +16,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class SubscriptionProvider extends ContentProvider {
-	public static String AUTHORITY = "com.axelby.podax.subscriptionprovider";
-	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/subscriptions");
+	private static final String AUTHORITY = "com.axelby.podax.subscriptionprovider";
+	public static final Uri URI = Uri.parse("content://" + AUTHORITY + "/subscriptions");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(URI, "search");
 	public static final Uri FROM_GPODDER_URI = Uri.withAppendedPath(URI, "from_gpodder");
 
-	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.subscription";
-	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.subscription";
-	public static final String PODCAST_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
+	private static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.subscription";
+	private static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.subscription";
+	private static final String PODCAST_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -43,8 +43,8 @@ public class SubscriptionProvider extends ContentProvider {
 	private static final int SUBSCRIPTIONS_SEARCH = 4;
 	private static final int FROM_GPODDER = 5;
 
-	static UriMatcher _uriMatcher;
-	static HashMap<String, String> _columnMap;
+	private static final UriMatcher _uriMatcher;
+	private static final HashMap<String, String> _columnMap;
 
 	static {
 		_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -54,7 +54,7 @@ public class SubscriptionProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/search", SUBSCRIPTIONS_SEARCH);
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/from_gpodder", FROM_GPODDER);
 
-		_columnMap = new HashMap<String, String>();
+		_columnMap = new HashMap<>();
 		_columnMap.put(COLUMN_ID, "_id");
 		_columnMap.put(COLUMN_TITLE, "title");
 		_columnMap.put(COLUMN_URL, "url");
@@ -72,7 +72,7 @@ public class SubscriptionProvider extends ContentProvider {
 		return ContentUris.withAppendedId(URI, id);
 	}
 
-	DBAdapter _dbAdapter;
+	private DBAdapter _dbAdapter;
 
     public static void addNewSubscription(Context context, String url) {
         ContentValues values = new ContentValues(1);
@@ -122,7 +122,7 @@ public class SubscriptionProvider extends ContentProvider {
 					hasOverride = true;
 			}
 			if (hasTitle && !hasOverride) {
-				ArrayList<String> list = new ArrayList<String>(Arrays.asList(projection));
+				ArrayList<String> list = new ArrayList<>(Arrays.asList(projection));
 				list.add(COLUMN_TITLE_OVERRIDE);
 				projection = list.toArray(new String[list.size()]);
 			}
@@ -253,7 +253,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 		// go through subscriptions about to be deleted and remove podcasts
 		Cursor c = db.query("subscriptions", new String[]{COLUMN_ID}, where, whereArgs, null, null, null);
-		ArrayList<String> subIds = new ArrayList<String>();
+		ArrayList<String> subIds = new ArrayList<>();
 		String in = "";
 		while (c.moveToNext()) {
 			in += ",?";

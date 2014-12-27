@@ -12,7 +12,7 @@ import com.axelby.podax.player.StreamAudioPlayer;
 
 import java.util.ArrayList;
 
-public class EpisodePlayer {
+class EpisodePlayer {
 
 	// listen for audio focus changes - another app started/stopped, phone call, etc
 	private final AudioManager.OnAudioFocusChangeListener _afChangeListener = new AudioManager.OnAudioFocusChangeListener() {
@@ -28,8 +28,8 @@ public class EpisodePlayer {
 		}
 	};
 
-	protected Context _context;
-	private ArrayList<Boolean> _pausingFor = new ArrayList<>(2);
+	private final Context _context;
+	private final ArrayList<Boolean> _pausingFor = new ArrayList<>(2);
 
 	private OnPauseListener _onPauseListener = null;
 	private OnPlayListener _onPlayListener = null;
@@ -47,10 +47,10 @@ public class EpisodePlayer {
 		_pausingFor.add(false);
 	}
 
-	public boolean changeEpisode(long episodeId) {
+	public void changeEpisode(long episodeId) {
 		EpisodeCursor episode = EpisodeCursor.getCursor(_context, episodeId);
 		if (episode == null)
-			return false;
+			return;
 
 		try {
 			if (_player != null) {
@@ -72,7 +72,7 @@ public class EpisodePlayer {
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
 			if (!AudioPlayer.supports(episode.getFilename(_context), stream)) {
 				Toast.makeText(_context, "This episode is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
-				return false;
+				return;
 			}
 
 			if (stream)
@@ -102,10 +102,10 @@ public class EpisodePlayer {
 
 			if (_onChangeListener != null)
 				_onChangeListener.onChange();
-			return true;
+			return;
 		} catch (Exception ex) {
 			Log.e("Podax", "unable to change to new episode", ex);
-			return false;
+			return;
 		} finally {
 			episode.closeCursor();
 		}

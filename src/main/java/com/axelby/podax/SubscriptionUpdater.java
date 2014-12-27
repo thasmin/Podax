@@ -36,8 +36,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class SubscriptionUpdater {
-	private Context _context;
+class SubscriptionUpdater {
+	private final Context _context;
 
 	public SubscriptionUpdater(Context context) {
 		_context = context;
@@ -46,7 +46,7 @@ public class SubscriptionUpdater {
 	public void update(final long subscriptionId) {
 		Cursor cursor = null;
 		try {
-			if (!Helper.ensureWifiPref(_context))
+			if (Helper.isInvalidNetworkState(_context))
 				return;
 
 			Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
@@ -132,8 +132,10 @@ public class SubscriptionUpdater {
 						changeKeyString(episodeValues, "mediaURL", EpisodeProvider.COLUMN_MEDIA_URL);
 						changeKeyString(episodeValues, "mediaSize", EpisodeProvider.COLUMN_FILE_SIZE);
 						changeKeyString(episodeValues, "paymentURL", EpisodeProvider.COLUMN_PAYMENT);
-						if (changeKeyLong(episodeValues, "publicationDate", EpisodeProvider.COLUMN_PUB_DATE))
-							episodeValues.put(EpisodeProvider.COLUMN_PUB_DATE, episodeValues.getAsLong(EpisodeProvider.COLUMN_PUB_DATE) / 1000);
+						if (episodeValues.containsKey("publicationDate")) {
+							episodeValues.put(EpisodeProvider.COLUMN_PUB_DATE, episodeValues.getAsLong("publicationDate") / 1000);
+							episodeValues.remove("publicationDate");
+						}
 
 						if (episodeValues.containsKey(EpisodeProvider.COLUMN_MEDIA_URL)) {
 							try {
@@ -223,22 +225,11 @@ public class SubscriptionUpdater {
 		}
 	}
 
-	private boolean changeKeyString(ContentValues values, String oldKey, String newKey) {
-		if (values.containsKey(oldKey)) {
-			values.put(newKey, values.getAsString(oldKey));
-			values.remove(oldKey);
-			return true;
-		}
-		return false;
-	}
-
-	private boolean changeKeyLong(ContentValues values, String oldKey, String newKey) {
-		if (values.containsKey(oldKey)) {
-			values.put(newKey, values.getAsLong(oldKey));
-			values.remove(oldKey);
-			return true;
-		}
-		return false;
+	private void changeKeyString(ContentValues values, String oldKey, String newKey) {
+		if (!values.containsKey(oldKey))
+			return;
+		values.put(newKey, values.getAsString(oldKey));
+		values.remove(oldKey);
 	}
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
@@ -246,7 +237,7 @@ public class SubscriptionUpdater {
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)
-				.setSmallIcon(R.drawable.icon)
+				.setSmallIcon(R.drawable.ic_stat_icon)
 				.setTicker("Error Updating Subscription")
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Error updating " + subscription.getTitle())
@@ -261,7 +252,7 @@ public class SubscriptionUpdater {
 	}
 
 
-	protected void writeSubscriptionOPML() {
+	void writeSubscriptionOPML() {
 		try {
 			File file = new File(_context.getExternalFilesDir(null), "podax.opml");
 			FileOutputStream output = new FileOutputStream(file);
@@ -315,7 +306,7 @@ public class SubscriptionUpdater {
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
 		Notification notification = new NotificationCompat.Builder(_context)
-				.setSmallIcon(R.drawable.icon)
+				.setSmallIcon(R.drawable.ic_stat_icon)
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Updating " + subscription.getTitle())
 				.setContentIntent(contentIntent)

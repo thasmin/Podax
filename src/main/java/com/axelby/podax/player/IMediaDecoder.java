@@ -4,7 +4,7 @@ public interface IMediaDecoder {
 	void close();
 	int readFrame(short[] buffer);
 	boolean skipFrame();
-	int seek(float offsetInSeconds);
+	void seek(float offsetInSeconds);
 	float getPosition();
 	int getNumChannels();
 	int getRate();

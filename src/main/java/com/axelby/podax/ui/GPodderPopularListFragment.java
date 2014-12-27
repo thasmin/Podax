@@ -39,7 +39,7 @@ public class GPodderPopularListFragment extends ListFragment {
 		super.onActivityCreated(savedInstanceState);
 
 		String[] strings = {"Loading from gpodder.net"};
-		setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings));
+		setListAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, strings));
 
 		getLoaderManager().initLoader(0, null, new LoaderManager.LoaderCallbacks<Podcast[]>() {
 			ToplistPodcastLoader _loader;
@@ -55,7 +55,7 @@ public class GPodderPopularListFragment extends ListFragment {
 					setListAdapter(new ToplistAdapter(getActivity(), feeds));
 				else {
 					String[] strings = {"Error loading toplist: " + _loader.getError()};
-					setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings));
+					setListAdapter(new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, strings));
 				}
 			}
 
@@ -98,9 +98,9 @@ public class GPodderPopularListFragment extends ListFragment {
 	}
 
 	private static class ToplistAdapter extends ArrayAdapter<Podcast> {
-		private Activity _activity;
+		private final Activity _activity;
 
-		private View.OnClickListener addPodcastHandler = new View.OnClickListener() {
+		private final View.OnClickListener addPodcastHandler = new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				View listitem = (View) view.getParent().getParent();
@@ -108,7 +108,7 @@ public class GPodderPopularListFragment extends ListFragment {
                 SubscriptionProvider.addNewSubscription(getContext(), podcast.getUrl());
 			}
 		};
-		private View.OnClickListener viewWebsiteHandler = new View.OnClickListener() {
+		private final View.OnClickListener viewWebsiteHandler = new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				View listitem = (View) view.getParent().getParent();

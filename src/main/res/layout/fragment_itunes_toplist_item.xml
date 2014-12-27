@@ -16,6 +16,7 @@
             android:contentDescription="@string/subscription_thumbnail"
             tools:src="@drawable/icon"
             android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
             />
 
         <TextView
@@ -26,6 +27,7 @@
             tools:text="Fitzdog Radio"
             android:layout_marginTop="10dp"
             android:layout_toRightOf="@id/image"
+            android:layout_toEndOf="@id/image"
             android:layout_alignParentTop="true"
             android:textSize="20sp"
             />
@@ -38,6 +40,7 @@
             tools:text="Greg Fitzsimmons's podcast. He's a comedian. His podcast is pretty good and you might want to listen to it. Or you might not like it so then you wouldn't want to listen to it."
             android:layout_below="@id/name"
             android:layout_toRightOf="@id/image"
+            android:layout_toEndOf="@id/image"
             android:ellipsize="end"
             android:maxLines="3"
             />
@@ -51,8 +54,10 @@
             style="@style/Widget.Podax.Button.Flat.Primary"
             android:layout_below="@id/summary"
             android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_marginRight="20dp"
-            />
+            android:layout_marginEnd="20dp"
+            tools:ignore="UnusedAttribute"/>
 
         <!-- fix for bug with relativelayout not using bottom margins -->
         <View

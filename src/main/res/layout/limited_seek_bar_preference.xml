@@ -10,7 +10,9 @@
             android:layout_height="wrap_content"
             android:id="@+id/seekBar"
             android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/statusText"/>
+            android:layout_alignParentEnd="true"
+            android:layout_toRightOf="@+id/statusText"
+            android:layout_toEndOf="@+id/statusText"/>
 
     <TextView
             android:layout_width="wrap_content"
@@ -19,6 +21,7 @@
             android:text="longest value"
             android:id="@+id/statusText"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:gravity="center"
             tools:ignore="HardcodedText"/>
 </RelativeLayout>

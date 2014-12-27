@@ -33,7 +33,6 @@ public class PlayerStatus {
 			status._subscriptionTitle = episode.getSubscriptionTitle();
 			status._position = episode.getLastPosition();
 			status._duration = episode.getDuration();
-			status._filename = episode.getFilename(context);
 			status._isDownloaded = episode.isDownloaded(context);
 		}
 		cursor.close();
@@ -79,7 +78,6 @@ public class PlayerStatus {
 	private int _duration;
 	private String _title;
 	private String _subscriptionTitle;
-	private String _filename;
 	private boolean _isDownloaded;
 
 	private PlayerStatus() {
@@ -97,8 +95,6 @@ public class PlayerStatus {
 	public int getDuration() { return _duration; }
 	public String getTitle() { return _title; }
 	public String getSubscriptionTitle() { return _subscriptionTitle; }
-	public String getFilename() { return _filename; }
 	public boolean isEpisodeDownloaded() { return _isDownloaded; }
-	public boolean isEpisodeDownloading() { return EpisodeDownloader.isDownloading(_filename); }
 	public boolean hasActiveEpisode() { return getState() != PlayerStates.PLAYLISTEMPTY; }
 }

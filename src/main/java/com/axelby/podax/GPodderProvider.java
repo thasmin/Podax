@@ -10,23 +10,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 public class GPodderProvider extends ContentProvider {
-	public static String AUTHORITY = "com.axelby.podax.gpodder_sync";
-	public static Uri URI = Uri.parse("content://" + AUTHORITY);
-	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podax.gpoddersync";
-	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podax.gpoddersync";
+	public static final String AUTHORITY = "com.axelby.podax.gpodder_sync";
+	public static final Uri URI = Uri.parse("content://" + AUTHORITY);
+	private static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podax.gpoddersync";
 
 	private DBAdapter _dbAdapter;
 
-	public static Uri TO_REMOVE_URI = Uri.withAppendedPath(URI, "to_remove");
-	public static Uri TO_ADD_URI = Uri.withAppendedPath(URI, "to_add");
-	public static Uri DEVICE_URI = Uri.withAppendedPath(URI, "to_add");
+	public static final Uri TO_REMOVE_URI = Uri.withAppendedPath(URI, "to_remove");
+	public static final Uri TO_ADD_URI = Uri.withAppendedPath(URI, "to_add");
 
-	static final int ALL = 0;
-	static final int TO_ADD = 1;
-	static final int TO_REMOVE = 2;
-	static final int DEVICE = 3;
+	private static final int ALL = 0;
+	private static final int TO_ADD = 1;
+	private static final int TO_REMOVE = 2;
+	private static final int DEVICE = 3;
 
-	static UriMatcher _uriMatcher;
+	private static final UriMatcher _uriMatcher;
 
 	static {
 		_uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -106,27 +104,5 @@ public class GPodderProvider extends ContentProvider {
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		return db.delete("gpodder_sync", selection, selectionArgs);
-	}
-
-	private ContentValues makeUrlValues(String url) {
-		ContentValues values = new ContentValues();
-		values.put("url", url);
-		return values;
-	}
-
-	public void fakeSync() {
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-
-		Cursor c = db.query("pending_remove", new String[]{"url"}, null, null, null, null, null);
-		while (c.moveToNext())
-			db.delete("subscriptions", "url = ?", new String[]{c.getString(0)});
-		c.close();
-		db.delete("pending_remove", null, null);
-
-		c = db.query("pending_add", new String[]{"url"}, null, null, null, null, null);
-		while (c.moveToNext())
-			db.insert("subscriptions", null, makeUrlValues(c.getString(0)));
-		c.close();
-		db.delete("pending_add", null, null);
 	}
 }

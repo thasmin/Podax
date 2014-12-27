@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class OPMLImporter {
+class OPMLImporter {
 	public static int read(final Context context, File file) throws IOException, SAXException {
 		final int[] count = {0};
 

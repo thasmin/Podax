@@ -9,7 +9,7 @@ import java.util.Date;
 
 public class EpisodeUpdateResponse {
 	private Date timestamp;
-	private ArrayList<EpisodeUpdate> updates = new ArrayList<EpisodeUpdate>();
+	private final ArrayList<EpisodeUpdate> updates = new ArrayList<>();
 
 	private EpisodeUpdateResponse() {
 	}

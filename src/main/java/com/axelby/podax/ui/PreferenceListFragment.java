@@ -34,7 +34,7 @@ public class PreferenceListFragment extends ListFragment {
 
 	private static final int MSG_BIND_PREFERENCES = 0;
 	@SuppressLint("HandlerLeak")
-	private Handler mHandler = new Handler() {
+	private final Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -201,16 +201,7 @@ public class PreferenceListFragment extends ListFragment {
 		}
 	}
 
-	/**
-	 * Adds preferences from activities that match the given {@link Intent}.
-	 *
-	 * @param intent The {@link Intent} to query activities.
-	 */
-	public void addPreferencesFromIntent(Intent intent) {
-		throw new RuntimeException("too lazy to include this bs");
-	}
-
-	public PreferenceScreen inflateFromResource(int preferencesResId) {
+	PreferenceScreen inflateFromResource(int preferencesResId) {
 		try {
 			Method m = PreferenceManager.class.getDeclaredMethod("inflateFromResource", Context.class, int.class, PreferenceScreen.class);
 			m.setAccessible(true);

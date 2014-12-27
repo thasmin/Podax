@@ -1,9 +1,8 @@
 package com.axelby.podax.player;
 
-public class StreamSkipper {
+class StreamSkipper {
 	private final IMediaDecoder _decoder;
 	private final Thread _thread;
-	private boolean _isDone = false;
 
 	public StreamSkipper(IMediaDecoder decoder) {
 		Runnable _runnable = new Runnable() {
@@ -14,8 +13,6 @@ public class StreamSkipper {
 						if (!_decoder.skipFrame())
 							Thread.sleep(50);
 				} catch (InterruptedException ignored) {
-				} finally {
-					_isDone = true;
 				}
 			}
 		};
@@ -24,8 +21,6 @@ public class StreamSkipper {
 		_thread = new Thread(_runnable, "StreamSkipper");
 		_thread.start();
 	}
-
-	public boolean isDone() { return _isDone; }
 
 	public void close() {
 		_thread.interrupt();

@@ -21,9 +21,9 @@ public class MPG123 implements IMediaDecoder {
 	protected static native int readFrame(long handle, short[] buffer);
 	protected static native int getSeekFrameOffset(long handle, float position);
 
-	protected boolean _streamComplete = false;
+	private boolean _streamComplete = false;
 
-	protected long _handle = 0;
+	private long _handle = 0;
 	public MPG123() { _handle = openStream(); }
 	public MPG123(String filename) { _handle = openFile(filename); }
 
@@ -34,7 +34,7 @@ public class MPG123 implements IMediaDecoder {
 
 	public int readFrame(short[] buffer) { return MPG123.readFrame(_handle, buffer); }
 	public boolean skipFrame() { return MPG123.skipFrame(_handle); }
-	public int seek(float offset) { return MPG123.seek(_handle, offset); }
+	public void seek(float offset) { MPG123.seek(_handle, offset); }
 	public float getPosition() { return MPG123.getPosition(_handle); }
 	public int getNumChannels() { return MPG123.getNumChannels(_handle); }
 	public int getRate() { return MPG123.getRate(_handle); }

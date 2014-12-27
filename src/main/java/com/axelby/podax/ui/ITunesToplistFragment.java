@@ -89,7 +89,7 @@ public class ITunesToplistFragment
         return new ITunesPodcastLoader(getActivity(), bundle.getLong(Constants.EXTRA_CATEGORY_ID));
     }
 
-    private Handler _handler = new Handler() {
+    private final Handler _handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == 206)
@@ -111,10 +111,10 @@ public class ITunesToplistFragment
 
     private class ITunesToplistAdapter extends ArrayAdapter<ITunesPodcast> {
         private class ViewHolder {
-            TextView name;
-            TextView summary;
-            NetworkImageView image;
-            View subscribe;
+            final TextView name;
+            final TextView summary;
+            final NetworkImageView image;
+            final View subscribe;
 
             public ViewHolder(View v) {
                 name = (TextView) v.findViewById(R.id.name);
@@ -124,7 +124,7 @@ public class ITunesToplistFragment
             }
         }
 
-        ImageLoader _imageLoader;
+        final ImageLoader _imageLoader;
 
         public ITunesToplistAdapter(Context context) {
             super(context, R.layout.fragment_itunes_toplist_item);
@@ -253,7 +253,7 @@ public class ITunesToplistFragment
             }
             url.append("explicit=true/xml");
 
-            List<ITunesPodcast> podcasts = new ArrayList<ITunesPodcast>(100);
+            List<ITunesPodcast> podcasts = new ArrayList<>(100);
             try {
                 XmlPullParser parser = Xml.newPullParser();
                 parser.setInput(new URL(url.toString()).openStream(), "utf-8");

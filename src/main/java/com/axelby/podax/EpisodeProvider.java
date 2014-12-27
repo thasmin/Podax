@@ -22,10 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 
 public class EpisodeProvider extends ContentProvider {
-	public static String AUTHORITY = "com.axelby.podax.podcastprovider";
-	public static Uri URI = Uri.parse("content://" + AUTHORITY + "/episodes");
-	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
-	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podcast";
+	private static final String AUTHORITY = "com.axelby.podax.podcastprovider";
+	public static final Uri URI = Uri.parse("content://" + AUTHORITY + "/episodes");
+	private static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
+	private static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podcast";
 	public static final Uri PLAYLIST_URI = Uri.withAppendedPath(EpisodeProvider.URI, "playlist");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(EpisodeProvider.URI, "search");
 	public static final Uri EXPIRED_URI = Uri.withAppendedPath(EpisodeProvider.URI, "expired");
@@ -56,15 +56,15 @@ public class EpisodeProvider extends ContentProvider {
 	public static final String COLUMN_FILE_SIZE = "fileSize";
 	public static final String COLUMN_LAST_POSITION = "lastPosition";
 	public static final String COLUMN_DURATION = "duration";
-	public static final String COLUMN_DOWNLOAD_ID = "downloadId";
+	private static final String COLUMN_DOWNLOAD_ID = "downloadId";
 	public static final String COLUMN_NEEDS_GPODDER_UPDATE = "needsGpodderUpdate";
 	public static final String COLUMN_GPODDER_UPDATE_TIMESTAMP = "gpodderUpdateTimestamp";
 	public static final String COLUMN_PAYMENT = "payment";
 
-	static final String PREF_ACTIVE = "active";
+	private static final String PREF_ACTIVE = "active";
 
-	static UriMatcher uriMatcher;
-	static HashMap<String, String> _columnMap;
+	private static final UriMatcher uriMatcher;
+	private static final HashMap<String, String> _columnMap;
 
 	static {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -78,7 +78,7 @@ public class EpisodeProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "player_update", EPISODE_PLAYER_UPDATE);
 		uriMatcher.addURI(AUTHORITY, "episodes/need_gpodder_update", EPISODES_NEED_GPODDER_UPDATE);
 
-		_columnMap = new HashMap<String, String>();
+		_columnMap = new HashMap<>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
 		_columnMap.put(COLUMN_TITLE, "podcasts.title AS title");
 		_columnMap.put(COLUMN_SUBSCRIPTION_ID, "subscriptionId");
@@ -102,7 +102,7 @@ public class EpisodeProvider extends ContentProvider {
 		return ContentUris.withAppendedId(URI, id);
 	}
 
-	DBAdapter _dbAdapter;
+	private DBAdapter _dbAdapter;
 
 	@Override
 	public boolean onCreate() {
@@ -210,17 +210,14 @@ public class EpisodeProvider extends ContentProvider {
 		};
 		Cursor c = query(PLAYLIST_URI, projection, null, null, null);
 		long episodeId = -1;
-		try {
-			while (c.moveToNext()) {
-				EpisodeCursor episode = new EpisodeCursor(c);
-				if (episode.isDownloaded(getContext())) {
-					episodeId = episode.getId();
-					break;
-				}
+		while (c.moveToNext()) {
+			EpisodeCursor episode = new EpisodeCursor(c);
+			if (episode.isDownloaded(getContext())) {
+				episodeId = episode.getId();
+				break;
 			}
-		} finally {
-			c.close();
 		}
+		c.close();
 		return episodeId;
 	}
 
@@ -371,7 +368,7 @@ public class EpisodeProvider extends ContentProvider {
 		return count;
 	}
 
-	public void updatePlaylistPosition(long episodeId, Integer newPosition) {
+	void updatePlaylistPosition(long episodeId, Integer newPosition) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// get the old position
@@ -523,7 +520,7 @@ public class EpisodeProvider extends ContentProvider {
 		return count;
 	}
 
-	public static void deleteDownload(Context context, final long episodeId) {
+	private static void deleteDownload(Context context, final long episodeId) {
 		File storage = new File(EpisodeCursor.getStoragePath(context));
 		File[] files = storage.listFiles(new FileFilter() {
 			public boolean accept(File pathname) {
@@ -549,7 +546,7 @@ public class EpisodeProvider extends ContentProvider {
 		movePositionTo(context, EpisodeProvider.getContentUri(episodeId), position);
 	}
 
-	public static void movePositionTo(Context context, Uri uri, int position) {
+	private static void movePositionTo(Context context, Uri uri, int position) {
 		ContentValues values = new ContentValues(1);
 		values.put(EpisodeProvider.COLUMN_LAST_POSITION, position);
 		context.getContentResolver().update(uri, values, null, null);

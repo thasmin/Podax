@@ -12,12 +12,12 @@ import java.io.RandomAccessFile;
 /**
  * pipes data from a file to the decoder
  */
-public class StreamFeeder {
-	final String _filename;
-	final IMediaDecoder _decoder;
+class StreamFeeder {
+	private final String _filename;
+	private final IMediaDecoder _decoder;
 
-	Thread _feederThread = null;
-	long _fileOffset = 0;
+	private Thread _feederThread = null;
+	private long _fileOffset = 0;
 
 	public StreamFeeder(String filename, IMediaDecoder decoder) {
 		this(filename, decoder, 0);
@@ -32,8 +32,6 @@ public class StreamFeeder {
 		_feederThread.start();
 	}
 
-	public String getFilename() { return _filename; }
-
 	public void finish() {
 		_feederThread.interrupt();
 		try {
@@ -41,7 +39,7 @@ public class StreamFeeder {
 		} catch (InterruptedException ignored) {}
 	}
 
-	Runnable _feederRunnable = new Runnable() {
+	private final Runnable _feederRunnable = new Runnable() {
 		@Override
 		public void run() {
 			RandomAccessFile file = null;

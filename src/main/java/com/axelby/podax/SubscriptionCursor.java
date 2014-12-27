@@ -10,7 +10,6 @@ import android.util.Log;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
@@ -27,18 +26,12 @@ public class SubscriptionCursor {
 	private Integer _etagColumn = null;
 	private Integer _thumbnailColumn = null;
 	private Integer _titleOverrideColumn = null;
-	private Integer _playlistNewColumn = null;
-	private Integer _expirationDaysColumn = null;
-    private Integer _descriptionColumn = null;
+	private Integer _descriptionColumn = null;
 
 	public SubscriptionCursor(Cursor cursor) {
 		if (cursor.isAfterLast())
 			return;
 		_cursor = cursor;
-	}
-
-	public boolean isNull() {
-		return _cursor == null;
 	}
 
 	public Uri getContentUri() {
@@ -133,8 +126,6 @@ public class SubscriptionCursor {
 			BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename));
 			thumbnail.compress(Bitmap.CompressFormat.PNG, 95, outputStream);
 			outputStream.close();
-		} catch (FileNotFoundException e) {
-			Log.e("Podax", "unable to save subscription thumbnail", e);
 		} catch (IOException e) {
 			Log.e("Podax", "unable to save subscription thumbnail", e);
 		}

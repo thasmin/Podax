@@ -39,7 +39,7 @@ public class EpisodeProgress extends RelativeLayout {
 		_remaining = (TextView) findViewById(R.id.remaining);
 	}
 
-	public void clear() {
+	void clear() {
 		if (isInEditMode()) {
 			_position.setText("12:34");
 			_progressbar.setVisibility(VISIBLE);

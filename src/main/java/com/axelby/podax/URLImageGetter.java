@@ -13,7 +13,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 
 public class URLImageGetter implements Html.ImageGetter {
-	View _container;
+	private final View _container;
 
 	public URLImageGetter(View t) {
 		this._container = t;

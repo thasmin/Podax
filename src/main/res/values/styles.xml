@@ -1,18 +1,10 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <color name="podaxColor">#FFE59F39</color>
-    <color name="podaxRed">#FFFC4332</color>
-    <color name="podaxYellow">#FFFCF232</color>
-    <color name="podaxGreen">#FF28CB2F</color>
-    <color name="podaxPurple">#FFBF30F2</color>
-    <color name="podaxBright">#FFFFBC59</color>
     <color name="podaxBlue">#FF085D99</color>
-    <color name="podaxBlueBright">#FF399FE5</color>
 
     <color name="orange500">#FFff9800</color>
-    <color name="orange100">#FFffe0b2</color>
     <color name="orange700">#FFf57c00</color>
-    <color name="indigo500">#FF3f51b5</color>
     <color name="lightblue500">#FF03a9f4</color>
 
     <style name="Theme.Podax" parent="Theme.Podax.Base" />

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class UpdateService extends IntentService {
-	Handler _uiHandler = new Handler();
+	private final Handler _uiHandler = new Handler();
 
 	public UpdateService() {
 		super("UpdateService");
@@ -87,12 +87,12 @@ public class UpdateService extends IntentService {
 		handleIntent(intent);
 	}
 
-	public void handleIntent(Intent intent) {
+	void handleIntent(Intent intent) {
 		String action = intent.getAction();
 		if (action == null)
 			return;
 
-		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && !Helper.ensureWifiPref(this)) {
+		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && Helper.isInvalidNetworkState(this)) {
 			_uiHandler.post(new Runnable() {
 				public void run() {
 					Toast.makeText(UpdateService.this,
@@ -103,38 +103,45 @@ public class UpdateService extends IntentService {
 			return;
 		}
 
-		if (action.equals(Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS)) {
-			String[] projection = new String[]{SubscriptionProvider.COLUMN_ID};
-			Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
-			if (c != null) {
-				while (c.moveToNext())
-					handleIntent(createUpdateSubscriptionIntent(this, c.getLong(0)));
-				c.close();
+		switch (action) {
+			case Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS: {
+				String[] projection = new String[]{SubscriptionProvider.COLUMN_ID};
+				Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
+				if (c != null) {
+					while (c.moveToNext())
+						handleIntent(createUpdateSubscriptionIntent(this, c.getLong(0)));
+					c.close();
+				}
+				break;
 			}
-		} else if (action.equals(Constants.ACTION_REFRESH_SUBSCRIPTION)) {
-			long subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
-			if (subscriptionId == -1)
-				return;
-			new SubscriptionUpdater(this).update(subscriptionId);
-		} else if (action.equals(Constants.ACTION_DOWNLOAD_EPISODES)) {
-			verifyDownloadedFiles();
-			expireDownloadedFiles();
+			case Constants.ACTION_REFRESH_SUBSCRIPTION:
+				long subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+				if (subscriptionId == -1)
+					return;
+				new SubscriptionUpdater(this).update(subscriptionId);
+				break;
+			case Constants.ACTION_DOWNLOAD_EPISODES: {
+				verifyDownloadedFiles();
+				expireDownloadedFiles();
 
-			String[] projection = {EpisodeProvider.COLUMN_ID};
-			Cursor c = getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
-			if (c != null) {
-				while (c.moveToNext())
-					handleIntent(createDownloadEpisodeIntent(this, c.getLong(0)));
-				c.close();
+				String[] projection = {EpisodeProvider.COLUMN_ID};
+				Cursor c = getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
+				if (c != null) {
+					while (c.moveToNext())
+						handleIntent(createDownloadEpisodeIntent(this, c.getLong(0)));
+					c.close();
+				}
+				break;
 			}
-		} else if (action.equals(Constants.ACTION_DOWNLOAD_EPISODE)) {
-			long episodeId = intent.getLongExtra(Constants.EXTRA_EPISODE_ID, -1L);
-			if (episodeId == -1)
-				return;
-			float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
-			if (getPlaylistNumDownloadedItems() >= maxEpisodes)
-				return;
-			EpisodeDownloader.download(this, episodeId);
+			case Constants.ACTION_DOWNLOAD_EPISODE:
+				long episodeId = intent.getLongExtra(Constants.EXTRA_EPISODE_ID, -1L);
+				if (episodeId == -1)
+					return;
+				float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
+				if (getPlaylistNumDownloadedItems() >= maxEpisodes)
+					return;
+				EpisodeDownloader.download(this, episodeId);
+				break;
 		}
 
 		removeNotification();
@@ -142,7 +149,7 @@ public class UpdateService extends IntentService {
 
 	// make sure all media files in the folder are for existing episodes
 	private void verifyDownloadedFiles() {
-		ArrayList<String> validMediaFilenames = new ArrayList<String>();
+		ArrayList<String> validMediaFilenames = new ArrayList<>();
 		String[] projection = new String[]{
 				EpisodeProvider.COLUMN_ID,
 				EpisodeProvider.COLUMN_MEDIA_URL,

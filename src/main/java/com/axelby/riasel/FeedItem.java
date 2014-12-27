@@ -42,7 +42,7 @@ public class FeedItem {
 		_uniqueId = uniqueId;
 	}
 
-	public String getTitle() {
+	String getTitle() {
 		return _title;
 	}
 
@@ -50,7 +50,7 @@ public class FeedItem {
 		this._title = title;
 	}
 
-	public String getPaymentURL() {
+	String getPaymentURL() {
 		return _paymentURL;
 	}
 
@@ -58,7 +58,7 @@ public class FeedItem {
 		this._paymentURL = paymentURL;
 	}
 
-	public String getLink() {
+	String getLink() {
 		return _link;
 	}
 
@@ -90,7 +90,7 @@ public class FeedItem {
 		this._mediaURL = mediaURL;
 	}
 
-	public Long getMediaSize() {
+	Long getMediaSize() {
 		return _mediaSize;
 	}
 

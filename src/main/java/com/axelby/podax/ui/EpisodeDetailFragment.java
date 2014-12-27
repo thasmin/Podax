@@ -46,25 +46,21 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
 
-	long _podcastId;
-	boolean _uiInitialized = false;
+	private long _podcastId;
+	private boolean _uiInitialized = false;
 
-	ImageView _subscriptionImage;
-	TextView _titleView;
-	TextView _subscriptionTitleView;
-	TextView _descriptionView;
-	Button _playlistButton;
-	TextView _playlistPosition;
-	ImageButton _restartButton;
-	ImageButton _rewindButton;
-	ImageButton _playButton;
-	ImageButton _forwardButton;
-	ImageButton _skipToEndButton;
-	SeekBar _seekbar;
-	boolean _seekbar_dragging = false;
-	Button _paymentButton;
-	TextView _position;
-	TextView _duration;
+	private ImageView _subscriptionImage;
+	private TextView _titleView;
+	private TextView _subscriptionTitleView;
+	private TextView _descriptionView;
+	private Button _playlistButton;
+	private TextView _playlistPosition;
+	private ImageButton _playButton;
+	private SeekBar _seekbar;
+	private boolean _seekbar_dragging = false;
+	private Button _paymentButton;
+	private TextView _position;
+	private TextView _duration;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -100,11 +96,11 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		_descriptionView = (TextView) activity.findViewById(R.id.description);
 		_playlistPosition = (TextView) activity.findViewById(R.id.playlist_position);
 		_playlistButton = (Button) activity.findViewById(R.id.playlist_btn);
-		_restartButton = (ImageButton) activity.findViewById(R.id.restart_btn);
-		_rewindButton = (ImageButton) activity.findViewById(R.id.rewind_btn);
+		View restartButton = activity.findViewById(R.id.restart_btn);
+		View rewindButton = activity.findViewById(R.id.rewind_btn);
 		_playButton = (ImageButton) activity.findViewById(R.id.play_btn);
-		_forwardButton = (ImageButton) activity.findViewById(R.id.forward_btn);
-		_skipToEndButton = (ImageButton) activity.findViewById(R.id.skiptoend_btn);
+		View forwardButton = activity.findViewById(R.id.forward_btn);
+		View skipToEndButton = activity.findViewById(R.id.skiptoend_btn);
 		_seekbar = (SeekBar) activity.findViewById(R.id.seekbar);
 		_position = (TextView) activity.findViewById(R.id.position);
 		_duration = (TextView) activity.findViewById(R.id.duration);
@@ -121,17 +117,17 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 			}
 		});
 
-		_forwardButton.setOnClickListener(new OnClickListener() {
+		forwardButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				EpisodeProvider.movePositionBy(activity, _podcastId, 30);
 			}
 		});
 
-		_skipToEndButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                EpisodeProvider.skipToEnd(activity, _podcastId);
-            }
-        });
+		skipToEndButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				EpisodeProvider.skipToEnd(activity, _podcastId);
+			}
+		});
 
 		_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress,
@@ -167,13 +163,13 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
             }
         });
 
-		_restartButton.setOnClickListener(new OnClickListener() {
+		restartButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				EpisodeProvider.restart(activity, _podcastId);
 			}
 		});
 
-		_rewindButton.setOnClickListener(new OnClickListener() {
+		rewindButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				EpisodeProvider.movePositionBy(activity, _podcastId, -15);
 			}

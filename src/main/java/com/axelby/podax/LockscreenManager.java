@@ -13,7 +13,7 @@ import android.media.RemoteControlClient;
 import android.media.RemoteControlClient.MetadataEditor;
 import android.os.Build;
 
-public class LockscreenManager {
+class LockscreenManager {
 	private Context _context;
 	private RemoteControlClient _remoteControlClient;
 

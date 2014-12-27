@@ -26,11 +26,10 @@ public class AuthenticatorActivity extends FragmentActivity {
 	public static final String PARAM_USERNAME = "username";
 	public static final String PARAM_AUTHTOKEN_TYPE = "authtokenType";
 	private final Handler _handler = new Handler();
-	String _username;
-	String _password;
-	String _authtokenType;
-	boolean _requestNewAccount;
-	boolean _confirmCredentials;
+	private String _username;
+	private String _password;
+	private boolean _requestNewAccount;
+	private boolean _confirmCredentials;
 	private TextView _messageText;
 	private EditText _usernameEdit;
 	private EditText _passwordEdit;
@@ -46,7 +45,6 @@ public class AuthenticatorActivity extends FragmentActivity {
 
 		final Intent intent = getIntent();
 		_username = intent.getStringExtra(PARAM_USERNAME);
-		_authtokenType = intent.getStringExtra(PARAM_AUTHTOKEN_TYPE);
 		_requestNewAccount = _username == null;
 		_confirmCredentials = intent.getBooleanExtra(PARAM_CONFIRMCREDENTIALS, false);
 
@@ -117,13 +115,13 @@ public class AuthenticatorActivity extends FragmentActivity {
 		return null;
 	}
 
-	protected void showProgress() {
+	void showProgress() {
 		android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
 		_progressDialog = ProgressDialogFragment.newInstance();
 		_progressDialog.show(fm, "progress");
 	}
 
-	protected void hideProgress() {
+	void hideProgress() {
 		_progressDialog.dismiss();
 	}
 
@@ -138,7 +136,7 @@ public class AuthenticatorActivity extends FragmentActivity {
 		}
 	}
 
-	public void onAuthenticationResult(boolean isValid) {
+	void onAuthenticationResult(boolean isValid) {
 		hideProgress();
 		if (!isValid) {
 			if (_requestNewAccount)
@@ -147,7 +145,7 @@ public class AuthenticatorActivity extends FragmentActivity {
 				_messageText.setText("That password did not work on gpodder.net.");
 		} else {
 			if (_confirmCredentials)
-				finishConfirmCredentials(true);
+				finishConfirmCredentials();
 			else
 				finishLogin();
 		}
@@ -179,18 +177,18 @@ public class AuthenticatorActivity extends FragmentActivity {
 		finish();
 	}
 
-	protected void finishConfirmCredentials(boolean result) {
+	void finishConfirmCredentials() {
 		final Account account = new Account(_username, Constants.GPODDER_ACCOUNT_TYPE);
 		AccountManager accountManager = AccountManager.get(this);
 		accountManager.setPassword(account, _password);
 		final Intent intent = new Intent();
-		intent.putExtra(AccountManager.KEY_BOOLEAN_RESULT, result);
+		intent.putExtra(AccountManager.KEY_BOOLEAN_RESULT, true);
 		setAccountAuthenticatorResult(intent.getExtras());
 		setResult(RESULT_OK, intent);
 		finish();
 	}
 
-	public void setAccountAuthenticatorResult(Bundle accountAuthenticatorResult) {
+	void setAccountAuthenticatorResult(Bundle accountAuthenticatorResult) {
 		this._resultBundle = accountAuthenticatorResult;
 	}
 

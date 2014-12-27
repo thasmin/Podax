@@ -43,13 +43,13 @@ import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
 public class SearchFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	protected static final int OPTION_UNSUBSCRIBE = 4;
-	static final int OPTION_ADDTOPLAYLIST = 1;
-	static final int OPTION_REMOVEFROMPLAYLIST = 2;
-	static final int OPTION_PLAY = 3;
+	private static final int OPTION_UNSUBSCRIBE = 4;
+	private static final int OPTION_ADDTOPLAYLIST = 1;
+	private static final int OPTION_REMOVEFROMPLAYLIST = 2;
+	private static final int OPTION_PLAY = 3;
 	private static final int CURSOR_SUBSCRIPTIONS = 0;
 	private static final int CURSOR_PODCASTS = 1;
-	protected String _lastQuery;
+	private String _lastQuery;
 	private SearchResultsAdapter _adapter;
 
 	@Override
@@ -307,7 +307,7 @@ public class SearchFragment extends ListFragment implements LoaderManager.Loader
 	}
 
 	public class SearchResultsAdapter extends BaseAdapter {
-		private LayoutInflater _inflater;
+		private final LayoutInflater _inflater;
 		private Cursor _subscriptionCursor = null;
 		private Cursor _podcastCursor = null;
 

@@ -26,9 +26,9 @@ import java.util.Collection;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class Client extends NoAuthClient {
-	private String _username;
-	private String _password;
+class Client extends NoAuthClient {
+	private final String _username;
+	private final String _password;
 	private String _sessionId;
 
 	public Client(Context context, String username, String password) {
@@ -37,7 +37,7 @@ public class Client extends NoAuthClient {
 		_password = password;
 	}
 
-	protected HttpsURLConnection createConnection(URL url) throws IOException {
+	HttpsURLConnection createConnection(URL url) throws IOException {
 		HttpsURLConnection conn = super.createConnection(url);
 
 		if (_sessionId == null) {
@@ -115,12 +115,11 @@ public class Client extends NoAuthClient {
 				String id = null, caption = null, type = null;
 				while (reader.hasNext()) {
 					String name = reader.nextName();
-					if (name.equals("id"))
-						id = reader.nextString();
-					else if (name.equals("caption"))
-						caption = reader.nextString();
-					else if (name.equals("type"))
-						type = reader.nextString();
+					switch (name) {
+						case "id": id = reader.nextString(); break;
+						case "caption": caption = reader.nextString(); break;
+						case "type": type = reader.nextString(); break;
+					}
 				}
 				reader.endObject();
 				if (id != null && id.equals(deviceId)) {
@@ -143,7 +142,7 @@ public class Client extends NoAuthClient {
 		}
 	}
 
-	public boolean setDeviceConfiguration(String deviceId, DeviceConfiguration configuration) {
+	public void setDeviceConfiguration(String deviceId, DeviceConfiguration configuration) {
 		verifyCurrentConfig();
 		clearErrorMessage();
 
@@ -173,17 +172,17 @@ public class Client extends NoAuthClient {
 			int code = conn.getResponseCode();
 			if (code != 200) {
 				setErrorMessage(conn.getResponseMessage());
-				return false;
+				return;
 			}
-			return true;
+			return;
 		} catch (MalformedURLException e) {
 			Log.e("Podax", "malformed url exception while setting device name", e);
 			setErrorMessage(e.getMessage());
-			return false;
+			return;
 		} catch (IOException e) {
 			Log.e("Podax", "io exception while setting device name", e);
 			setErrorMessage(e.getMessage());
-			return false;
+			return;
 		} finally {
 			if (conn != null)
 				conn.disconnect();
@@ -229,7 +228,7 @@ public class Client extends NoAuthClient {
 
 		HttpsURLConnection conn = null;
 		try {
-			ArrayList<String> toAdd = new ArrayList<String>();
+			ArrayList<String> toAdd = new ArrayList<>();
 			Cursor c = _context.getContentResolver().query(GPodderProvider.TO_ADD_URI, new String[]{"url"}, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
@@ -237,7 +236,7 @@ public class Client extends NoAuthClient {
 				c.close();
 			}
 
-			ArrayList<String> toRemove = new ArrayList<String>();
+			ArrayList<String> toRemove = new ArrayList<>();
 			c = _context.getContentResolver().query(GPodderProvider.TO_REMOVE_URI, new String[]{"url"}, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
@@ -269,12 +268,6 @@ public class Client extends NoAuthClient {
 
 			// clear out the pending tables
 			_context.getContentResolver().delete(GPodderProvider.URI, null, null);
-		} catch (MalformedURLException e) {
-			Log.e("Podax", "error while syncing gpodder diffs", e);
-			setErrorMessage(e.getMessage());
-		} catch (IOException e) {
-			Log.e("Podax", "error while syncing gpodder diffs", e);
-			setErrorMessage(e.getMessage());
 		} catch (Exception e) {
 			Log.e("Podax", "error while syncing gpodder diffs", e);
 			setErrorMessage(e.getMessage());
@@ -388,7 +381,7 @@ public class Client extends NoAuthClient {
 				return null;
 			}
 
-			ArrayList<Podcast> subscriptions = new ArrayList<Podcast>();
+			ArrayList<Podcast> subscriptions = new ArrayList<>();
 			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
 			reader.beginArray();
 			while (reader.hasNext())

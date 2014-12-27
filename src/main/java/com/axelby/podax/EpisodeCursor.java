@@ -14,7 +14,7 @@ import java.util.Date;
 
 public class EpisodeCursor {
 
-	private Cursor _cursor;
+	private final Cursor _cursor;
 
 	private Integer _idColumn = null;
 	private Integer _titleColumn = null;
@@ -47,7 +47,7 @@ public class EpisodeCursor {
 		return new EpisodeCursor(c);
 	}
 
-	public static Uri getContentUri(long id) {
+	private static Uri getContentUri(long id) {
 		return ContentUris.withAppendedId(EpisodeProvider.URI, id);
 	}
 
@@ -203,7 +203,7 @@ public class EpisodeCursor {
 		return extension;
 	}
 
-	public static String getPodcastStoragePath(Context context) {
+	private static String getPodcastStoragePath(Context context) {
 		String externalPath = Storage.getExternalStorageDirectory(context);
 		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/Podcasts/";
 		File podaxFile = new File(podaxDir);

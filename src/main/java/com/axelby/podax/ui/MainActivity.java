@@ -36,6 +36,7 @@ import android.widget.TextView;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
@@ -61,7 +62,7 @@ public class MainActivity extends ActionBarActivity {
 
     // handle drag events on bottom bar
     private GestureDetectorCompat _bottomGestureDetector;
-    private GestureDetector.SimpleOnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
+    private final GestureDetector.SimpleOnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
        // necessary for any events to fire
         @Override public boolean onDown(MotionEvent e) { return true; }
         @Override public boolean onScroll(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
@@ -88,7 +89,7 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
-    private ContentObserver _activeEpisodeObserver = new ContentObserver(new Handler()) {
+    private final ContentObserver _activeEpisodeObserver = new ContentObserver(new Handler()) {
         @Override public void onChange(boolean selfChange) { onChange(selfChange, null); }
         @Override public void onChange(boolean selfChange, Uri uri) {
             initializeBottom(PlayerStatus.getCurrentState(MainActivity.this));
@@ -127,7 +128,7 @@ public class MainActivity extends ActionBarActivity {
                             .setPositiveButton(R.string.view_release_notes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, PodaxFragmentActivity.FRAGMENT_ABOUT));
+                                    startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, AboutFragment.class, null));
                                 }
                             })
                             .setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
@@ -149,17 +150,13 @@ public class MainActivity extends ActionBarActivity {
         setSupportActionBar(toolbar);
 
         ListView drawer = (ListView) findViewById(R.id.drawer);
-        PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
+        final PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
         drawer.setAdapter(_drawerAdapter);
         drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
                 _drawerLayout.closeDrawer(GravityCompat.START);
-                if (id == R.id.add_subscription) {
-                    startActivity(PodaxFragmentActivity.createIntent(view.getContext(), AddSubscriptionFragment.class, null));
-                    return;
-                }
-                startActivity(PodaxFragmentActivity.createIntent(view.getContext(), id));
+                startActivity(PodaxFragmentActivity.createIntent(view.getContext(), _drawerAdapter.getFragmentClass(position), null));
             }
         });
 
@@ -344,15 +341,15 @@ public class MainActivity extends ActionBarActivity {
     }
 
     class PodaxDrawerAdapter extends BaseAdapter {
-        Item _items[] = {
-                new Item(R.id.add_subscription, R.string.add_subscription, android.R.drawable.ic_menu_add),
-                new Item(PodaxFragmentActivity.FRAGMENT_GPODDER, R.string.gpodder_sync, R.drawable.ic_menu_mygpo),
-                new Item(PodaxFragmentActivity.FRAGMENT_STATS, R.string.stats, R.drawable.ic_menu_trending_up),
-                new Item(PodaxFragmentActivity.FRAGMENT_PREFERENCES, R.string.preferences, R.drawable.ic_menu_configuration),
-                new Item(PodaxFragmentActivity.FRAGMENT_ABOUT, R.string.about, R.drawable.ic_menu_podax),
-                new Item(PodaxFragmentActivity.FRAGMENT_LOG_VIEWER, R.string.log_viewer, android.R.drawable.ic_menu_info_details),
+        final Item[] _items = {
+                new Item(AddSubscriptionFragment.class, R.string.add_subscription, android.R.drawable.ic_menu_add),
+                new Item(GPodderProvider.class, R.string.gpodder_sync, R.drawable.ic_menu_mygpo),
+                new Item(StatsFragment.class, R.string.stats, R.drawable.ic_menu_trending_up),
+                new Item(PodaxPreferenceFragment.class, R.string.preferences, R.drawable.ic_menu_configuration),
+                new Item(AboutFragment.class, R.string.about, R.drawable.ic_menu_podax),
+                new Item(LogViewerFragment.class, R.string.log_viewer, android.R.drawable.ic_menu_info_details),
         };
-        private Context _context;
+        private final Context _context;
 
         public PodaxDrawerAdapter(Context context) {
             _context = context;
@@ -371,9 +368,13 @@ public class MainActivity extends ActionBarActivity {
             return _items[position];
         }
 
+		public Class getFragmentClass(int position) {
+			return _items[position].fragmentClass;
+		}
+
         @Override
         public long getItemId(int position) {
-            return _items[position].id;
+            return position;
         }
 
         @Override
@@ -397,12 +398,12 @@ public class MainActivity extends ActionBarActivity {
         }
 
         class Item {
-            long id;
-            String label;
-            int drawable;
+            final Class fragmentClass;
+            final String label;
+            final int drawable;
 
-            public Item(long id, int labelId, int drawableId) {
-                this.id = id;
+            public Item(Class fragmentClass, int labelId, int drawableId) {
+                this.fragmentClass = fragmentClass;
                 this.drawable = drawableId;
                 this.label = MainActivity.this.getResources().getString(labelId);
             }

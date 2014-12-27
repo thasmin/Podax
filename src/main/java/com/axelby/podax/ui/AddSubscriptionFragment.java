@@ -86,9 +86,9 @@ public class AddSubscriptionFragment extends Fragment {
     }
 
     public static class iTunesCategory {
-        public long id;
-        public String name;
-        public Iconify.IconValue icon;
+        public final long id;
+        public final String name;
+        public final Iconify.IconValue icon;
 
         public iTunesCategory(String name, long id, Iconify.IconValue icon) {
             this.id = id;
@@ -103,7 +103,7 @@ public class AddSubscriptionFragment extends Fragment {
     }
 
     private class AddSubscriptionAdapter extends ArrayAdapter<iTunesCategory> {
-        iTunesCategory[] _categories;
+        final iTunesCategory[] _categories;
 
         public AddSubscriptionAdapter(Context context, iTunesCategory[] categories) {
             super(context, R.layout.fragment_add_subscription_item, R.id.name, categories);

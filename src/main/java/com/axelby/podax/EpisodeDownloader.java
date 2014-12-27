@@ -33,7 +33,7 @@ public class EpisodeDownloader {
 		FileOutputStream outStream = null;
 		File mediaFile = null;
 		try {
-			if (!Helper.ensureWifiPref(context)) {
+			if (Helper.isInvalidNetworkState(context)) {
 				Log.d("EpisodeDownloader", "not downloading for wifi pref");
 				return;
 			}
@@ -110,7 +110,7 @@ public class EpisodeDownloader {
 		Intent notificationIntent = new Intent(context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 		Notification notification = new NotificationCompat.Builder(context)
-				.setSmallIcon(R.drawable.icon)
+				.setSmallIcon(R.drawable.ic_stat_icon)
 				.setTicker("Downloading podcast: " + podcast.getTitle())
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Downloading Podcast")

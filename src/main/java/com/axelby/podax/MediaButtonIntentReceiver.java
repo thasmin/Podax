@@ -26,10 +26,10 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
                 PlayerService.play(context);
                 break;
             case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                PlayerService.playpause(context, Constants.PAUSE_MEDIABUTTON);
+                PlayerService.playpause(context);
                 break;
             case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                PlayerService.pause(context, Constants.PAUSE_MEDIABUTTON);
+                PlayerService.pause(context);
                 break;
             case KeyEvent.KEYCODE_MEDIA_STOP:
                 PlayerService.stop(context);

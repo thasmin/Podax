@@ -17,14 +17,14 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 
 public class SmallWidgetProvider extends AppWidgetProvider {
-    public static void setActivePodcastClickIntent(Context context, RemoteViews views, int resourceId, Uri command) {
+    private static void setActivePodcastClickIntent(Context context, RemoteViews views, int resourceId, Uri command) {
         Intent intent = new Intent(context, ActiveEpisodeReceiver.class);
         intent.setData(command);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
         views.setOnClickPendingIntent(resourceId, pendingIntent);
     }
 
-    public static void setPlayerServiceClickIntent(Context context, RemoteViews views, int resourceId, int command) {
+    private static void setPlayerServiceClickIntent(Context context, RemoteViews views, int resourceId, int command) {
         Intent intent = new Intent(context, PlayerService.class);
         // pendingintent will reuse intent if possible, does not look at extras so datauri makes this unique to command
         intent.setData(Uri.parse("podax://playercommand/" + command));
@@ -64,7 +64,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}
 
-	public void updatePodcastDetails(PlayerStatus player, RemoteViews views) {
+	void updatePodcastDetails(PlayerStatus player, RemoteViews views) {
 		if (player.hasActiveEpisode()) {
 			views.setTextViewText(R.id.title, player.getTitle());
 			EpisodeProgress.remoteSet(views, player.getPosition(), player.getDuration());

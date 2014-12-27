@@ -5,9 +5,9 @@ public class StreamAudioPlayer extends AudioPlayer {
 
 	private StreamFeeder _feeder;
 
-	private IMediaDecoder _rabbitDecoder;
+	private final IMediaDecoder _rabbitDecoder;
 	private StreamSkipper _skipper;
-	private StreamFeeder _rabbitFeeder;
+	private final StreamFeeder _rabbitFeeder;
 
 	public StreamAudioPlayer(String filename, float playbackRate) {
 		super(playbackRate);
@@ -72,9 +72,9 @@ public class StreamAudioPlayer extends AudioPlayer {
 	public void release() {
 		if (_skipper != null)
 			_skipper.close();
-		if (_rabbitFeeder != null && _rabbitFeeder != _feeder)
+		if (_rabbitFeeder != _feeder)
 			_rabbitFeeder.finish();
-		if (_rabbitDecoder != null && _rabbitDecoder != _decoder)
+		if (_rabbitDecoder != _decoder)
 			_rabbitDecoder.close();
 
 		super.release();

@@ -23,22 +23,22 @@ public class Helper {
 
 	private static RequestQueue _requestQueue = null;
 	private static ImageLoader _imageLoader = null;
-	private static LruCache<String, Bitmap> _imageCache = new LruCache<String, Bitmap>(10);
+	private static final LruCache<String, Bitmap> _imageCache = new LruCache<>(10);
 	private static DiskBasedCache _diskCache = null;
 
-	public static boolean ensureWifiPref(Context context) {
+	public static boolean isInvalidNetworkState(Context context) {
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		if (netInfo == null || !netInfo.isConnectedOrConnecting())
-			return false;
+			return true;
 		// always OK if we're on wifi
 		if (netInfo.getType() == ConnectivityManager.TYPE_WIFI)
-			return true;
+			return false;
 		// check for wifi only pref
 		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("wifiPref", true))
-			return false;
+			return true;
 		// check for 3g data turned off
-		return netInfo.isConnected();
+		return !netInfo.isConnected();
 	}
 
 	public static String getTimeString(int milliseconds) {
@@ -69,12 +69,7 @@ public class Helper {
 		audioManager.registerMediaButtonEventReceiver(new ComponentName(context, MediaButtonIntentReceiver.class));
 	}
 
-	public static void unregisterMediaButtons(Context context) {
-		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-		audioManager.unregisterMediaButtonEventReceiver(new ComponentName(context, MediaButtonIntentReceiver.class));
-	}
-
-	public static RequestQueue getRequestQueue(Context context) {
+	private static RequestQueue getRequestQueue(Context context) {
 		if (_requestQueue == null)
 			_requestQueue = Volley.newRequestQueue(context);
 		return _requestQueue;

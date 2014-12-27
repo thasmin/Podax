@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Changes {
-	private ArrayList<String> _added = new ArrayList<String>();
-	private ArrayList<String> _removed = new ArrayList<String>();
+	private final ArrayList<String> _added = new ArrayList<>();
+	private final ArrayList<String> _removed = new ArrayList<>();
 	private int _timestamp = 0;
 
 	private Changes() {
@@ -19,18 +19,22 @@ public class Changes {
 		reader.beginObject();
 		while (reader.hasNext()) {
 			String name = reader.nextName();
-			if (name.equals("timestamp")) {
-				changes._timestamp = reader.nextInt();
-			} else if (name.equals("add")) {
-				reader.beginArray();
-				while (reader.hasNext())
-					changes._added.add(reader.nextString());
-				reader.endArray();
-			} else if (name.equals("remove")) {
-				reader.beginArray();
-				while (reader.hasNext())
-					changes._removed.add(reader.nextString());
-				reader.endArray();
+			switch (name) {
+				case "timestamp":
+					changes._timestamp = reader.nextInt();
+					break;
+				case "add":
+					reader.beginArray();
+					while (reader.hasNext())
+						changes._added.add(reader.nextString());
+					reader.endArray();
+					break;
+				case "remove":
+					reader.beginArray();
+					while (reader.hasNext())
+						changes._removed.add(reader.nextString());
+					reader.endArray();
+					break;
 			}
 		}
 		reader.endObject();

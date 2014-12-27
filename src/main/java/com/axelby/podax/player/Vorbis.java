@@ -15,9 +15,9 @@ public class Vorbis implements IMediaDecoder {
 	private static native int getRate(long handle);
 	private static native float getDuration(long handle);
 
-	protected boolean _streamComplete = false;
+	private boolean _streamComplete = false;
 
-	long _handle = 0;
+	private long _handle = 0;
 	public Vorbis(String filename) { _handle = openFile(filename); _streamComplete = true; }
 
 	@Override
@@ -28,7 +28,7 @@ public class Vorbis implements IMediaDecoder {
 
 	@Override public int readFrame(short[] buffer) { return Vorbis.readFrame(_handle, buffer); }
 	@Override public boolean skipFrame() { return Vorbis.skipFrame(_handle); }
-	@Override public int seek(float offset) { return Vorbis.seek(_handle, offset); }
+	@Override public void seek(float offset) { Vorbis.seek(_handle, offset); }
 	@Override public float getPosition() { return Vorbis.getPosition(_handle); }
 	@Override public int getNumChannels() { return Vorbis.getNumChannels(_handle); }
 	@Override public int getRate() { return Vorbis.getRate(_handle); }

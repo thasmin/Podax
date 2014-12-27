@@ -6,9 +6,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class Utils {
+class Utils {
 	
-	final static SimpleDateFormat dateFormats[] = new SimpleDateFormat[] {
+	private final static SimpleDateFormat[] dateFormats = new SimpleDateFormat[] {
 			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US),
 			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US),
 			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US),

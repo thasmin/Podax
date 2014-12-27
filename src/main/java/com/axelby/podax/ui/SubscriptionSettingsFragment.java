@@ -29,7 +29,7 @@ import org.acra.ACRA;
 
 public class SubscriptionSettingsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-	boolean init = false;
+	private boolean init = false;
 	private Uri _subscriptionUri;
 	private String _feedTitle;
 	private EditText _name;
@@ -100,7 +100,7 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 		imm.hideSoftInputFromWindow(_name.getWindowToken(), 0);
 	}
 
-	public void initializeControls() {
+	void initializeControls() {
 		_autoName.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton button, boolean checked) {

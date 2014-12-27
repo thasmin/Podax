@@ -14,7 +14,7 @@ import com.axelby.podax.R;
 
 import javax.annotation.Nonnull;
 
-public class LimitedSeekBarPreference extends Preference implements SeekBar.OnSeekBarChangeListener {
+class LimitedSeekBarPreference extends Preference implements SeekBar.OnSeekBarChangeListener {
 	// controls
 	private SeekBar _seekBar;
 	private TextView _statusText;

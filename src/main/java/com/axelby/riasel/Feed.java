@@ -27,35 +27,35 @@ public class Feed {
 		return values;
 	}
 
-	public String getTitle() {
+	String getTitle() {
 		return _title;
 	}
 	public void setTitle(String title) {
 		this._title = title;
 	}
 
-	public String getThumbnail() {
+	String getThumbnail() {
 		return _thumbnail;
 	}
 	public void setThumbnail(String thumbnail) {
 		_thumbnail = thumbnail;
 	}
 
-    public String getDescription() {
+    String getDescription() {
         return _description;
     }
     public void setDescription(String description) {
         this._description = description;
     }
 
-    public Date getLastBuildDate() {
+    Date getLastBuildDate() {
 		return _lastBuildDate;
 	}
 	public void setLastBuildDate(Date lastBuildDate) {
 		this._lastBuildDate = lastBuildDate;
 	}
 
-	public Date getPubDate() {
+	Date getPubDate() {
 		return _pubDate;
 	}
 	public void setPubDate(Date _pubDate) {

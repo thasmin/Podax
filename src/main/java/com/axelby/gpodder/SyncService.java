@@ -54,9 +54,9 @@ public class SyncService extends Service {
 
 	private static class SyncAdapter extends AbstractThreadedSyncAdapter {
 
-		private Context _context;
-		private String _deviceId;
-		private SharedPreferences _gpodderPrefs;
+		private final Context _context;
+		private final String _deviceId;
+		private final SharedPreferences _gpodderPrefs;
 
 		public SyncAdapter(Context context, boolean autoInitialize) {
 			super(context, autoInitialize);
@@ -73,7 +73,7 @@ public class SyncService extends Service {
 					.setContentText(_context.getString(string_resource, client.getErrorMessage()))
 					.setContentIntent(PendingIntent.getActivity(_context, 0, new Intent(_context, MainActivity.class), 0))
 					.setWhen(System.currentTimeMillis())
-					.setSmallIcon(R.drawable.mygpo)
+					.setSmallIcon(R.drawable.ic_stat_gpoddernet)
 					.build();
 			NotificationManager notificationManager = (NotificationManager) _context.getSystemService(Context.NOTIFICATION_SERVICE);
 			notificationManager.notify(Constants.NOTIFICATION_GPODDER_ERROR, notification);
@@ -173,7 +173,7 @@ public class SyncService extends Service {
 		private boolean syncEpisodes(Client client, Account account) {
 			Cursor c = _context.getContentResolver().query(EpisodeProvider.NEED_GPODDER_UPDATE_URI, null, null, null, null);
 			if (c != null) {
-				ArrayList<EpisodeUpdate> changeUpdates = new ArrayList<EpisodeUpdate>(c.getCount());
+				ArrayList<EpisodeUpdate> changeUpdates = new ArrayList<>(c.getCount());
 				while (c.moveToNext()) {
 					EpisodeCursor p = new EpisodeCursor(c);
 					changeUpdates.add(new EpisodeUpdate(p.getSubscriptionUrl(), p.getMediaUrl(), _deviceId, "play", p.getGPodderUpdateTimestamp(), p.getLastPosition() / 1000));

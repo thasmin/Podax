@@ -45,7 +45,7 @@ public class WelcomeFragment extends Fragment {
 	}
 
 	class AddSubscriptionClickListener implements OnClickListener {
-		String _rss;
+		final String _rss;
 
 		AddSubscriptionClickListener(String rss) {
 			_rss = rss;

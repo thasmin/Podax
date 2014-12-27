@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class EpisodeUpdateConfirmation {
 	private int _timestamp;
-	private HashMap<String, String> _sanitizations = new HashMap<String, String>();
+	private final HashMap<String, String> _sanitizations = new HashMap<>();
 
 	private EpisodeUpdateConfirmation() {
 	}
