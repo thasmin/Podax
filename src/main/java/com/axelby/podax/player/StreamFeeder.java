@@ -28,7 +28,60 @@ class StreamFeeder {
 		_decoder = decoder;
 		_fileOffset = initialOffset;
 
-		_feederThread = new Thread(_feederRunnable, "feeder");
+		Runnable feederRunnable = new Runnable() {
+			@Override
+			public void run() {
+				RandomAccessFile file = null;
+				try {
+					while (file == null) {
+						// new RandomAccessFile keeps throwing FileNotFoundExceptions, not sure why
+						try {
+							// make sure the file exists
+							if (!new File(_filename).exists())
+								Thread.sleep(50);
+							file = new RandomAccessFile(_filename, "r");
+						} catch (FileNotFoundException ignored) {
+						}
+					}
+
+					file.seek(_fileOffset);
+					while (file.getFilePointer() != _fileOffset)
+						Thread.sleep(50);
+
+					while (true) {
+						// read the available bytes from the file and feed them to the mp3 decoder
+						long length = file.length();
+						int size = (int) (length - file.getFilePointer());
+						if (size == 0 && !EpisodeDownloader.isDownloading(_filename))
+							break;
+						if (size == 0) {
+							Thread.sleep(50);
+							continue;
+						}
+
+						byte[] c = new byte[size];
+						int read = file.read(c);
+						if (read > 0)
+							_decoder.feed(c, read);
+
+						Thread.sleep(50);
+					}
+
+					_decoder.completeStream();
+				} catch (IOException e) {
+					Log.e("StreamFeeder", "unable to feed decoder", e);
+				} catch (InterruptedException ignored) {
+				} finally {
+					try {
+						if (file != null)
+							file.close();
+					} catch (IOException e) {
+						Log.e("StreamFeeder", "unable to close feed decoder file", e);
+					}
+				}
+			}
+		};
+		_feederThread = new Thread(feederRunnable, "feeder");
 		_feederThread.start();
 	}
 
@@ -39,58 +92,5 @@ class StreamFeeder {
 		} catch (InterruptedException ignored) {}
 	}
 
-	private final Runnable _feederRunnable = new Runnable() {
-		@Override
-		public void run() {
-			RandomAccessFile file = null;
-			try {
-				while (file == null) {
-					// new RandomAccessFile keeps throwing FileNotFoundExceptions, not sure why
-					try {
-						// make sure the file exists
-						if (!new File(_filename).exists())
-							Thread.sleep(50);
-						file = new RandomAccessFile(_filename, "r");
-					} catch (FileNotFoundException ignored) {
-					}
-				}
-
-				file.seek(_fileOffset);
-				while (file.getFilePointer() != _fileOffset)
-					Thread.sleep(50);
-
-				while (true) {
-					// read the available bytes from the file and feed them to the mp3 decoder
-					long length = file.length();
-					int size = (int) (length - file.getFilePointer());
-					if (size == 0 && !EpisodeDownloader.isDownloading(_filename))
-						break;
-					if (size == 0) {
-						Thread.sleep(50);
-						continue;
-					}
-
-					byte[] c = new byte[size];
-					int read = file.read(c);
-					if (read > 0)
-						_decoder.feed(c, read);
-
-					Thread.sleep(50);
-				}
-
-				_decoder.completeStream();
-			} catch (IOException e) {
-				Log.e("StreamFeeder", "unable to feed decoder", e);
-			} catch (InterruptedException ignored) {
-			} finally {
-				try {
-					if (file != null)
-						file.close();
-				} catch (IOException e) {
-					Log.e("StreamFeeder", "unable to close feed decoder file", e);
-				}
-			}
-		}
-	};
 }
 

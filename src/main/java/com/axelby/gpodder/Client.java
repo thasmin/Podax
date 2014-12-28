@@ -170,19 +170,14 @@ class Client extends NoAuthClient {
 
 			conn.connect();
 			int code = conn.getResponseCode();
-			if (code != 200) {
+			if (code != 200)
 				setErrorMessage(conn.getResponseMessage());
-				return;
-			}
-			return;
 		} catch (MalformedURLException e) {
 			Log.e("Podax", "malformed url exception while setting device name", e);
 			setErrorMessage(e.getMessage());
-			return;
 		} catch (IOException e) {
 			Log.e("Podax", "io exception while setting device name", e);
 			setErrorMessage(e.getMessage());
-			return;
 		} finally {
 			if (conn != null)
 				conn.disconnect();

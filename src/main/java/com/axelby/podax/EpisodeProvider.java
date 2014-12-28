@@ -278,7 +278,7 @@ public class EpisodeProvider extends ContentProvider {
 			Cursor lastPositionCursor = db.rawQuery("SELECT " + COLUMN_LAST_POSITION + " FROM podcasts WHERE _id = ?", new String[] { String.valueOf(activeEpisodeId) });
 			if (!lastPositionCursor.moveToFirst())
 				return 0;
-			Stats.addTime(getContext(), (values.getAsInteger(COLUMN_LAST_POSITION) - lastPositionCursor.getInt(0)) / 1000.0f);
+			Stats.addListenTime(getContext(), (values.getAsInteger(COLUMN_LAST_POSITION) - lastPositionCursor.getInt(0)) / 1000.0f);
 			lastPositionCursor.close();
 
 			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activeEpisodeId) });

@@ -102,10 +102,8 @@ class EpisodePlayer {
 
 			if (_onChangeListener != null)
 				_onChangeListener.onChange();
-			return;
 		} catch (Exception ex) {
 			Log.e("Podax", "unable to change to new episode", ex);
-			return;
 		} finally {
 			episode.closeCursor();
 		}

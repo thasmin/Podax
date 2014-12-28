@@ -138,6 +138,14 @@ class SubscriptionUpdater {
 						}
 
 						if (episodeValues.containsKey(EpisodeProvider.COLUMN_MEDIA_URL)) {
+							// stop parsing if this episode already existed
+							String selection = EpisodeProvider.COLUMN_MEDIA_URL + "=?";
+							String[] selectionArgs = {episodeValues.getAsString(EpisodeProvider.COLUMN_MEDIA_URL)};
+							Cursor c = _context.getContentResolver().query(EpisodeProvider.URI, null, selection, selectionArgs, null);
+							if (c.moveToNext())
+								feedParser.stopProcessing();
+							c.close();
+
 							try {
 								_context.getContentResolver().insert(EpisodeProvider.URI, episodeValues);
 							} catch (IllegalArgumentException e) {

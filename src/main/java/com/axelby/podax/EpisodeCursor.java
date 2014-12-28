@@ -55,10 +55,6 @@ public class EpisodeCursor {
 		_cursor.close();
 	}
 
-	public boolean isNull() {
-		return _cursor.isAfterLast();
-	}
-
 	public Uri getContentUri() {
 		return EpisodeCursor.getContentUri(getId());
 	}

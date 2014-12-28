@@ -1,8 +1,11 @@
 package com.axelby.podax.ui;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,7 +35,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeProvider;
@@ -108,6 +113,7 @@ public class MainActivity extends ActionBarActivity {
         // clear RSS error notification
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
+		notificationManager.cancel(Constants.NOTIFICATION_DOWNLOAD_ERROR);
 
         BootReceiver.setupAlarms(getApplicationContext());
 
@@ -156,7 +162,12 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
                 _drawerLayout.closeDrawer(GravityCompat.START);
-                startActivity(PodaxFragmentActivity.createIntent(view.getContext(), _drawerAdapter.getFragmentClass(position), null));
+				Class fragmentClass = _drawerAdapter.getFragmentClass(position);
+				if (fragmentClass == GPodderProvider.class) {
+					handleGPodder();
+					return;
+				}
+				startActivity(PodaxFragmentActivity.createIntent(view.getContext(), fragmentClass, null));
             }
         });
 
@@ -339,6 +350,18 @@ public class MainActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
+
+	private void handleGPodder() {
+		AccountManager am = AccountManager.get(this);
+		Account[] gpodder_accounts = am.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
+		if (gpodder_accounts == null || gpodder_accounts.length == 0) {
+			finish();
+			startActivity(new Intent(this, AuthenticatorActivity.class));
+		} else {
+			Toast.makeText(this, "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
+			ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
+		}
+	}
 
     class PodaxDrawerAdapter extends BaseAdapter {
         final Item[] _items = {

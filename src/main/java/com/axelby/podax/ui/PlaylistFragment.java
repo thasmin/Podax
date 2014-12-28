@@ -199,7 +199,6 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
             public final TextView downloaded;
 			public final View play;
 			public final View remove;
-			public final View drag;
 
             public ViewHolder(View view) {
 				super(view);
@@ -217,9 +216,6 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 
 				remove = view.findViewById(R.id.remove);
 				remove.setOnClickListener(_removeHandler);
-
-				drag = view.findViewById(R.id.drag);
-				//drag.setOnTouchListener(_dragHandleListener);
             }
         }
 

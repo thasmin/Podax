@@ -23,10 +23,7 @@ public class Constants {
 
 	public static final String EXTRA_EPISODE_ID = "com.axelby.podax.episodeId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
-	public static final String EXTRA_TITLE = "com.axelby.podax.title";
-	public static final String EXTRA_URL = "com.axelby.podax.url";
 	public static final String EXTRA_MANUAL_REFRESH = "com.axelby.podax.manual_refresh";
-	public static final String EXTRA_FRAGMENT = "com.axelby.podax.fragmentId";
     public static final String EXTRA_CATEGORY_ID = "com.axelby.podax.categoryId";
     public static final String EXTRA_FRAGMENT_CLASSNAME = "com.axelby.podax.fragmenClassName";
     public static final String EXTRA_ARGS = "com.axelby.podax.args";
@@ -44,7 +41,6 @@ public class Constants {
 	// reasons for pausing
 	public static final int PAUSE_AUDIOFOCUS = 0;
 	public static final int PAUSE_MEDIABUTTON = 1;
-	public static final int PAUSE_COUNT = 2;
 
 	// gpodder constants
 	public static final String GPODDER_ACCOUNT_TYPE = "com.axelby.gpodder";

@@ -65,140 +65,145 @@ class DBAdapter extends SQLiteOpenHelper {
 				"needsChange INTEGER DEFAULT 0)");
 	}
 
+	@SuppressWarnings("ConstantConditions")
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 2) {
-            // rename id in podcasts table
-            db.execSQL("ALTER TABLE podcasts RENAME TO podcasts_old");
-            db.execSQL("CREATE TABLE podcasts(" +
-                            "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                            "subscriptionId INTEGER, " +
-                            "title VARCHAR, " +
-                            "link VARCHAR, " +
-                            "pubDate DATE, " +
-                            "description VARCHAR, " +
-                            "mediaUrl VARCHAR," +
-                            "fileSize INTEGER," +
-                            "queuePosition INTEGER," +
-                            "lastPosition INTEGER NOT NULL DEFAULT 0," +
-                            "duration INTEGER DEFAULT 0)"
-            );
-            db.execSQL("INSERT INTO podcasts(_id, subscriptionId, title, link, " +
-                    "pubDate, description, mediaUrl, fileSize, " +
-                    "queuePosition, lastPosition, duration) " +
-                    "SELECT id, subscriptionId, title, link, " +
-                    "pubDate, description, mediaUrl, fileSize, " +
-                    "queuePosition, lastPosition, duration " +
-                    "FROM podcasts_old");
-            db.execSQL("DROP TABLE podcasts_old");
-            db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
-            db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
+        if (oldVersion < 2)
+			upgradeV1toV2(db);
 
-            // rename id in subscriptions table
-            db.execSQL("ALTER TABLE subscriptions RENAME TO subscriptions_old");
-            db.execSQL("CREATE TABLE subscriptions(" +
-                    "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "title VARCHAR, " +
-                    "url VARCHAR NOT NULL, " +
-                    "lastModified DATE, " +
-                    "lastUpdate DATE," +
-                    "eTag VARCHAR," +
-                    "thumbnail VARCHAR);");
-            db.execSQL("INSERT INTO subscriptions(_id, title, url, " +
-                    "lastModified, lastUpdate, eTag, thumbnail) " +
-                    "SELECT id, title, url, " +
-                    "lastModified, lastUpdate, eTag, thumbnail " +
-                    "FROM subscriptions_old");
-            db.execSQL("DROP TABLE subscriptions_old");
-            db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
-        }
+        if (oldVersion < 3)
+			upgradeV2toV3(db);
 
-        if (oldVersion < 3) {
-            // delete podcasts that are in subscriptions that were deleted incorrectly
-            // this happened when gpodder deleted podcasts
-            db.execSQL("DELETE FROM podcasts WHERE subscriptionid NOT IN (SELECT _id FROM subscriptions)");
+        if (oldVersion < 4)
+			upgradeV3toV4(db);
 
-            // fix queue so things are ordered right for queue fragment reordering
-            String sql = "UPDATE PODCASTS SET queueposition = " +
-                    "(SELECT COUNT(*) FROM podcasts p2 WHERE p2.queueposition IS NOT NULL AND p2.queueposition < podcasts.queueposition) " +
-                    "WHERE podcasts.queueposition IS NOT NULL";
-            db.execSQL(sql);
-        }
-        if (oldVersion < 4) {
-            // add payment column
-            db.execSQL("ALTER TABLE podcasts ADD COLUMN payment VARCHAR");
-        }
-        if (oldVersion < 5) {
-            // add new subscription fields
-            db.execSQL("ALTER TABLE subscriptions ADD COLUMN titleOverride VARCHAR");
-            db.execSQL("ALTER TABLE subscriptions ADD COLUMN queueNew INTEGER NOT NULL DEFAULT 1");
-            db.execSQL("ALTER TABLE subscriptions ADD COLUMN expirationDays INTEGER");
-        }
+        if (oldVersion < 5)
+			upgradeV4toV5(db);
 
-        if (oldVersion < 6) {
-            // add gpodder sync table
-            db.execSQL("CREATE TABLE gpodder_sync(" +
-                    "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "url VARCHAR, " +
-                    "to_remove INTEGER DEFAULT 0, " +
-                    "to_add INTEGER DEFAULT 0)");
-        }
+        if (oldVersion < 6)
+			upgradeV5toV6(db);
 
-        if (oldVersion < 7) {
-            // add download id column
-            db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
-        }
+        if (oldVersion < 7)
+			upgradeV6toV7(db);
 
-        if (oldVersion < 8) {
-            db.execSQL("CREATE TABLE gpodder_device(" +
-                    "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "username VARCHAR, " +
-                    "caption VARCHAR" +
-                    "type VARCHAR," +
-                    "needsChange INTEGER DEFAULT 0)");
-        }
+        if (oldVersion < 8)
+			upgradeV7toV8(db);
 
-        if (oldVersion < 9) {
-            db.execSQL("ALTER TABLE podcasts ADD COLUMN needsGpodderUpdate INTEGER DEFAULT 0");
-            db.execSQL("ALTER TABLE podcasts ADD COLUMN gpodderUpdateTimestamp INTEGER");
-        }
+        if (oldVersion < 9)
+            upgradeV8toV9(db);
 
         if (oldVersion < 12) {
             // fix bug where database was upgraded wrong -- attempt to do everything from number 5 on
-            // version 6
-            try {
-                db.execSQL("CREATE TABLE gpodder_sync(" +
-                        "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "url VARCHAR, " +
-                        "to_remove INTEGER DEFAULT 0, " +
-                        "to_add INTEGER DEFAULT 0)");
-            } catch (Exception ignored) {
-            }
-            // version 7
-            try {
-                db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
-            } catch (Exception ignored) {
-            }
-            // version 8
-            try {
-                db.execSQL("CREATE TABLE gpodder_device(" +
-                        "_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "username VARCHAR, " +
-                        "caption VARCHAR" +
-                        "type VARCHAR," +
-                        "needsChange INTEGER DEFAULT 0)");
-            } catch (Exception ignored) {
-            }
-            // version 9
-            try {
-                db.execSQL("ALTER TABLE podcasts ADD COLUMN needsGpodderUpdate INTEGER DEFAULT 0");
-                db.execSQL("ALTER TABLE podcasts ADD COLUMN gpodderUpdateTimestamp INTEGER");
-            } catch (Exception ignored) {
-            }
+            try { upgradeV5toV6(db); } catch (Exception ignored) { }
+			try { upgradeV6toV7(db); } catch (Exception ignored) { }
+			try { upgradeV7toV8(db); } catch (Exception ignored) { }
+			try { upgradeV8toV9(db); } catch (Exception ignored) { }
         }
 
-        if (oldVersion < 13) {
-            db.execSQL("ALTER TABLE subscriptions ADD COLUMN description VARCHAR");
-        }
+        if (oldVersion < 13)
+            upgradeV12toV13(db);
     }
+
+	private void upgradeV1toV2(SQLiteDatabase db) {
+		// rename id in podcasts table
+		db.execSQL("ALTER TABLE podcasts RENAME TO podcasts_old");
+		db.execSQL("CREATE TABLE podcasts(" +
+						"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						"subscriptionId INTEGER, " +
+						"title VARCHAR, " +
+						"link VARCHAR, " +
+						"pubDate DATE, " +
+						"description VARCHAR, " +
+						"mediaUrl VARCHAR," +
+						"fileSize INTEGER," +
+						"queuePosition INTEGER," +
+						"lastPosition INTEGER NOT NULL DEFAULT 0," +
+						"duration INTEGER DEFAULT 0)"
+		);
+		db.execSQL("INSERT INTO podcasts(_id, subscriptionId, title, link, " +
+				"pubDate, description, mediaUrl, fileSize, " +
+				"queuePosition, lastPosition, duration) " +
+				"SELECT id, subscriptionId, title, link, " +
+				"pubDate, description, mediaUrl, fileSize, " +
+				"queuePosition, lastPosition, duration " +
+				"FROM podcasts_old");
+		db.execSQL("DROP TABLE podcasts_old");
+		db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
+		db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
+
+		// rename id in subscriptions table
+		db.execSQL("ALTER TABLE subscriptions RENAME TO subscriptions_old");
+		db.execSQL("CREATE TABLE subscriptions(" +
+				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"title VARCHAR, " +
+				"url VARCHAR NOT NULL, " +
+				"lastModified DATE, " +
+				"lastUpdate DATE," +
+				"eTag VARCHAR," +
+				"thumbnail VARCHAR);");
+		db.execSQL("INSERT INTO subscriptions(_id, title, url, " +
+				"lastModified, lastUpdate, eTag, thumbnail) " +
+				"SELECT id, title, url, " +
+				"lastModified, lastUpdate, eTag, thumbnail " +
+				"FROM subscriptions_old");
+		db.execSQL("DROP TABLE subscriptions_old");
+		db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
+	}
+
+	private void upgradeV2toV3(SQLiteDatabase db) {
+		// delete podcasts that are in subscriptions that were deleted incorrectly
+		// this happened when gpodder deleted podcasts
+		db.execSQL("DELETE FROM podcasts WHERE subscriptionid NOT IN (SELECT _id FROM subscriptions)");
+
+		// fix queue so things are ordered right for queue fragment reordering
+		String sql = "UPDATE PODCASTS SET queueposition = " +
+				"(SELECT COUNT(*) FROM podcasts p2 WHERE p2.queueposition IS NOT NULL AND p2.queueposition < podcasts.queueposition) " +
+				"WHERE podcasts.queueposition IS NOT NULL";
+		db.execSQL(sql);
+	}
+
+	private void upgradeV3toV4(SQLiteDatabase db) {
+		// add payment column
+		db.execSQL("ALTER TABLE podcasts ADD COLUMN payment VARCHAR");
+	}
+
+	private void upgradeV4toV5(SQLiteDatabase db) {
+		// add new subscription fields
+		db.execSQL("ALTER TABLE subscriptions ADD COLUMN titleOverride VARCHAR");
+		db.execSQL("ALTER TABLE subscriptions ADD COLUMN queueNew INTEGER NOT NULL DEFAULT 1");
+		db.execSQL("ALTER TABLE subscriptions ADD COLUMN expirationDays INTEGER");
+	}
+
+	private void upgradeV5toV6(SQLiteDatabase db) {
+		// add gpodder sync table
+		db.execSQL("CREATE TABLE gpodder_sync(" +
+				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"url VARCHAR, " +
+				"to_remove INTEGER DEFAULT 0, " +
+				"to_add INTEGER DEFAULT 0)");
+	}
+
+	private void upgradeV6toV7(SQLiteDatabase db) {
+		// add download id column
+		db.execSQL("ALTER TABLE podcasts ADD COLUMN downloadId INTEGER");
+	}
+
+	private void upgradeV7toV8(SQLiteDatabase db) {
+		db.execSQL("CREATE TABLE gpodder_device(" +
+				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"username VARCHAR, " +
+				"caption VARCHAR" +
+				"type VARCHAR," +
+				"needsChange INTEGER DEFAULT 0)");
+	}
+
+	private void upgradeV8toV9(SQLiteDatabase db) {
+		db.execSQL("ALTER TABLE podcasts ADD COLUMN needsGpodderUpdate INTEGER DEFAULT 0");
+		db.execSQL("ALTER TABLE podcasts ADD COLUMN gpodderUpdateTimestamp INTEGER");
+	}
+
+	private void upgradeV12toV13(SQLiteDatabase db) {
+		db.execSQL("ALTER TABLE subscriptions ADD COLUMN description VARCHAR");
+	}
+
 }

@@ -88,6 +88,7 @@ public class EpisodeDownloader {
 
 			episode.determineDuration(context);
 		} catch (Exception e) {
+			showErrorNotification(context, episode, e);
 			Log.e("Podax", "error while downloading", e);
 		} finally {
 			if (mediaFile != null)
@@ -106,14 +107,30 @@ public class EpisodeDownloader {
 		}
 	}
 
+	private static void showErrorNotification(Context context, EpisodeCursor podcast, Exception e) {
+		Intent notificationIntent = new Intent(context, MainActivity.class);
+		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+		Notification notification = new NotificationCompat.Builder(context)
+				.setSmallIcon(R.drawable.ic_stat_icon)
+				.setTicker("Error downloading " + podcast.getTitle())
+				.setWhen(System.currentTimeMillis())
+				.setContentTitle("Error Downloading Podcast Episode")
+				.setContentText(e.getMessage())
+				.setContentIntent(contentIntent)
+				.setOngoing(true)
+				.build();
+		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(Constants.NOTIFICATION_DOWNLOADING, notification);
+	}
+
 	private static void showNotification(Context context, EpisodeCursor podcast) {
 		Intent notificationIntent = new Intent(context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 		Notification notification = new NotificationCompat.Builder(context)
 				.setSmallIcon(R.drawable.ic_stat_icon)
-				.setTicker("Downloading podcast: " + podcast.getTitle())
+				.setTicker("Downloading " + podcast.getTitle())
 				.setWhen(System.currentTimeMillis())
-				.setContentTitle("Downloading Podcast")
+				.setContentTitle("Downloading Podcast Episode")
 				.setContentText(podcast.getTitle())
 				.setContentIntent(contentIntent)
 				.setOngoing(true)

@@ -22,7 +22,7 @@ public class StatsFragment extends Fragment {
 		super.onActivityCreated(savedInstanceState);
 
 		TextView listenTime = (TextView) getActivity().findViewById(R.id.listen_time);
-		listenTime.setText(Stats.getTimeString(getActivity()));
+		listenTime.setText(Stats.getListenTimeString(getActivity()));
 		TextView completions = (TextView) getActivity().findViewById(R.id.completions);
 		completions.setText(String.valueOf(Stats.getCompletions(getActivity())));
 	}

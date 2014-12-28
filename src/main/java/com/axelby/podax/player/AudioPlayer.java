@@ -35,6 +35,7 @@ public class AudioPlayer implements Runnable {
 		String extension = audioFile.substring(lastDot + 1);
 		if (extension.equals("mp3"))
 			return true;
+		//noinspection SimplifiableIfStatement
 		if (extension.equals("ogg") || extension.equals("oga"))
 			return !streaming;
 		return false;
@@ -123,12 +124,6 @@ public class AudioPlayer implements Runnable {
 
 	public void seekTo(float offsetInSeconds) { _seekToSeconds = offsetInSeconds; }
 	public void stop() { _stopping = true; }
-
-	public float getDuration() {
-		if (_decoder == null)
-			return 0;
-		return _decoder.getDuration();
-	}
 
 	public float getPosition() {
 		if (_track == null)

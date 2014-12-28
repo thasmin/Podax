@@ -8,7 +8,6 @@ import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
-import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
@@ -53,37 +52,10 @@ public class EpisodeProgress extends RelativeLayout {
 		}
 	}
 
-	public boolean isEmpty() {
-		return _position.getText().length() == 0;
-	}
-
-	public void set(EpisodeCursor episode) {
-		_position.setText(Helper.getTimeString(episode.getLastPosition()));
-		_progressbar.setVisibility(VISIBLE);
-		_progressbar.setMax(episode.getDuration());
-		_progressbar.setProgress(episode.getLastPosition());
-		_remaining.setText("-" + Helper.getTimeString(episode.getDuration() - episode.getLastPosition()));
-	}
-
-	public void set(int position, int duration) {
-		_position.setText(Helper.getTimeString(position));
-		_progressbar.setVisibility(VISIBLE);
-		_progressbar.setMax(duration);
-		_progressbar.setProgress(position);
-		_remaining.setText("-" + Helper.getTimeString(duration - position));
-	}
-
 	public static void remoteClear(RemoteViews views) {
 		views.setTextViewText(R.id.position, "");
 		views.setViewVisibility(R.id.progress, INVISIBLE);
 		views.setTextViewText(R.id.remaining, "");
-	}
-
-	public static void remoteSet(RemoteViews views, EpisodeCursor episode) {
-		views.setTextViewText(R.id.position, Helper.getTimeString(episode.getLastPosition()));
-		views.setViewVisibility(R.id.progress, VISIBLE);
-		views.setProgressBar(R.id.progress, episode.getDuration(), episode.getLastPosition(), false);
-		views.setTextViewText(R.id.remaining, "-" + Helper.getTimeString(episode.getDuration() - episode.getLastPosition()));
 	}
 
 	public static void remoteSet(RemoteViews views, int position, int duration) {

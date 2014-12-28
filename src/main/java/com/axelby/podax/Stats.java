@@ -6,19 +6,19 @@ import android.content.SharedPreferences;
 public class Stats {
 	private Stats() { }
 
-	public static void addTime(Context context, float seconds) {
+	public static void addListenTime(Context context, float seconds) {
 		SharedPreferences statsPrefs = context.getSharedPreferences("stats", Context.MODE_PRIVATE);
 		float listenTime = statsPrefs.getFloat("listenTime", 0f) + seconds;
 		statsPrefs.edit().putFloat("listenTime", listenTime).apply();
 	}
 
-	public static float getTime(Context context) {
+	private static float getListenTime(Context context) {
 		SharedPreferences statsPrefs = context.getSharedPreferences("stats", Context.MODE_PRIVATE);
 		return statsPrefs.getFloat("listenTime", 0f);
 	}
 
-	public static String getTimeString(Context context) {
-        return Helper.getVerboseTimeString(context, Stats.getTime(context));
+	public static String getListenTimeString(Context context) {
+        return Helper.getVerboseTimeString(context, Stats.getListenTime(context));
 	}
 
     public static void addCompletion(Context context) {
