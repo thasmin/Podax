@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -36,6 +37,7 @@ import javax.annotation.Nonnull;
 
 public class EpisodeListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private PodcastAdapter _adapter = null;
+	private RecyclerView _listView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,13 +55,19 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 	}
 
 	@Override
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		_listView = (RecyclerView) getActivity().findViewById(R.id.list);
+		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
+		_listView.setItemAnimator(new DefaultItemAnimator());
+	}
+
+	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		RecyclerView listView = (RecyclerView) getActivity().findViewById(R.id.list);
-		listView.setLayoutManager(new LinearLayoutManager(getActivity()));
-		listView.setItemAnimator(new DefaultItemAnimator());
-		listView.setAdapter(_adapter);
+		_listView.setAdapter(_adapter);
 
         setTitle();
 	}

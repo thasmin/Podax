@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -179,7 +180,7 @@ public class MainActivity extends ActionBarActivity {
         _drawerLayout.setDrawerListener(_drawerToggle);
 
         // main section
-        findViewById(R.id.toolbar_playlist_btn).setOnClickListener(new View.OnClickListener() {
+		findViewById(R.id.toolbar_playlist_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (_fragment == 0)
@@ -198,10 +199,11 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+		FragmentManager fragmentManager = getSupportFragmentManager();
         if (_fragment == 1)
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment, new SubscriptionListFragment()).commit();
+            fragmentManager.beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
         else
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment, new PlaylistFragment()).commit();
+            fragmentManager.beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
 
         // bottom bar controls
         _main = findViewById(R.id.main);
@@ -210,7 +212,7 @@ public class MainActivity extends ActionBarActivity {
         _play = (ImageButton) findViewById(R.id.play);
         _episodeTitle = (TextView) findViewById(R.id.episodeTitle);
         _expand = (ImageButton) findViewById(R.id.expand);
-        getSupportFragmentManager().beginTransaction().add(R.id.nowplaying_fragment, new EpisodeDetailFragment()).commit();
+        fragmentManager.beginTransaction().add(R.id.nowplaying_fragment, new EpisodeDetailFragment()).commit();
         _bottomGestureDetector = new GestureDetectorCompat(this, gestureListener);
     }
 
@@ -346,10 +348,10 @@ public class MainActivity extends ActionBarActivity {
         _drawerToggle.syncState();
     }
 
-    @Override
+	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
-    }
+		return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
+	}
 
 	private void handleGPodder() {
 		AccountManager am = AccountManager.get(this);

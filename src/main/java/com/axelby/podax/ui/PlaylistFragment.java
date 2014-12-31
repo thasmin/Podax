@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -17,7 +18,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,7 +31,6 @@ import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
-import com.axelby.podax.UpdateService;
 
 import java.io.File;
 
@@ -112,6 +111,7 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 			}
 		}
 	};
+	private RecyclerView _listView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -129,30 +129,26 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		_listView = (RecyclerView) view.findViewById(R.id.list);
+		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
+		_listView.setItemAnimator(new DefaultItemAnimator());
 
 		_overlay = (ImageView) getActivity().findViewById(R.id.overlay);
+	}
 
-		RecyclerView listView = (RecyclerView) getActivity().findViewById(R.id.list);
-		listView.setLayoutManager(new LinearLayoutManager(getActivity()));
-		listView.setItemAnimator(new DefaultItemAnimator());
-		listView.addOnItemTouchListener(_touchListener);
-		listView.setAdapter(_adapter);
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		_listView.addOnItemTouchListener(_touchListener);
+		_listView.setAdapter(_adapter);
 	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.playlist_fragment, menu);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.download) {
-			UpdateService.downloadEpisodes(getActivity());
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
