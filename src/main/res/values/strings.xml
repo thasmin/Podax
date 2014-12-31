@@ -23,83 +23,59 @@
 		<p>Special thanks to everyone who\'s helped on Github and by sending me email.</p>
 
 		<h3>Changelog</h3>
-		<p><strong>Version 7</strong></p>
-		<p>- New audio player fixes speedup and reduces errors</p>
-		<p>- Very basic statistics</p>
-		<p>- Includes ads that show up once per hour of listening time and can be turned off</p>
-
-        <h3>Copyright</h3>
-        <p><pre>
-    Copyright 2014 Dan Goldstein
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-        </pre></p>
+		<p><strong>Version 8</strong></p>
+		<p>
+            - New design<br>
+            - Everything else is new too
+        </p>
 
 		<h3>Open Source Licenses</h3>
 
-		<h4>drag-sort-listview</h4>
-		<div><a href="https://github.com/bauerca/drag-sort-listview">(link)</a></div>
-        <div>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</div>
-        <hr>
-
-		<h4>libtremor - Ogg decoding</h4>
-		<div><a href="http://xiph.org/vorbis/">(link)</a></div>
-		<p>Copyright © 2002, Xiph.org Foundation. Licensed under <a href="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</a>.</p>
-        <hr>
-
-        <h4>libmpg123</h4>
-        <div><a href="http://www.mpg123.de/">(link)</a></div>
+        <h4><a href="http://www.mpg123.de/">libmpg123</a></h4>
         <p>Copyright © 1995-2013 by Michael Hipp and others, free software under the terms of the <a href="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html">LGPL v2.1</a></p>
         <hr>
 
-        <h4>ACRA</h4>
-        <p><a href="http://acra.ch">(link)</a></p>
-        <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
+		<h4><a href="http://xiph.org/vorbis/">libtremor - Ogg decoding</a></h4>
+		<p>Copyright © 2002, Xiph.org Foundation. Licensed under <a href="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</a>.</p>
         <hr>
 
-        <h4>Flattr4j</h4>
-        <p><a href="http://www.shredzone.org/projects/flattr4j">(link)</a></p>
-        <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
-        <hr>
+        <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.<br>
+            <a href="http://acra.ch">ACRA</a><br>
+            <a href="http://www.shredzone.org/projects/flattr4j">Flattr4j</a><br>
+            <a href="https://github.com/JakeWharton/NineOldAndroids">NineOldAndroids</a><br>
+            <a href="https://code.google.com/li/google-gson/">GSON</a><br>
+            <a href="https://code.google.com/li/guava-libraries/">Guava</a><br>
+            <a href="https://android.googlesource.com/platform/frameworks/volley">Volley</a><br>
+            <a href="https://square.github.io/retrofit/">Retrofit</a><br>
+            <a href="http://square.github.io/okhttp/">OKHttp</a><br>
+            <a href="http://joanzapata.com/android-iconify/">Android Iconify</a><br>
+        </p>
 
-        <h4>Google-gson-stream</h4>
-        <p><a href="https://code.google.com/p/google-gson/">(link)</a></p>
-        <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
-        <hr>
-
-        <h4>Guava</h4>
-        <p><a href="https://code.google.com/p/guava-libraries/">(link)</a></p>
-        <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
-        <hr>
-
-        <h4>JSR 305</h4>
-        <p><a href="https://code.google.com/p/jsr-305/">(link)</a></p>
+        <h4><a href="https://code.google.com/p/jsr-305/">JSR 305</a></h4>
         <p>Copyright © 2014, Google. Licensed under <a href="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause License</a>.</p>
         <hr>
 
-        <h4>Volley</h4>
-        <p><a href="https://android.googlesource.com/platform/frameworks/volley">(link)</a></p>
-        <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
-
-        <h4>Android Iconify</h4>
-        <p><a href="http://joanzapata.com/android-iconify/">(link)</a></p>
-        <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.</p>
-
-        <h4>Font Awesome by Dave Gandy</h4>
-        <p><a href="http://fontawesome.io/">(link)</a></p>
+        <h4><a href="http://fontawesome.io/">Font Awesome by Dave Gandy</a></h4>
         <p>Licensed under <a href="http://scripts.sil.org/OFL">SIL OFL 1.1</a>.</p>
+
+        <h3>Copyright</h3>
+        <p>Copyright 2015 Dan Goldstein</p>
+
+<p>Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+
+   <p><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+
     ]]>
     </string>
+
     <string name="add_rss_feed">Add RSS feed</string>
     <string name="add_subscription">Add Subscription</string>
     <string name="rss_not_valid">RSS not valid</string>
