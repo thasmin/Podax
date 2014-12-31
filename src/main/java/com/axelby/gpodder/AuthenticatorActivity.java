@@ -76,7 +76,8 @@ public class AuthenticatorActivity extends FragmentActivity {
 					public void run() {
 						new Runnable() {
 							public void run() {
-								final boolean isValid = client.authenticate();
+								final boolean isValid = client.login();
+								client.logout();
 								SharedPreferences gpodderPrefs = getSharedPreferences("gpodder", MODE_PRIVATE);
 								gpodderPrefs.edit()
 										.putString("caption", _deviceNameEdit.getText().toString())
@@ -139,16 +140,14 @@ public class AuthenticatorActivity extends FragmentActivity {
 	void onAuthenticationResult(boolean isValid) {
 		hideProgress();
 		if (!isValid) {
-			if (_requestNewAccount)
-				_messageText.setText("That username and password did not work on gpodder.net.");
-			else
-				_messageText.setText("That password did not work on gpodder.net.");
-		} else {
-			if (_confirmCredentials)
-				finishConfirmCredentials();
-			else
-				finishLogin();
+			_messageText.setText("That username and password did not work on gpodder.net.");
+			return;
 		}
+
+		if (_confirmCredentials)
+			finishConfirmCredentials();
+		else
+			finishLogin();
 	}
 
 	private void finishLogin() {

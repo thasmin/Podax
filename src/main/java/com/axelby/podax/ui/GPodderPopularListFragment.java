@@ -3,6 +3,7 @@ package com.axelby.podax.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -15,7 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
-import com.axelby.gpodder.NoAuthClient;
+import com.axelby.gpodder.Client;
 import com.axelby.gpodder.dto.Podcast;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
@@ -74,11 +75,10 @@ public class GPodderPopularListFragment extends ListFragment {
 
 		@Override
 		public Podcast[] loadInBackground() {
-			NoAuthClient client = new NoAuthClient(getContext());
-			List<Podcast> toplist = client.getPodcastToplist();
-			if (client.getErrorMessage() == null)
+			Client client = new Client();
+			List<Podcast> toplist = client.getPodcastToplist(20);
+			if (toplist != null)
 				return toplist.toArray(new Podcast[20]);
-			_error = client.getErrorMessage();
 			return null;
 		}
 
@@ -105,7 +105,7 @@ public class GPodderPopularListFragment extends ListFragment {
 			public void onClick(View view) {
 				View listitem = (View) view.getParent().getParent();
 				Podcast podcast = (Podcast) listitem.getTag();
-                SubscriptionProvider.addNewSubscription(getContext(), podcast.getUrl());
+                SubscriptionProvider.addNewSubscription(getContext(), podcast.url);
 			}
 		};
 		private final View.OnClickListener viewWebsiteHandler = new View.OnClickListener() {
@@ -113,7 +113,7 @@ public class GPodderPopularListFragment extends ListFragment {
 			public void onClick(View view) {
 				View listitem = (View) view.getParent().getParent();
 				Podcast podcast = (Podcast) listitem.getTag();
-				_activity.startActivity(new Intent(Intent.ACTION_VIEW, podcast.getWebsite()));
+				_activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(podcast.website)));
 			}
 		};
 
@@ -132,9 +132,9 @@ public class GPodderPopularListFragment extends ListFragment {
 			if (v == null)
 				return null;
 
-			((TextView) v.findViewById(R.id.title)).setText(podcast.getTitle());
-			((TextView) v.findViewById(R.id.description)).setText(podcast.getDescription().replace('\n', ' '));
-			((NetworkImageView) v.findViewById(R.id.logo)).setImageUrl(podcast.getLogoUrl(), Helper.getImageLoader(_activity));
+			((TextView) v.findViewById(R.id.title)).setText(podcast.title);
+			((TextView) v.findViewById(R.id.description)).setText(podcast.description.replace('\n', ' '));
+			((NetworkImageView) v.findViewById(R.id.logo)).setImageUrl(podcast.logo_url, Helper.getImageLoader(_activity));
 			v.findViewById(R.id.add).setOnClickListener(addPodcastHandler);
 			v.findViewById(R.id.view_website).setOnClickListener(viewWebsiteHandler);
 			v.setTag(podcast);

@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 
 import com.axelby.gpodder.dto.Changes;
+import com.axelby.gpodder.dto.DeviceConfiguration;
 import com.axelby.gpodder.dto.EpisodeUpdate;
 import com.axelby.gpodder.dto.EpisodeUpdateResponse;
 import com.axelby.gpodder.dto.Podcast;
@@ -33,6 +34,7 @@ import com.axelby.podax.UpdateService;
 import com.axelby.podax.ui.MainActivity;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SyncService extends Service {
 	private static final Object _syncAdapterLock = new Object();
@@ -92,7 +94,7 @@ public class SyncService extends Service {
 				return;
 
 			Client client = new Client(_context, account.name, accountManager.getPassword(account));
-			if (!client.authenticate()) {
+			if (!client.login()) {
 				showErrorNotification(client, R.string.gpodder_sync_cannot_authenticate);
 				return;
 			}
@@ -103,6 +105,8 @@ public class SyncService extends Service {
 				return;
 			if (!syncEpisodes(client, account))
 				return;
+
+			client.logout();
 
 			clearErrorNotification();
 		}
@@ -129,13 +133,13 @@ public class SyncService extends Service {
 
 			// if this is the first time, add podcasts from all other devices
 			if (lastTimestamp == 0) {
-				ArrayList<Podcast> subs = client.getAllSubscriptions();
+				List<Podcast> subs = client.getAllSubscriptions();
 				if (subs == null) {
 					showErrorNotification(client, R.string.gpodder_sync_retrieve_all_episodes);
 					return false;
 				}
 				for (Podcast sub : subs)
-                    SubscriptionProvider.addNewSubscription(_context, sub.getUrl());
+                    SubscriptionProvider.addNewSubscription(_context, sub.url);
 			}
 
 			// send subscription changes
@@ -147,26 +151,25 @@ public class SyncService extends Service {
 
 			// retrieve subscription changes and update podax
 			Changes changes = client.getSubscriptionChanges(_deviceId, lastTimestamp);
-			if (client.getErrorMessage() != null) {
+			if (changes == null) {
 				showErrorNotification(client, R.string.gpodder_sync_retrieve_episodes);
 				return false;
 			}
-			if (changes != null) {
-				for (String removedUrl : changes.getRemovedUrls())
-					_context.getContentResolver().delete(SubscriptionProvider.FROM_GPODDER_URI, "url = ?", new String[]{removedUrl});
 
-				for (String addedUrl : changes.getAddedUrls()) {
-					ContentValues values = new ContentValues();
-					values.put(SubscriptionProvider.COLUMN_URL, addedUrl);
-					Uri newUri = _context.getContentResolver().insert(SubscriptionProvider.FROM_GPODDER_URI, values);
-					UpdateService.updateSubscription(_context, newUri);
-				}
+			for (String removedUrl : changes.remove)
+				_context.getContentResolver().delete(SubscriptionProvider.FROM_GPODDER_URI, "url = ?", new String[]{removedUrl});
 
-				// remember when we last updated
-				SharedPreferences.Editor gpodderPrefsEditor = _gpodderPrefs.edit();
-				gpodderPrefsEditor.putInt("lastTimestamp-" + account.name, changes.getTimestamp());
-				gpodderPrefsEditor.apply();
+			for (String addedUrl : changes.add) {
+				ContentValues values = new ContentValues();
+				values.put(SubscriptionProvider.COLUMN_URL, addedUrl);
+				Uri newUri = _context.getContentResolver().insert(SubscriptionProvider.FROM_GPODDER_URI, values);
+				UpdateService.updateSubscription(_context, newUri);
 			}
+
+			// remember when we last updated
+			SharedPreferences.Editor gpodderPrefsEditor = _gpodderPrefs.edit();
+			gpodderPrefsEditor.putInt("lastTimestamp-" + account.name, changes.timestamp);
+			gpodderPrefsEditor.apply();
 			return true;
 		}
 
@@ -180,8 +183,7 @@ public class SyncService extends Service {
 				}
 				c.close();
 
-				EpisodeUpdate[] updateArray = new EpisodeUpdate[changeUpdates.size()];
-				client.updateEpisodes(changeUpdates.toArray(updateArray));
+				client.updateEpisodes(changeUpdates);
 				if (client.getErrorMessage() != null) {
 					showErrorNotification(client, R.string.gpodder_sync_update_episode_positions);
 					return false;
@@ -191,33 +193,32 @@ public class SyncService extends Service {
 			// read episode changes
 			long lastTimestamp = _gpodderPrefs.getLong("lastEpisodeTimestamp-" + account.name, 0);
 			EpisodeUpdateResponse updates = client.getEpisodeUpdates(lastTimestamp);
-			if (client.getErrorMessage() != null) {
+			if (updates == null) {
 				showErrorNotification(client, R.string.gpodder_sync_retrieve_episode_positions);
 				return false;
 			}
-			if (updates != null) {
-				for (EpisodeUpdate update : updates.getUpdates()) {
-					if (update.getEpisode() == null || update.getPosition() == null)
-						continue;
 
-					String selection = EpisodeProvider.COLUMN_MEDIA_URL + " = ?";
-					String[] selectionArgs = {update.getEpisode()};
-					String[] projection = new String[] { EpisodeProvider.COLUMN_ID };
-					Cursor idCursor = _context.getContentResolver().query(EpisodeProvider.URI, projection, selection, selectionArgs, null);
-					if (idCursor != null && idCursor.moveToFirst()) {
-						long podcastId = idCursor.getLong(0);
-						idCursor.close();
-						ContentValues values = new ContentValues();
-						values.put(EpisodeProvider.COLUMN_LAST_POSITION, update.getPosition() * 1000);
-						_context.getContentResolver().update(EpisodeProvider.getContentUri(podcastId), values, selection, selectionArgs);
-					}
+			for (EpisodeUpdate update : updates.actions) {
+				if (update.episode == null || update.position == null)
+					continue;
+
+				String selection = EpisodeProvider.COLUMN_MEDIA_URL + " = ?";
+				String[] selectionArgs = {update.episode};
+				String[] projection = new String[] { EpisodeProvider.COLUMN_ID };
+				Cursor idCursor = _context.getContentResolver().query(EpisodeProvider.URI, projection, selection, selectionArgs, null);
+				if (idCursor != null && idCursor.moveToFirst()) {
+					long podcastId = idCursor.getLong(0);
+					idCursor.close();
+					ContentValues values = new ContentValues();
+					values.put(EpisodeProvider.COLUMN_LAST_POSITION, update.position * 1000);
+					_context.getContentResolver().update(EpisodeProvider.getContentUri(podcastId), values, selection, selectionArgs);
 				}
-
-				// remember when we last updated
-				SharedPreferences.Editor gpodderPrefsEditor = _gpodderPrefs.edit();
-				gpodderPrefsEditor.putLong("lastEpisodeTimestamp-" + account.name, updates.getTimestamp().getTime());
-				gpodderPrefsEditor.apply();
 			}
+
+			// remember when we last updated
+			SharedPreferences.Editor gpodderPrefsEditor = _gpodderPrefs.edit();
+			gpodderPrefsEditor.putLong("lastEpisodeTimestamp-" + account.name, updates.timestamp);
+			gpodderPrefsEditor.apply();
 
 			// update podcast so that gpodder has been synced
 			ContentValues clearGpodderValues = new ContentValues(1);

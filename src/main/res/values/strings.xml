@@ -3,7 +3,7 @@
 
     <string name="app_name">Podax</string>
     <string name="app_long_name">Podax Podcaster</string>
-    <string name="app_version">7.08</string>
+    <string name="app_version">8.0</string>
     <string name="pause">Pause</string>
     <string name="play">Play</string>
     <string name="add_to_playlist">Add To Playlist</string>
@@ -203,7 +203,7 @@ limitations under the License.
     <string name="server">server</string>
     <string name="other">other</string>
     <string name="gpodder_account_settings">GPodder Account Settings</string>
-    <string name="gpodder_sync_error">Error syncing gpodder.net</string>
+    <string name="gpodder_sync_error">Error connecting to gpodder.net</string>
     <string name="gpodder_sync_cannot_authenticate">Cannot authenticate: %1$s</string>
     <string name="gpodder_sync_error_configuration">Cannot change device name and type: %1$s</string>
     <string name="gpodder_sync_send_episodes">Cannot update episodes: %1$s</string>
@@ -211,6 +211,7 @@ limitations under the License.
     <string name="gpodder_sync_retrieve_all_episodes">Cannot retrieve all episodes: %1$s</string>
     <string name="gpodder_sync_update_episode_positions">Cannot send episode positions: %1$s</string>
     <string name="gpodder_sync_retrieve_episode_positions">Cannot retrieve episode positions: %1$s</string>
+    <string name="gpodder_sync_timeout">gpodder.net sync timed out</string>
     <string name="pref_playbackrate_title">Playback Rate</string>
     <string name="pref_playbackrate">How fast the episode should play</string>
 

@@ -50,10 +50,11 @@ public class AuthenticationService extends Service {
 		public Bundle confirmCredentials(AccountAuthenticatorResponse response,
 				Account account, Bundle options) throws NetworkErrorException {
 			if (options != null && options.containsKey(AccountManager.KEY_PASSWORD)) {
-				final String password = options.getString(AccountManager.KEY_PASSWORD);
+				String password = options.getString(AccountManager.KEY_PASSWORD);
 				Client client = new Client(_context, account.name, password);
-				final boolean verified = client.authenticate();
-				final Bundle result = new Bundle();
+				boolean verified = client.login();
+				client.logout();
+				Bundle result = new Bundle();
 				result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, verified);
 				return result;
 			}

@@ -6,394 +6,263 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.axelby.gpodder.dto.Changes;
+import com.axelby.gpodder.dto.ClientConfig;
+import com.axelby.gpodder.dto.DeviceConfiguration;
+import com.axelby.gpodder.dto.DeviceConfigurationChange;
 import com.axelby.gpodder.dto.EpisodeUpdate;
 import com.axelby.gpodder.dto.EpisodeUpdateConfirmation;
 import com.axelby.gpodder.dto.EpisodeUpdateResponse;
+import com.axelby.gpodder.dto.GPodderNet;
 import com.axelby.gpodder.dto.Podcast;
+import com.axelby.gpodder.dto.SubscriptionChanges;
 import com.axelby.podax.GPodderProvider;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
+import com.axelby.podax.R;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
+import retrofit.RequestInterceptor;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Header;
+import retrofit.client.Response;
 
-class Client extends NoAuthClient {
-	private final String _username;
-	private final String _password;
+public class Client {
+	private String _username = null;
+	private String _password = null;
 	private String _sessionId;
 
+	private Context _context;
+	private GPodderNet _service;
+
+	private static Calendar _configRefresh = null;
+	private RequestInterceptor _requestInterceptor = new RequestInterceptor() {
+		@Override
+		public void intercept(RequestFacade request) {
+			request.addHeader("User-Agent", "podax/" + _context.getString(R.string.app_version));
+			if (_sessionId != null) {
+				request.addHeader("Cookie", "sessionid=" + _sessionId);
+			} else if (_username != null && _password != null) {
+				// basic authentication
+				String auth = _username + ":" + _password;
+				String encoded = new String(Base64.encode(auth.getBytes(), Base64.NO_WRAP));
+				request.addHeader("Authorization", "basic " + encoded);
+			}
+		}
+	};
+
+	public Client() { }
+
 	public Client(Context context, String username, String password) {
-		super(context);
+		this();
+
+		_context = context;
 		_username = username;
 		_password = password;
 	}
 
-	HttpsURLConnection createConnection(URL url) throws IOException {
-		HttpsURLConnection conn = super.createConnection(url);
+	private String _errorMessage = null;
+	public String getErrorMessage() { return _errorMessage; }
 
-		if (_sessionId == null) {
-			// basic authentication
-			String auth = _username + ":" + _password;
-			String encoded = new String(Base64.encode(auth.getBytes(), Base64.NO_WRAP));
-			conn.setRequestProperty("Authorization", "basic " + encoded);
-		} else {
-			conn.setRequestProperty("Cookie", "sessionid=" + _sessionId);
-		}
+	private boolean verifyCurrentConfig() {
+		_errorMessage = null;
+		if (_configRefresh == null || _configRefresh.before(new GregorianCalendar())) {
+			try {
+				ClientConfig config = retrieveGPodderConfig();
 
-		return conn;
-	}
+				// do NOT use basic auth over HTTP without SSL
+				if (config.mygpo.baseurl.startsWith("http://"))
+					config.mygpo.baseurl = "https://" + config.mygpo.baseurl.substring(7);
 
-	public boolean authenticate() {
-		verifyCurrentConfig();
-		clearErrorMessage();
+				RestAdapter restAdapter = new RestAdapter.Builder()
+						.setEndpoint(config.mygpo.baseurl)
+						.setRequestInterceptor(_requestInterceptor)
+						.setLogLevel(RestAdapter.LogLevel.FULL)
+						.build();
+				_service = restAdapter.create(GPodderNet.class);
 
-		URL url;
-		HttpsURLConnection conn = null;
-		try {
-			url = new URL(_config.mygpo + "api/2/auth/" + _username + "/login.json");
-			conn = createConnection(url);
-			conn.setRequestMethod("POST");
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200) {
-				setErrorMessage(conn.getResponseMessage());
+				_configRefresh = new GregorianCalendar();
+				_configRefresh.add(Calendar.MILLISECOND, config.update_timeout);
+				return true;
+			} catch (RetrofitError e) {
+				_errorMessage = _context.getString(R.string.gpodder_sync_error);
 				return false;
 			}
+		}
+		_errorMessage = _context.getString(R.string.gpodder_sync_error);
+		return false;
+	}
 
-			for (String val : conn.getHeaderFields().get("Set-Cookie")) {
-				String[] data = val.split(";")[0].split("=");
-				if (data[0].equals("sessionid"))
-					_sessionId = data[1];
-			}
+	private ClientConfig retrieveGPodderConfig() {
+		RestAdapter restAdapter = new RestAdapter.Builder()
+				.setRequestInterceptor(new RequestInterceptor() {
+					@Override
+					public void intercept(RequestFacade request) {
+						request.addHeader("User-Agent", "podax/" + _context.getString(R.string.app_version));
+					}
+				})
+				.setEndpoint("http://gpodder.net")
+				.setLogLevel(RestAdapter.LogLevel.FULL)
+				.build();
+		GPodderNet service = restAdapter.create(GPodderNet.class);
+		return service.getConfig();
+	}
 
-			return true;
-		} catch (IOException e) {
-			Log.e("Podax", "io exception while authenticating to gpodder", e);
-			setErrorMessage(e.getMessage());
-			return false;
-		} catch (Exception e) {
-			Log.e("Podax", "exception while authenticating to gpodder", e);
-			setErrorMessage(e.getMessage());
-			return false;
-		} finally {
-			if (conn != null)
-				conn.disconnect();
+	public List<Podcast> getPodcastToplist(int count) {
+		if (!verifyCurrentConfig())
+			return null;
+		try {
+			return _service.getPodcastTopList(count);
+		} catch (RetrofitError e) {
+			_errorMessage = _context.getString(R.string.gpodder_sync_error);
+			return null;
 		}
 	}
 
-	public DeviceConfiguration getDeviceConfiguration(String deviceId) {
-		verifyCurrentConfig();
-		clearErrorMessage();
+	public boolean login() {
+		if (!verifyCurrentConfig())
+			return false;
 
-		URL url;
-		HttpsURLConnection conn = null;
 		try {
-			url = new URL(_config.mygpo + "api/2/devices/" + _username + ".json");
-			conn = createConnection(url);
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200) {
-				setErrorMessage(conn.getResponseMessage());
-				return null;
+			Response response = _service.login(_username);
+			if (response == null) {
+				_errorMessage = _context.getString(R.string.gpodder_sync_timeout);
+				return false;
 			}
-
-			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
-			reader.beginArray();
-			while (reader.hasNext()) {
-				reader.beginObject();
-				String id = null, caption = null, type = null;
-				while (reader.hasNext()) {
-					String name = reader.nextName();
-					switch (name) {
-						case "id": id = reader.nextString(); break;
-						case "caption": caption = reader.nextString(); break;
-						case "type": type = reader.nextString(); break;
-					}
-				}
-				reader.endObject();
-				if (id != null && id.equals(deviceId)) {
-					reader.close();
-					return new DeviceConfiguration(caption, type);
-				}
+			return findSessionId(response.getHeaders());
+		} catch (RetrofitError e) {
+			if (e.getResponse().getStatus() == 401)
+				_errorMessage = _context.getString(R.string.gpodder_sync_cannot_authenticate);
+			else {
+				Log.e("gpodder.client", e.getMessage());
+				_errorMessage = _context.getString(R.string.gpodder_sync_error);
 			}
-			return null;
-		} catch (IOException e) {
-			Log.e("Podax", "io exception while getting device name", e);
-			setErrorMessage(e.getMessage());
-			return null;
-		} catch (Exception e) {
-			Log.e("Podax", "exception while getting device name", e);
-			setErrorMessage(e.getMessage());
-			return null;
-		} finally {
-			if (conn != null)
-				conn.disconnect();
+			return false;
+		}
+	}
+
+	private boolean findSessionId(List<Header> headers) {
+		for (Header header : headers) {
+			if (header.getName() == null || !header.getName().equals("Set-Cookie"))
+				continue;
+
+			String[] data = header.getValue().split(";")[0].split("=");
+			if (data[0].equals("sessionid")) {
+				_sessionId = data[1];
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean logout() {
+		if (!verifyCurrentConfig())
+			return false;
+
+		try {
+			_sessionId = null;
+			_service.logout(_username);
+			return true;
+		} catch (RetrofitError e) {
+			Log.e("gpodder.client", e.getMessage());
+			_errorMessage = _context.getString(R.string.gpodder_sync_error);
+			return false;
 		}
 	}
 
 	public void setDeviceConfiguration(String deviceId, DeviceConfiguration configuration) {
-		verifyCurrentConfig();
-		clearErrorMessage();
-
-		HttpsURLConnection conn = null;
+		if (!verifyCurrentConfig())
+			return;
 		try {
-			URL url = new URL(_config.mygpo + "api/2/devices/" + _username + "/" + deviceId + ".json");
-			conn = createConnection(url);
-
-			conn.setDoOutput(true);
-			OutputStreamWriter streamWriter = new OutputStreamWriter(conn.getOutputStream());
-			JsonWriter writer = new JsonWriter(streamWriter);
-			writer.beginObject();
-			writer.name("caption").value(configuration.getCaption());
-			writer.name("type").value(configuration.getType());
-			writer.endObject();
-			writer.close();
-
-			StringWriter w = new StringWriter();
-			writer = new JsonWriter(w);
-			writer.beginObject();
-			writer.name("caption").value(configuration.getCaption());
-			writer.name("type").value(configuration.getType());
-			writer.endObject();
-			writer.close();
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200)
-				setErrorMessage(conn.getResponseMessage());
-		} catch (MalformedURLException e) {
-			Log.e("Podax", "malformed url exception while setting device name", e);
-			setErrorMessage(e.getMessage());
-		} catch (IOException e) {
-			Log.e("Podax", "io exception while setting device name", e);
-			setErrorMessage(e.getMessage());
-		} finally {
-			if (conn != null)
-				conn.disconnect();
+			_service.setDeviceConfiguration(_username, deviceId, new DeviceConfigurationChange(configuration.type, configuration.caption));
+		} catch (RetrofitError e) {
+			Log.e("gpodder.client", e.getMessage());
+			_errorMessage = _context.getString(R.string.gpodder_sync_error);
 		}
 	}
 
 	public Changes getSubscriptionChanges(String deviceId, int lastCheck) {
-		verifyCurrentConfig();
-		clearErrorMessage();
-
-		URL url;
-		HttpsURLConnection conn = null;
+		if (!verifyCurrentConfig())
+			return null;
 		try {
-			url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/" + deviceId + ".json?since=" + String.valueOf(lastCheck));
-			conn = createConnection(url);
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200) {
-				setErrorMessage(conn.getResponseMessage());
-				return null;
-			}
-
-			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
-			return Changes.fromJson(reader);
-		} catch (IOException e) {
-			Log.e("Podax", "io exception while getting subscription changes", e);
-			setErrorMessage(e.getMessage());
+			return _service.getSubscriptionUpdates(_username, deviceId, lastCheck);
+		} catch (RetrofitError e) {
+			Log.e("gpodder.client", e.getMessage());
+			_errorMessage = _context.getString(R.string.gpodder_sync_error);
 			return null;
-		} catch (Exception e) {
-			Log.e("Podax", "exception while getting subscription changes", e);
-			setErrorMessage(e.getMessage());
-			return null;
-		} finally {
-			if (conn != null)
-				conn.disconnect();
 		}
 	}
 
 	public void syncSubscriptionDiffs(String deviceId) {
-		verifyCurrentConfig();
-		clearErrorMessage();
+		if (!verifyCurrentConfig())
+			return;
 
-		HttpsURLConnection conn = null;
+		ArrayList<String> toAdd = new ArrayList<>();
+		Cursor c = _context.getContentResolver().query(GPodderProvider.TO_ADD_URI, new String[]{"url"}, null, null, null);
+		if (c != null) {
+			while (c.moveToNext())
+				toAdd.add(c.getString(0));
+			c.close();
+		}
+
+		ArrayList<String> toRemove = new ArrayList<>();
+		c = _context.getContentResolver().query(GPodderProvider.TO_REMOVE_URI, new String[]{"url"}, null, null, null);
+		if (c != null) {
+			while (c.moveToNext())
+				toRemove.add(c.getString(0));
+			c.close();
+		}
+
+		if (toAdd.size() == 0 && toRemove.size() == 0)
+			return;
+
 		try {
-			ArrayList<String> toAdd = new ArrayList<>();
-			Cursor c = _context.getContentResolver().query(GPodderProvider.TO_ADD_URI, new String[]{"url"}, null, null, null);
-			if (c != null) {
-				while (c.moveToNext())
-					toAdd.add(c.getString(0));
-				c.close();
-			}
+			_service.uploadSubscriptionChanges(_username, deviceId, new SubscriptionChanges(toAdd, toRemove));
+		} catch (RetrofitError e) {
+			Log.e("gpodder.client", e.getMessage());
+			_errorMessage = _context.getString(R.string.gpodder_sync_error);
+		}
 
-			ArrayList<String> toRemove = new ArrayList<>();
-			c = _context.getContentResolver().query(GPodderProvider.TO_REMOVE_URI, new String[]{"url"}, null, null, null);
-			if (c != null) {
-				while (c.moveToNext())
-					toRemove.add(c.getString(0));
-				c.close();
-			}
+		// clear out the pending tables
+		_context.getContentResolver().delete(GPodderProvider.URI, null, null);
+	}
 
-			if (toAdd.size() == 0 && toRemove.size() == 0)
-				return;
-
-			URL url = new URL(_config.mygpo + "api/2/subscriptions/" + _username + "/" + deviceId + ".json");
-			conn = createConnection(url);
-
-			conn.setDoOutput(true);
-			OutputStreamWriter streamWriter = new OutputStreamWriter(conn.getOutputStream());
-			JsonWriter writer = new JsonWriter(streamWriter);
-			writer.beginObject();
-			writeStrings(writer, "add", toAdd);
-			writeStrings(writer, "remove", toRemove);
-			writer.endObject();
-			writer.close();
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200) {
-				setErrorMessage(conn.getResponseMessage());
-				return;
-			}
-
-			// clear out the pending tables
-			_context.getContentResolver().delete(GPodderProvider.URI, null, null);
-		} catch (Exception e) {
-			Log.e("Podax", "error while syncing gpodder diffs", e);
-			setErrorMessage(e.getMessage());
-		} finally {
-			if (conn != null)
-				conn.disconnect();
+	public EpisodeUpdateConfirmation updateEpisodes(List<EpisodeUpdate> updates) {
+		if (!verifyCurrentConfig())
+			return null;
+		try {
+			return _service.uploadEpisodeChanges(_username, updates);
+		} catch (RetrofitError e) {
+			Log.e("gpodder.client", e.getMessage());
+			_errorMessage = _context.getString(R.string.gpodder_sync_error);
+			return null;
 		}
 	}
 
-	private void writeStrings(JsonWriter writer, String key, Collection<String> values) throws IOException {
-		writer.name(key);
-		writer.beginArray();
-		for (String s : values)
-			writer.value(s);
-		writer.endArray();
-	}
-
-	public EpisodeUpdateConfirmation updateEpisodes(EpisodeUpdate[] updates) {
-		verifyCurrentConfig();
-		clearErrorMessage();
-
-		HttpsURLConnection conn = null;
+	public EpisodeUpdateResponse getEpisodeUpdates(long since) {
+		if (!verifyCurrentConfig())
+			return null;
 		try {
-			URL url = new URL(_config.mygpo + "api/2/episodes/" + _username + ".json");
-			conn = createConnection(url);
-
-			conn.setDoOutput(true);
-			OutputStreamWriter streamWriter = new OutputStreamWriter(conn.getOutputStream());
-			JsonWriter writer = new JsonWriter(streamWriter);
-			writer.beginArray();
-			for (EpisodeUpdate update : updates)
-				update.writeJson(writer);
-			writer.endArray();
-			writer.close();
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200) {
-				setErrorMessage(conn.getResponseMessage());
-				return null;
-			}
-
-			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
-			return EpisodeUpdateConfirmation.readJson(reader);
-		} catch (MalformedURLException e) {
-			Log.e("Podax", e.getMessage());
-			setErrorMessage(e.getMessage());
+			return _service.getEpisodeUpdates(_username, since);
+		} catch (RetrofitError e) {
+			Log.e("gpodder.client", e.getMessage());
+			_errorMessage = _context.getString(R.string.gpodder_sync_error);
 			return null;
-		} catch (IOException e) {
-			Log.e("Podax", e.getMessage());
-			setErrorMessage(e.getMessage());
-			return null;
-		} finally {
-			if (conn != null)
-				conn.disconnect();
 		}
 	}
 
-	public EpisodeUpdateResponse getEpisodeUpdates(Long since) {
-		verifyCurrentConfig();
-		clearErrorMessage();
+	public List<Podcast> getAllSubscriptions() {
+		if (!verifyCurrentConfig())
+			return null;
 
-		HttpsURLConnection conn = null;
 		try {
-			String querystring = "?aggregated=true";
-			if (since != null)
-				querystring += "&since=" + since;
-			URL url = new URL(_config.mygpo + "api/2/episodes/" + _username + ".json" + querystring);
-			conn = createConnection(url);
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200) {
-				setErrorMessage(conn.getResponseMessage());
-				return null;
-			}
-
-			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
-			return EpisodeUpdateResponse.readJson(reader);
-		} catch (ParseException e) {
-			Log.e("Podax", e.getMessage());
-			setErrorMessage(e.getMessage());
+			return _service.getAllSubscriptions(_username);
+		} catch (RetrofitError e) {
+			Log.e("gpodder.client", e.getMessage());
+			_errorMessage = _context.getString(R.string.gpodder_sync_error);
 			return null;
-		} catch (MalformedURLException e) {
-			Log.e("Podax", e.getMessage());
-			setErrorMessage(e.getMessage());
-			return null;
-		} catch (IOException e) {
-			Log.e("Podax", e.getMessage());
-			setErrorMessage(e.getMessage());
-			return null;
-		} finally {
-			if (conn != null)
-				conn.disconnect();
-		}
-	}
-
-	public ArrayList<Podcast> getAllSubscriptions() {
-		verifyCurrentConfig();
-		clearErrorMessage();
-
-		HttpsURLConnection conn = null;
-		try {
-			URL url = new URL(_config.mygpo + "subscriptions/" + _username + ".json");
-			conn = createConnection(url);
-
-			conn.connect();
-			int code = conn.getResponseCode();
-			if (code != 200) {
-				setErrorMessage(conn.getResponseMessage());
-				return null;
-			}
-
-			ArrayList<Podcast> subscriptions = new ArrayList<>();
-			JsonReader reader = new JsonReader(new InputStreamReader(conn.getInputStream()));
-			reader.beginArray();
-			while (reader.hasNext())
-				subscriptions.add(Podcast.readJson(reader));
-			reader.endArray();
-			return subscriptions;
-		} catch (MalformedURLException e) {
-			Log.e("Podax", e.getMessage());
-			setErrorMessage(e.getMessage());
-			return null;
-		} catch (IOException e) {
-			Log.e("Podax", e.getMessage());
-			setErrorMessage(e.getMessage());
-			return null;
-		} finally {
-			if (conn != null)
-				conn.disconnect();
 		}
 	}
 }
