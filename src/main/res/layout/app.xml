@@ -40,20 +40,23 @@
                     android:background="?attr/colorPrimary"
                     android:weightSum="2">
 
-                    <Button
+                    <TextView
                         android:id="@+id/toolbar_playlist_btn"
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         style="@style/Widget.Podax.Button.Flat"
+                        android:padding="15dp"
                         android:text="@string/playlist_caps" />
 
-                    <Button
+                    <TextView
                         android:id="@+id/toolbar_subscriptions_btn"
                         android:layout_width="0dip"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         style="@style/Widget.Podax.Button.Flat"
+                        android:padding="15dp"
+                        android:textColor="@color/dim_foreground_disabled_material_light"
                         android:text="@string/subscriptions_caps" />
 
                 </LinearLayout>

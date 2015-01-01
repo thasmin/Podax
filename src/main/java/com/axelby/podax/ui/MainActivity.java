@@ -180,24 +180,30 @@ public class MainActivity extends ActionBarActivity {
         _drawerLayout.setDrawerListener(_drawerToggle);
 
         // main section
-		findViewById(R.id.toolbar_playlist_btn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (_fragment == 0)
-                    return;
-                _fragment = 0;
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
-            }
-        });
-        findViewById(R.id.toolbar_subscriptions_btn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (_fragment == 1)
-                    return;
-                _fragment = 1;
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
-            }
-        });
+		final TextView playistText = (TextView) findViewById(R.id.toolbar_playlist_btn);
+		final TextView subscriptionsText = (TextView) findViewById(R.id.toolbar_subscriptions_btn);
+		playistText.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (_fragment == 0)
+					return;
+				_fragment = 0;
+				playistText.setTextColor(getResources().getColor(R.color.dim_foreground_material_light));
+				subscriptionsText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
+				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
+			}
+		});
+		subscriptionsText.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (_fragment == 1)
+					return;
+				_fragment = 1;
+				subscriptionsText.setTextColor(getResources().getColor(R.color.dim_foreground_material_light));
+				playistText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
+				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
+			}
+		});
 
 		FragmentManager fragmentManager = getSupportFragmentManager();
         if (_fragment == 1)
