@@ -61,6 +61,8 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 				return true;
 
 			View itemView = rv.findChildViewUnder(e.getX(), e.getY());
+			if (itemView == null)
+				return false;
 			if (containsDragHandle(itemView, e)) {
 				_isDragging = true;
 
