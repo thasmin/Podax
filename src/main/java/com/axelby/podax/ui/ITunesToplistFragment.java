@@ -4,16 +4,20 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.ListFragment;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
@@ -36,13 +40,14 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 public class ITunesToplistFragment
-        extends ListFragment
+        extends Fragment
         implements LoaderManager.LoaderCallbacks<List<ITunesToplistFragment.ITunesPodcast>> {
 
     private ITunesToplistAdapter _adapter;
     private ProgressDialogFragment _progressDialog;
+	private RecyclerView _listView;
 
-    public static class ITunesPodcast {
+	public static class ITunesPodcast {
         public long id;
         public String name;
         public String summary;
@@ -62,19 +67,26 @@ public class ITunesToplistFragment
         getLoaderManager().initLoader(0, getArguments(), this);
     }
 
-    /*
     @Override
     public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_itunes_toplist, container, false);
+        return inflater.inflate(R.layout.recyclerview, container, false);
     }
-    */
 
-    @Override
+	@Override
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		_listView = (RecyclerView) view.findViewById(R.id.recyclerview);
+		_listView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+		_listView.setItemAnimator(new DefaultItemAnimator());
+	}
+
+	@Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         _adapter = new ITunesToplistAdapter(getActivity());
-        setListAdapter(_adapter);
+        _listView.setAdapter(_adapter);
     }
 
     @Override
@@ -99,137 +111,148 @@ public class ITunesToplistFragment
 
     @Override
     public void onLoadFinished(Loader<List<ITunesPodcast>> loader, List<ITunesPodcast> podcasts) {
-        for (ITunesPodcast podcast : podcasts)
-            _adapter.add(podcast);
+		_adapter.setPodcasts(podcasts);
         _handler.sendEmptyMessage(206);
     }
 
     @Override
     public void onLoaderReset(Loader<List<ITunesPodcast>> loader) {
-        _adapter.clear();
+        _adapter.setPodcasts(null);
     }
 
-    private class ITunesToplistAdapter extends ArrayAdapter<ITunesPodcast> {
-        private class ViewHolder {
+    private class ITunesToplistAdapter extends RecyclerView.Adapter<ITunesToplistAdapter.ViewHolder> {
+        class ViewHolder extends RecyclerView.ViewHolder {
             final TextView name;
             final TextView summary;
             final NetworkImageView image;
             final View subscribe;
 
-            public ViewHolder(View v) {
-                name = (TextView) v.findViewById(R.id.name);
-                summary = (TextView) v.findViewById(R.id.summary);
-                image = (NetworkImageView) v.findViewById(R.id.image);
-                subscribe = v.findViewById(R.id.subscribe);
+			private final View.OnClickListener _expandSummaryListener = new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					if (summary.getEllipsize() != null) {
+						summary.setMaxLines(Integer.MAX_VALUE);
+						summary.setEllipsize(null);
+					}
+				}
+			};
+
+			private final View.OnClickListener _subscribeListener = new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					final Handler handler = new Handler();
+					final Context context = view.getContext();
+
+					_progressDialog = ProgressDialogFragment.newInstance();
+					_progressDialog.setMessage("Retrieving RSS from iTunes...");
+					_progressDialog.show(getActivity().getSupportFragmentManager(), "progress");
+
+					final String url = (String) view.getTag();
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+								connection.setRequestProperty("User-Agent", "iTunes/10.2.1");
+								BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
+								byte[] bytes = new byte[100000];
+								int read = stream.read(bytes);
+								stream.close();
+								if (read == 0)
+									return;
+
+								String resp = new String(bytes);
+								int doctypeAt = resp.indexOf("<!DOCTYPE ");
+								String doctype = resp.substring(doctypeAt + 10, resp.indexOf(" ", doctypeAt + 10));
+								if (doctype.equals("plist")) {
+									int urlAt = resp.indexOf("<key>url</key>");
+									int urlStart = resp.indexOf(">", urlAt + 15) + 1;
+									int urlEnd = resp.indexOf("<", urlStart);
+									String newUrl = resp.substring(urlStart, urlEnd).replace("&amp;", "&");
+
+									connection = (HttpURLConnection) new URL(newUrl).openConnection();
+									connection.setRequestProperty("User-Agent", "iTunes/10.2.1");
+									stream = new BufferedInputStream(connection.getInputStream());
+									read = stream.read(bytes);
+									stream.close();
+									if (read == 0)
+										return;
+									resp = new String(bytes);
+								}
+
+								int rssUrlStart = resp.indexOf("feed-url=\"") + 10;
+								int rssUrlEnd = resp.indexOf("\"", rssUrlStart);
+								String rssUrl = resp.substring(rssUrlStart, rssUrlEnd);
+
+								SubscriptionProvider.addNewSubscription(context, rssUrl);
+							} catch (IOException e) {
+								Log.e("Podax", "error retrieving rss url from iTunes", e);
+							} finally {
+								handler.post(new Runnable() {
+									@Override
+									public void run() {
+										_progressDialog.dismiss();
+									}
+								});
+							}
+						}
+					}).start();
+				}
+			};
+
+			public ViewHolder(View view) {
+				super(view);
+
+				name = (TextView) view.findViewById(R.id.name);
+                summary = (TextView) view.findViewById(R.id.summary);
+                image = (NetworkImageView) view.findViewById(R.id.image);
+                subscribe = view.findViewById(R.id.subscribe);
+
+				view.setOnClickListener(_expandSummaryListener);
+				subscribe.setOnClickListener(_subscribeListener);
             }
         }
 
         final ImageLoader _imageLoader;
+		List<ITunesPodcast> _podcasts = null;
 
         public ITunesToplistAdapter(Context context) {
-            super(context, R.layout.fragment_itunes_toplist_item);
             _imageLoader = Helper.getImageLoader(context);
         }
 
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view;
-            ViewHolder holder;
+		public void setPodcasts(List<ITunesPodcast> podcasts) {
+			_podcasts = podcasts;
+			notifyDataSetChanged();
+		}
 
-            if (convertView != null) {
-                view = convertView;
-                holder = (ViewHolder) view.getTag();
+		@Override
+		public int getItemCount() {
+			if (_podcasts == null)
+				return 0;
+			return _podcasts.size();
+		}
 
-                holder.summary.setMaxLines(3);
-                holder.summary.setEllipsize(TextUtils.TruncateAt.END);
-            } else {
-                view = getActivity().getLayoutInflater().inflate(R.layout.fragment_itunes_toplist_item, parent, false);
-                holder = new ViewHolder(view);
-                view.setTag(holder);
+		@Override
+		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_itunes_toplist_item, parent, false);
+			return new ViewHolder(view);
+		}
 
-                view.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        ViewHolder holder = (ViewHolder) view.getTag();
-                        if (holder.summary.getEllipsize() != null) {
-                            holder.summary.setMaxLines(Integer.MAX_VALUE);
-                            holder.summary.setEllipsize(null);
-                        }
-                    }
-                });
+		@Override
+		public void onBindViewHolder(ViewHolder holder, int position) {
+			holder.summary.setMaxLines(3);
+			holder.summary.setEllipsize(TextUtils.TruncateAt.END);
 
-                holder.subscribe.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        final Handler handler = new Handler();
-
-                        _progressDialog = ProgressDialogFragment.newInstance();
-                        _progressDialog.setMessage("Retrieving RSS from iTunes...");
-                        _progressDialog.show(getActivity().getSupportFragmentManager(), "progress");
-
-                        final String url = (String) view.getTag();
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-                                    connection.setRequestProperty("User-Agent", "iTunes/10.2.1");
-                                    BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-                                    byte[] bytes = new byte[100000];
-                                    int read = stream.read(bytes);
-                                    stream.close();
-                                    if (read == 0)
-                                        return;
-
-                                    String resp = new String(bytes);
-                                    int doctypeAt = resp.indexOf("<!DOCTYPE ");
-                                    String doctype = resp.substring(doctypeAt + 10, resp.indexOf(" ", doctypeAt + 10));
-                                    if (doctype.equals("plist")) {
-                                        int urlAt = resp.indexOf("<key>url</key>");
-                                        int urlStart = resp.indexOf(">", urlAt + 15) + 1;
-                                        int urlEnd = resp.indexOf("<", urlStart);
-                                        String newUrl = resp.substring(urlStart, urlEnd).replace("&amp;", "&");
-
-                                        connection = (HttpURLConnection) new URL(newUrl).openConnection();
-                                        connection.setRequestProperty("User-Agent", "iTunes/10.2.1");
-                                        stream = new BufferedInputStream(connection.getInputStream());
-                                        read = stream.read(bytes);
-                                        stream.close();
-                                        if (read == 0)
-                                            return;
-                                        resp = new String(bytes);
-                                    }
-
-                                    int rssUrlStart = resp.indexOf("feed-url=\"") + 10;
-                                    int rssUrlEnd = resp.indexOf("\"", rssUrlStart);
-                                    String rssUrl = resp.substring(rssUrlStart, rssUrlEnd);
-
-                                    SubscriptionProvider.addNewSubscription(getContext(), rssUrl);
-                                } catch (IOException e) {
-                                    Log.e("Podax", "error retrieving rss url from iTunes", e);
-                                } finally {
-                                    handler.post(new Runnable() {
-                                        @Override public void run() { _progressDialog.dismiss(); }
-                                    });
-                                }
-                            }
-                        }).start();
-                    }
-                });
-            }
-
-            ITunesPodcast podcast = getItem(position);
+            ITunesPodcast podcast = _podcasts.get(position);
             holder.name.setText(podcast.name);
             holder.summary.setText(podcast.summary);
             holder.image.setImageUrl(podcast.imageUrl, _imageLoader);
             holder.subscribe.setTag(podcast.idUrl);
-
-            return view;
         }
 
         @Override
         public long getItemId(int position) {
-            return getItem(position).id;
+            return _podcasts.get(position).id;
         }
     }
 
