@@ -18,19 +18,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
@@ -49,8 +45,6 @@ import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ValueAnimator;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -59,41 +53,9 @@ public class MainActivity extends ActionBarActivity {
 
     private int _fragment;
 
-    private View _main;
-    private View _bottombar;
-    private View _nowplaying_fragment;
     private ImageButton _play;
     private TextView _episodeTitle;
     private ImageButton _expand;
-
-    // handle drag events on bottom bar
-    private GestureDetectorCompat _bottomGestureDetector;
-    private final GestureDetector.SimpleOnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
-       // necessary for any events to fire
-        @Override public boolean onDown(MotionEvent e) { return true; }
-        @Override public boolean onScroll(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
-            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
-            params.bottomMargin -= e2.getY() - e.getY();
-            _bottombar.requestLayout();
-
-            params = (ViewGroup.MarginLayoutParams) _nowplaying_fragment.getLayoutParams();
-            params.topMargin += e2.getY() - e.getY();
-            _nowplaying_fragment.requestLayout();
-
-            return true;
-        }
-        @Override public boolean onFling(MotionEvent e, MotionEvent e2, float velocityX, float velocityY) {
-            float totalVelocityY = e2.getY() - e.getY();
-            if (totalVelocityY < 16) {
-                animateBottomBarUp();
-                return true;
-            } else if (totalVelocityY > 16) {
-                animateBottomBarDown();
-                return true;
-            }
-            return false;
-        }
-    };
 
     private final ContentObserver _activeEpisodeObserver = new ContentObserver(new Handler()) {
         @Override public void onChange(boolean selfChange) { onChange(selfChange, null); }
@@ -212,26 +174,14 @@ public class MainActivity extends ActionBarActivity {
             fragmentManager.beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
 
         // bottom bar controls
-        _main = findViewById(R.id.main);
-        _bottombar = findViewById(R.id.bottombar);
-        _nowplaying_fragment = findViewById(R.id.nowplaying_fragment);
         _play = (ImageButton) findViewById(R.id.play);
         _episodeTitle = (TextView) findViewById(R.id.episodeTitle);
         _expand = (ImageButton) findViewById(R.id.expand);
-        fragmentManager.beginTransaction().add(R.id.nowplaying_fragment, new EpisodeDetailFragment()).commit();
-        _bottomGestureDetector = new GestureDetectorCompat(this, gestureListener);
     }
 
     private void initializeBottom(PlayerStatus playerState) {
         if (playerState.hasActiveEpisode()) {
-            _bottombar.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent) {
-                    return _bottomGestureDetector.onTouchEvent(motionEvent);
-                }
-            });
-
-            int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
+           int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
             _play.setVisibility(View.VISIBLE);
             _play.setImageResource(playResource);
             _play.setOnClickListener(new View.OnClickListener() {
@@ -249,71 +199,23 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
 
+			View.OnClickListener displayCurrentEpisode = new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, EpisodeDetailFragment.class, null));
+				}
+			};
+
             _episodeTitle.setText(playerState.getTitle());
+			_episodeTitle.setOnClickListener(displayCurrentEpisode);
 
             _expand.setVisibility(View.VISIBLE);
-            _expand.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    animateBottomBarToggle();
-                }
-            });
+			_expand.setOnClickListener(displayCurrentEpisode);
         } else {
             _play.setVisibility(View.INVISIBLE);
             _episodeTitle.setText(R.string.playlist_empty);
             _expand.setVisibility(View.INVISIBLE);
         }
-    }
-    private void animateBottomBarToggle() {
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
-        if (params.bottomMargin == 0)
-            animateBottomBarUp();
-        else
-            animateBottomBarDown();
-    }
-    private void animateBottomBarUp() { animateBottomBarTo(_main.getHeight() - _bottombar.getHeight()); }
-    private void animateBottomBarDown() { animateBottomBarTo(0); }
-    private void animateBottomBarTo(final int target) {
-        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
-        if (params.bottomMargin == target)
-            return;
-
-        ValueAnimator animator = ValueAnimator.ofInt(params.bottomMargin, target);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                ViewGroup.MarginLayoutParams barParams = (ViewGroup.MarginLayoutParams) _bottombar.getLayoutParams();
-                barParams.bottomMargin = (Integer) valueAnimator.getAnimatedValue();
-                _bottombar.requestLayout();
-
-                ViewGroup.MarginLayoutParams fragParams = (ViewGroup.MarginLayoutParams) _nowplaying_fragment.getLayoutParams();
-                fragParams.topMargin = (Integer) valueAnimator.getAnimatedValue() * -1;
-                _nowplaying_fragment.requestLayout();
-            }
-        });
-        animator.setInterpolator(new DecelerateInterpolator());
-
-        animator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationCancel(Animator animation) {
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-            }
-
-            @Override
-            public void onAnimationStart(Animator animation) {
-                _expand.setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                _expand.setVisibility(View.VISIBLE);
-                _expand.setImageResource(target == 0 ? R.drawable.ic_action_collapse : R.drawable.ic_action_expand);
-            }
-        });
-        animator.start();
     }
 
     private boolean isPlayerServiceRunning() {
