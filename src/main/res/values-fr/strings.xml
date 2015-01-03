@@ -1,0 +1,311 @@
+<resources>
+
+    <string name="app_name">Podax</string>
+    <string name="app_long_name">Téléchargeur Podax</string>
+    <string name="pause">Pause</string>
+    <string name="play">Lecture</string>
+    <string name="add_to_queue">Ajouter à la liste</string>
+    <string name="remove_from_queue">Supprimer de la file d'attente</string>
+    <string name="queue">File d'attente</string>
+    <string name="subscriptions">Abonnements</string>
+    <string name="search_hint">Rechercher dans Podax</string>
+    <string name="refresh_subscription">Actualiser les abonnements</string>
+    <string name="podcast_not_downloaded">Cette baladodiffusion n'a pas été téléchargée.</string>
+    <string name="import_subscriptions">Ajouter des abonnements</string>
+    <string name="search">Rechercher</string>
+    <string name="preferences">Préférences</string>
+    <string name="about_content"><![CDATA[
+<p> Podax a été créé par Dan Goldstein.
+Vous pouvez m'envoyer un courriel à l'adresse <a  href="mailto:dan@axelby.com">dan@axelby.com</a> avec vos commentaires ou questions.</p>
+<p>Podax est un logiciel open source. Vous pouvez obtenir le code source à
+<a href="http://github.com/thasmin/Podax">http://github.com/thasmin/Podax</a>.
+Il est disponible sous la licence Apache 2.0.</p>
+<p>Un grand merci à tous ceux qui ont aidé sur Github et en m'envoyant un courriel.</p>
+<h3>Liste des changements</h3>
+<p><strong>Version 7</strong></p>
+<p>- Le nouveau lecteur audio corrige la vitesse de lecture et réduit les erreurs</p>
+<p>- Ajout de statistiques très basiques</p>
+<p>- Ajout de réclames qui apparaissent une fois par heure d'écoute et peut être désactivé.</ p>
+
+<h3>Droits d'auteur</h3>
+<p><pre>
+Droits d'auteur 2014 Dan Goldstein
+
+sous licence <i>Apache License, Version 2.0</i> (la « Licence ») ;
+vous ne devriez pas utiliser ce fichier sauf en conformité avec la licence.
+Vous pouvez obtenir une copie de la licence à
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Sauf si requis par la loi en vigueur ou accord écrit, le logiciel distribué
+sous la licence est distribué « TEL QUEL », SANS GARANTIES OU
+CONDITIONS D'AUCUNE SORTE, expresse ou implicite.
+Consultez la Licence pour les autorisations et restrictions propres aux
+différentes langues sous la licence.
+</pre></p>
+
+<h3>Licences Open Source</h3>
+
+<h4>drag-sort-listview</h4>
+
+		<div><a 
+href="https://github.com/bauerca/drag-sort-listview">(link)</a></div>
+
+        <p>Sous licence <a 
+href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 
+2.0</a>.</p>
+        <hr>
+
+		<h4>libtremor - Ogg decoding</h4>
+		<div><a 
+href="http://xiph.org/vorbis/">(link)</a></div>
+		<p>Copyright © 2002, Xiph.org Foundation. Licensed under <a 
+href="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause 
+License</a>.</p>
+        <hr>
+
+        <h4>libmpg123</h4>
+        <div><a 
+href="http://www.mpg123.de/">(link)</a></div>
+        <p>Copyright © 1995-2013 par Michael Hipp et autres, logiciel libre sous licence de la <a 
+href="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html">LGPL 
+v2.1</a></p>
+        <hr>
+
+        <h4>ACRA</h4>
+        <p><a 
+href="http://acra.ch">(link)</a></p>
+        <p>Sous licence <a 
+href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 
+2.0</a>.</p>
+        <hr>
+
+        <h4>Flattr4j</h4>
+        <p><a 
+href="http://www.shredzone.org/projects/flattr4j">(link)</a></p>
+
+        <p>Sous licence <a 
+href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 
+2.0</a>.</p>
+        <hr>
+
+        <h4>Google-gson-stream</h4>
+        <p><a 
+href="https://code.google.com/p/google-gson/">(link)</a></p>
+
+        <p>Sous licence <a 
+href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 
+2.0</a>.</p>
+        <hr>
+
+        <h4>Guava</h4>
+        <p><a 
+href="https://code.google.com/p/guava-libraries/">(link)</a></p>
+
+        <p>Sous licence <a 
+href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 
+2.0</a>.</p>
+        <hr>
+
+        <h4>JSR 305</h4>
+        <p><a 
+href="https://code.google.com/p/jsr-305/">(link)</a></p>
+        <p>Copyright © 2014, Google. Sous licence <a 
+href="http://opensource.org/licenses/BSD-3-Clause">BSD 3-Clause 
+License</a>.</p>
+        <hr>
+
+        <h4>Volley</h4>
+        <p><a 
+href="https://android.googlesource.com/platform/frameworks/volley">(link)</a></p>
+
+        <p>Sous licence <a 
+href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 
+2.0</a>.</p>
+    ]]></string>
+    <string name="about_podax">À propos de Podax</string>
+    <string name="download_only_on_wifi">Podax est réglé pour télécharger des baladodiffusions seulement avec le Wi-Fi.</string>
+    <string name="no_downloads">Il n'y a pas de baladodiffusion dans la file d'attente non téléchargée.</string>
+    <string name="add_rss_feed">Ajouter un flux RSS</string>
+    <string name="add_from_opml_file">Ajouter à partir d'un fichier OPML</string>
+    <string name="popular_subscription_title">Abonnement populaire</string>
+    <string name="add_subscription">Ajouter un abonnement</string>
+    <string name="rss_not_valid">RSS non valide</string>
+    <string name="drag_to_rearrange_queue">glisser pour réorganiser la file d'attente</string>
+    <string name="move_to_first_in_queue">Mettre au début de la file d'attente</string>
+    <string name="go_to_details">Aller aux détails</string>
+    <string name="go_to_queue">Aller à la file d'attente</string>
+    <string name="rewind">Rembobiner</string>
+    <string name="fast_forward">Avance rapide</string>
+    <string name="skip_to_end">Aller à la fin</string>
+    <string name="thumbnail">miniature</string>
+    <string name="unsubscribe">Se désabonner</string>
+    <string name="update_request_no_wifi">Podax ne mettra pas à jour parce qu'il n'y a pas de connexion Wi-Fi. Ceci peut être modifié dans les préférences.</string>
+    <string name="no_podcasts_in_queue">Il n'y a pas de baladodiffusion dans la file d'attente.</string>
+    <string name="add">Ajouter</string>
+    <string name="restart">Redémarrer</string>
+    <string name="about">À propos</string>
+    <string name="refresh">Rafraîchir</string>
+    <string name="welcome">Accueil</string>
+    <string name="welcome_intro">Merci d'utiliser Podax ! Vous êtes presque prêt à entrer dans le monde florissant des baladodiffusions. Tout ce que vous devez faire est de vous abonner à une baladodiffusion et Podax fera le reste. Visitez un lien RSS dans le navigateur, tapez l'URL du flux RSS ci-dessous, ou choisissez l'une de nos baladodiffusions préférées ci-dessous.</string>
+    <string name="welcome_american_life">This American Life</string>
+    <string name="welcome_american_life_desc">This American Life est une baladodiffusion qui raconte des histoires intéressantes dans des situations banales. Il a gagné tous les grands prix de radiodiffusion.</string>
+    <string name="subscribe">Abonnez-vous</string>
+    <string name="rss">RSS</string>
+    <string name="welcome_tech_news_today">Tech News Today</string>
+    <string name="welcome_tech_news_today_desc">Tom Merritt vous apporte « Tech News Today » avec les animateurs Sarah Lane (TechTV, Revision3), Iyaz Akhtar (PC Mag, TechVi) et d'autres. Devenez un pro, avec une balade ludique et conviviale à travers les technologies nouvelles du jour.</string>
+    <string name="subscription_thumbnail">miniature de l'abonnement</string>
+    <string name="download">Télécharger</string>
+    <string name="pref_update_wifi">Mise à jour des abonnements ou téléchargement des baladodiffusions uniquement connecté à un réseau Wi-Fi.</string>
+    <string name="pref_update_wifi_title">Wi-Fi uniquement</string>
+    <string name="pref_auto_delete">Supprimer les baladodiffusions automatiquement lorsque la lecture se termine ou si vous passez à la prochaine baladodiffusion. Si désactivé, la baladodiffusion sera ajoutée en fin de la file d'attente.</string>
+    <string name="pref_auto_delete_title">Supprimer automatiquement les baladodiffusions</string>
+    <string name="pref_max_num_podcasts">Le nombre maximum de baladodiffusions téléchargées en file d'attente.</string>
+    <string name="pref_max_num_podcasts_title">Limiter le nombre de baladodiffusions téléchargées</string>
+    <string-array name="pref_max_num_podcasts_entries">
+        <item>10</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+        <item>Illimité</item>
+    </string-array>
+    <string-array name="pref_max_num_podcasts_values">
+        <item>10</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+        <item>10000</item>
+    </string-array>
+    <string name="pref_anon_usage">Envoyer des données d'utilisation anonymes pour améliorer Podax.</string>
+    <string name="pref_anon_usage_title">Envoyer les données d'utilisation</string>
+    <string name="pref_crash_reports">Envoyer des rapports d'erreur pour les développeurs si Podax s'arrête inopinément.</string>
+    <string name="pref_crash_reports_title">Envoyer des rapports d'erreur</string>
+    <string name="more_options">Plus d'options</string>
+    <string name="stop">Arrêter</string>
+    <string name="payment">Dons</string>
+    <string name="donate">Faites un don</string>
+    <string name="flattr">Flattr</string>
+    <string name="changelog">Journal des modifications</string>
+    <string name="cannot_play_podcast">Podax est incapable de jouer « %s ». Lecture du suivant…</string>
+    <string name="log_viewer">Visualiseur de journaux</string>
+    <string name="settings">Paramètres</string>
+    <string name="name">Nom</string>
+    <string name="subscription_settings">Paramètres des abonnements</string>
+    <string name="gpodder_authenticator_activity_title">Compte GPodder</string>
+    <string name="gpodder">GPodder</string>
+    <string name="configuration">Configuration</string>
+    <string name="podcasts">Baladodiffusions</string>
+    <string name="password">Mot de passe</string>
+    <string name="login">Connexion</string>
+    <string name="subscription">Abonnement</string>
+
+    <string-array name="expiration_options">
+        <item>Jamais</item>
+        <item>7 jours</item>
+        <item>14 jours</item>
+    </string-array>
+    <string-array name="expiration_values">
+        <item>1</item>
+        <item>7</item>
+        <item>14</item>
+    </string-array>
+
+    <string name="username">Nom d'utilisateur</string>
+    <string name="podcast_picture">image de baladodiffusion</string>
+    <string name="playlist">Liste de lecture</string>
+    <string name="open_drawer">Ouvrir tiroir</string>
+    <string name="close_drawer">Fermer le tiroir</string>
+    <string name="now_playing">En lecture</string>
+    <string name="subscribe_to_podcasts">S'abonner à des baladodiffusions</string>
+    <string name="top_itunes_podcasts">Top des baladodiffusions iTunes</string>
+    <string name="gpodder_sync">Synchro gpodder.net</string>
+
+    <string name="pref_sdcard">Carte SD pour le stockage de baladodiffusions</string>
+    <string name="pref_sdcard_title">Carte SD</string>
+    <string-array name="pref_sdcard_values">
+        <item>/storage/sdcard0</item>
+        <item>/storage/extSdCard</item>
+        <item>/mnt/shared/sdcard0</item>
+    </string-array>
+    <string-array name="pref_sdcard_entries">
+        <item>Stockage interne</item>
+        <item>Carte SD externe</item>
+        <item>Partage GenyMotion sdcard0</item>
+    </string-array>
+    <string-array name="gpodder_device_types">
+        <item>bureau</item>
+        <item>ordinateur portable</item>
+        <item>portable</item>
+        <item>serveur</item>
+        <item>autre</item>
+    </string-array>
+
+    <string name="crash_toast_text">Oops, Podax s'est arrêté inopinément. Désolé pour ça !</string>
+    <string name="crash_dialog_text">Désolé pour l'incident précédent. Voulez-vous le signaler au développeur ?</string>
+    <string name="crash_comment_prompt">Que se passait-il avant le crash ?</string>
+    <string name="crash_dialog_ok_text">Merci pour l'envoi du rapport et votre aide à améliorer Podax.</string>
+    <string name="queue_empty">File d'attente vide</string>
+    <string name="top_gpodder_podcasts">Top des baladodiffusions GPodder</string>
+    <string name="view_website">Voir le site</string>
+    <string name="remove">Supprimer</string>
+    <string name="device_name">Nom de l'appareil</string>
+    <string name="device_type">Type de l'appareil</string>
+    <string name="desktop">bureau</string>
+    <string name="laptop">ordinateur portable</string>
+    <string name="mobile">portable</string>
+    <string name="server">serveur</string>
+    <string name="other">autre</string>
+    <string name="gpodder_account_settings">Paramètres du compte GPodder</string>
+
+    <string name="gpodder_sync_error">Erreur de synchronisation à gpodder.net</string>
+    <string name="gpodder_sync_cannot_authenticate">Impossible de vous identifier : %1$s</string>
+    <string name="gpodder_sync_error_configuration">Impossible de changer le nom de l'appareil et son type : %1$s</string>
+    <string name="gpodder_sync_send_podcasts">Impossible de mettre à jour des baladodiffusions : %1$s</string>
+    <string name="gpodder_sync_retrieve_podcasts">Impossible de récupérer les baladodiffusions : %1$s</string>
+    <string name="gpodder_sync_retrieve_all_podcasts">Impossible de récupérer toutes les baladodiffusions : %1$s</string>
+    <string name="gpodder_sync_update_episode_positions">Impossible d'envoyer les positions de l'épisode : %1$s</string>
+    <string name="gpodder_sync_retrieve_episode_positions">Impossible de récupérer les positions de l'épisode : %1$s</string>
+
+    <string name="pref_playbackrate_title">Fréquence de lecture</string>
+    <string name="pref_playbackrate">vitesse à laquelle jouer la baladodiffusion</string>
+    <string-array name="pref_playbackrate_entries">
+        <item>1,0x</item>
+        <item>1,1x</item>
+        <item>1,25x</item>
+        <item>1,5x</item>
+        <item>2,0x</item>
+    </string-array>
+    <string-array name="pref_playbackrate_values">
+        <item>1,0</item>
+        <item>1,1</item>
+        <item>1,25</item>
+        <item>1,5</item>
+        <item>2,0</item>
+    </string-array>
+    <string name="playbackrate_disabled">Cet appareil ne peut pas changer la vitesse de lecture.</string>
+    <string name="clear_search">Effacer la recherche</string>
+    <string name="stats">Statistiques</string>
+    <string name="podcasts_finished">Baladodiffusions terminées</string>
+    <string name="time_spent_listening">Temps passé en écoute</string>
+    <plurals name="days">
+        <item quantity="one">jour</item>
+        <item quantity="other">jours</item>
+    </plurals>
+    <plurals name="hours">
+        <item quantity="one">heure</item>
+        <item quantity="other">heures</item>
+    </plurals>
+    <plurals name="minutes">
+        <item quantity="one">minute</item>
+        <item quantity="other">min</item>
+    </plurals>
+    <string name="none">aucun</string>
+    <string name="release_notes">Notes de version</string>
+    <string name="release_notes_detailed">
+        Version 7 de Podax a beaucoup de nouvelles choses, y compris un tout nouveau lecteur audio qui a un bouton de vitesse qui fonctionne.
+    </string>
+    <string name="view_release_notes">Voir les notes de version</string>
+    <string name="no_thanks">Non, merci</string>
+    <string name="pref_playlist_swipe_to_remove_title">Permettre le glisser pour supprimer d'une liste de lecture</string>
+    <string name="pref_playlist_swipe_to_remove">Quand c'est coché, vous pouvez glisser une baladodiffusion sur le côté pour la retirer de la liste de lecture.</string>
+</resources>
