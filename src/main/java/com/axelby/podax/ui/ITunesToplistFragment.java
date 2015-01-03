@@ -1,6 +1,9 @@
 package com.axelby.podax.ui;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -26,13 +29,14 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,6 +130,7 @@ public class ITunesToplistFragment
             final TextView summary;
             final NetworkImageView image;
             final View subscribe;
+			final View episode_list;
 
 			private final View.OnClickListener _expandSummaryListener = new View.OnClickListener() {
 				@Override
@@ -137,66 +142,21 @@ public class ITunesToplistFragment
 				}
 			};
 
+			private final View.OnClickListener _episodeListListener = new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					new ITunesPodcastDetailShower().execute((String) view.getTag());
+				}
+			};
+
 			private final View.OnClickListener _subscribeListener = new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					final Handler handler = new Handler();
-					final Context context = view.getContext();
-
 					_progressDialog = ProgressDialogFragment.newInstance();
 					_progressDialog.setMessage("Retrieving RSS from iTunes...");
 					_progressDialog.show(getActivity().getSupportFragmentManager(), "progress");
 
-					final String url = (String) view.getTag();
-					new Thread(new Runnable() {
-						@Override
-						public void run() {
-							try {
-								HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-								connection.setRequestProperty("User-Agent", "iTunes/10.2.1");
-								BufferedInputStream stream = new BufferedInputStream(connection.getInputStream());
-								byte[] bytes = new byte[100000];
-								int read = stream.read(bytes);
-								stream.close();
-								if (read == 0)
-									return;
-
-								String resp = new String(bytes);
-								int doctypeAt = resp.indexOf("<!DOCTYPE ");
-								String doctype = resp.substring(doctypeAt + 10, resp.indexOf(" ", doctypeAt + 10));
-								if (doctype.equals("plist")) {
-									int urlAt = resp.indexOf("<key>url</key>");
-									int urlStart = resp.indexOf(">", urlAt + 15) + 1;
-									int urlEnd = resp.indexOf("<", urlStart);
-									String newUrl = resp.substring(urlStart, urlEnd).replace("&amp;", "&");
-
-									connection = (HttpURLConnection) new URL(newUrl).openConnection();
-									connection.setRequestProperty("User-Agent", "iTunes/10.2.1");
-									stream = new BufferedInputStream(connection.getInputStream());
-									read = stream.read(bytes);
-									stream.close();
-									if (read == 0)
-										return;
-									resp = new String(bytes);
-								}
-
-								int rssUrlStart = resp.indexOf("feed-url=\"") + 10;
-								int rssUrlEnd = resp.indexOf("\"", rssUrlStart);
-								String rssUrl = resp.substring(rssUrlStart, rssUrlEnd);
-
-								SubscriptionProvider.addNewSubscription(context, rssUrl);
-							} catch (IOException e) {
-								Log.e("Podax", "error retrieving rss url from iTunes", e);
-							} finally {
-								handler.post(new Runnable() {
-									@Override
-									public void run() {
-										_progressDialog.dismiss();
-									}
-								});
-							}
-						}
-					}).start();
+					new ITunesPodcastSubscriber().execute((String) view.getTag());
 				}
 			};
 
@@ -207,9 +167,11 @@ public class ITunesToplistFragment
                 summary = (TextView) view.findViewById(R.id.summary);
                 image = (NetworkImageView) view.findViewById(R.id.image);
                 subscribe = view.findViewById(R.id.subscribe);
+				episode_list = view.findViewById(R.id.episode_list);
 
 				view.setOnClickListener(_expandSummaryListener);
 				subscribe.setOnClickListener(_subscribeListener);
+				episode_list.setOnClickListener(_episodeListListener);
             }
         }
 
@@ -248,6 +210,7 @@ public class ITunesToplistFragment
             holder.summary.setText(podcast.summary);
             holder.image.setImageUrl(podcast.imageUrl, _imageLoader);
             holder.subscribe.setTag(podcast.idUrl);
+			holder.episode_list.setTag(podcast.idUrl);
         }
 
         @Override
@@ -256,7 +219,80 @@ public class ITunesToplistFragment
         }
     }
 
-    private static class ITunesPodcastLoader extends AsyncTaskLoader<List<ITunesPodcast>> {
+	private static String getRSSUrl(String iTunesUrl) throws IOException {
+		OkHttpClient client = new OkHttpClient();
+		Response call = client.newCall(new Request.Builder()
+				.url(iTunesUrl)
+				.addHeader("User-Agent", "iTunes/10.2.1")
+				.build()).execute();
+		String resp = call.body().string();
+
+		int doctypeAt = resp.indexOf("<!DOCTYPE ");
+		String doctype = resp.substring(doctypeAt + 10, resp.indexOf(" ", doctypeAt + 10));
+		if (doctype.equals("plist")) {
+			int urlAt = resp.indexOf("<key>url</key>");
+			int urlStart = resp.indexOf(">", urlAt + 15) + 1;
+			int urlEnd = resp.indexOf("<", urlStart);
+			String newUrl = resp.substring(urlStart, urlEnd).replace("&amp;", "&");
+
+			call = client.newCall(new Request.Builder()
+					.url(newUrl)
+					.addHeader("User-Agent", "iTunes/10.2.1")
+					.build()).execute();
+			resp = call.body().string();
+		}
+
+		int rssUrlStart = resp.indexOf("feed-url=\"") + 10;
+		int rssUrlEnd = resp.indexOf("\"", rssUrlStart);
+		return resp.substring(rssUrlStart, rssUrlEnd);
+	}
+
+	private class ITunesPodcastSubscriber extends AsyncTask<String, Void, String> {
+		@Override
+		protected String doInBackground(String... strings) {
+			if (strings.length == 0)
+				return null;
+			try {
+				return getRSSUrl(strings[0]);
+			} catch (IOException e) {
+				Log.e("ITunesToplistFragment", "unable to get rss url from iTunes", e);
+				return null;
+			}
+		}
+
+		@Override
+		protected void onPostExecute(String rssUrl) {
+			_handler.sendEmptyMessage(206);
+			if (rssUrl != null && getActivity() != null)
+				SubscriptionProvider.addNewSubscription(getActivity(), rssUrl);
+		}
+	}
+
+	private class ITunesPodcastDetailShower extends AsyncTask<String, Void, String> {
+		@Override
+		protected String doInBackground(String... strings) {
+			if (strings.length == 0)
+				return null;
+			try {
+				return getRSSUrl(strings[0]);
+			} catch (IOException e) {
+				Log.e("ITunesToplistFragment", "unable to get rss url from iTunes", e);
+				return null;
+			}
+		}
+
+		@Override
+		protected void onPostExecute(String rssUrl) {
+			_handler.sendEmptyMessage(206);
+			if (rssUrl != null && getActivity() != null) {
+				Uri uri = SubscriptionProvider.addSingleUseSubscription(getActivity(), rssUrl);
+				long subscriptionId = ContentUris.parseId(uri);
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId));
+			}
+		}
+	}
+
+	private static class ITunesPodcastLoader extends AsyncTaskLoader<List<ITunesPodcast>> {
         final long _category;
         List<ITunesPodcast> _lastResult;
 

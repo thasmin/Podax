@@ -22,6 +22,8 @@ public class URLImageGetter implements Html.ImageGetter {
 	public Drawable getDrawable(String source) {
 		final DelayedDrawable drawable = new DelayedDrawable(_container.getResources());
 
+		if (source.startsWith("//"))
+			source = "http:" + source;
 		Helper.getImageLoader(_container.getContext()).get(source, new ImageLoader.ImageListener() {
 			@Override
 			public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {

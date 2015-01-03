@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.v4.database.DatabaseUtilsCompat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ public class SubscriptionProvider extends ContentProvider {
 	public static final String COLUMN_PLAYLIST_NEW = "queueNew";
 	public static final String COLUMN_EXPIRATION = "expirationDays";
     public static final String COLUMN_DESCRIPTION = "description";
+	public static final String COLUMN_SINGLE_USE = "singleUse";
 
 	private static final int SUBSCRIPTIONS = 1;
 	private static final int SUBSCRIPTION_ID = 2;
@@ -65,7 +67,8 @@ public class SubscriptionProvider extends ContentProvider {
 		_columnMap.put(COLUMN_TITLE_OVERRIDE, "titleOverride");
 		_columnMap.put(COLUMN_PLAYLIST_NEW, "queueNew");
 		_columnMap.put(COLUMN_EXPIRATION, "expirationDays");
-        _columnMap.put(COLUMN_DESCRIPTION, "description");
+		_columnMap.put(COLUMN_DESCRIPTION, "description");
+		_columnMap.put(COLUMN_SINGLE_USE, "singleUse");
 	}
 
 	public static Uri getContentUri(long id) {
@@ -74,11 +77,21 @@ public class SubscriptionProvider extends ContentProvider {
 
 	private DBAdapter _dbAdapter;
 
-    public static void addNewSubscription(Context context, String url) {
+    public static Uri addNewSubscription(Context context, String url) {
         ContentValues values = new ContentValues(1);
         values.put(COLUMN_URL, url);
         Uri uri = context.getContentResolver().insert(URI, values);
         UpdateService.updateSubscription(context, uri);
+		return uri;
+    }
+
+    public static Uri addSingleUseSubscription(Context context, String url) {
+        ContentValues values = new ContentValues(1);
+        values.put(COLUMN_URL, url);
+		values.put(COLUMN_SINGLE_USE, 1);
+        Uri uri = context.getContentResolver().insert(URI, values);
+        UpdateService.updateSubscription(context, uri);
+		return uri;
     }
 
     @Override
@@ -136,6 +149,7 @@ public class SubscriptionProvider extends ContentProvider {
 			case SUBSCRIPTIONS:
 				if (sortOrder == null)
 					sortOrder = "title IS NULL, COALESCE(titleOverride, title)";
+				sqlBuilder.appendWhere("singleUse = 0");
 				break;
 			case SUBSCRIPTION_ID:
 				sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
@@ -145,6 +159,7 @@ public class SubscriptionProvider extends ContentProvider {
 				if (!selectionArgs[0].startsWith("%"))
 					selectionArgs[0] = "%" + selectionArgs[0] + "%";
 				selectionArgs = new String[]{selectionArgs[0], selectionArgs[0]};
+				sqlBuilder.appendWhere("singleUse = 0");
 				if (sortOrder == null)
 					sortOrder = "COALESCE(titleOverride, title)";
 				break;
@@ -168,11 +183,7 @@ public class SubscriptionProvider extends ContentProvider {
 			case SUBSCRIPTIONS:
 				break;
 			case SUBSCRIPTION_ID:
-				String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
-				if (where != null)
-					where = extraWhere + " AND " + where;
-				else
-					where = extraWhere;
+				where = DatabaseUtilsCompat.concatenateWhere(where, COLUMN_ID + " = " + uri.getLastPathSegment());
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown URI");

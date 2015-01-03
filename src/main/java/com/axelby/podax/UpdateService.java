@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,6 +23,9 @@ public class UpdateService extends IntentService {
 	public UpdateService() {
 		super("UpdateService");
 	}
+
+	private static long _updatingSubscriptionId = -1;
+	public static long getUpdatingSubscriptionId() { return _updatingSubscriptionId; }
 
 	public static void updateSubscriptions(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
@@ -116,9 +120,19 @@ public class UpdateService extends IntentService {
 			}
 			case Constants.ACTION_REFRESH_SUBSCRIPTION:
 				long subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+				_updatingSubscriptionId = subscriptionId;
 				if (subscriptionId == -1)
 					return;
+
+				LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
+				Intent localIntent = new Intent(Constants.ACTION_UPDATE_SUBSCRIPTION, SubscriptionProvider.getContentUri(subscriptionId));
+				localBroadcastManager.sendBroadcast(localIntent);
+
 				new SubscriptionUpdater(this).update(subscriptionId);
+
+				_updatingSubscriptionId = -1;
+				localIntent = new Intent(Constants.ACTION_UPDATE_SUBSCRIPTION, SubscriptionProvider.getContentUri(-1));
+				localBroadcastManager.sendBroadcast(localIntent);
 				break;
 			case Constants.ACTION_DOWNLOAD_EPISODES: {
 				verifyDownloadedFiles();

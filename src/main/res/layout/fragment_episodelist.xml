@@ -27,11 +27,25 @@
         tools:text="Subscription Name"
         tools:ignore="RelativeOverlap" />
 
+    <TextView
+        android:id="@+id/currently_updating"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/subscription"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:gravity="center"
+        android:background="@color/orange500"
+        android:padding="10dp"
+        android:layout_marginTop="10dp"
+        android:textColor="@color/primary_text_default_material_light"
+        android:text="@string/subscription_currently_updating"/>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/thumbnail"
+        android:layout_below="@id/currently_updating"
         android:layout_marginTop="5dp"
         />
 

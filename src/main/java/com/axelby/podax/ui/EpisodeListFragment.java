@@ -1,8 +1,11 @@
 package com.axelby.podax.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,6 +34,7 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 import java.text.DateFormat;
 
@@ -38,6 +43,8 @@ import javax.annotation.Nonnull;
 public class EpisodeListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private PodcastAdapter _adapter = null;
 	private RecyclerView _listView;
+	private long _subscriptionId;
+	private View _currentlyUpdatingMessage;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -46,6 +53,8 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
+		if (getArguments() != null)
+			_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID);
 		getLoaderManager().initLoader(0, getArguments(), this);
 	}
 
@@ -61,6 +70,15 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 		_listView = (RecyclerView) getActivity().findViewById(R.id.list);
 		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
 		_listView.setItemAnimator(new DefaultItemAnimator());
+
+		_currentlyUpdatingMessage = view.findViewById(R.id.currently_updating);
+		setCurrentUpdatingVisibility();
+	}
+
+	private void setCurrentUpdatingVisibility() {
+		boolean updating = (UpdateService.getUpdatingSubscriptionId() == _subscriptionId);
+		int visibility = updating ? View.VISIBLE : View.GONE;
+		_currentlyUpdatingMessage.setVisibility(visibility);
 	}
 
 	@Override
@@ -103,6 +121,28 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
         subscriptionCursor.close();
 	}
 
+	private BroadcastReceiver _updateReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			_subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+			getLoaderManager().initLoader(0, intent.getExtras(), EpisodeListFragment.this);
+			setCurrentUpdatingVisibility();
+		}
+	};
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		IntentFilter intentFilter = new IntentFilter(Constants.ACTION_UPDATE_SUBSCRIPTION);
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(_updateReceiver, intentFilter);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(_updateReceiver);
+	}
+
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, args.getLong(Constants.EXTRA_SUBSCRIPTION_ID));
@@ -125,6 +165,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 			return;
 
 		_adapter.changeCursor(cursor);
+		setCurrentUpdatingVisibility();
 	}
 
 	@Override

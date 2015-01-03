@@ -59,6 +59,18 @@
             android:layout_marginEnd="20dp"
             tools:ignore="UnusedAttribute"/>
 
+        <Button
+            android:id="@+id/episode_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/episode_list"
+            android:textAllCaps="true"
+            style="@style/Widget.Podax.Button.Flat"
+            android:layout_below="@id/summary"
+            android:layout_toLeftOf="@id/subscribe"
+            android:layout_toStartOf="@id/subscribe"
+            tools:ignore="UnusedAttribute"/>
+
         <!-- fix for bug with relativelayout not using bottom margins -->
         <View
             android:layout_width="wrap_content"

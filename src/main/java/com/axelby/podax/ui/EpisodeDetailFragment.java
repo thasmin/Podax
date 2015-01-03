@@ -129,7 +129,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 			}
 		});
 
-		_seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+		OnSeekBarChangeListener seekBarChangeListener = new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress,
 										  boolean fromUser) {
 				_position.setText(Helper.getTimeString(progress));
@@ -143,7 +143,8 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 				_seekbar_dragging = false;
 				EpisodeProvider.movePositionTo(activity, _podcastId, seekBar.getProgress());
 			}
-		});
+		};
+		_seekbar.setOnSeekBarChangeListener(seekBarChangeListener);
 
 		_playlistButton.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -249,11 +250,16 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		if (episode.getDescription() != null)
 			_descriptionView.setText(Html.fromHtml(episode.getDescription(), new URLImageGetter(_descriptionView), new IgnoreTagHandler()));
 
-		_seekbar.setMax(episode.getDuration());
-		_seekbar.setProgress(episode.getLastPosition());
-
 		_position.setText(Helper.getTimeString(episode.getLastPosition()));
-		_duration.setText("-" + Helper.getTimeString(episode.getDuration() - episode.getLastPosition()));
+		if (episode.getDuration() != 0) {
+			_seekbar.setMax(episode.getDuration());
+			_seekbar.setProgress(episode.getLastPosition());
+			_seekbar.setEnabled(true);
+			_duration.setText("-" + Helper.getTimeString(episode.getDuration() - episode.getLastPosition()));
+		} else {
+			_seekbar.setEnabled(false);
+			_duration.setText("");
+		}
 
 		String payment_url = episode.getPaymentUrl();
 		if (payment_url != null) {
@@ -270,10 +276,16 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	}
 
 	private void updateControls(EpisodeCursor episode) {
-		if (!_seekbar_dragging) {
+		if (episode.getDuration() == 0) {
+			_position.setText(Helper.getTimeString(episode.getLastPosition()));
+			_duration.setText("");
+			_seekbar.setEnabled(false);
+		} else if (!_seekbar_dragging) {
 			_position.setText(Helper.getTimeString(episode.getLastPosition()));
 			_duration.setText("-" + Helper.getTimeString(episode.getDuration() - episode.getLastPosition()));
 			_seekbar.setProgress(episode.getLastPosition());
+			_seekbar.setMax(episode.getDuration());
+			_seekbar.setEnabled(true);
 		}
 
 		PlayerStatus status = PlayerStatus.getCurrentState(getActivity());

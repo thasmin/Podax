@@ -251,5 +251,7 @@ limitations under the License.</p>
     <string name="downloaded">Downloaded</string>
     <string name="stream">Stream</string>
     <string name="decorative_image">Decorative Image</string>
+    <string name="episode_list">Episode List</string>
+    <string name="subscription_currently_updating">This subscription is currently updating. It will automatically refresh when it\'s ready.</string>
 
 </resources>
