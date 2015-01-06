@@ -163,7 +163,7 @@ limitations under the License.
     <string name="log_viewer">Log Viewer</string>
     <string name="settings">Settings</string>
     <string name="name">Name</string>
-    <string name="subscription_settings">Subscrption Settings</string>
+    <string name="subscription_settings">Subscription Settings</string>
     <string name="gpodder_authenticator_activity_title">GPodder Account</string>
     <string name="gpodder">GPodder</string>
     <string name="configuration">Configuration</string>
