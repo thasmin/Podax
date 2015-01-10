@@ -9,11 +9,7 @@ class PlaylistManager {
 	public static void moveToNextInPlaylist(Context context) {
 		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_LAST_POSITION, 0);
-		if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("autoDeletePref", true)) {
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-		} else {
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
-		}
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
 		context.getContentResolver().update(EpisodeProvider.ACTIVE_EPISODE_URI, values, null, null);
 
 		Stats.addCompletion(context);

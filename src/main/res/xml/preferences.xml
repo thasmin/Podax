@@ -7,11 +7,6 @@
             android:key="wifiPref"
             android:summary="@string/pref_update_wifi"
             android:title="@string/pref_update_wifi_title" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="autoDeletePref"
-            android:summary="@string/pref_auto_delete"
-            android:title="@string/pref_auto_delete_title" />
         <com.axelby.podax.ui.LimitedSeekBarPreference
             android:defaultValue="10000"
             android:key="queueMaxNumPodcasts"
