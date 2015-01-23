@@ -34,7 +34,7 @@ public class EpisodeCursor {
 
 	public EpisodeCursor(Cursor cursor) {
 		_cursor = cursor;
-		if (_cursor.getCount() == 0)
+		if (_cursor.isAfterLast())
 			return;
 		if (_cursor.isBeforeFirst())
 			_cursor.moveToFirst();

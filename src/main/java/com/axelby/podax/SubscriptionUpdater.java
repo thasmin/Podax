@@ -3,14 +3,12 @@ package com.axelby.podax;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.Xml;
@@ -44,28 +42,17 @@ class SubscriptionUpdater {
 	}
 
 	public void update(final long subscriptionId) {
-		Cursor cursor = null;
+		SubscriptionCursor subscription = null;
 		try {
 			if (Helper.isInvalidNetworkState(_context))
 				return;
 
-			Uri subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
-			if (subscriptionUri == null)
+			subscription = SubscriptionCursor.getCursor(_context, subscriptionId);
+			if (subscription == null)
 				return;
-			String[] projection = new String[]{
-					SubscriptionProvider.COLUMN_ID,
-					SubscriptionProvider.COLUMN_TITLE,
-					SubscriptionProvider.COLUMN_URL,
-					SubscriptionProvider.COLUMN_ETAG,
-					SubscriptionProvider.COLUMN_LAST_MODIFIED,
-					SubscriptionProvider.COLUMN_THUMBNAIL,
-			};
-			cursor = _context.getContentResolver().query(subscriptionUri, projection,
-					SubscriptionProvider.COLUMN_ID + " = ?",
-					new String[]{String.valueOf(subscriptionId)}, null);
-			if (cursor == null || !cursor.moveToNext())
+
+			if (subscription.IsSingleUse())
 				return;
-			SubscriptionCursor subscription = new SubscriptionCursor(cursor);
 
 			showNotification(subscription);
 
@@ -167,7 +154,7 @@ class SubscriptionUpdater {
 
 			// finish grabbing subscription values and update
 			subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
-			_context.getContentResolver().update(subscriptionUri, subscriptionValues, null, null);
+			_context.getContentResolver().update(subscription.getContentUri(), subscriptionValues, null, null);
 
 			String oldThumbnail = subscription.getThumbnail();
 			String newThumbnail = subscriptionValues.getAsString(SubscriptionProvider.COLUMN_THUMBNAIL);
@@ -177,8 +164,8 @@ class SubscriptionUpdater {
 		} catch (Exception e) {
 			Log.e("Podax", "error while updating", e);
 		} finally {
-			if (cursor != null)
-				cursor.close();
+			if (subscription != null)
+				subscription.closeCursor();
 			UpdateService.downloadEpisodesSilently(_context);
 		}
 	}

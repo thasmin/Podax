@@ -81,6 +81,11 @@ public class SubscriptionProvider extends ContentProvider {
         ContentValues values = new ContentValues(1);
         values.put(COLUMN_URL, url);
         Uri uri = context.getContentResolver().insert(URI, values);
+
+		values = new ContentValues(1);
+		values.put(COLUMN_SINGLE_USE, 0);
+		context.getContentResolver().update(uri, values, null, null);
+
         UpdateService.updateSubscription(context, uri);
 		return uri;
     }

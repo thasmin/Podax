@@ -6,7 +6,8 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF">
 
         <com.android.volley.toolbox.NetworkImageView
             android:id="@+id/image"
@@ -15,6 +16,9 @@
             android:scaleType="fitStart"
             android:contentDescription="@string/subscription_thumbnail"
             tools:src="@drawable/icon"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
             android:layout_marginRight="10dp"
             android:layout_marginEnd="10dp"
             />

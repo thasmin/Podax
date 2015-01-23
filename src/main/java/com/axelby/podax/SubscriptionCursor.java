@@ -27,11 +27,29 @@ public class SubscriptionCursor {
 	private Integer _thumbnailColumn = null;
 	private Integer _titleOverrideColumn = null;
 	private Integer _descriptionColumn = null;
+	private Integer _singleUseColumn = null;
 
 	public SubscriptionCursor(Cursor cursor) {
-		if (cursor.isAfterLast())
-			return;
 		_cursor = cursor;
+		if (_cursor.isAfterLast())
+			return;
+		if (_cursor.isBeforeFirst())
+			_cursor.moveToFirst();
+	}
+
+	public static SubscriptionCursor getCursor(Context context, long subscriptionId) {
+		Cursor c = context.getContentResolver().query(SubscriptionCursor.getContentUri(subscriptionId), null, null, null, null);
+		if (c == null)
+			return null;
+		return new SubscriptionCursor(c);
+	}
+
+	private static Uri getContentUri(long id) {
+		return ContentUris.withAppendedId(SubscriptionProvider.URI, id);
+	}
+
+	public void closeCursor() {
+		_cursor.close();
 	}
 
 	public Uri getContentUri() {
@@ -138,4 +156,12 @@ public class SubscriptionCursor {
             return null;
         return _cursor.getString(_descriptionColumn);
     }
+
+	public boolean IsSingleUse() {
+		if (_singleUseColumn == null)
+			_singleUseColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_SINGLE_USE);
+		if (_cursor.isNull(_singleUseColumn))
+			return false;
+		return _cursor.getInt(_singleUseColumn) != 0;
+	}
 }
