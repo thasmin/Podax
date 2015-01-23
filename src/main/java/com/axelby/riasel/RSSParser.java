@@ -93,24 +93,24 @@ class RSSParser {
                     continue;
 
                 if (name.equalsIgnoreCase("guid")) {
-					item.setUniqueId(parser.nextText());
+					item.setUniqueId(parser.nextText().trim());
 				} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
-					item.setTitle(parser.nextText());
+					item.setTitle(parser.nextText().trim());
 				} else if (name.equalsIgnoreCase("link")) {
 					String rel = parser.getAttributeValue(null, "rel");
 					if (rel != null && rel.equalsIgnoreCase("payment")) {
-						item.setPaymentURL(parser.getAttributeValue(null, "href"));
+						item.setPaymentURL(parser.getAttributeValue(null, "href").trim());
 					} else {
-						item.setLink(parser.nextText());
+						item.setLink(parser.nextText().trim());
 					}
 				} else if (namespace.equals("") && name.equalsIgnoreCase("description")) {
-					item.setDescription(parser.nextText());
+					item.setDescription(parser.nextText().trim());
 				} else if (name.equalsIgnoreCase("pubDate")) {
-					item.setPublicationDate(Utils.parseDate(parser.nextText()));
+					item.setPublicationDate(Utils.parseDate(parser.nextText().trim()));
 				} else if (name.equalsIgnoreCase("enclosure")) {
-					item.setMediaURL(parser.getAttributeValue(null, "url"));
+					item.setMediaURL(parser.getAttributeValue(null, "url").trim());
 					if (parser.getAttributeValue(null, "length") != null)
-						item.setMediaSize(Long.valueOf(parser.getAttributeValue(null, "length")));
+						item.setMediaSize(Long.valueOf(parser.getAttributeValue(null, "length").trim()));
 					else
 						item.setMediaSize(0L);
 				}

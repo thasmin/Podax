@@ -216,6 +216,12 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
             public void onClick(View view) {
                 long episodeId = (Long) view.getTag();
                 PlayerService.play(view.getContext(), episodeId);
+
+				// put podcast on top of playlist
+				ContentValues values = new ContentValues(1);
+				values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
+				view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
+
 				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
             }
         };

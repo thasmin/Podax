@@ -68,7 +68,6 @@ class LockscreenManager {
 		// Update the remote controls
 		final MetadataEditor metadataEditor = _remoteControlClient
 				.editMetadata(true)
-				.putLong(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO, 1)
 				.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST, status.getSubscriptionTitle())
 				.putString(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST, status.getSubscriptionTitle())
 				.putString(MediaMetadataRetriever.METADATA_KEY_TITLE, status.getTitle())

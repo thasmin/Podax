@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,6 +32,7 @@ import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
+import com.axelby.podax.UpdateService;
 
 import java.io.File;
 
@@ -151,6 +153,15 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.playlist_fragment, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.download) {
+			UpdateService.downloadEpisodes(getActivity());
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {

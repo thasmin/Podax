@@ -43,10 +43,8 @@ public class EpisodeDownloader {
 				Log.d("EpisodeDownloader", "episode cursor is null");
 				return;
 			}
-			if (episode.isDownloaded(context)) {
-				Log.d("EpisodeDownloader", "episode is already downloaded");
+			if (episode.isDownloaded(context))
 				return;
-			}
 
 			// don't do two downloads simultaneously
 			if (isDownloading(episode.getFilename(context))) {
@@ -56,7 +54,6 @@ public class EpisodeDownloader {
 
 			mediaFile = new File(episode.getFilename(context));
 			_currentlyDownloading.add(mediaFile.getAbsolutePath());
-			outStream = new FileOutputStream(mediaFile, true);
 
 			File indexFile = new File(episode.getIndexFilename(context));
 			if (indexFile.exists())
@@ -69,9 +66,18 @@ public class EpisodeDownloader {
 			if (mediaFile.exists() && mediaFile.length() > 0)
 				url.addHeader("Range", "bytes=" + mediaFile.length() + "-");
 			Response response = client.newCall(url.build()).execute();
+			if (response.code() == 416) {
+				// 416 means range is invalid
+				mediaFile.delete();
+				url.removeHeader("Range");
+				response = client.newCall(url.build()).execute();
+			}
 			if (response.code() != 200 && response.code() != 206) {
 				Log.d("EpisodeDownloader", "response not 200 or 206");
 				return;
+			}
+			if (response.code() == 200 && mediaFile.exists()) {
+				mediaFile.delete();
 			}
 
 			ResponseBody body = response.body();
@@ -79,6 +85,7 @@ public class EpisodeDownloader {
 			values.put(EpisodeProvider.COLUMN_FILE_SIZE, body.contentLength());
 			context.getContentResolver().update(episode.getContentUri(), values, null, null);
 
+			outStream = new FileOutputStream(mediaFile, true);
 			BufferedSource source = body.source();
 			byte[] b = new byte[100000];
 			while (!source.exhausted()) {
