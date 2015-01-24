@@ -6,7 +6,8 @@
 
     <LinearLayout android:orientation="vertical"
                   android:layout_width="fill_parent"
-                  android:layout_height="wrap_content">
+                  android:layout_height="wrap_content"
+                  android:descendantFocusability="blocksDescendants">
 
         <RelativeLayout
                 android:id="@+id/toprow"
@@ -193,10 +194,11 @@
                     android:src="@android:drawable/ic_media_next"/>
         </LinearLayout>
 
-        <TextView
+        <WebView
                 android:id="@+id/description"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/background_material_light"
                 android:textColorLink="@color/podaxColor" />
 
     </LinearLayout>

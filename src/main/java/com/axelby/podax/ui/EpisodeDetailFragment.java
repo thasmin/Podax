@@ -7,16 +7,17 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -31,12 +32,10 @@ import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
 import com.axelby.podax.Helper;
-import com.axelby.podax.IgnoreTagHandler;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
-import com.axelby.podax.URLImageGetter;
 
 import org.shredzone.flattr4j.exception.FlattrException;
 import org.shredzone.flattr4j.exception.ForbiddenException;
@@ -52,7 +51,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	private ImageView _subscriptionImage;
 	private TextView _titleView;
 	private TextView _subscriptionTitleView;
-	private TextView _descriptionView;
+	private WebView _descriptionView;
 	private Button _playlistButton;
 	private TextView _playlistPosition;
 	private ImageButton _playButton;
@@ -93,7 +92,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		_subscriptionImage = (ImageView) activity.findViewById(R.id.subscription_img);
 		_titleView = (TextView) activity.findViewById(R.id.title);
 		_subscriptionTitleView = (TextView) activity.findViewById(R.id.subscription_title);
-		_descriptionView = (TextView) activity.findViewById(R.id.description);
+		_descriptionView = (WebView) activity.findViewById(R.id.description);
 		_playlistPosition = (TextView) activity.findViewById(R.id.playlist_position);
 		_playlistButton = (Button) activity.findViewById(R.id.playlist_btn);
 		View restartButton = activity.findViewById(R.id.restart_btn);
@@ -247,8 +246,11 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		Bitmap subscriptionThumbnail = SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId());
 		_subscriptionImage.setImageBitmap(subscriptionThumbnail);
 
-		if (episode.getDescription() != null)
-			_descriptionView.setText(Html.fromHtml(episode.getDescription(), new URLImageGetter(_descriptionView), new IgnoreTagHandler()));
+		if (episode.getDescription() != null) {
+			_descriptionView.setBackgroundColor(getResources().getColor(R.color.background_material_light));
+			String fullhtml = "<html><head><title></title></head><body>" + episode.getDescription() + "</body></html>";
+			_descriptionView.loadData(fullhtml, "text/html", "utf8");
+		}
 
 		_position.setText(Helper.getTimeString(episode.getLastPosition()));
 		if (episode.getDuration() != 0) {
