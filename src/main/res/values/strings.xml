@@ -211,6 +211,14 @@ limitations under the License.</p>
     <string name="episodes_finished">Episodes Finished</string>
     <string name="time_spent_listening">Time Spent Listening</string>
 
+    <plurals name="years">
+        <item quantity="one">year</item>
+        <item quantity="other">years</item>
+    </plurals>
+    <plurals name="months">
+        <item quantity="one">month</item>
+        <item quantity="other">months</item>
+    </plurals>
     <plurals name="days">
         <item quantity="one">day</item>
         <item quantity="other">days</item>
@@ -253,5 +261,7 @@ limitations under the License.</p>
     <string name="decorative_image">Decorative Image</string>
     <string name="episode_list">Episode List</string>
     <string name="subscription_currently_updating">This subscription is currently updating. It will automatically refresh when it\'s ready.</string>
+    <string name="latest_caps">LATEST</string>
+    <string name="subscription_logo">subscription logo</string>
 
 </resources>

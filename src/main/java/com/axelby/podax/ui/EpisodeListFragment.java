@@ -265,7 +265,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
             holder.title.setText(episode.getTitle());
             holder.date.setText(context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
             if (episode.getDuration() > 0) {
-                holder.duration.setText(Helper.getVerboseTimeString(context, episode.getDuration() / 1000f) + " " + context.getString(R.string.in_duration));
+                holder.duration.setText(Helper.getVerboseTimeString(context, episode.getDuration() / 1000f, false) + " " + context.getString(R.string.in_duration));
                 holder.duration.setVisibility(View.VISIBLE);
             } else
                 holder.duration.setVisibility(View.GONE);

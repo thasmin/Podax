@@ -113,19 +113,49 @@ public class Helper {
 				>= Configuration.SCREENLAYOUT_SIZE_LARGE;
 	}
 
-    public static String getVerboseTimeString(Context context, float seconds) {
+    public static String getVerboseTimeString(Context context, float seconds, boolean fullDetail) {
         final int secondsPerMinute = 60;
         final int secondsPerHour = secondsPerMinute * 60;
         final int secondsPerDay = secondsPerHour * 24;
+		final int secondsPerMonth = secondsPerDay * 30;
+		final int secondsPerYear = secondsPerDay * 365;
 
         StringBuilder listenText = new StringBuilder();
+
+        if (seconds > secondsPerYear) {
+            int years = (int) Math.floor(seconds / secondsPerYear);
+            listenText.append(years);
+            listenText.append(" ");
+            listenText.append(context.getResources().getQuantityString(R.plurals.years, years));
+            seconds = seconds % secondsPerYear;
+			if (!fullDetail)
+				return listenText.toString();
+        }
+
+        if (seconds > secondsPerMonth) {
+            int months = (int) Math.floor(seconds / secondsPerMonth);
+			if (listenText.length() > 0)
+				listenText.append(" ");
+            listenText.append(months);
+            listenText.append(" ");
+            listenText.append(context.getResources().getQuantityString(R.plurals.months, months));
+            seconds = seconds % secondsPerMonth;
+			if (!fullDetail)
+				return listenText.toString();
+        }
+
         if (seconds > secondsPerDay) {
             int days = (int) Math.floor(seconds / secondsPerDay);
+			if (listenText.length() > 0)
+				listenText.append(" ");
             listenText.append(days);
             listenText.append(" ");
             listenText.append(context.getResources().getQuantityString(R.plurals.days, days));
             seconds = seconds % secondsPerDay;
+			if (!fullDetail)
+				return listenText.toString();
         }
+
         if (seconds > secondsPerHour) {
             int hours = (int) Math.floor(seconds / secondsPerHour);
             if (listenText.length() > 0)
@@ -134,7 +164,10 @@ public class Helper {
             listenText.append(" ");
             listenText.append(context.getResources().getQuantityString(R.plurals.hours, hours));
             seconds = seconds % secondsPerHour;
+			if (!fullDetail)
+				return listenText.toString();
         }
+
         if (seconds > secondsPerMinute) {
             int minutes = (int) Math.floor(seconds / secondsPerMinute);
             if (listenText.length() > 0)
@@ -142,6 +175,8 @@ public class Helper {
             listenText.append(minutes);
             listenText.append(" ");
             listenText.append(context.getResources().getQuantityString(R.plurals.minutes, minutes));
+			if (!fullDetail)
+				return listenText.toString();
         }
         if (listenText.length() == 0)
             listenText.append(context.getString(R.string.none));

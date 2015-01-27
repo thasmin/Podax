@@ -18,7 +18,7 @@ public class Stats {
 	}
 
 	public static String getListenTimeString(Context context) {
-        return Helper.getVerboseTimeString(context, Stats.getListenTime(context));
+        return Helper.getVerboseTimeString(context, Stats.getListenTime(context), true);
 	}
 
     public static void addCompletion(Context context) {

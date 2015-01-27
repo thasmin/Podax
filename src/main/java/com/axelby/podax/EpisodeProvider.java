@@ -137,6 +137,7 @@ public class EpisodeProvider extends ContentProvider {
 			else
 				sqlBuilder.setTables("podcasts");
 		} else {
+			projection = _columnMap.values().toArray(new String[_columnMap.size()]);
 			sqlBuilder.setTables("podcasts JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id");
 		}
 

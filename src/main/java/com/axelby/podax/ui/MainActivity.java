@@ -142,14 +142,28 @@ public class MainActivity extends ActionBarActivity {
         _drawerLayout.setDrawerListener(_drawerToggle);
 
         // main section
+		final TextView latestText = (TextView) findViewById(R.id.toolbar_latest_btn);
 		final TextView playistText = (TextView) findViewById(R.id.toolbar_playlist_btn);
 		final TextView subscriptionsText = (TextView) findViewById(R.id.toolbar_subscriptions_btn);
-		playistText.setOnClickListener(new View.OnClickListener() {
+		latestText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				if (_fragment == 0)
 					return;
 				_fragment = 0;
+				latestText.setTextColor(getResources().getColor(R.color.dim_foreground_material_light));
+				playistText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
+				subscriptionsText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
+				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new LatestActivityFragment()).commit();
+			}
+		});
+		playistText.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (_fragment == 1)
+					return;
+				_fragment = 1;
+				latestText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
 				playistText.setTextColor(getResources().getColor(R.color.dim_foreground_material_light));
 				subscriptionsText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
 				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
@@ -158,9 +172,10 @@ public class MainActivity extends ActionBarActivity {
 		subscriptionsText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (_fragment == 1)
+				if (_fragment == 2)
 					return;
-				_fragment = 1;
+				_fragment = 2;
+				latestText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
 				subscriptionsText.setTextColor(getResources().getColor(R.color.dim_foreground_material_light));
 				playistText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
 				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
@@ -170,8 +185,10 @@ public class MainActivity extends ActionBarActivity {
 		FragmentManager fragmentManager = getSupportFragmentManager();
         if (_fragment == 1)
             fragmentManager.beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
-        else
+        else if (_fragment == 2)
             fragmentManager.beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
+		else
+			fragmentManager.beginTransaction().replace(R.id.fragment, new LatestActivityFragment()).commit();
 
         // bottom bar controls
         _play = (ImageButton) findViewById(R.id.play);

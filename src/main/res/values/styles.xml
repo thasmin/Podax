@@ -1,12 +1,5 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <color name="podaxColor">#FFE59F39</color>
-    <color name="podaxBlue">#FF085D99</color>
-
-    <color name="orange500">#FFff9800</color>
-    <color name="orange700">#FFf57c00</color>
-    <color name="lightblue500">#FF03a9f4</color>
-
     <style name="Theme.Podax" parent="Theme.Podax.Base" />
 
     <style name="Theme.Podax.Base" parent="Theme.AppCompat.Light.NoActionBar">
@@ -32,6 +25,16 @@
     <style name="Widget.Podax.Button.Flat" parent="android:Widget.Button">
         <item name="android:background">@android:color/transparent</item>
         <item name="android:padding">0dp</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_marginLeft">16dp</item>
+        <item name="android:layout_marginRight">16dp</item>
+    </style>
+
+    <style name="Widget.Podax.Button.Flat.Bordered" parent="android:Widget.Button">
+        <item name="android:background">@drawable/button_flat_bordered</item>
+        <item name="android:textColor">@color/orange500</item>
+        <item name="android:padding">10dp</item>
         <item name="android:layout_marginTop">10dp</item>
         <item name="android:layout_marginBottom">10dp</item>
         <item name="android:layout_marginLeft">16dp</item>
