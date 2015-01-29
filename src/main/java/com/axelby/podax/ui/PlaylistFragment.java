@@ -15,6 +15,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -59,19 +60,23 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 
 		@Override
 		public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+			// intercept the touch event if currently dragging
 			if (_isDragging)
 				return true;
 
+			// intercept the touch event if it's a drag handle
 			View itemView = rv.findChildViewUnder(e.getX(), e.getY());
 			if (itemView == null)
 				return false;
 			if (containsDragHandle(itemView, e)) {
 				_isDragging = true;
 
+				// keep track of the mouse location, top of item, and episode id
 				_dragStartMouseY = e.getY();
 				_dragStartTop = itemView.getTop();
 				_dragEpisodeId = rv.getChildItemId(itemView);
 
+				// remove the episode from the list and show the overlay
 				_overlay.setImageBitmap(viewToBitmap(itemView));
 				_overlay.setPadding(0, _dragStartTop, 0, 0);
 				_overlay.setVisibility(View.VISIBLE);
@@ -90,7 +95,8 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 
 				int position = _adapter.getPositionForId(_dragEpisodeId);
 				View draggedView = rv.getChildAt(position);
-				draggedView.setVisibility(View.VISIBLE);
+				if (draggedView != null)
+					draggedView.setVisibility(View.VISIBLE);
 			} else if (e.getAction() == MotionEvent.ACTION_CANCEL) {
 				_isDragging = false;
 				_overlay.setVisibility(View.GONE);
@@ -99,13 +105,22 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 				View draggedView = rv.getChildAt(position);
 				draggedView.setVisibility(View.VISIBLE);
 			} else if (e.getAction() == MotionEvent.ACTION_MOVE) {
+				float deltaY = e.getY() - _dragStartMouseY;
+				if (_overlay.getPaddingTop() < 0 && deltaY < -5) {
+					rv.scrollBy(0, -10);
+				}
+
 				// switch if the overlay isn't on top of the original view
 				View underView = rv.findChildViewUnder(0, (int) e.getY());
-				if (underView != null && rv.getChildItemId(underView) != _dragEpisodeId)
-					_adapter.moveItem(_dragEpisodeId, rv.getChildPosition(underView));
+				if (underView != null && rv.getChildItemId(underView) != _dragEpisodeId) {
+					int newPosition = rv.getChildPosition(underView);
+					_adapter.moveItem(_dragEpisodeId, newPosition);
+					if (newPosition == 0)
+						rv.scrollToPosition(0);
+				}
 
 				// scroll down if overlay is below bottom
-				int overlayPaddingTop = (int) (_dragStartTop + e.getY() - _dragStartMouseY);
+				int overlayPaddingTop = (int) (_dragStartTop + deltaY);
 				int maxPadding = rv.getHeight() - (_overlay.getHeight() - _overlay.getPaddingTop());
 				if (overlayPaddingTop > maxPadding) {
 					rv.scrollBy(0, overlayPaddingTop - maxPadding);
