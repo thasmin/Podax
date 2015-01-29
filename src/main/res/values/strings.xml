@@ -263,5 +263,7 @@ limitations under the License.</p>
     <string name="subscription_currently_updating">This subscription is currently updating. It will automatically refresh when it\'s ready.</string>
     <string name="latest_caps">LATEST</string>
     <string name="subscription_logo">subscription logo</string>
+    <string name="now_downloading">Now Downloading</string>
+    <string name="view_in_browser">View in Browser</string>
 
 </resources>

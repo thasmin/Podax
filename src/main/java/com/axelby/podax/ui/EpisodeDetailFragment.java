@@ -58,6 +58,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	private SeekBar _seekbar;
 	private boolean _seekbar_dragging = false;
 	private Button _paymentButton;
+	private Button _viewInBrowserButton;
 	private TextView _position;
 	private TextView _duration;
 
@@ -104,6 +105,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		_position = (TextView) activity.findViewById(R.id.position);
 		_duration = (TextView) activity.findViewById(R.id.duration);
 		_paymentButton = (Button) activity.findViewById(R.id.payment);
+		_viewInBrowserButton = (Button) activity.findViewById(R.id.view_in_browser);
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -232,6 +234,13 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 			}
 		});
 
+		_viewInBrowserButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Uri uri = (Uri) v.getTag();
+				if (uri != null)
+					startActivity(new Intent(Intent.ACTION_VIEW, uri));
+			}
+		});
 	}
 
 	@Override
@@ -274,6 +283,19 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 			}
 		} else {
 			_paymentButton.setVisibility(View.GONE);
+		}
+
+		String link = episode.getLink();
+		if (link == null)
+			_viewInBrowserButton.setVisibility(View.GONE);
+		else {
+			Uri linkUri = Uri.parse(link);
+			if (linkUri.getScheme() != null) {
+				_viewInBrowserButton.setTag(linkUri);
+				_viewInBrowserButton.setVisibility(View.VISIBLE);
+			} else {
+				_viewInBrowserButton.setVisibility(View.GONE);
+			}
 		}
 	}
 
@@ -319,6 +341,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 				EpisodeProvider.COLUMN_PAYMENT,
+				EpisodeProvider.COLUMN_LINK,
 		};
 
 		if (id == CURSOR_PODCAST && args != null && args.containsKey(Constants.EXTRA_EPISODE_ID)) {
