@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeDownloader;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
@@ -300,14 +301,18 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
             holder.subscription.setText(episode.getSubscriptionTitle());
             holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
 
-            float downloaded = new File(episode.getFilename(getActivity())).length();
-            if (episode.getFileSize() != downloaded) {
-                holder.downloaded.setTextColor(0xffcc0000); //android.R.color.holo_red_dark
-                holder.downloaded.setText(R.string.not_downloaded);
-            } else {
-                holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
-                holder.downloaded.setText(R.string.downloaded);
-            }
+			String episodeFilename = episode.getFilename(getActivity());
+			float downloaded = new File(episodeFilename).length();
+            if (episode.getFileSize() == downloaded) {
+				holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
+				holder.downloaded.setText(R.string.downloaded);
+            } else if (EpisodeDownloader.isDownloading(episodeFilename)) {
+				holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
+				holder.downloaded.setText(R.string.now_downloading);
+			} else {
+				holder.downloaded.setTextColor(0xffcc0000); //android.R.color.holo_red_dark
+				holder.downloaded.setText(R.string.not_downloaded);
+			}
 
 			// handle dragging status
 			if (!_isDragging || episode.getId() != _dragEpisodeId)
