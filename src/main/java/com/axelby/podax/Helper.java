@@ -3,28 +3,12 @@ package com.axelby.podax;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
-import android.support.v4.util.LruCache;
-
-import com.android.volley.Cache;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.DiskBasedCache;
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.Volley;
-
-import java.nio.ByteBuffer;
 
 public class Helper {
-
-	private static RequestQueue _requestQueue = null;
-	private static ImageLoader _imageLoader = null;
-	private static final LruCache<String, Bitmap> _imageCache = new LruCache<>(10);
-	private static DiskBasedCache _diskCache = null;
 
 	public static boolean isInvalidNetworkState(Context context) {
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -67,44 +51,6 @@ public class Helper {
 	public static void registerMediaButtons(Context context) {
 		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 		audioManager.registerMediaButtonEventReceiver(new ComponentName(context, MediaButtonIntentReceiver.class));
-	}
-
-	private static RequestQueue getRequestQueue(Context context) {
-		if (_requestQueue == null)
-			_requestQueue = Volley.newRequestQueue(context);
-		return _requestQueue;
-	}
-
-	public static ImageLoader getImageLoader(Context context) {
-		if (_diskCache == null)
-			_diskCache = new DiskBasedCache(context.getExternalCacheDir());
-		if (_imageLoader == null) {
-			_imageLoader = new ImageLoader(getRequestQueue(context), new ImageLoader.ImageCache() {
-				@Override
-				public Bitmap getBitmap(String key) {
-					if (_imageCache.get(key) != null)
-						return _imageCache.get(key);
-					if (_diskCache.getFileForKey(key).exists())
-						return BitmapFactory.decodeFile(_diskCache.getFileForKey(key).getAbsolutePath());
-					return null;
-				}
-
-				@Override
-				public void putBitmap(String key, Bitmap bitmap) {
-					_imageCache.put(key, bitmap);
-
-					Cache.Entry entry = new Cache.Entry();
-					// only put a max 512x512 image in the disk cache
-					if (bitmap.getWidth() > 512 && bitmap.getHeight() > 512)
-						bitmap = Bitmap.createScaledBitmap(bitmap, 512, 512, false);
-					ByteBuffer buffer = ByteBuffer.allocate(bitmap.getRowBytes() * bitmap.getHeight());
-					bitmap.copyPixelsToBuffer(buffer);
-					entry.data = buffer.array();
-					_diskCache.put(key, entry);
-				}
-			});
-		}
-		return _imageLoader;
 	}
 
     public static boolean isTablet(Context context) {

@@ -13,14 +13,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.gpodder.Client;
 import com.axelby.gpodder.dto.Podcast;
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -134,7 +134,7 @@ public class GPodderPopularListFragment extends ListFragment {
 
 			((TextView) v.findViewById(R.id.title)).setText(podcast.title);
 			((TextView) v.findViewById(R.id.description)).setText(podcast.description.replace('\n', ' '));
-			((NetworkImageView) v.findViewById(R.id.logo)).setImageUrl(podcast.logo_url, Helper.getImageLoader(_activity));
+			Picasso.with(getContext()).load(podcast.logo_url).into((ImageView) v.findViewById(R.id.logo));
 			v.findViewById(R.id.add).setOnClickListener(addPodcastHandler);
 			v.findViewById(R.id.view_website).setOnClickListener(viewWebsiteHandler);
 			v.setTag(podcast);

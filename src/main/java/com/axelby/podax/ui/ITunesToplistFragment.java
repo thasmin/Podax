@@ -21,17 +21,16 @@ import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
 import com.axelby.podax.Constants;
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.picasso.Picasso;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -89,7 +88,7 @@ public class ITunesToplistFragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        _adapter = new ITunesToplistAdapter(getActivity());
+        _adapter = new ITunesToplistAdapter();
         _listView.setAdapter(_adapter);
     }
 
@@ -128,7 +127,7 @@ public class ITunesToplistFragment
         class ViewHolder extends RecyclerView.ViewHolder {
             final TextView name;
             final TextView summary;
-            final NetworkImageView image;
+            final ImageView image;
             final View subscribe;
 			final View episode_list;
 
@@ -165,7 +164,7 @@ public class ITunesToplistFragment
 
 				name = (TextView) view.findViewById(R.id.name);
                 summary = (TextView) view.findViewById(R.id.summary);
-                image = (NetworkImageView) view.findViewById(R.id.image);
+                image = (ImageView) view.findViewById(R.id.image);
                 subscribe = view.findViewById(R.id.subscribe);
 				episode_list = view.findViewById(R.id.episode_list);
 
@@ -175,12 +174,7 @@ public class ITunesToplistFragment
             }
         }
 
-        final ImageLoader _imageLoader;
 		List<ITunesPodcast> _podcasts = null;
-
-        public ITunesToplistAdapter(Context context) {
-            _imageLoader = Helper.getImageLoader(context);
-        }
 
 		public void setPodcasts(List<ITunesPodcast> podcasts) {
 			_podcasts = podcasts;
@@ -208,7 +202,7 @@ public class ITunesToplistFragment
             ITunesPodcast podcast = _podcasts.get(position);
             holder.name.setText(podcast.name);
             holder.summary.setText(podcast.summary);
-            holder.image.setImageUrl(podcast.imageUrl, _imageLoader);
+			Picasso.with(getActivity()).load(podcast.imageUrl).into(holder.image);
             holder.subscribe.setTag(podcast.idUrl);
 			holder.episode_list.setTag(podcast.idUrl);
         }
