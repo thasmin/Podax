@@ -71,8 +71,7 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		Uri uri = EpisodeProvider.PLAYLIST_URI.buildUpon().encodedQuery("limit=0,10").build();
-		return new CursorLoader(getActivity(), uri, null, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC");
+		return new CursorLoader(getActivity(), EpisodeProvider.LATEST_ACTIVITY_URI, null, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC");
 	}
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {

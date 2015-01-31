@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -32,6 +33,7 @@ public class EpisodeProvider extends ContentProvider {
 	public static final Uri ACTIVE_EPISODE_URI = Uri.parse("content://" + AUTHORITY + "/active");
 	public static final Uri PLAYER_UPDATE_URI = Uri.parse("content://" + AUTHORITY + "/player_update");
 	public static final Uri NEED_GPODDER_UPDATE_URI = Uri.withAppendedPath(EpisodeProvider.URI, "need_gpodder_update");
+	public static final Uri LATEST_ACTIVITY_URI = Uri.withAppendedPath(EpisodeProvider.URI, "latest_activity");
 
 	private final static int EPISODES = 1;
 	private final static int EPISODES_PLAYLIST = 2;
@@ -42,6 +44,7 @@ public class EpisodeProvider extends ContentProvider {
 	private final static int EPISODES_EXPIRED = 7;
 	private final static int EPISODE_PLAYER_UPDATE = 8;
 	private final static int EPISODES_NEED_GPODDER_UPDATE = 9;
+	private final static int EPISODES_LATEST_ACTIVITY = 10;
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -77,6 +80,7 @@ public class EpisodeProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "active", EPISODE_ACTIVE);
 		uriMatcher.addURI(AUTHORITY, "player_update", EPISODE_PLAYER_UPDATE);
 		uriMatcher.addURI(AUTHORITY, "episodes/need_gpodder_update", EPISODES_NEED_GPODDER_UPDATE);
+		uriMatcher.addURI(AUTHORITY, "episodes/latest_activity", EPISODES_LATEST_ACTIVITY);
 
 		_columnMap = new HashMap<>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
@@ -141,6 +145,7 @@ public class EpisodeProvider extends ContentProvider {
 			sqlBuilder.setTables("podcasts JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id");
 		}
 
+		String limit = null;
 		switch (uriMatcher.match(uri)) {
 			case EPISODES:
 				break;
@@ -192,12 +197,16 @@ public class EpisodeProvider extends ContentProvider {
 			case EPISODES_NEED_GPODDER_UPDATE:
 				sqlBuilder.appendWhere("podcasts.needsGpodderUpdate != 0");
 				break;
+			case EPISODES_LATEST_ACTIVITY:
+				sortOrder = "pubDate DESC";
+				limit = "10";
+				break;
 			default:
 				throw new IllegalArgumentException("Unknown URI");
 		}
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder, limit);
 		if (c != null)
 			c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
