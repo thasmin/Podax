@@ -2,7 +2,6 @@ package com.axelby.podax;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.preference.PreferenceManager;
 
 class PlaylistManager {
 
