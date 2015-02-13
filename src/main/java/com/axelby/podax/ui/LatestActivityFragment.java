@@ -1,7 +1,7 @@
 package com.axelby.podax.ui;
 
-import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,11 +11,8 @@ import android.support.v4.content.Loader;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.util.TypedValue;
+import android.text.Editable;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,8 +28,9 @@ import com.axelby.podax.SubscriptionCursor;
 
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
+import org.joda.time.LocalDate;
 import org.joda.time.Period;
-import org.joda.time.format.PeriodFormat;
+import org.xml.sax.XMLReader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -82,14 +80,26 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 		// could really use algebraic data types here
 		List<Object> items = new ArrayList<>(cursor.getCount() * 2);
 		String lastPeriod = null;
+		LocalDate today = Instant.now().toDateTime().toLocalDate();
 		while (cursor.moveToNext()) {
 			Date date = new EpisodeCursor(cursor).getPubDate();
-			Period timeDiff = new Period(new DateTime(date.getTime()), Instant.now());
+			LocalDate pubDay = new DateTime(date.getTime()).toLocalDate();
+			Period timeDiff = new Period(pubDay, today);
 
-			String period = PeriodFormat.wordBased().print(timeDiff);
-			if (period.indexOf(',') > 0)
-				period = period.substring(0, period.indexOf(','));
-			period = period + " ago";
+			String period;
+			if (timeDiff.getDays() == 0)
+				period = getString(R.string.today);
+			else if (timeDiff.getDays() == 1)
+				period = getString(R.string.yesterday);
+			else if (timeDiff.getDays() < 7)
+				period = String.format("%d %s ago", timeDiff.getDays(), getActivity().getResources().getQuantityString(R.plurals.days, timeDiff.getDays()));
+			else if (timeDiff.getWeeks() < 4)
+				period = String.format("%d %s ago", timeDiff.getWeeks(), getActivity().getResources().getQuantityString(R.plurals.weeks, timeDiff.getWeeks()));
+			else if (timeDiff.getMonths() < 12)
+				period = String.format("%d %s ago", timeDiff.getMonths(), getActivity().getResources().getQuantityString(R.plurals.months, timeDiff.getMonths()));
+			else
+				period = String.format("%d %s ago", timeDiff.getYears(), getActivity().getResources().getQuantityString(R.plurals.years, timeDiff.getYears()));
+			period = period.toUpperCase();
 
 			if (!period.equals(lastPeriod))
 				items.add(period);
@@ -125,7 +135,8 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 
 		public class ActivityHolder extends RecyclerView.ViewHolder {
 			public ImageView subscription_img;
-			public TextView description;
+			public TextView episode_title;
+			public TextView episode_description;
 			public TextView downloaded;
 			public View play;
 
@@ -133,12 +144,29 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 				super(view);
 
 				subscription_img = (ImageView) view.findViewById(R.id.subscription_img);
-				description = (TextView) view.findViewById(R.id.description);
+				subscription_img.setOnClickListener(_subscriptionClickHandler);
+				episode_title = (TextView) view.findViewById(R.id.episode_title);
+				episode_title.setOnClickListener(_episodeClickHandler);
+				episode_description = (TextView) view.findViewById(R.id.episode_description);
 				downloaded = (TextView) view.findViewById(R.id.downloaded);
 				play = view.findViewById(R.id.play);
 				play.setOnClickListener(_playHandler);
 			}
 		}
+
+		private final View.OnClickListener _subscriptionClickHandler = new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				getActivity().startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (long) view.getTag()));
+			}
+		};
+
+		private final View.OnClickListener _episodeClickHandler = new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				getActivity().startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, (long) view.getTag()));
+			}
+		};
 
 		private final View.OnClickListener _playHandler = new View.OnClickListener() {
 			@Override
@@ -181,21 +209,14 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 
 		@Override
 		public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 			if (viewType == TYPE_ACTIVITY) {
-				View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_latest_activity, parent, false);
+				View view = inflater.inflate(R.layout.list_item_latest_activity, parent, false);
 				return new ActivityHolder(view);
 			} else {
-				TextView tv = new TextView(parent.getContext());
-				tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-				tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
-				return new HeaderHolder(tv);
+				View view = inflater.inflate(R.layout.latest_activity_date, parent, false);
+				return new HeaderHolder(view);
 			}
-		}
-
-		public class IntentSpan extends ClickableSpan {
-			private final Intent _intent;
-			public IntentSpan(Intent intent) { _intent = intent; }
-			@Override public void onClick(View view) { startActivity(_intent); }
 		}
 
 		@Override
@@ -212,28 +233,14 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 
 				holder.play.setTag(episode.getId());
 				holder.subscription_img.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
-
-				// get data for description and spannables
-				String subTitle = episode.getSubscriptionTitle();
-				Intent subIntent = PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, episode.getSubscriptionId());
-				int subSpanStart = 0;
-
-				String epTitle = episode.getTitle();
-				Intent epIntent = PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episode.getId());
-				int epSpanStart = subSpanStart + subTitle.length() + " released ".length();
-
-				String spanText = String.format("%s released %s", subTitle, epTitle);
-
-				// set description and spannables
-				SpannableString description = new SpannableString(spanText);
-				description.setSpan(new IntentSpan(subIntent), subSpanStart, subSpanStart + subTitle.length(), Spanned.SPAN_MARK_MARK);
-				description.setSpan(new IntentSpan(epIntent), epSpanStart, spanText.length(), Spanned.SPAN_MARK_MARK);
-				holder.description.setText(description);
-				holder.description.setMovementMethod(LinkMovementMethod.getInstance());
+				holder.subscription_img.setTag(episode.getSubscriptionId());
+				holder.episode_title.setText(episode.getTitle());
+				holder.episode_title.setTag(episode.getId());
+				holder.episode_description.setText(Html.fromHtml(episode.getDescription(), new NullImageGetter(), new NullTagHandler()));
 
 				float downloaded = new File(episode.getFilename(getActivity())).length();
 				if (episode.getFileSize() != downloaded) {
-					holder.downloaded.setTextColor(0xffcc0000); //android.R.color.holo_red_dark
+					holder.downloaded.setTextColor(getActivity().getResources().getColor(R.color.windowBG));
 					holder.downloaded.setText(R.string.not_downloaded);
 				} else {
 					holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
@@ -244,6 +251,16 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 				String period = (String) _items.get(position);
 				holder.header.setText(period);
 			}
+		}
+
+		private class NullImageGetter implements Html.ImageGetter {
+			@Override
+			public Drawable getDrawable(String url) { return null; }
+		}
+
+		private class NullTagHandler implements Html.TagHandler {
+			@Override
+			public void handleTag(boolean opening, String tag, Editable output, XMLReader xmlReader) { }
 		}
 	}
 }

@@ -9,4 +9,7 @@
     <color name="lightblue500">#FF03a9f4</color>
 
     <color name="white">#FFFFFFFF</color>
+
+    <color name="windowBG">#FF212121</color>
+    <color name="cardBG">#FF303030</color>
 </resources>

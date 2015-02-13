@@ -219,6 +219,10 @@ limitations under the License.</p>
         <item quantity="one">month</item>
         <item quantity="other">months</item>
     </plurals>
+    <plurals name="weeks">
+        <item quantity="one">week</item>
+        <item quantity="other">weeks</item>
+    </plurals>
     <plurals name="days">
         <item quantity="one">day</item>
         <item quantity="other">days</item>
@@ -265,5 +269,7 @@ limitations under the License.</p>
     <string name="subscription_logo">subscription logo</string>
     <string name="now_downloading">Now Downloading</string>
     <string name="view_in_browser">View in Browser</string>
+    <string name="today">today</string>
+    <string name="yesterday">Yesterday</string>
 
 </resources>
