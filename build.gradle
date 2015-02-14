@@ -57,7 +57,7 @@ android {
 
     defaultConfig {
         applicationId 'com.axelby.podax'
-        minSdkVersion 9
+        minSdkVersion 11
         targetSdkVersion 21
         versionCode 65
         versionName '7.08'
