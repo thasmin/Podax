@@ -13,6 +13,16 @@
         android:layout_marginTop="10dp"
     />
 
+    <TextView
+        android:id="@id/subscription_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:layout_below="@id/list"
+        android:gravity="center"
+        tools:text="Fitzdog Radio"
+    />
+
     <Button
         android:id="@+id/add"
         android:layout_width="56dp"

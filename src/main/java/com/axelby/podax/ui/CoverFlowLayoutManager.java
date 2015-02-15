@@ -3,11 +3,20 @@ package com.axelby.podax.ui;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 
 public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 	// measuring and layout needs to be done on all child views
 	private int _firstPosition = 0;
 	private int _selectedChild = 0;
+
+	public interface SelectedChildChangedHandler {
+		public void onSelectedChildChanged(int position);
+	}
+	private SelectedChildChangedHandler _selectedChildChangedHandler;
+	public void setOnSelectedChildChanged(SelectedChildChangedHandler handler) {
+		_selectedChildChangedHandler = handler;
+	}
 
 	@Override
 	public RecyclerView.LayoutParams generateDefaultLayoutParams() {
@@ -15,6 +24,69 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 			RecyclerView.LayoutParams.MATCH_PARENT,
 			RecyclerView.LayoutParams.WRAP_CONTENT
 		);
+	}
+
+	@Override
+	public void onMeasure(RecyclerView.Recycler recycler, RecyclerView.State state,
+						  int widthSpec, int heightSpec) {
+		final int widthMode = View.MeasureSpec.getMode(widthSpec);
+		final int heightMode = View.MeasureSpec.getMode(heightSpec);
+		final int widthSize = View.MeasureSpec.getSize(widthSpec);
+		final int heightSize = View.MeasureSpec.getSize(heightSpec);
+		int width = 0;
+		int height = 0;
+
+		// ignore exactly - wrap contents is giving exactly for some reason
+		if (widthMode == View.MeasureSpec.EXACTLY && heightMode == View.MeasureSpec.EXACTLY) {
+			setMeasuredDimension(widthSize, heightSize);
+			return;
+		}
+
+		int[] size = new int[2];
+		calculateSize(recycler, widthSpec, heightSpec, size);
+
+		switch (widthMode) {
+			case View.MeasureSpec.EXACTLY:
+				width = widthSize;
+				break;
+			case View.MeasureSpec.AT_MOST:
+				width = Math.min(widthSize, size[0]);
+				break;
+			case View.MeasureSpec.UNSPECIFIED:
+				width = size[0];
+				break;
+		}
+
+		switch (heightMode) {
+			case View.MeasureSpec.EXACTLY:
+				height = heightSize;
+				break;
+			case View.MeasureSpec.AT_MOST:
+				height = Math.min(heightSize, size[1]);
+				break;
+			case View.MeasureSpec.UNSPECIFIED:
+				height = size[1];
+				break;
+		}
+
+		setMeasuredDimension(width, height);
+	}
+
+	private void calculateSize(RecyclerView.Recycler recycler, int widthSpec, int heightSpec, int[] size) {
+		for (int i = 0; i < getItemCount(); ++i) {
+			View view = recycler.getViewForPosition(i);
+
+			RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) view.getLayoutParams();
+			int childWidthSpec = ViewGroup.getChildMeasureSpec(widthSpec,
+					getPaddingLeft() + getPaddingRight() + getLeftDecorationWidth(view) + getRightDecorationWidth(view), p.width);
+			int childHeightSpec = ViewGroup.getChildMeasureSpec(heightSpec,
+					getPaddingTop() + getPaddingBottom() + getTopDecorationHeight(view) + getBottomDecorationHeight(view), p.height);
+			view.measure(childWidthSpec, childHeightSpec);
+
+			size[0] = Math.max(size[0], getDecoratedMeasuredWidth(view));
+			size[1] = Math.max(size[1], getDecoratedMeasuredHeight(view));
+			removeAndRecycleView(view, recycler);
+		}
 	}
 
 	@Override
@@ -34,7 +106,8 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 		layoutDecorated(sel, left, 0, right, getDecoratedMeasuredHeight(sel));
 
 		drawLeftChildren(recycler, left);
-		drawRightChildren(recycler, state, right);
+		drawRightChildren(recycler, right);
+		rotateChildren();
 	}
 
 	private void drawLeftChildren(RecyclerView.Recycler recycler, int initialRight) {
@@ -59,9 +132,9 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 		return left;
 	}
 
-	private void drawRightChildren(RecyclerView.Recycler recycler, RecyclerView.State state, int initialLeft) {
+	private void drawRightChildren(RecyclerView.Recycler recycler, int initialLeft) {
 		int right = initialLeft;
-		for (int i = _selectedChild + 1; i < state.getItemCount(); ++i) {
+		for (int i = _selectedChild + 1; i < getItemCount(); ++i) {
 			right = addChildOnRight(recycler, right, i, 0.75f);
 			if (right >= getWidth())
 				break;
@@ -96,7 +169,7 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 		int delta = -dx;
 		if (dx < 0 && centeredPosition == 0)
 			delta = Math.min(delta, distanceFromCenter(centeredPosition));
-		if (dx > 0 && centeredPosition == state.getItemCount() - 1)
+		if (dx > 0 && centeredPosition == getItemCount() - 1)
 			delta = Math.max(delta, -distanceFromCenter(centeredPosition));
 		if (delta == 0)
 			return 0;
@@ -112,7 +185,7 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 			}
 		} else {
 			View rightest = getChildAt(getChildCount() - 1);
-			while (getDecoratedRight(rightest) < getWidth() && _firstPosition + getChildCount() < state.getItemCount()) {
+			while (getDecoratedRight(rightest) < getWidth() && _firstPosition + getChildCount() < getItemCount()) {
 				addChildOnRight(recycler, getDecoratedRight(rightest), _firstPosition + getChildCount(), 0.75f);
 				Log.d("CoverFlowLayoutManager", "adding new view on right from position: " + _firstPosition + getChildCount());
 				rightest = getChildAt(getChildCount() - 1);
@@ -133,15 +206,16 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 		}
 
 		offsetChildrenHorizontal(delta);
+
 		centeredPosition = determinePositionInCenter();
 		if (centeredPosition != -1 && centeredPosition != _selectedChild) {
 			float scale = 0.75f;
 
-			View old = getChildAt(_selectedChild - _firstPosition);
+			View old = getChildAtPosition(_selectedChild);
 			int oldTop = (int) ((1 - scale) / 2 * getDecoratedMeasuredHeight(old));
 			int oldBottom = (int) (oldTop + getDecoratedMeasuredHeight(old) * scale);
 
-			View sel = getChildAt(centeredPosition - _firstPosition);
+			View sel = getChildAtPosition(centeredPosition);
 			int selTop = 0;
 			int selBottom = getDecoratedMeasuredHeight(sel);
 
@@ -165,15 +239,36 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 
 			Log.d("CoverFlowLayoutManager", "centered view position: " + centeredPosition);
 			_selectedChild = centeredPosition;
+			if (_selectedChildChangedHandler != null)
+				_selectedChildChangedHandler.onSelectedChildChanged(centeredPosition);
 		}
 
-		Log.d("CoverFlowLayoutManager", "delta: " + delta);
+		rotateChildren();
+
 		return delta;
+	}
+
+	private void rotateChildren() {
+		// don't rotate children for now
+		/*
+		for (int i = 0; i < getChildCount(); ++i) {
+			if (i + _firstPosition < _selectedChild)
+				getChildAt(i).setRotationY(30);
+			else if (i + _firstPosition == _selectedChild)
+				getChildAt(i).setRotationY(0);
+			else
+				getChildAt(i).setRotationY(-30);
+		}
+		*/
+	}
+
+	protected View getChildAtPosition(int position) {
+		return getChildAt(position - _firstPosition);
 	}
 
 	private int distanceFromCenter(int child) {
 		int listCenter = getWidth() / 2;
-		View v = getChildAt(child - _firstPosition);
+		View v = getChildAtPosition(child);
 		int viewCenter = (getDecoratedLeft(v) + getDecoratedRight(v)) / 2;
 		return Math.abs(listCenter - viewCenter);
 	}

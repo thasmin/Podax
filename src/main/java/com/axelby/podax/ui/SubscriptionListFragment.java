@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
@@ -27,9 +28,16 @@ import com.axelby.podax.UpdateService;
 
 import javax.annotation.Nonnull;
 
-public class SubscriptionListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class SubscriptionListFragment extends Fragment
+		implements LoaderManager.LoaderCallbacks<Cursor>,
+		CoverFlowLayoutManager.SelectedChildChangedHandler {
+
 	private SubscriptionAdapter _adapter = null;
-	private RecyclerView _listView;
+
+	private Cursor _cursor;
+
+	private RecyclerView _list;
+	private TextView _subscriptionTitle;
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -50,16 +58,20 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		_listView = (RecyclerView) getActivity().findViewById(R.id.list);
-		_listView.setLayoutManager(new CoverFlowLayoutManager());
-		_listView.setItemAnimator(new DefaultItemAnimator());
+		_list = (RecyclerView) view.findViewById(R.id.list);
+		CoverFlowLayoutManager coverFlowLayoutManager = new CoverFlowLayoutManager();
+		coverFlowLayoutManager.setOnSelectedChildChanged(this);
+		_list.setLayoutManager(coverFlowLayoutManager);
+		_list.setItemAnimator(new DefaultItemAnimator());
+
+		_subscriptionTitle = (TextView) view.findViewById(R.id.subscription_title);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		_listView.setAdapter(_adapter);
+		_list.setAdapter(_adapter);
 
         View.OnClickListener addListener = new View.OnClickListener() {
             @Override
@@ -102,17 +114,35 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		if (getActivity() == null)
 			return;
-
-		_adapter.changeCursor(cursor);
+		changeCursor(cursor);
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> cursor) {
-		_adapter.clear();
+		clearCursor();
+	}
+
+	@Override
+	public void onSelectedChildChanged(int position) {
+		if (_cursor == null)
+			return;
+		_cursor.moveToPosition(position);
+		SubscriptionCursor sub = new SubscriptionCursor(_cursor);
+		_subscriptionTitle.setText(sub.getTitle());
+	}
+
+	public void changeCursor(Cursor cursor) {
+		_cursor = cursor;
+		_adapter.notifyDataSetChanged();
+		onSelectedChildChanged(0);
+	}
+
+	public void clearCursor() {
+		_cursor = null;
+		_adapter.notifyDataSetChanged();
 	}
 
 	private class SubscriptionAdapter extends RecyclerView.Adapter<SubscriptionAdapter.ViewHolder> {
-		private Cursor _cursor;
 
         public class ViewHolder extends RecyclerView.ViewHolder {
 			/*
@@ -174,7 +204,7 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 			//View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.subscription_list_item, parent, false);
 			ImageView view = new ImageView(parent.getContext());
-			view.setLayoutParams(new ViewGroup.LayoutParams(300, 300));
+			view.setLayoutParams(new ViewGroup.LayoutParams(512, 512));
 			view.setScaleType(ImageView.ScaleType.FIT_XY);
 			return new ViewHolder(view);
 		}
@@ -209,16 +239,6 @@ public class SubscriptionListFragment extends Fragment implements LoaderManager.
 			if (_cursor == null)
 				return 0;
 			return _cursor.getCount();
-		}
-
-		public void changeCursor(Cursor cursor) {
-			_cursor = cursor;
-			notifyDataSetChanged();
-		}
-
-		public void clear() {
-			_cursor = null;
-			notifyDataSetChanged();
 		}
 
 	}
