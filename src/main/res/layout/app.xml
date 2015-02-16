@@ -44,6 +44,7 @@
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
                     android:gravity="center"
+                    android:background="@drawable/main_tab"
                     android:text="@string/latest_caps" />
 
                 <TextView
@@ -56,7 +57,7 @@
                     android:paddingBottom="15dp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
-                    android:textColor="@color/dim_foreground_disabled_material_light"
+                    android:textColor="@color/dimTextOnPrimary"
                     android:text="@string/playlist_caps" />
 
                 <TextView
@@ -67,7 +68,7 @@
                     android:paddingTop="15dp"
                     android:paddingBottom="15dp"
                     android:gravity="center"
-                    android:textColor="@color/dim_foreground_disabled_material_light"
+                    android:textColor="@color/dimTextOnPrimary"
                     android:text="@string/subscriptions_caps" />
 
             </LinearLayout>

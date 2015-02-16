@@ -12,4 +12,6 @@
 
     <color name="windowBG">#FF212121</color>
     <color name="cardBG">#FF303030</color>
+
+    <color name="dimTextOnPrimary">#FFFFCB7F</color>
 </resources>

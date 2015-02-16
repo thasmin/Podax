@@ -17,6 +17,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -143,7 +145,7 @@ public class MainActivity extends ActionBarActivity {
 
         // main section
 		final TextView latestText = (TextView) findViewById(R.id.toolbar_latest_btn);
-		final TextView playistText = (TextView) findViewById(R.id.toolbar_playlist_btn);
+		final TextView playlistText = (TextView) findViewById(R.id.toolbar_playlist_btn);
 		final TextView subscriptionsText = (TextView) findViewById(R.id.toolbar_subscriptions_btn);
 		latestText.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -151,21 +153,21 @@ public class MainActivity extends ActionBarActivity {
 				if (_fragment == 0)
 					return;
 				_fragment = 0;
-				latestText.setTextColor(getResources().getColor(R.color.dim_foreground_material_light));
-				playistText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
-				subscriptionsText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
+				setTabActive(latestText);
+				setTabInactive(playlistText);
+				setTabInactive(subscriptionsText);
 				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new LatestActivityFragment()).commit();
 			}
 		});
-		playistText.setOnClickListener(new View.OnClickListener() {
+		playlistText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				if (_fragment == 1)
 					return;
 				_fragment = 1;
-				latestText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
-				playistText.setTextColor(getResources().getColor(R.color.dim_foreground_material_light));
-				subscriptionsText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
+				setTabActive(playlistText);
+				setTabInactive(latestText);
+				setTabInactive(subscriptionsText);
 				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
 			}
 		});
@@ -175,9 +177,9 @@ public class MainActivity extends ActionBarActivity {
 				if (_fragment == 2)
 					return;
 				_fragment = 2;
-				latestText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
-				subscriptionsText.setTextColor(getResources().getColor(R.color.dim_foreground_material_light));
-				playistText.setTextColor(getResources().getColor(R.color.dim_foreground_disabled_material_light));
+				setTabActive(subscriptionsText);
+				setTabInactive(latestText);
+				setTabInactive(playlistText);
 				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
 			}
 		});
@@ -196,7 +198,25 @@ public class MainActivity extends ActionBarActivity {
         _expand = (ImageButton) findViewById(R.id.expand);
     }
 
-    private void initializeBottom(PlayerStatus playerState) {
+	private void decorateTab(TextView tab, @ColorRes int textColor, @DrawableRes int background) {
+		int pL = tab.getPaddingLeft();
+		int pT = tab.getPaddingTop();
+		int pR = tab.getPaddingRight();
+		int pB = tab.getPaddingBottom();
+		tab.setTextColor(getResources().getColor(textColor));
+		tab.setBackgroundResource(background);
+		tab.setPadding(pL, pT, pR, pB);
+	}
+
+	private void setTabActive(TextView tab) {
+		decorateTab(tab, R.color.white, R.drawable.main_tab);
+	}
+
+	private void setTabInactive(TextView tab) {
+		decorateTab(tab, R.color.dimTextOnPrimary, 0);
+	}
+
+	private void initializeBottom(PlayerStatus playerState) {
         if (playerState.hasActiveEpisode()) {
            int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
             _play.setVisibility(View.VISIBLE);
