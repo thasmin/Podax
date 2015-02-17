@@ -1,5 +1,6 @@
 package com.axelby.podax.ui;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -16,6 +17,8 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,6 +46,7 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 
 	private LatestActivityAdapter _adapter;
 	private RecyclerView _listView;
+	private CheckBox _showAutomatic;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -54,7 +58,7 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 
 	@Override
 	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.recyclerview, container, false);
+		return inflater.inflate(R.layout.latest_activity_fragment, container, false);
 	}
 
 	@Override
@@ -64,6 +68,16 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 		_listView = (RecyclerView) view.findViewById(R.id.recyclerview);
 		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
 		_listView.setItemAnimator(new DefaultItemAnimator());
+
+		_showAutomatic = (CheckBox) view.findViewById(R.id.show_automatic);
+		_showAutomatic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton compoundButton, boolean value) {
+				getActivity().getPreferences(Context.MODE_PRIVATE).edit().putBoolean("automatic_show_latest_activity", true).apply();
+			}
+		});
+		boolean showAutomatically = getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean("automatic_show_latest_activity", true);
+		_showAutomatic.setChecked(showAutomatically);
 	}
 
 	@Override
@@ -108,6 +122,8 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 		}
 		_adapter.changeItems(items, cursor);
 		_adapter.notifyDataSetChanged();
+
+		getActivity().getPreferences(Context.MODE_PRIVATE).edit().putLong("lastActivityCheck", Instant.now().getMillis()).apply();
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {

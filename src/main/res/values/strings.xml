@@ -271,5 +271,7 @@ limitations under the License.</p>
     <string name="view_in_browser">View in Browser</string>
     <string name="today">today</string>
     <string name="yesterday">Yesterday</string>
+    <string name="show_when_new_episodes">Show when there are new episodes</string>
+    <string name="latest_activity">Latest Activity</string>
 
 </resources>

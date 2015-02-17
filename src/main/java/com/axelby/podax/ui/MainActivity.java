@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -115,58 +116,69 @@ public class MainActivity extends ActionBarActivity {
         } catch (PackageManager.NameNotFoundException ignored) {
         }
 
-        setContentView(R.layout.app);
+		showLatestActivityIfNewEpisodes();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+		setupUI();
+    }
 
-        ListView drawer = (ListView) findViewById(R.id.drawer);
-        final PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
-        drawer.setAdapter(_drawerAdapter);
-        drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-                _drawerLayout.closeDrawer(GravityCompat.START);
+	private void showLatestActivityIfNewEpisodes() {
+		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+
+		boolean showAutomatically = prefs.getBoolean("automatic_show_latest_activity", true);
+		if (!showAutomatically)
+			return;
+
+		long lastActivityCheck = prefs.getLong("lastActivityCheck", 0);
+		Cursor c = getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI,
+				null, EpisodeProvider.COLUMN_PUB_DATE + ">?",
+				new String[] { String.valueOf(lastActivityCheck / 1000) }, null);
+		if (c != null) {
+			if (c.getCount() > 0) {
+				startActivity(PodaxFragmentActivity.createIntent(this, LatestActivityFragment.class, null));
+			}
+			c.close();
+		}
+	}
+
+	private void setupUI() {
+		setContentView(R.layout.app);
+
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+
+		ListView drawer = (ListView) findViewById(R.id.drawer);
+		final PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
+		drawer.setAdapter(_drawerAdapter);
+		drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+				_drawerLayout.closeDrawer(GravityCompat.START);
 				Class fragmentClass = _drawerAdapter.getFragmentClass(position);
 				if (fragmentClass == GPodderProvider.class) {
 					handleGPodder();
 					return;
 				}
 				startActivity(PodaxFragmentActivity.createIntent(view.getContext(), fragmentClass, null));
-            }
-        });
+			}
+		});
 
-        _drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        _drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+		_drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 
-        _drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, toolbar,
-                R.string.open_drawer, R.string.close_drawer);
-        _drawerLayout.setDrawerListener(_drawerToggle);
+		_drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, toolbar,
+				R.string.open_drawer, R.string.close_drawer);
+		_drawerLayout.setDrawerListener(_drawerToggle);
 
-        // main section
-		final TextView latestText = (TextView) findViewById(R.id.toolbar_latest_btn);
+		// main section
 		final TextView playlistText = (TextView) findViewById(R.id.toolbar_playlist_btn);
 		final TextView subscriptionsText = (TextView) findViewById(R.id.toolbar_subscriptions_btn);
-		latestText.setOnClickListener(new View.OnClickListener() {
+		playlistText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				if (_fragment == 0)
 					return;
 				_fragment = 0;
-				setTabActive(latestText);
-				setTabInactive(playlistText);
-				setTabInactive(subscriptionsText);
-				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new LatestActivityFragment()).commit();
-			}
-		});
-		playlistText.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (_fragment == 1)
-					return;
-				_fragment = 1;
 				setTabActive(playlistText);
-				setTabInactive(latestText);
 				setTabInactive(subscriptionsText);
 				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
 			}
@@ -174,29 +186,26 @@ public class MainActivity extends ActionBarActivity {
 		subscriptionsText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (_fragment == 2)
+				if (_fragment == 1)
 					return;
-				_fragment = 2;
+				_fragment = 1;
 				setTabActive(subscriptionsText);
-				setTabInactive(latestText);
 				setTabInactive(playlistText);
 				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
 			}
 		});
 
 		FragmentManager fragmentManager = getSupportFragmentManager();
-        if (_fragment == 1)
-            fragmentManager.beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
-        else if (_fragment == 2)
-            fragmentManager.beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
-		else
-			fragmentManager.beginTransaction().replace(R.id.fragment, new LatestActivityFragment()).commit();
+		if (_fragment == 0)
+			fragmentManager.beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
+		else if (_fragment == 1)
+			fragmentManager.beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
 
-        // bottom bar controls
-        _play = (ImageButton) findViewById(R.id.play);
-        _episodeTitle = (TextView) findViewById(R.id.episodeTitle);
-        _expand = (ImageButton) findViewById(R.id.expand);
-    }
+		// bottom bar controls
+		_play = (ImageButton) findViewById(R.id.play);
+		_episodeTitle = (TextView) findViewById(R.id.episodeTitle);
+		_expand = (ImageButton) findViewById(R.id.expand);
+	}
 
 	private void decorateTab(TextView tab, @ColorRes int textColor, @DrawableRes int background) {
 		int pL = tab.getPaddingLeft();
@@ -312,6 +321,7 @@ public class MainActivity extends ActionBarActivity {
 
     class PodaxDrawerAdapter extends BaseAdapter {
         final Item[] _items = {
+				new Item(LatestActivityFragment.class, R.string.latest_activity, android.R.drawable.ic_menu_add),
                 new Item(AddSubscriptionFragment.class, R.string.add_subscription, android.R.drawable.ic_menu_add),
                 new Item(GPodderProvider.class, R.string.gpodder_sync, R.drawable.ic_menu_mygpo),
                 new Item(StatsFragment.class, R.string.stats, R.drawable.ic_menu_trending_up),
