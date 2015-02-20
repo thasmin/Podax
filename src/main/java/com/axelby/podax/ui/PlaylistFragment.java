@@ -30,6 +30,7 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeDownloader;
 import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
@@ -189,6 +190,7 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 				EpisodeProvider.COLUMN_MEDIA_URL,
 				EpisodeProvider.COLUMN_FILE_SIZE,
 				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
+				EpisodeProvider.COLUMN_DURATION,
 		};
 		return new CursorLoader(getActivity(), EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
 	}
@@ -218,8 +220,8 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 		class ViewHolder extends RecyclerView.ViewHolder {
 			public final View container;
             public final TextView title;
-            public final TextView subscription;
             public final ImageView thumbnail;
+			public final TextView duration;
             public final TextView downloaded;
 			public final View play;
 			public final View remove;
@@ -231,8 +233,8 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 				container.setOnClickListener(_clickHandler);
 
                 title = (TextView) view.findViewById(R.id.title);
-                subscription = (TextView) view.findViewById(R.id.subscription);
                 thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+				duration = (TextView) view.findViewById(R.id.duration);
                 downloaded = (TextView) view.findViewById(R.id.downloaded);
 
 				play = view.findViewById(R.id.play);
@@ -297,8 +299,8 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 			holder.container.setTag(episode.getId());
 
             holder.title.setText(episode.getTitle());
-            holder.subscription.setText(episode.getSubscriptionTitle());
             holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
+			holder.duration.setText(Helper.getTimeString(episode.getDuration()));
 
 			String episodeFilename = episode.getFilename(getActivity());
 			float downloaded = new File(episodeFilename).length();
