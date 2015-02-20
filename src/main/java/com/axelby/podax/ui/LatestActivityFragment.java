@@ -73,7 +73,8 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 		_showAutomatic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton compoundButton, boolean value) {
-				getActivity().getPreferences(Context.MODE_PRIVATE).edit().putBoolean("automatic_show_latest_activity", true).apply();
+				getActivity().getSharedPreferences("latest_activity", Context.MODE_PRIVATE)
+						.edit().putBoolean("automatic_show", true).apply();
 			}
 		});
 		boolean showAutomatically = getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean("automatic_show_latest_activity", true);
@@ -123,7 +124,8 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 		_adapter.changeItems(items, cursor);
 		_adapter.notifyDataSetChanged();
 
-		getActivity().getPreferences(Context.MODE_PRIVATE).edit().putLong("lastActivityCheck", Instant.now().getMillis()).apply();
+		getActivity().getSharedPreferences("latest_activity", Context.MODE_PRIVATE)
+				.edit().putLong("last_check", Instant.now().getMillis() / 1000).apply();
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {

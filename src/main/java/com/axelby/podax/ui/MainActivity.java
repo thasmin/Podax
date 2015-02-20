@@ -122,16 +122,16 @@ public class MainActivity extends ActionBarActivity {
     }
 
 	private void showLatestActivityIfNewEpisodes() {
-		SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences prefs = getSharedPreferences("latest_activity", Context.MODE_PRIVATE);
 
-		boolean showAutomatically = prefs.getBoolean("automatic_show_latest_activity", true);
+		boolean showAutomatically = prefs.getBoolean("automatic_show", true);
 		if (!showAutomatically)
 			return;
 
-		long lastActivityCheck = prefs.getLong("lastActivityCheck", 0);
+		long lastActivityCheck = prefs.getLong("last_check", 0);
 		Cursor c = getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI,
 				null, EpisodeProvider.COLUMN_PUB_DATE + ">?",
-				new String[] { String.valueOf(lastActivityCheck / 1000) }, null);
+				new String[] { String.valueOf(lastActivityCheck) }, null);
 		if (c != null) {
 			if (c.getCount() > 0) {
 				startActivity(PodaxFragmentActivity.createIntent(this, LatestActivityFragment.class, null));
