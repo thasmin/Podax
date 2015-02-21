@@ -2,6 +2,8 @@ package com.axelby.podax;
 
 import android.app.Application;
 
+import net.danlew.android.joda.JodaTimeAndroid;
+
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
@@ -21,6 +23,7 @@ public class PodaxApplication extends Application {
         if (!PodaxLog.isDebuggable(this))
             ACRA.init(this);
 		super.onCreate();
+		JodaTimeAndroid.init(this);
 
 		PodaxLog.ensureRemoved(this);
 	}

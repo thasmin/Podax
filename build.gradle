@@ -29,7 +29,10 @@ dependencies {
     }
 	compile 'com.google.code.findbugs:jsr305:3.0.0'
     compile 'com.squareup.okhttp:okhttp:2.1.0'
-    compile 'joda-time:joda-time:2.7'
+
+    // joda-time for android
+    // https://github.com/dlew/joda-time-android
+    compile 'net.danlew:android.joda:2.7.1'
 }
 
 Properties props = new Properties()
