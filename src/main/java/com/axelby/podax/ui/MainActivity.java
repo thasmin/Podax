@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.StringRes;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -147,13 +148,13 @@ public class MainActivity extends ActionBarActivity {
 		setSupportActionBar(toolbar);
 
 		ListView drawer = (ListView) findViewById(R.id.drawer);
-		final PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter(this);
+		final PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter();
 		drawer.setAdapter(_drawerAdapter);
 		drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
 				_drawerLayout.closeDrawer(GravityCompat.START);
-				Class fragmentClass = _drawerAdapter.getFragmentClass(position);
+				Class fragmentClass = _drawerItems[position].fragmentClass;
 				if (fragmentClass == GPodderProvider.class) {
 					handleGPodder();
 					return;
@@ -319,38 +320,44 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
+	class DrawerItem {
+		final Class fragmentClass;
+		final int label;
+		final int drawable;
+		final boolean dividerAbove;
+
+		public DrawerItem(Class fragmentClass, @StringRes int labelId, @DrawableRes int drawableId, boolean dividerAbove) {
+			this.fragmentClass = fragmentClass;
+			this.label = labelId;
+			this.drawable = drawableId;
+			this.dividerAbove = dividerAbove;
+		}
+	}
+
+	final DrawerItem[] _drawerItems = {
+			new DrawerItem(LatestActivityFragment.class, R.string.latest_activity, R.drawable.ic_menu_alarm, false),
+			new DrawerItem(SearchFragment.class, R.string.search, R.drawable.ic_menu_search, false),
+			new DrawerItem(AddSubscriptionFragment.class, R.string.add_subscription, R.drawable.ic_menu_add, false),
+			new DrawerItem(GPodderProvider.class, R.string.gpodder_sync, R.drawable.ic_menu_gpoddernet, false),
+			new DrawerItem(StatsFragment.class, R.string.stats, R.drawable.ic_menu_trending_up, true),
+			new DrawerItem(PodaxPreferenceFragment.class, R.string.preferences, R.drawable.ic_menu_settings, true),
+			new DrawerItem(AboutFragment.class, R.string.about, R.drawable.ic_menu_podax, false),
+			new DrawerItem(LogViewerFragment.class, R.string.log_viewer, R.drawable.ic_menu_info, false),
+	};
+
     class PodaxDrawerAdapter extends BaseAdapter {
-        final Item[] _items = {
-				new Item(LatestActivityFragment.class, R.string.latest_activity, android.R.drawable.ic_menu_add),
-                new Item(AddSubscriptionFragment.class, R.string.add_subscription, android.R.drawable.ic_menu_add),
-                new Item(GPodderProvider.class, R.string.gpodder_sync, R.drawable.ic_menu_mygpo),
-                new Item(StatsFragment.class, R.string.stats, R.drawable.ic_menu_trending_up),
-                new Item(PodaxPreferenceFragment.class, R.string.preferences, R.drawable.ic_menu_configuration),
-                new Item(AboutFragment.class, R.string.about, R.drawable.ic_menu_podax),
-                new Item(LogViewerFragment.class, R.string.log_viewer, android.R.drawable.ic_menu_info_details),
-        };
-        private final Context _context;
-
-        public PodaxDrawerAdapter(Context context) {
-            _context = context;
-        }
-
         @Override
         public int getCount() {
             // log viewer is only available when debugging
             if (PodaxLog.isDebuggable(MainActivity.this))
-                return _items.length;
-            return _items.length - 1;
+                return _drawerItems.length;
+            return _drawerItems.length - 1;
         }
 
         @Override
         public Object getItem(int position) {
-            return _items[position];
+            return _drawerItems[position];
         }
-
-		public Class getFragmentClass(int position) {
-			return _items[position].fragmentClass;
-		}
 
         @Override
         public long getItemId(int position) {
@@ -359,17 +366,21 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            int layoutId = R.layout.drawer_listitem;
-            if (convertView == null)
-                convertView = LayoutInflater.from(_context).inflate(layoutId, null);
+			if (convertView == null)
+                convertView = LayoutInflater.from(MainActivity.this).inflate(R.layout.drawer_listitem, parent, false);
             if (convertView == null)
                 return null;
 
-            TextView tv = (TextView) convertView;
-            Item item = _items[position];
-            tv.setText(item.label);
-            tv.setCompoundDrawablesWithIntrinsicBounds(item.drawable, 0, 0, 0);
-            return tv;
+			DrawerItem drawerItem = _drawerItems[position];
+
+            TextView tv = (TextView) convertView.findViewById(R.id.text);
+            tv.setText(drawerItem.label);
+            tv.setCompoundDrawablesWithIntrinsicBounds(drawerItem.drawable, 0, 0, 0);
+
+			View separator = convertView.findViewById(R.id.separator);
+			separator.setVisibility(drawerItem.dividerAbove ? View.VISIBLE : View.GONE);
+
+            return convertView;
         }
 
         @Override
@@ -377,16 +388,5 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
 
-        class Item {
-            final Class fragmentClass;
-            final String label;
-            final int drawable;
-
-            public Item(Class fragmentClass, int labelId, int drawableId) {
-                this.fragmentClass = fragmentClass;
-                this.drawable = drawableId;
-                this.label = MainActivity.this.getResources().getString(labelId);
-            }
-        }
     }
 }

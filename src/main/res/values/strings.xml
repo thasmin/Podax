@@ -273,5 +273,6 @@ limitations under the License.</p>
     <string name="yesterday">Yesterday</string>
     <string name="show_when_new_episodes">Show when there are new episodes</string>
     <string name="latest_activity">Latest Activity</string>
+    <string name="search">Search</string>
 
 </resources>
