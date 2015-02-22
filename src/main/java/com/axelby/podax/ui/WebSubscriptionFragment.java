@@ -14,7 +14,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +37,7 @@ public class WebSubscriptionFragment extends Fragment {
     private final int LOADER_GETCODE = 0;
     private final int LOADER_CHECKFORURL = 1;
 
-    private ProgressBar _progressBar;
+    private View _spinner;
     private TextView _webcode;
 
     static class MaybeString {
@@ -66,8 +66,9 @@ public class WebSubscriptionFragment extends Fragment {
                     return;
                 }
                 _webcode.setText(result.result);
-                _progressBar.setVisibility(View.VISIBLE);
-                getLoaderManager().initLoader(LOADER_CHECKFORURL, null, this);
+                _spinner.setVisibility(View.VISIBLE);
+				_spinner.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.spinner_primary));
+				getLoaderManager().initLoader(LOADER_CHECKFORURL, null, this);
             } else if (loader.getId() == LOADER_CHECKFORURL) {
                 if (result.error != null) {
                     setErrorMessage(result.error);
@@ -125,7 +126,7 @@ public class WebSubscriptionFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         _webcode = (TextView) getActivity().findViewById(R.id.web_code);
-        _progressBar = (ProgressBar) getActivity().findViewById(R.id.progress);
+        _spinner = getActivity().findViewById(R.id.spinner);
 
         getLoaderManager().initLoader(LOADER_GETCODE, null, _loaderCallbacks);
     }
@@ -134,7 +135,7 @@ public class WebSubscriptionFragment extends Fragment {
         if (getActivity() == null)
             return;
 
-        _progressBar.setVisibility(View.GONE);
+        _spinner.setVisibility(View.GONE);
         _webcode.setVisibility(View.GONE);
         getActivity().findViewById(R.id.your_code_is).setVisibility(View.GONE);
 

@@ -7,7 +7,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="20dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -15,6 +16,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_margin="20dp"
             android:textSize="16sp"
+            android:gravity="center_horizontal"
             android:text="@string/web_subscribe_instructions" />
 
         <TextView
@@ -30,7 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="30dp"
+            android:textColor="@color/white"
             android:textSize="24sp"
             android:text="@string/your_code_is" />
 
@@ -39,19 +42,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:textColor="?attr/colorPrimary"
             android:textSize="48sp"
             tools:text="ABCDEF" />
 
-        <ProgressBar
-            android:id="@+id/progress"
-            style="?android:attr/progressBarStyle"
+        <ImageView
+            android:id="@+id/spinner"
             android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="20dp"
-            android:indeterminate="true"
-            />
+            android:src="@drawable/spinner_orange500"
+            android:contentDescription="@string/spinner"/>
 
         <TextView
             android:id="@+id/error"
