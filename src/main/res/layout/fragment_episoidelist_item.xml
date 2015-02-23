@@ -52,8 +52,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_below="@id/duration"
-            android:focusable="false"
-            tools:ignore="UnusedAttribute"/>
+            android:focusable="false" />
 
         <Button
             android:id="@+id/play"
@@ -65,8 +64,7 @@
             android:layout_alignBaseline="@id/playlist"
             android:layout_toLeftOf="@id/playlist"
             android:layout_toStartOf="@id/playlist"
-            android:focusable="false"
-            tools:ignore="UnusedAttribute"/>
+            android:focusable="false" />
 
         <View
             android:layout_width="wrap_content"

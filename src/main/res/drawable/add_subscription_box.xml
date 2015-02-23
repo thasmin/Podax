@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:top="45dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#ff808080" />
+            <size android:height="5dp" android:width="100dp"/>
+            <corners android:radius="6dp" />
+        </shape>
+    </item>
+
+    <item android:top="50dp" android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/cardBG" />
+            <corners
+                android:radius="6dp"
+                android:topLeftRadius="0dp"
+                android:topRightRadius="0dp" />
+            <padding
+                android:left="10dp"
+                android:top="10dp"
+                android:right="10dp"
+                android:bottom="10dp" />
+        </shape>
+    </item>
+
+    <item>
+        <bitmap
+            android:src="@drawable/add_subscription_box_top"
+            android:gravity="top|center_horizontal" />
+    </item>
+</layer-list>

@@ -20,8 +20,13 @@
     <style name="Widget.Podax.Button" parent="android:style/Widget.Button">
         <item name="android:background">@drawable/button_background</item>
         <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:textAllCaps">true</item>
         <item name="android:padding">10dp</item>
         <item name="android:layout_margin">10dp</item>
+    </style>
+
+    <style name="Widget.Podax.Button.Card" parent="Widget.Podax.Button">
+        <item name="android:background">@drawable/button_background_card</item>
     </style>
 
     <style name="Widget.Podax.ImageButton.Flat" parent="android:Widget.ImageButton">

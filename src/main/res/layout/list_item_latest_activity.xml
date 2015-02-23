@@ -99,8 +99,7 @@
             android:textSize="16sp"
             android:text="@string/downloaded"
             android:textColor="#ff8bc34a"
-            android:textAllCaps="true"
-            tools:ignore="UnusedAttribute"/>
+            android:textAllCaps="true" />
 
         <Button
             android:id="@+id/play"

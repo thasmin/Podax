@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.1'
+        classpath 'com.android.tools.build:gradle:1.1.0'
     }
 }
 apply plugin: 'com.android.application'
@@ -60,7 +60,7 @@ android {
 
     defaultConfig {
         applicationId 'com.axelby.podax'
-        minSdkVersion 11
+        minSdkVersion 15
         targetSdkVersion 21
         versionCode 65
         versionName '7.08'
