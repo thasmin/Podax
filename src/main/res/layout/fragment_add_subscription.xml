@@ -16,7 +16,7 @@
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:orientation="vertical"
-            app:headerIcon="@drawable/ic_asbox_rss_primary">
+            app:headerIcon="@drawable/ic_asbox_rss">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -51,7 +51,7 @@
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:orientation="vertical"
-            app:headerIcon="@drawable/ic_asbox_globe_primary">
+            app:headerIcon="@drawable/ic_asbox_globe">
 
             <Button
                 android:layout_width="wrap_content"
@@ -73,7 +73,7 @@
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:orientation="vertical"
-            app:headerIcon="@drawable/ic_asbox_globe_primary">
+            app:headerIcon="@drawable/ic_asbox_trendup">
 
             <TextView
                 android:layout_width="wrap_content"
