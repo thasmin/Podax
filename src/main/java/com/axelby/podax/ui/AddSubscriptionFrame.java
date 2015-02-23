@@ -5,11 +5,11 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import com.axelby.podax.R;
 
-public class AddSubscriptionFrame extends FrameLayout {
+public class AddSubscriptionFrame extends LinearLayout {
 	Drawable _headerIcon = null;
 
 	public AddSubscriptionFrame(Context context) {

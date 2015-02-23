@@ -1,16 +1,14 @@
 package com.axelby.podax.ui;
 
-import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
@@ -26,11 +24,16 @@ public class AddSubscriptionFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_add_subscription, container, false);
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+		getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+	}
+
+	@Override
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
         iTunesCategory[] sources = new iTunesCategory[] {
                 new iTunesCategory("Top", 0, Iconify.IconValue.fa_trophy),
@@ -51,23 +54,36 @@ public class AddSubscriptionFragment extends Fragment {
                 new iTunesCategory("TV & Film", 1309, Iconify.IconValue.fa_film),
                 new iTunesCategory("Technology", 1318, Iconify.IconValue.fa_code)
         };
-        ListView listView = (ListView) getActivity().findViewById(R.id.list);
-        listView.setAdapter(new AddSubscriptionAdapter(getActivity(), sources));
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                startActivity(PodaxFragmentActivity.createIntent(getActivity(), ITunesToplistFragment.class, Constants.EXTRA_CATEGORY_ID, id));
-            }
-        });
 
-        getActivity().findViewById(R.id.web_subscribe).setOnClickListener(new View.OnClickListener() {
+		View.OnClickListener categoryClickListener = new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Long catId = (Long) view.getTag();
+				startActivity(PodaxFragmentActivity.createIntent(view.getContext(), ITunesToplistFragment.class, Constants.EXTRA_CATEGORY_ID, catId));
+			}
+		};
+
+        LinearLayout toplists = (LinearLayout) view.findViewById(R.id.toplists);
+		for (iTunesCategory cat : sources) {
+			int layoutId = R.layout.fragment_add_subscription_item;
+			View catView = LayoutInflater.from(view.getContext()).inflate(layoutId, toplists, false);
+			catView.setTag(cat.id);
+			catView.setOnClickListener(categoryClickListener);
+
+			((TextView) catView.findViewById(R.id.name)).setText(cat.name);
+			TextView icon = (TextView) catView.findViewById(R.id.icon);
+			Iconify.setIcon(icon, cat.icon);
+			toplists.addView(catView);
+		}
+
+        view.findViewById(R.id.web_subscribe).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(PodaxFragmentActivity.createIntent(getActivity(), WebSubscriptionFragment.class, null));
+                startActivity(PodaxFragmentActivity.createIntent(view.getContext(), WebSubscriptionFragment.class, null));
             }
         });
 
-        getActivity().findViewById(R.id.add_rss).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.add_rss).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 EditText rssText = (EditText) getActivity().findViewById(R.id.rssurl);
@@ -99,38 +115,6 @@ public class AddSubscriptionFragment extends Fragment {
         @Override
         public String toString() {
             return name;
-        }
-    }
-
-    private class AddSubscriptionAdapter extends ArrayAdapter<iTunesCategory> {
-        final iTunesCategory[] _categories;
-
-        public AddSubscriptionAdapter(Context context, iTunesCategory[] categories) {
-            super(context, R.layout.fragment_add_subscription_item, R.id.name, categories);
-            _categories = categories;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return _categories[position].id;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = super.getView(position, convertView, parent);
-
-            TextView icon;
-            if (view.getTag() != null)
-                icon = (TextView) view.getTag();
-            else {
-                icon = (TextView) view.findViewById(R.id.icon);
-                view.setTag(icon);
-            }
-
-            iTunesCategory category = getItem(position);
-            Iconify.setIcon(icon, category.icon);
-
-            return view;
         }
     }
 }

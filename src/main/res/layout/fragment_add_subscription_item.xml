@@ -12,7 +12,6 @@
         android:id="@+id/icon"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:textColor="#66000000"
         tools:text="C"
         android:gravity="center"
         android:textSize="20sp"
