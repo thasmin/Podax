@@ -7,7 +7,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF">
+        android:background="@color/cardBG">
 
         <ImageView
             android:id="@+id/image"
@@ -27,7 +27,6 @@
             android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#ccffffff"
             tools:text="Fitzdog Radio"
             android:layout_marginTop="10dp"
             android:layout_toRightOf="@id/image"
@@ -40,7 +39,6 @@
             android:id="@+id/summary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#ccffffff"
             tools:text="Greg Fitzsimmons's podcast. He's a comedian. His podcast is pretty good and you might want to listen to it. Or you might not like it so then you wouldn't want to listen to it."
             android:layout_below="@id/name"
             android:layout_toRightOf="@id/image"
@@ -55,8 +53,8 @@
             android:layout_height="wrap_content"
             android:text="@string/subscribe"
             android:textAllCaps="true"
-            style="@style/Widget.Podax.Button"
-            android:layout_below="@id/summary"
+            style="@style/Widget.Podax.Button.Card"
+            android:layout_below="@id/image"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_marginRight="20dp"
@@ -68,8 +66,8 @@
             android:layout_height="wrap_content"
             android:text="@string/episode_list"
             android:textAllCaps="true"
-            style="@style/Widget.Podax.Button"
-            android:layout_below="@id/summary"
+            style="@style/Widget.Podax.Button.Card"
+            android:layout_alignBaseline="@id/subscribe"
             android:layout_toLeftOf="@id/subscribe"
             android:layout_toStartOf="@id/subscribe" />
 
