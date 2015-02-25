@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<com.axelby.podax.ui.AddSubscriptionFrame
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:headerIcon="@drawable/ic_asbox_trendup"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:layout_marginTop="50dp">
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/time_spent_listening"
             android:layout_gravity="center_horizontal"
+            android:textAllCaps="true"
             android:textSize="20sp"/>
 
     <TextView
@@ -20,19 +27,23 @@
             android:id="@+id/listen_time"
             android:layout_gravity="center_horizontal"
             android:textStyle="bold"
-            android:textSize="45sp"
+            android:textSize="35sp"
+            android:textColor="?attr/colorPrimary"
             android:gravity="center_horizontal"/>
 
     <View android:layout_width="match_parent"
-          android:layout_height="2dp"
-          android:background="@color/podaxColor"
-          android:layout_margin="10dp" />
+          android:layout_height="2px"
+          android:background="@color/windowBG"
+          android:layout_marginTop="30dp"
+          android:layout_marginBottom="30dp"
+          />
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/episodes_finished"
             android:layout_gravity="center_horizontal"
+            android:textAllCaps="true"
             android:textSize="20sp"/>
 
     <TextView
@@ -42,11 +53,7 @@
             android:id="@+id/completions"
             android:layout_gravity="center_horizontal"
             android:textStyle="bold"
-            android:textSize="45sp"/>
+            android:textColor="?attr/colorPrimary"
+            android:textSize="35sp"/>
 
-    <View android:layout_width="match_parent"
-          android:layout_height="2dp"
-          android:background="@color/podaxColor"
-          android:layout_margin="10dp" />
-
-</LinearLayout>
+</com.axelby.podax.ui.AddSubscriptionFrame>
