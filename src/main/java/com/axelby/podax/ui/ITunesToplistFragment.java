@@ -1,17 +1,18 @@
 package com.axelby.podax.ui;
 
+import android.app.Fragment;
+import android.app.LoaderManager;
+import android.content.AsyncTaskLoader;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Loader;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
+
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -99,7 +100,7 @@ public class ITunesToplistFragment
 
         _progressDialog = ProgressDialogFragment.newInstance();
         _progressDialog.setMessage("Asking iTunes for list...");
-        _progressDialog.show(getActivity().getSupportFragmentManager(), "progress");
+        _progressDialog.show(getActivity().getFragmentManager(), "progress");
 
         return new ITunesPodcastLoader(getActivity(), bundle.getLong(Constants.EXTRA_CATEGORY_ID));
     }
@@ -153,7 +154,7 @@ public class ITunesToplistFragment
 				public void onClick(View view) {
 					_progressDialog = ProgressDialogFragment.newInstance();
 					_progressDialog.setMessage("Retrieving RSS from iTunes...");
-					_progressDialog.show(getActivity().getSupportFragmentManager(), "progress");
+					_progressDialog.show(getActivity().getFragmentManager(), "progress");
 
 					new ITunesPodcastSubscriber().execute((String) view.getTag());
 				}

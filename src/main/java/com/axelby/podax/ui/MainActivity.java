@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -21,7 +22,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -158,6 +158,9 @@ public class MainActivity extends ActionBarActivity {
 				if (fragmentClass == GPodderProvider.class) {
 					handleGPodder();
 					return;
+				} else if (fragmentClass == PodaxPreferenceFragment.class) {
+					startActivity(new Intent(MainActivity.this, PodaxPreferenceActivity.class));
+					return;
 				}
 				startActivity(PodaxFragmentActivity.createIntent(view.getContext(), fragmentClass, null));
 			}
@@ -181,7 +184,7 @@ public class MainActivity extends ActionBarActivity {
 				_fragment = 0;
 				setTabActive(playlistText);
 				setTabInactive(subscriptionsText);
-				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
+				getFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
 			}
 		});
 		subscriptionsText.setOnClickListener(new View.OnClickListener() {
@@ -192,11 +195,11 @@ public class MainActivity extends ActionBarActivity {
 				_fragment = 1;
 				setTabActive(subscriptionsText);
 				setTabInactive(playlistText);
-				getSupportFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
+				getFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
 			}
 		});
 
-		FragmentManager fragmentManager = getSupportFragmentManager();
+		FragmentManager fragmentManager = getFragmentManager();
 		if (_fragment == 0)
 			fragmentManager.beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
 		else if (_fragment == 1)

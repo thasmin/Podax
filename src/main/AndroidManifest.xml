@@ -85,6 +85,11 @@
                     android:scheme="flattr4j" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.axelby.podax.ui.PodaxPreferenceActivity"
+            android:theme="@style/Theme.Podax.Preferences" />
+
         <activity android:name="com.axelby.podax.ui.PodaxFragmentActivity" />
         <activity
             android:name="org.acra.CrashReportDialog"

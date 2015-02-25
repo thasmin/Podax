@@ -3,6 +3,7 @@ package com.axelby.podax.ui;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 
 import com.axelby.podax.R;
@@ -11,7 +12,7 @@ import com.axelby.podax.Storage;
 import java.io.File;
 import java.util.ArrayList;
 
-public class PodaxPreferenceFragment extends PreferenceListFragment implements Preference.OnPreferenceChangeListener {
+public class PodaxPreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

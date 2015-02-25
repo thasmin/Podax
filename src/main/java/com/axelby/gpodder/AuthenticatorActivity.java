@@ -3,6 +3,7 @@ package com.axelby.gpodder;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
+import android.app.FragmentManager;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -117,7 +118,7 @@ public class AuthenticatorActivity extends FragmentActivity {
 	}
 
 	void showProgress() {
-		android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
+		FragmentManager fm = getFragmentManager();
 		_progressDialog = ProgressDialogFragment.newInstance();
 		_progressDialog.show(fm, "progress");
 	}

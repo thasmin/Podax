@@ -1,5 +1,7 @@
 package com.axelby.gpodder;
 
+import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -7,15 +9,13 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.widget.FrameLayout;
 
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.ui.PodaxPreferenceFragment;
 
-public class AccountSettings extends FragmentActivity {
+public class AccountSettings extends Activity {
 
 	@Override
 	protected void onCreate(Bundle icicle) {
@@ -25,7 +25,7 @@ public class AccountSettings extends FragmentActivity {
 		frame.setId(R.id.fragment);
 		setContentView(frame, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		ft.add(R.id.fragment, new AccountSettingsFragment()).commit();
 	}
 

@@ -1,11 +1,11 @@
 package com.axelby.podax.ui;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -73,7 +73,7 @@ public class PodaxFragmentActivity extends ActionBarActivity {
     void createFragment(String fragmentClassName, Bundle arguments) {
         Fragment fragment = Fragment.instantiate(this, fragmentClassName);
         fragment.setArguments(arguments);
-        FragmentManager fm = getSupportFragmentManager();
+        FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.add(R.id.fragment, fragment);
         ft.commit();
