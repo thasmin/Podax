@@ -33,24 +33,17 @@ public class AudioPlayer implements Runnable {
 		if (lastDot <= 0)
 			return false;
 		String extension = audioFile.substring(lastDot + 1);
-		if (extension.equals("mp3"))
-			return true;
-		//noinspection SimplifiableIfStatement
-		if (extension.equals("ogg") || extension.equals("oga"))
-			return !streaming;
-		return false;
+		return extension.equals("mp3");
 	}
 
 	public static IMediaDecoder loadFile(String audioFile) {
 		int lastDot = audioFile.lastIndexOf('.');
 		if (lastDot <= 0)
-			throw new IllegalArgumentException("audioFile must be .mp3, .ogg, or .oga");
+			throw new IllegalArgumentException("audioFile must be .mp3");
 
 		String extension = audioFile.substring(lastDot + 1);
 		if (extension.equals("mp3"))
 			return new MPG123(audioFile);
-		else if (extension.equals("ogg") || extension.equals("oga"))
-			return new Vorbis(audioFile);
 		return null;
 	}
 
@@ -175,12 +168,11 @@ public class AudioPlayer implements Runnable {
 		_track.play();
 		_isPlaying = true;
 
-		WSOLA wsola = new WSOLA();
-		wsola.init();
-		WSOLA.Error wsolaError = new WSOLA.Error();
+		SoundTouch soundtouch = new SoundTouch(_decoder.getRate(), _decoder.getNumChannels(), _playbackRate);
 
 		try {
 			short[] pcm = new short[1024 * 5];
+			short[] stretched = new short[1024 * 5];
 			do {
 				if (_seekToSeconds != null) {
 					changeTrackOffset(_seekToSeconds);
@@ -202,9 +194,8 @@ public class AudioPlayer implements Runnable {
 				}
 				if (sampleCount == 0)
 					break;
-				short[] wsolapcm = wsola.stretch(pcm, sampleCount, _decoder.getRate(), _decoder.getNumChannels() == 2, _playbackRate, 1, wsolaError);
-				if (wsolaError.code == WSOLA.Error.SUCCESS)
-					_track.write(wsolapcm, 0, wsolapcm.length);
+				int outSamples = soundtouch.stretch(pcm, sampleCount, stretched, stretched.length, _decoder.getNumChannels());
+				_track.write(stretched, 0, outSamples);
 			} while (_track != null);
 
 			waitAndCloseTrack();
@@ -219,7 +210,7 @@ public class AudioPlayer implements Runnable {
 			_decoder.close();
 			_decoder = null;
 
-			wsola.close();
+			soundtouch.close();
 
 			// close track without waiting
 			if (_track != null) {
