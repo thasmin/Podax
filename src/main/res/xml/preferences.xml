@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+   <PreferenceCategory android:title="Sleepytime">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="sleepytimeEnabled"
+            android:summary="Useful when listening to podcasts while falling asleep. When a podcast ends, it goes into the Sleepytime list and the next podcast does not start automatically."
+            android:title="Use Sleepytime Mode" />
+        <com.axelby.podax.ui.SleepytimeHoursPreference
+            android:title="Start and Stop Times"
+            android:dependency="sleepytimeEnabled"
+            app:minKey="sleepytimeStart"
+            app:maxKey="sleepytimeEnd" />
+    </PreferenceCategory>
 
     <PreferenceCategory android:title="Lifecycle" >
         <CheckBoxPreference

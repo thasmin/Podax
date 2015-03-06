@@ -61,6 +61,7 @@
     <style name="Theme.Podax.Preferences" parent="Theme.Podax">
         <item name="android:listViewStyle">@style/PreferenceListView</item>
         <item name="android:listSeparatorTextViewStyle">@style/PreferenceCategory</item>
+        <item name="android:seekBarStyle">@style/PreferenceSeekbar</item>
     </style>
 
     <style name="PreferenceListView">
@@ -77,6 +78,12 @@
 
         <item name="android:textColor">?attr/colorPrimary</item>
         <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="PreferenceSeekbar" parent="android:Widget.Holo.SeekBar">
+        <item name="android:progressDrawable">@drawable/scrubber_progress_horizontal_holo_dark</item>
+        <item name="android:indeterminateDrawable">@drawable/scrubber_progress_horizontal_holo_dark</item>
+        <item name="android:thumb">@drawable/scrubber_control_selector_holo_dark</item>
     </style>
 
 </resources>

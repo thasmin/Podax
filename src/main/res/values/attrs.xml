@@ -3,4 +3,14 @@
     <declare-styleable name="AddSubscriptionFrame">
         <attr format="reference" name="headerIcon" />
     </declare-styleable>
+
+    <declare-styleable name="RangeSeekBar">
+        <attr format="dimension" name="textSize" />
+        <attr format="reference" name="entries" />
+    </declare-styleable>
+    
+    <declare-styleable name="SleepytimeHoursPreference">
+        <attr format="string" name="minKey" />
+        <attr format="string" name="maxKey" />
+    </declare-styleable>
 </resources>

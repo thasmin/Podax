@@ -206,6 +206,18 @@ limitations under the License.</p>
         <item>2.0</item>
     </string-array>
 
+    <string-array name="sleepytimeTimes">
+        <item>8 PM</item>
+        <item>9 PM</item>
+        <item>10 PM</item>
+        <item>11 PM</item>
+        <item>12 AM</item>
+        <item>1 AM</item>
+        <item>2 AM</item>
+        <item>3 AM</item>
+        <item>4 AM</item>
+    </string-array>
+
     <string name="clear_search">Clear Search</string>
     <string name="stats">Stats</string>
     <string name="episodes_finished">Episodes Finished</string>

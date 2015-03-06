@@ -128,8 +128,7 @@ class LimitedSeekBarPreference extends Preference implements SeekBar.OnSeekBarCh
 		// change accepted, store it
 		_currentProgress = progress;
 		_statusText.setText(_entries[progress]);
-		if (shouldPersist())
-			persistFloat(newValue);
+		persistFloat(newValue);
 	}
 
 	@Override
