@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -57,6 +58,8 @@ public class MainActivity extends ActionBarActivity {
 
     private int _fragment;
 
+	private View _progressbg;
+	private View _progressline;
     private ImageButton _play;
     private TextView _episodeTitle;
     private ImageButton _expand;
@@ -206,9 +209,12 @@ public class MainActivity extends ActionBarActivity {
 			fragmentManager.beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
 
 		// bottom bar controls
+		_progressbg = findViewById(R.id.progressbg);
+		_progressline = findViewById(R.id.progressline);
 		_play = (ImageButton) findViewById(R.id.play);
 		_episodeTitle = (TextView) findViewById(R.id.episodeTitle);
 		_expand = (ImageButton) findViewById(R.id.expand);
+		initializeBottom(PlayerStatus.getCurrentState(this));
 	}
 
 	private void decorateTab(TextView tab, @ColorRes int textColor, @DrawableRes int background) {
@@ -231,8 +237,22 @@ public class MainActivity extends ActionBarActivity {
 
 	private void initializeBottom(PlayerStatus playerState) {
         if (playerState.hasActiveEpisode()) {
+			Point screenSize = new Point();
+			getWindowManager().getDefaultDisplay().getSize(screenSize);
+			float progress = 1.0f * playerState.getPosition() / playerState.getDuration();
+			int widthPx = (int) (screenSize.x * progress);
+
+			_progressbg.setVisibility(View.VISIBLE);
+			ViewGroup.MarginLayoutParams bgParams = (ViewGroup.MarginLayoutParams) _progressbg.getLayoutParams();
+			bgParams.setMargins(widthPx, 0, 0, 0);
+			_progressbg.setLayoutParams(bgParams);
+
+			_progressline.setVisibility(View.VISIBLE);
+			ViewGroup.MarginLayoutParams lineParams = (ViewGroup.MarginLayoutParams) _progressline.getLayoutParams();
+			lineParams.setMargins(0, 0, screenSize.x - widthPx, 0);
+			_progressline.setLayoutParams(lineParams);
+
            int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
-            _play.setVisibility(View.VISIBLE);
             _play.setImageResource(playResource);
             _play.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -259,12 +279,16 @@ public class MainActivity extends ActionBarActivity {
             _episodeTitle.setText(playerState.getTitle());
 			_episodeTitle.setOnClickListener(displayCurrentEpisode);
 
-            _expand.setVisibility(View.VISIBLE);
+            _expand.setImageResource(R.drawable.ic_action_collapse);
 			_expand.setOnClickListener(displayCurrentEpisode);
         } else {
-            _play.setVisibility(View.INVISIBLE);
+			_progressbg.setVisibility(View.GONE);
+			_progressline.setVisibility(View.GONE);
+            _play.setImageDrawable(null);
+			_play.setOnClickListener(null);
             _episodeTitle.setText(R.string.playlist_empty);
-            _expand.setVisibility(View.INVISIBLE);
+            _expand.setImageDrawable(null);
+			_expand.setOnClickListener(null);
         }
     }
 
