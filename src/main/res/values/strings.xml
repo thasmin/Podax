@@ -289,5 +289,6 @@ limitations under the License.</p>
     <string name="spinner">spinner</string>
     <string name="finished_episodes">Finished Episodes</string>
     <string name="no_finished_episodes">You haven\'t finished any episodes yet. Get to it!</string>
+    <string name="finished_on">Finished on</string>
 
 </resources>

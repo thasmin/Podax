@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -31,6 +32,7 @@ public class EpisodeCursor {
 	private Integer _pubDateColumn = null;
 	private Integer _gpodderUpdateTimestampColumn = null;
 	private Integer _paymentColumn = null;
+	private Integer _finishedDateColumn = null;
 
 	public EpisodeCursor(Cursor cursor) {
 		_cursor = cursor;
@@ -41,6 +43,7 @@ public class EpisodeCursor {
 	}
 
 	public static EpisodeCursor getCursor(Context context, long episodeId) {
+		@SuppressLint("Recycle")
 		Cursor c = context.getContentResolver().query(EpisodeCursor.getContentUri(episodeId), null, null, null, null);
 		if (c == null)
 			return null;
@@ -217,6 +220,14 @@ public class EpisodeCursor {
 		if (_cursor.isNull(_paymentColumn))
 			return null;
 		return _cursor.getString(_paymentColumn);
+	}
+
+	public Date getFinishedDate() {
+		if (_finishedDateColumn == null)
+			_finishedDateColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_FINISHED_TIME);
+		if (_cursor.isNull(_finishedDateColumn ))
+			return null;
+		return new Date(_cursor.getLong(_finishedDateColumn) * 1000);
 	}
 
 	public void removeFromPlaylist(Context context) {

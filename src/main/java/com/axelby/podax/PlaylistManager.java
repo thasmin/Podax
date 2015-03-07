@@ -25,7 +25,7 @@ class PlaylistManager {
 		ContentValues values = new ContentValues(3);
 		values.put(EpisodeProvider.COLUMN_LAST_POSITION, 0);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-		values.put(EpisodeProvider.COLUMN_FINISHED_TIME, new Date().getTime());
+		values.put(EpisodeProvider.COLUMN_FINISHED_TIME, new Date().getTime() / 1000);
 		context.getContentResolver().update(uri, values, null, null);
 	}
 

@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
@@ -24,6 +25,7 @@ import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionCursor;
 
 import java.text.DateFormat;
 
@@ -72,11 +74,14 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 		String[] projection = {
 				EpisodeProvider.COLUMN_ID,
 				EpisodeProvider.COLUMN_TITLE,
-                EpisodeProvider.COLUMN_PUB_DATE,
+				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
+				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
                 EpisodeProvider.COLUMN_DURATION,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 				EpisodeProvider.COLUMN_FILE_SIZE,
 				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
+				EpisodeProvider.COLUMN_FINISHED_TIME,
+				EpisodeProvider.COLUMN_DURATION,
 		};
 		return new CursorLoader(getActivity(), EpisodeProvider.FINISHED_URI, projection, null, null, null);
 	}
@@ -99,14 +104,15 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 
 	private class PodcastAdapter extends RecyclerView.Adapter<PodcastAdapter.ViewHolder> {
 
-        private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
+        private final DateFormat _finishedDateFormat = DateFormat.getDateInstance();
 		private Cursor _cursor;
 
         class ViewHolder extends RecyclerView.ViewHolder {
 			public final View container;
+			public final ImageView thumbnail;
+			public final TextView subscriptionTitle;
             public final TextView title;
             public final TextView date;
-            public final TextView duration;
             public final Button play;
             public final Button playlist;
 
@@ -116,9 +122,10 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 				container = view;
                 title = (TextView) view.findViewById(R.id.title);
                 date = (TextView) view.findViewById(R.id.date);
-                duration = (TextView) view.findViewById(R.id.duration);
                 play = (Button) view.findViewById(R.id.play);
                 playlist = (Button) view.findViewById(R.id.playlist);
+				thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+				subscriptionTitle = (TextView) view.findViewById(R.id.subscription_title);
 
 				play.setOnClickListener(_playHandler);
 				playlist.setOnClickListener(_playlistHandler);
@@ -172,7 +179,7 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 
 		@Override
 		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_episoidelist_item, parent, false);
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_finished_episodes_item, parent, false);
 			return new ViewHolder(view);
 		}
 
@@ -186,13 +193,10 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 			EpisodeCursor episode = new EpisodeCursor(_cursor);
 
 			holder.container.setTag(episode.getId());
+			holder.subscriptionTitle.setText(episode.getSubscriptionTitle());
+			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
             holder.title.setText(episode.getTitle());
-            holder.date.setText(context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
-            if (episode.getDuration() > 0) {
-                holder.duration.setText(Helper.getVerboseTimeString(context, episode.getDuration() / 1000f, false) + " " + context.getString(R.string.in_duration));
-                holder.duration.setVisibility(View.VISIBLE);
-            } else
-                holder.duration.setVisibility(View.GONE);
+            holder.date.setText(context.getString(R.string.finished_on) + " " + _finishedDateFormat.format(episode.getFinishedDate()));
             holder.play.setTag(episode.getId());
             holder.playlist.setTag(R.id.episodeId, episode.getId());
 
