@@ -287,5 +287,7 @@ limitations under the License.</p>
     <string name="latest_activity">Latest Activity</string>
     <string name="search">Search</string>
     <string name="spinner">spinner</string>
+    <string name="finished_episodes">Finished Episodes</string>
+    <string name="no_finished_episodes">You haven\'t finished any episodes yet. Get to it!</string>
 
 </resources>

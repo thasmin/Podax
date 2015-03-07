@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 14;
+	private static final int DATABASE_VERSION = 15;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -44,7 +44,8 @@ class DBAdapter extends SQLiteOpenHelper {
 				"downloadId INTEGER," +
 				"needsGpodderUpdate INTEGER DEFAULT 0," +
 				"gpodderUpdateTimestamp INTEGER," +
-				"payment VARCHAR)"
+				"payment VARCHAR," +
+				"finishedTime DATE)"
 		);
 		db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
 		db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
@@ -106,6 +107,9 @@ class DBAdapter extends SQLiteOpenHelper {
 
 		if (oldVersion < 14)
 			upgradeV13toV14(db);
+
+		if (oldVersion < 15)
+			upgradeV14toV15(db);
     }
 
 	private void upgradeV1toV2(SQLiteDatabase db) {
@@ -216,4 +220,7 @@ class DBAdapter extends SQLiteOpenHelper {
 		db.execSQL("ALTER TABLE subscriptions ADD COLUMN singleUse INTEGER DEFAULT 0");
 	}
 
+	private void upgradeV14toV15(SQLiteDatabase db) {
+		db.execSQL("ALTER TABLE podcasts ADD COLUMN finishedTime DATE");
+	}
 }

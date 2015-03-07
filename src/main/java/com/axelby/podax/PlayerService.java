@@ -147,7 +147,7 @@ public class PlayerService extends Service {
 
 		@Override
 		public void onCompletion() {
-			PlaylistManager.moveToNextInPlaylist(PlayerService.this);
+			PlaylistManager.completeActiveEpisode(PlayerService.this);
 		}
 
 		@Override

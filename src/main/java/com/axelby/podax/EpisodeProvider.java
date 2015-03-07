@@ -33,6 +33,7 @@ public class EpisodeProvider extends ContentProvider {
 	public static final Uri PLAYER_UPDATE_URI = Uri.parse("content://" + AUTHORITY + "/player_update");
 	public static final Uri NEED_GPODDER_UPDATE_URI = Uri.withAppendedPath(EpisodeProvider.URI, "need_gpodder_update");
 	public static final Uri LATEST_ACTIVITY_URI = Uri.withAppendedPath(EpisodeProvider.URI, "latest_activity");
+	public static final Uri FINISHED_URI = Uri.withAppendedPath(EpisodeProvider.URI, "finished");
 
 	private final static int EPISODES = 1;
 	private final static int EPISODES_PLAYLIST = 2;
@@ -44,6 +45,7 @@ public class EpisodeProvider extends ContentProvider {
 	private final static int EPISODE_PLAYER_UPDATE = 8;
 	private final static int EPISODES_NEED_GPODDER_UPDATE = 9;
 	private final static int EPISODES_LATEST_ACTIVITY = 10;
+	private final static int EPISODES_FINISHED = 11;
 
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TITLE = "title";
@@ -58,10 +60,10 @@ public class EpisodeProvider extends ContentProvider {
 	public static final String COLUMN_FILE_SIZE = "fileSize";
 	public static final String COLUMN_LAST_POSITION = "lastPosition";
 	public static final String COLUMN_DURATION = "duration";
-	private static final String COLUMN_DOWNLOAD_ID = "downloadId";
 	public static final String COLUMN_NEEDS_GPODDER_UPDATE = "needsGpodderUpdate";
 	public static final String COLUMN_GPODDER_UPDATE_TIMESTAMP = "gpodderUpdateTimestamp";
 	public static final String COLUMN_PAYMENT = "payment";
+	public static final String COLUMN_FINISHED_TIME = "finishedTime";
 
 	private static final String PREF_ACTIVE = "active";
 
@@ -80,6 +82,7 @@ public class EpisodeProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, "player_update", EPISODE_PLAYER_UPDATE);
 		uriMatcher.addURI(AUTHORITY, "episodes/need_gpodder_update", EPISODES_NEED_GPODDER_UPDATE);
 		uriMatcher.addURI(AUTHORITY, "episodes/latest_activity", EPISODES_LATEST_ACTIVITY);
+		uriMatcher.addURI(AUTHORITY, "episodes/finished", EPISODES_FINISHED);
 
 		_columnMap = new HashMap<>();
 		_columnMap.put(COLUMN_ID, "podcasts._id AS _id");
@@ -95,10 +98,10 @@ public class EpisodeProvider extends ContentProvider {
 		_columnMap.put(COLUMN_FILE_SIZE, "fileSize");
 		_columnMap.put(COLUMN_LAST_POSITION, "lastPosition");
 		_columnMap.put(COLUMN_DURATION, "duration");
-		_columnMap.put(COLUMN_DOWNLOAD_ID, "downloadId");
 		_columnMap.put(COLUMN_NEEDS_GPODDER_UPDATE, "needsGpodderUpdate");
 		_columnMap.put(COLUMN_GPODDER_UPDATE_TIMESTAMP, "gpodderUpdateTimestamp");
 		_columnMap.put(COLUMN_PAYMENT, "payment");
+		_columnMap.put(COLUMN_FINISHED_TIME, "finishedTime");
 	}
 
 	public static Uri getContentUri(long id) {
@@ -199,6 +202,10 @@ public class EpisodeProvider extends ContentProvider {
 			case EPISODES_LATEST_ACTIVITY:
 				sortOrder = "pubDate DESC";
 				limit = "10";
+				break;
+			case EPISODES_FINISHED:
+				sortOrder = "finishedTime DESC";
+				sqlBuilder.appendWhere("finishedTime IS NOT NULL");
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown URI");
@@ -590,26 +597,6 @@ public class EpisodeProvider extends ContentProvider {
 	}
 
 	public static void skipToEnd(Context context, Uri uri) {
-		String[] projection = new String[] {
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-				EpisodeProvider.COLUMN_DURATION
-		};
-		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
-		if (c == null)
-			return;
-		if (!c.moveToFirst()) {
-			c.close();
-			return;
-		}
-		int duration = c.getInt(0);
-		if (duration == 0)
-			duration = new EpisodeCursor(c).determineDuration(context);
-		c.close();
-
-		ContentValues values = new ContentValues(2);
-		values.put(EpisodeProvider.COLUMN_LAST_POSITION, duration);
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-		context.getContentResolver().update(uri, values, null, null);
+		PlaylistManager.markEpisodeComplete(context, uri);
 	}
 }
