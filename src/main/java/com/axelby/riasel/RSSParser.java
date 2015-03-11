@@ -110,7 +110,7 @@ class RSSParser {
 				} else if (name.equalsIgnoreCase("enclosure")) {
 					item.setMediaURL(parser.getAttributeValue(null, "url").trim());
 					if (parser.getAttributeValue(null, "length") != null)
-						item.setMediaSize(Long.valueOf(parser.getAttributeValue(null, "length").trim()));
+						item.setMediaSize(Long.valueOf(parser.getAttributeValue(null, "length").trim().replace(",", "")));
 					else
 						item.setMediaSize(0L);
 				}

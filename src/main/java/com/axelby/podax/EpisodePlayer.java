@@ -5,10 +5,11 @@ import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.axelby.podax.player.AudioPlayer;
-import com.axelby.podax.player.StreamAudioPlayer;
+import com.axelby.podax.player.MP3Player;
+import com.axelby.podax.player.AudioPlayerBase;
+import com.axelby.podax.player.MediaPlayer;
+import com.axelby.podax.player.StreamMP3Player;
 
 import java.util.ArrayList;
 
@@ -38,8 +39,8 @@ class EpisodePlayer {
 	private OnCompletionListener _onCompletionListener = null;
 	private OnChangeListener _onChangeListener = null;
 
-	private Thread _playerThread = null;
-	private AudioPlayer _player = null;
+	private Thread _mp3PlayerThread = null; // only has a value if using MP3Player
+	private AudioPlayerBase _player = null;
 
 	public EpisodePlayer(Context context) {
 		_context = context;
@@ -57,42 +58,40 @@ class EpisodePlayer {
 				_player.stop();
 				_player = null;
 			}
-			if (_playerThread != null) {
+			if (_mp3PlayerThread != null) {
 				try {
-					_playerThread.join();
+					_mp3PlayerThread.join();
 				} catch (InterruptedException ex) {
 					Log.e("Podax", "player thread interrupted", ex);
 				}
-				_playerThread = null;
+				_mp3PlayerThread = null;
 			}
 
 			boolean stream = !episode.isDownloaded(_context);
 
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
-			if (!AudioPlayer.supports(episode.getFilename(_context), stream)) {
-				Toast.makeText(_context, "This episode is not an MP3 or Ogg Vorbis file and cannot be played.", Toast.LENGTH_LONG).show();
-				return;
-			}
+			boolean useMP3Player = MP3Player.supports(episode.getFilename(_context));
 
-			if (stream)
-				_player = new StreamAudioPlayer(episode.getFilename(_context), playbackRate);
+			if (!useMP3Player)
+				_player = new MediaPlayer(episode.getFilename(_context));
+			 else if (stream)
+				_player = new StreamMP3Player(episode.getFilename(_context), playbackRate);
 			else
-				_player = new AudioPlayer(episode.getFilename(_context), playbackRate);
+				_player = new MP3Player(episode.getFilename(_context), playbackRate);
+			_mp3PlayerThread = new Thread(_player, "MP3Player");
 
 			if (episode.getLastPosition() != 0)
 				_player.seekTo(episode.getLastPosition() / 1000f);
 
-			_playerThread = new Thread(_player, "AudioPlayer");
-
-			_player.setOnCompletionListener(new AudioPlayer.OnCompletionListener() {
+			_player.setOnCompletionListener(new AudioPlayerBase.OnCompletionListener() {
 				@Override
 				public void onCompletion() {
 					if (_onCompletionListener != null)
 						_onCompletionListener.onCompletion();
 				}
 			});
-			_player.setPeriodicListener(new AudioPlayer.PeriodicListener() {
+			_player.setPeriodicListener(new AudioPlayerBase.PeriodicListener() {
 				@Override
 				public void pulse(float position) {
 					if (_onSeekListener != null)
@@ -203,8 +202,8 @@ class EpisodePlayer {
 			UpdateService.downloadEpisode(_context, status.getEpisodeId());
 
 		_player.resume();
-		if (_playerThread.getState() == Thread.State.NEW)
-			_playerThread.start();
+		if (_mp3PlayerThread.getState() == Thread.State.NEW)
+			_mp3PlayerThread.start();
 
 		if (_onPlayListener != null)
 			_onPlayListener.onPlay(_player.getPosition(), _player.getPlaybackRate());
@@ -230,7 +229,7 @@ class EpisodePlayer {
 		if (_player.isPlaying()) {
 			_player.stop();
 			try {
-				_playerThread.join();
+				_mp3PlayerThread.join();
 			} catch (InterruptedException e) {
 				Log.e("Podax", "stop InterruptedException", e);
 			}

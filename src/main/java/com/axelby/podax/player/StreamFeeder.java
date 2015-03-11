@@ -14,16 +14,16 @@ import java.io.RandomAccessFile;
  */
 class StreamFeeder {
 	private final String _filename;
-	private final IMediaDecoder _decoder;
+	private final MPG123 _decoder;
 
 	private Thread _feederThread = null;
 	private long _fileOffset = 0;
 
-	public StreamFeeder(String filename, IMediaDecoder decoder) {
+	public StreamFeeder(String filename, MPG123 decoder) {
 		this(filename, decoder, 0);
 	}
 
-	public StreamFeeder(String filename, IMediaDecoder decoder, long initialOffset) {
+	public StreamFeeder(String filename, MPG123 decoder, long initialOffset) {
 		_filename = filename;
 		_decoder = decoder;
 		_fileOffset = initialOffset;

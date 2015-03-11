@@ -1,15 +1,15 @@
 package com.axelby.podax.player;
 
-public class StreamAudioPlayer extends AudioPlayer {
+public class StreamMP3Player extends MP3Player {
 	private final String _filename;
 
 	private StreamFeeder _feeder;
 
-	private final IMediaDecoder _rabbitDecoder;
+	private final MPG123 _rabbitDecoder;
 	private StreamSkipper _skipper;
 	private final StreamFeeder _rabbitFeeder;
 
-	public StreamAudioPlayer(String filename, float playbackRate) {
+	public StreamMP3Player(String filename, float playbackRate) {
 		super(playbackRate);
 		_filename = filename;
 
@@ -49,7 +49,7 @@ public class StreamAudioPlayer extends AudioPlayer {
 		}
 	}
 
-	private static long findSeekFileOffset(IMediaDecoder decoder, float seekToSeconds) throws InterruptedException {
+	private static long findSeekFileOffset(MPG123 decoder, float seekToSeconds) throws InterruptedException {
 		long fileOffset = decoder.getSeekFrameOffset(seekToSeconds);
 		// keep trying to skip frame until offset is found or out of data
 		while (fileOffset == -1) {

@@ -1,6 +1,6 @@
 package com.axelby.podax.player;
 
-public class MPG123 implements IMediaDecoder {
+public class MPG123 {
 	static {
 		System.loadLibrary("mpg123");
 		MPG123.init();
@@ -43,5 +43,12 @@ public class MPG123 implements IMediaDecoder {
 	public void feed(byte[] buffer, int count) { MPG123.feed(_handle, buffer, count); }
 	public void completeStream() { _streamComplete = true; }
 	public boolean isStreamComplete() { return _streamComplete; }
+
+	public static float determineDuration(String filename) {
+		MPG123 decoder = new MPG123(filename);
+		float duration = decoder.getDuration();
+		decoder.close();
+		return duration;
+	}
 }
 

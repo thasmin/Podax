@@ -1,10 +1,10 @@
 package com.axelby.podax.player;
 
 class StreamSkipper {
-	private final IMediaDecoder _decoder;
+	private final MPG123 _decoder;
 	private final Thread _thread;
 
-	public StreamSkipper(IMediaDecoder decoder) {
+	public StreamSkipper(MPG123 decoder) {
 		Runnable _runnable = new Runnable() {
 			@Override
 			public void run() {

@@ -7,8 +7,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
-import com.axelby.podax.player.AudioPlayer;
-import com.axelby.podax.player.IMediaDecoder;
+import com.axelby.podax.player.AudioPlayerBase;
+import com.axelby.podax.player.MP3Player;
 
 import java.io.File;
 import java.util.Date;
@@ -243,12 +243,7 @@ public class EpisodeCursor {
 	}
 
 	public int determineDuration(Context context) {
-		IMediaDecoder decoder = AudioPlayer.loadFile(getFilename(context));
-		if (decoder == null)
-			return 0;
-		int duration = (int) (decoder.getDuration() * 1000);
-		decoder.close();
-
+		int duration = (int) (AudioPlayerBase.determineDuration(getFilename(context)) * 1000);
 		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_DURATION, duration);
 		context.getContentResolver().update(getContentUri(), values, null, null);

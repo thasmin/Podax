@@ -5,8 +5,8 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
 
-public class AudioPlayer implements Runnable {
-	IMediaDecoder _decoder;
+public class MP3Player extends AudioPlayerBase {
+	MPG123 _decoder;
 	AudioTrack _track;
 
 	// avoid tying up main thread by having thread check these variables to make changes
@@ -17,10 +17,10 @@ public class AudioPlayer implements Runnable {
 	float _seekbase = 0;
 	private float _playbackRate = 1f;
 
-	AudioPlayer(float playbackRate) {
+	MP3Player(float playbackRate) {
 		_playbackRate = playbackRate;
 	}
-	public AudioPlayer(String audioFile, float playbackRate) {
+	public MP3Player(String audioFile, float playbackRate) {
 		this(playbackRate);
 		_decoder = loadFile(audioFile);
 		if (_decoder == null)
@@ -28,7 +28,7 @@ public class AudioPlayer implements Runnable {
 		_track = createTrackFromDecoder(_decoder, _playbackPositionListener);
 	}
 
-	public static boolean supports(String audioFile, boolean streaming) {
+	public static boolean supports(String audioFile) {
 		int lastDot = audioFile.lastIndexOf('.');
 		if (lastDot <= 0)
 			return false;
@@ -36,7 +36,7 @@ public class AudioPlayer implements Runnable {
 		return extension.equals("mp3");
 	}
 
-	public static IMediaDecoder loadFile(String audioFile) {
+	public static MPG123 loadFile(String audioFile) {
 		int lastDot = audioFile.lastIndexOf('.');
 		if (lastDot <= 0)
 			throw new IllegalArgumentException("audioFile must be .mp3");
@@ -47,7 +47,7 @@ public class AudioPlayer implements Runnable {
 		return null;
 	}
 
-	static AudioTrack createTrackFromDecoder(IMediaDecoder decoder, AudioTrack.OnPlaybackPositionUpdateListener playbackPositionListener) {
+	static AudioTrack createTrackFromDecoder(MPG123 decoder, AudioTrack.OnPlaybackPositionUpdateListener playbackPositionListener) {
 		// streaming decoder will return rate as 0 if not enough data has been loaded
 		if (decoder.getRate() == 0)
 			return null;
@@ -63,20 +63,9 @@ public class AudioPlayer implements Runnable {
 		return track;
 	}
 
+	@Override
 	public float getPlaybackRate() {
 		return _playbackRate;
-	}
-
-	public static interface OnCompletionListener { public void onCompletion(); }
-	private OnCompletionListener _completionListener = null;
-	public void setOnCompletionListener(OnCompletionListener completionListener) {
-		this._completionListener = completionListener;
-	}
-
-	public static interface PeriodicListener { public void pulse(float position); }
-	private PeriodicListener _periodicListener = null;
-	public void setPeriodicListener(PeriodicListener periodicListener) {
-		this._periodicListener = periodicListener;
 	}
 
 	final AudioTrack.OnPlaybackPositionUpdateListener _playbackPositionListener =
@@ -97,10 +86,12 @@ public class AudioPlayer implements Runnable {
 		}
 	};
 
+	@Override
 	public boolean isPlaying() {
 		return _isPlaying;
 	}
 
+	@Override
 	public void pause() {
 		if (_track == null)
 			return;
@@ -108,6 +99,7 @@ public class AudioPlayer implements Runnable {
 		_isPlaying = false;
 	}
 
+	@Override
 	public void resume() {
 		if (_track == null)
 			return;
@@ -115,9 +107,12 @@ public class AudioPlayer implements Runnable {
 		_isPlaying = true;
 	}
 
+	@Override
 	public void seekTo(float offsetInSeconds) { _seekToSeconds = offsetInSeconds; }
+	@Override
 	public void stop() { _stopping = true; }
 
+	@Override
 	public float getPosition() {
 		if (_track == null)
 			return _seekbase;
