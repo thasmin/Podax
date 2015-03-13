@@ -57,17 +57,17 @@ public class SubscriptionProvider extends ContentProvider {
 		_uriMatcher.addURI(AUTHORITY, "subscriptions/from_gpodder", FROM_GPODDER);
 
 		_columnMap = new HashMap<>();
-		_columnMap.put(COLUMN_ID, "_id");
-		_columnMap.put(COLUMN_TITLE, "title");
-		_columnMap.put(COLUMN_URL, "url");
+		_columnMap.put(COLUMN_ID, "subscriptions._id");
+		_columnMap.put(COLUMN_TITLE, "subscriptions.title");
+		_columnMap.put(COLUMN_URL, "subscriptions.url");
 		_columnMap.put(COLUMN_LAST_MODIFIED, "lastModified");
 		_columnMap.put(COLUMN_LAST_UPDATE, "lastUpdate");
 		_columnMap.put(COLUMN_ETAG, "eTag");
 		_columnMap.put(COLUMN_THUMBNAIL, "thumbnail");
-		_columnMap.put(COLUMN_TITLE_OVERRIDE, "titleOverride");
+		_columnMap.put(COLUMN_TITLE_OVERRIDE, "subscriptions.titleOverride");
 		_columnMap.put(COLUMN_PLAYLIST_NEW, "queueNew");
 		_columnMap.put(COLUMN_EXPIRATION, "expirationDays");
-		_columnMap.put(COLUMN_DESCRIPTION, "description");
+		_columnMap.put(COLUMN_DESCRIPTION, "subscriptions.description");
 		_columnMap.put(COLUMN_SINGLE_USE, "singleUse");
 	}
 
@@ -160,13 +160,11 @@ public class SubscriptionProvider extends ContentProvider {
 				sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
 				break;
 			case SUBSCRIPTIONS_SEARCH:
-				sqlBuilder.appendWhere("LOWER(title) LIKE ? OR LOWER(titleOverride) LIKE ?");
-				if (!selectionArgs[0].startsWith("%"))
-					selectionArgs[0] = "%" + selectionArgs[0] + "%";
-				selectionArgs = new String[]{selectionArgs[0], selectionArgs[0]};
+				sqlBuilder.setTables(sqlBuilder.getTables() + " JOIN fts_subscriptions fts ON subscriptions._id = fts._id");
+				selection = "fts_subscriptions MATCH ?";
 				sqlBuilder.appendWhere("singleUse = 0");
 				if (sortOrder == null)
-					sortOrder = "COALESCE(titleOverride, title)";
+					sortOrder = "COALESCE(fts.titleOverride, fts.title)";
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown URI");
@@ -199,7 +197,27 @@ public class SubscriptionProvider extends ContentProvider {
 		if (!URI.equals(uri))
 			getContext().getContentResolver().notifyChange(uri, null);
 		getContext().getContentResolver().notifyChange(URI, null);
+
+		// update the full text search virtual table
+		if (hasFTSValues(values))
+			db.update("fts_subscriptions", extractFTSValues(values), where, whereArgs);
+
 		return count;
+	}
+
+	private boolean hasFTSValues(ContentValues values) {
+		return values.containsKey(COLUMN_TITLE) || values.containsKey(COLUMN_TITLE_OVERRIDE) || values.containsKey(COLUMN_DESCRIPTION);
+	}
+
+	private ContentValues extractFTSValues(ContentValues values) {
+		ContentValues fdsValues = new ContentValues(3);
+		if (values.containsKey(COLUMN_TITLE))
+			fdsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
+		if (values.containsKey(COLUMN_TITLE_OVERRIDE))
+			fdsValues.put(COLUMN_TITLE_OVERRIDE, values.getAsString(COLUMN_TITLE_OVERRIDE));
+		if (values.containsKey(COLUMN_DESCRIPTION))
+			fdsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
+		return fdsValues;
 	}
 
 	@Override

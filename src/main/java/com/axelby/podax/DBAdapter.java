@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 15;
+	private static final int DATABASE_VERSION = 16;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -65,6 +65,9 @@ class DBAdapter extends SQLiteOpenHelper {
 				"caption VARCHAR" +
 				"type VARCHAR," +
 				"needsChange INTEGER DEFAULT 0)");
+
+		db.execSQL("CREATE VIRTUAL TABLE fts_podcasts USING fts3(_id, title, description);");
+		db.execSQL("CREATE VIRTUAL TABLE fts_subscriptions USING FTS3(_id, title, url, titleOverride, description);");
 	}
 
 	@SuppressWarnings("ConstantConditions")
@@ -110,6 +113,9 @@ class DBAdapter extends SQLiteOpenHelper {
 
 		if (oldVersion < 15)
 			upgradeV14toV15(db);
+
+		if (oldVersion < 16)
+			upgradeV15toV16(db);
     }
 
 	private void upgradeV1toV2(SQLiteDatabase db) {
@@ -222,5 +228,14 @@ class DBAdapter extends SQLiteOpenHelper {
 
 	private void upgradeV14toV15(SQLiteDatabase db) {
 		db.execSQL("ALTER TABLE podcasts ADD COLUMN finishedTime DATE");
+	}
+
+	private void upgradeV15toV16(SQLiteDatabase db) {
+		db.execSQL("CREATE VIRTUAL TABLE fts_podcasts USING fts3(_id, title, description);");
+		db.execSQL("INSERT INTO fts_podcasts(_id, title, description) " +
+				"SELECT _id, title, description FROM podcasts;");
+		db.execSQL("CREATE VIRTUAL TABLE fts_subscriptions USING FTS3(_id, title, url, titleOverride, description);");
+		db.execSQL("INSERT INTO fts_subscriptions(_id, title, url, titleOverride, description) " +
+				"SELECT _id, title, url, titleOverride, description FROM subscriptions;");
 	}
 }

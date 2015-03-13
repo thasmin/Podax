@@ -6,6 +6,8 @@ import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
+import android.app.SearchManager;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -29,6 +31,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +40,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -142,6 +147,18 @@ public class MainActivity extends ActionBarActivity {
 			}
 			c.close();
 		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.dashboard, menu);
+
+		SearchManager searchManager = (SearchManager) MainActivity.this.getSystemService(Context.SEARCH_SERVICE);
+		SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+		ComponentName cn = new ComponentName(this, SearchActivity.class);
+		searchView.setSearchableInfo(searchManager.getSearchableInfo(cn));
+
+		return super.onCreateOptionsMenu(menu);
 	}
 
 	private void setupUI() {
@@ -364,7 +381,6 @@ public class MainActivity extends ActionBarActivity {
 	final DrawerItem[] _drawerItems = {
 			new DrawerItem(LatestActivityFragment.class, R.string.latest_activity, R.drawable.ic_menu_alarm, false),
 			new DrawerItem(FinishedEpisodeFragment.class, R.string.finished_episodes, R.drawable.ic_menu_done_all, false),
-			new DrawerItem(SearchFragment.class, R.string.search, R.drawable.ic_menu_search, false),
 			new DrawerItem(AddSubscriptionFragment.class, R.string.add_subscription, R.drawable.ic_menu_add, false),
 			new DrawerItem(GPodderProvider.class, R.string.gpodder_sync, R.drawable.ic_menu_gpoddernet, false),
 			new DrawerItem(StatsFragment.class, R.string.stats, R.drawable.ic_menu_trending_up, true),

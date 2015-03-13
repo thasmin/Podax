@@ -290,5 +290,11 @@ limitations under the License.</p>
     <string name="finished_episodes">Finished Episodes</string>
     <string name="no_finished_episodes">You haven\'t finished any episodes yet. Get to it!</string>
     <string name="finished_on">Finished on</string>
+    <string name="search_results">Search Results</string>
+    <string name="no_search_matches">No subscriptions or episodes match that search.</string>
+    <string name="subscriptions">Subscriptions</string>
+    <string name="episodes">Episodes</string>
+    <string name="no_subscription_matches">No subscriptions match this search.</string>
+    <string name="no_episode_matches">No episodes match this search.</string>
 
 </resources>

@@ -183,9 +183,8 @@ public class EpisodeProvider extends ContentProvider {
 				}
 				break;
 			case EPISODES_SEARCH:
-				sqlBuilder.appendWhere("LOWER(podcasts.title) LIKE ?");
-				if (!selectionArgs[0].startsWith("%"))
-					selectionArgs[0] = "%" + selectionArgs[0] + "%";
+				sqlBuilder.setTables(sqlBuilder.getTables() + " JOIN fts_podcasts on podcasts._id = fts_podcasts._id");
+				selection = "fts_podcasts MATCH ?";
 				if (sortOrder == null)
 					sortOrder = "pubDate DESC";
 				break;
@@ -381,7 +380,24 @@ public class EpisodeProvider extends ContentProvider {
 		if (episodeId == activeEpisodeId && values.containsKey(COLUMN_LAST_POSITION))
 			getContext().getContentResolver().notifyChange(PLAYER_UPDATE_URI, null);
 
+		// update the full text search virtual table
+		if (hasFTSValues(values))
+			db.update("fts_podcasts", extractFTSValues(values), where, whereArgs);
+
 		return count;
+	}
+
+	private boolean hasFTSValues(ContentValues values) {
+		return values.containsKey(COLUMN_TITLE) || values.containsKey(COLUMN_DESCRIPTION);
+	}
+
+	private ContentValues extractFTSValues(ContentValues values) {
+		ContentValues fdsValues = new ContentValues(2);
+		if (values.containsKey(COLUMN_TITLE))
+			fdsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
+		if (values.containsKey(COLUMN_DESCRIPTION))
+			fdsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
+		return fdsValues;
 	}
 
 	void updatePlaylistPosition(long episodeId, Integer newPosition) {
