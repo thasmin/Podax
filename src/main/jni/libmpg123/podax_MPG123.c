@@ -81,8 +81,8 @@ JNIEXPORT jlong JNICALL Java_com_axelby_podax_player_MPG123_openStream
 	(JNIEnv *env, jclass c)
 {
 	// init mpg123 handle
-    int err = MPG123_OK;
-    mpg123_handle *mh = mpg123_new(NULL, &err);
+	int err = MPG123_OK;
+	mpg123_handle *mh = mpg123_new(NULL, &err);
 	if (err != MPG123_OK) {
 		__android_log_print(ANDROID_LOG_INFO, "podax-jni", "mpg123_new error: %s", mpg123_plain_strerror(err));
 		return 0;
@@ -137,8 +137,8 @@ JNIEXPORT void JNICALL Java_com_axelby_podax_player_MPG123_feed
 JNIEXPORT jlong JNICALL Java_com_axelby_podax_player_MPG123_openFile
 	(JNIEnv *env, jclass c, jstring filename)
 {
-    int err = MPG123_OK;
-    mpg123_handle *mh = mpg123_new(NULL, &err);
+	int err = MPG123_OK;
+	mpg123_handle *mh = mpg123_new(NULL, &err);
 	if (err != MPG123_OK) {
 		printerr("mpg123_new", err);
 		return 0;
@@ -206,7 +206,7 @@ JNIEXPORT void JNICALL Java_com_axelby_podax_player_MPG123_delete
 JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_readFrame
 	(JNIEnv *env, jclass c, jlong handle, jshortArray out_buffer)
 {
-    MP3File *mp3 = (MP3File *)handle;
+	MP3File *mp3 = (MP3File *)handle;
 	mpg123_handle *mh = mp3->handle;
 
 	off_t frame_offset;
@@ -234,7 +234,7 @@ JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_readFrame
 JNIEXPORT jboolean JNICALL Java_com_axelby_podax_player_MPG123_skipFrame
 	(JNIEnv *env, jclass c, jlong handle)
 {
-    MP3File *mp3 = (MP3File *)handle;
+	MP3File *mp3 = (MP3File *)handle;
 	mpg123_handle *mh = mp3->handle;
 
 	off_t frame_offset;
@@ -247,65 +247,65 @@ JNIEXPORT jboolean JNICALL Java_com_axelby_podax_player_MPG123_skipFrame
 JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_seek
 	(JNIEnv *env, jclass c, jlong handle, jfloat seconds)
 {
-    MP3File *mp3 = (MP3File *)handle;
-    int err = mpg123_seek_frame(mp3->handle, (int) (seconds / mp3->secs_per_frame), SEEK_SET);
+	MP3File *mp3 = (MP3File *)handle;
+	int err = mpg123_seek_frame(mp3->handle, (int) (seconds / mp3->secs_per_frame), SEEK_SET);
 	if (err < 0)
 		printerr("mpg123_seek_frame", err);
-    return err;
+	return err;
 }
 
 JNIEXPORT float JNICALL Java_com_axelby_podax_player_MPG123_getPosition
 	(JNIEnv *env, jclass c, jlong handle)
 {
-    MP3File *mp3 = (MP3File *)handle;
-    return mpg123_tellframe(mp3->handle) * mp3->secs_per_frame;
+	MP3File *mp3 = (MP3File *)handle;
+	return mpg123_tellframe(mp3->handle) * mp3->secs_per_frame;
 }
 
 JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_getNumChannels
 	(JNIEnv *env, jclass c, jlong handle)
 {
-    MP3File *mp3 = (MP3File *)handle;
+	MP3File *mp3 = (MP3File *)handle;
 	if (mp3->channels == 0)
 		mp3file_determineStats(mp3);
-    return mp3->channels;
+	return mp3->channels;
 }
 
 JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_getRate
 	(JNIEnv *env, jclass c, jlong handle)
 {
-    MP3File *mp3 = (MP3File *)handle;
+	MP3File *mp3 = (MP3File *)handle;
 	if (mp3->rate == 0)
 		mp3file_determineStats(mp3);
-    return mp3->rate;
+	return mp3->rate;
 }
 
 JNIEXPORT jlong JNICALL Java_com_axelby_podax_player_MPG123_getNumFrames
 	(JNIEnv *env, jclass c, jlong handle)
 {
-    MP3File *mp3 = (MP3File *)handle;
-    return mp3->num_frames;
+	MP3File *mp3 = (MP3File *)handle;
+	return mp3->num_frames;
 }
 
 JNIEXPORT jfloat JNICALL Java_com_axelby_podax_player_MPG123_getDuration
 	(JNIEnv *env, jclass c, jlong handle)
 {
-    MP3File *mp3 = (MP3File *)handle;
+	MP3File *mp3 = (MP3File *)handle;
 	if (mp3->duration == 0)
 		mp3file_determineStats(mp3);
-    return mp3->duration;
+	return mp3->duration;
 }
 
 JNIEXPORT jdouble JNICALL Java_com_axelby_podax_player_MPG123_getSecondsPerFrame
 	(JNIEnv *env, jclass c, jlong handle)
 {
-    MP3File *mp3 = (MP3File *)handle;
-    return mp3->secs_per_frame;
+	MP3File *mp3 = (MP3File *)handle;
+	return mp3->secs_per_frame;
 }
 
 JNIEXPORT jint JNICALL Java_com_axelby_podax_player_MPG123_getSeekFrameOffset
 	(JNIEnv *env, jclass c, jlong mp3file, jfloat seconds)
 {
-    MP3File *mp3 = (MP3File *)mp3file;
+	MP3File *mp3 = (MP3File *)mp3file;
 	mpg123_handle *mh = mp3->handle;
 
 	size_t fill;

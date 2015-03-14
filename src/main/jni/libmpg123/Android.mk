@@ -42,23 +42,19 @@ endif
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
 LOCAL_ARM_NEON   := true
+# multi, generic, generic_dither choose neon or generic at runtime
 LOCAL_CFLAGS     := -DACCURATE_ROUNDING \
 					-DOPT_NEON \
+					-DREAL_IS_FLOAT \
 					-DHAVE_STRERROR \
+					-DOPT_MULTI -DOPT_GENERIC -DOPT_GENERIC_DITHER \
 					-Wno-int-to-pointer-cast \
 					-Wno-pointer-to-int-cast \
 					-ffast-math -O3
 LOCAL_SRC_FILES +=  synth_real.c synth_s32.c
 LOCAL_SRC_FILES +=  synth_neon.S synth_neon_accurate.S synth_neon_float.S synth_neon_s32.S
 LOCAL_SRC_FILES +=  dct36_neon.S dct64_neon_float.S synth_stereo_neon_accurate.S synth_stereo_neon_float.S synth_stereo_neon_s32.S
-LOCAL_CFLAGS     := -DACCURATE_ROUNDING \
-					-DOPT_ARM \
-					-DHAVE_STRERROR \
-					-DASMALIGN_BYTE \
-					-Wno-int-to-pointer-cast \
-					-Wno-pointer-to-int-cast \
-					-ffast-math -O3
-LOCAL_SRC_FILES +=  synth_arm.S synth_arm_accurate.S
+LOCAL_SRC_FILES +=  dither.c getcpuflags_arm.c check_neon.S
 endif
 
 ifeq ($(TARGET_ARCH_ABI),x86)
