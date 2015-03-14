@@ -429,7 +429,7 @@ public class EpisodeProvider extends ContentProvider {
 					+ "WHERE queuePosition > ?", new Object[]{oldPosition});
 
 			// delete the episode's file
-			deleteDownload(getContext(), episodeId);
+			deleteFiles(getContext(), episodeId);
 		} else if (!oldPosition.equals(newPosition)) {
 			// moving up: 1 2 3 4 5 2 -> 4: 3-- 4-- 2->4
 			if (oldPosition < newPosition)
@@ -535,15 +535,22 @@ public class EpisodeProvider extends ContentProvider {
 		// find out what we're deleting and delete downloaded files
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		String[] columns = new String[]{COLUMN_ID};
+
+		// act on the podcasts about to be deleted
+		Cursor c = db.query("podcasts", columns, where, whereArgs, null, null, null);
+		while (c.moveToNext()) {
+			deleteFiles(getContext(), c.getLong(0));
+			db.delete("fts_podcasts", "_id = ?", new String[] { Long.toString(c.getLong(0)) });
+		}
+		c.close();
+
+		// keep the queue order monotonic
 		String episodesWhere = "queuePosition IS NOT NULL";
 		if (where != null)
 			episodesWhere = where + " AND " + episodesWhere;
-		Cursor c = db.query("podcasts", columns, episodesWhere, whereArgs, null, null, null);
-		while (c.moveToNext()) {
+		c = db.query("podcasts", columns, episodesWhere, whereArgs, null, null, null);
+		while (c.moveToNext())
 			updatePlaylistPosition(c.getLong(0), null);
-			deleteDownload(getContext(), c.getLong(0));
-			db.delete("fts_podcasts", "_id = ?", new String[] { Long.toString(c.getLong(0)) });
-		}
 		c.close();
 
 		int count = db.delete("podcasts", where, whereArgs);
@@ -553,16 +560,16 @@ public class EpisodeProvider extends ContentProvider {
 		return count;
 	}
 
-	private static void deleteDownload(Context context, final long episodeId) {
-		File storage = new File(EpisodeCursor.getStoragePath(context));
+	private static void deleteFiles(Context context, final long episodeId) {
+		File storage = new File(EpisodeCursor.getPodcastStoragePath(context));
 		File[] files = storage.listFiles(new FileFilter() {
 			public boolean accept(File pathname) {
-				return pathname.getName().startsWith(String.valueOf(episodeId)) &&
-						pathname.getPath().endsWith(".mp3");
+				return pathname.getName().startsWith(String.valueOf(episodeId) + ".");
 			}
 		});
 		for (File f : files)
 			f.delete();
+		new File(EpisodeCursor.getIndexFilename(context, episodeId)).delete();
 	}
 
 	public static void restart(Context context, long episodeId) {
