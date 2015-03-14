@@ -542,6 +542,7 @@ public class EpisodeProvider extends ContentProvider {
 		while (c.moveToNext()) {
 			updatePlaylistPosition(c.getLong(0), null);
 			deleteDownload(getContext(), c.getLong(0));
+			db.delete("fts_podcasts", "_id = ?", new String[] { Long.toString(c.getLong(0)) });
 		}
 		c.close();
 

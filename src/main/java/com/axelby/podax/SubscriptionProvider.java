@@ -297,6 +297,7 @@ public class SubscriptionProvider extends ContentProvider {
 		if (!in.equals("")) {
 			in = "(" + in.substring(1) + ")";
 			contentResolver.delete(EpisodeProvider.URI, "subscriptionId IN " + in, subIds.toArray(new String[subIds.size()]));
+			db.delete("fts_subscriptions", "_id IN " + in, null);
 		}
 
 		// remove during next gpodder sync
