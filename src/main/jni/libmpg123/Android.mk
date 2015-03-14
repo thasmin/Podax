@@ -41,20 +41,18 @@ LOCAL_SRC_FILES +=  synth_arm.S synth_arm_accurate.S
 endif
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-#LOCAL_CFLAGS     := -DACCURATE_ROUNDING \
-#					-DOPT_NEON \
-#					-DHAVE_STRERROR \
-#					-Wno-int-to-pointer-cast \
-#					-Wno-pointer-to-int-cast \
-#					-ffast-math -O3
-#LOCAL_SRC_FILES +=  synth_real.c synth_s32.c
-#LOCAL_SRC_FILES +=  synth_neon.S synth_neon_accurate.S synth_neon_float.S synth_neon_s32.S
-#LOCAL_SRC_FILES +=  dct36_neon.S dct64_neon_float.S synth_stereo_neon_accurate.S synth_stereo_neon_float.S synth_stereo_neon_s32.S
+LOCAL_ARM_NEON   := true
+LOCAL_CFLAGS     := -DACCURATE_ROUNDING \
+					-DOPT_NEON \
+					-DHAVE_STRERROR \
+					-Wno-int-to-pointer-cast \
+					-Wno-pointer-to-int-cast \
+					-ffast-math -O3
+LOCAL_SRC_FILES +=  synth_real.c synth_s32.c
+LOCAL_SRC_FILES +=  synth_neon.S synth_neon_accurate.S synth_neon_float.S synth_neon_s32.S
+LOCAL_SRC_FILES +=  dct36_neon.S dct64_neon_float.S synth_stereo_neon_accurate.S synth_stereo_neon_float.S synth_stereo_neon_s32.S
 LOCAL_CFLAGS     := -DACCURATE_ROUNDING \
 					-DOPT_ARM \
-					-DREAL_IS_FIXED \
-					-DNO_REAL \
-					-DNO_32BIT \
 					-DHAVE_STRERROR \
 					-DASMALIGN_BYTE \
 					-Wno-int-to-pointer-cast \
