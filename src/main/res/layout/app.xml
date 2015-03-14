@@ -102,7 +102,8 @@
         android:layout_above="@+id/play"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:background="?attr/colorPrimary" />
+        android:background="?attr/colorPrimary"
+        tools:ignore="PxUsage" />
 
     <View
         android:id="@+id/progressline"
@@ -111,7 +112,8 @@
         android:layout_above="@+id/play"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:background="@color/lightblue500" />
+        android:background="@color/lightblue500"
+        tools:ignore="PxUsage" />
 
     <ImageButton
         android:id="@+id/play"
@@ -123,6 +125,7 @@
         android:background="?attr/colorPrimary"
         android:contentDescription="@string/play"
         android:padding="10dp"
+        android:minHeight="50dp"
         android:src="@drawable/ic_action_play" />
     <TextView
         android:id="@+id/episodeTitle"
@@ -137,6 +140,7 @@
         android:gravity="center_vertical"
         android:background="?attr/colorPrimary"
         android:textSize="20sp"
+        android:minHeight="50dp"
         tools:text="Episode Title" />
     <ImageButton
         android:id="@+id/expand"
@@ -148,6 +152,7 @@
         android:background="?attr/colorPrimary"
         android:contentDescription="@string/expand"
         android:padding="10dp"
+        android:minHeight="50dp"
         android:src="@drawable/ic_action_collapse" />
 
 </RelativeLayout>
