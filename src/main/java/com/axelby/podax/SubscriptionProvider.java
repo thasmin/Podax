@@ -150,10 +150,12 @@ public class SubscriptionProvider extends ContentProvider {
 		sqlBuilder.setProjectionMap(_columnMap);
 		sqlBuilder.setTables("subscriptions");
 
+		// default sort order is by title
+		if (sortOrder == null)
+			sortOrder = "title IS NULL, COALESCE(titleOverride, title)";
+
 		switch (uriMatch) {
 			case SUBSCRIPTIONS:
-				if (sortOrder == null)
-					sortOrder = "title IS NULL, COALESCE(titleOverride, title)";
 				sqlBuilder.appendWhere("singleUse = 0");
 				break;
 			case SUBSCRIPTION_ID:
@@ -163,8 +165,6 @@ public class SubscriptionProvider extends ContentProvider {
 				sqlBuilder.setTables(sqlBuilder.getTables() + " JOIN fts_subscriptions fts ON subscriptions._id = fts._id");
 				selection = "fts_subscriptions MATCH ?";
 				sqlBuilder.appendWhere("singleUse = 0");
-				if (sortOrder == null)
-					sortOrder = "COALESCE(fts.titleOverride, fts.title)";
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown URI");

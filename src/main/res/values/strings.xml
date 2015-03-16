@@ -296,5 +296,8 @@ limitations under the License.</p>
     <string name="episodes">Episodes</string>
     <string name="no_subscription_matches">No subscriptions match this search.</string>
     <string name="no_episode_matches">No episodes match this search.</string>
+    <string name="weekly_planner">Weekly Planner</string>
+    <string name="extra">Extra</string>
+    <string name="shortage">Shortage</string>
 
 </resources>

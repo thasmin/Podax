@@ -1,5 +1,6 @@
 package com.axelby.podax;
 
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -28,6 +29,7 @@ public class SubscriptionCursor {
 	private Integer _titleOverrideColumn = null;
 	private Integer _descriptionColumn = null;
 	private Integer _singleUseColumn = null;
+	private Integer _playlistNewColumn = null;
 
 	public SubscriptionCursor(Cursor cursor) {
 		_cursor = cursor;
@@ -38,6 +40,7 @@ public class SubscriptionCursor {
 	}
 
 	public static SubscriptionCursor getCursor(Context context, long subscriptionId) {
+		@SuppressLint("Recycle")
 		Cursor c = context.getContentResolver().query(SubscriptionCursor.getContentUri(subscriptionId), null, null, null, null);
 		if (c == null)
 			return null;
@@ -163,5 +166,11 @@ public class SubscriptionCursor {
 		if (_cursor.isNull(_singleUseColumn))
 			return false;
 		return _cursor.getInt(_singleUseColumn) != 0;
+	}
+
+	public boolean areNewEpisodesAddedToPlaylist() {
+		if (_playlistNewColumn == null)
+			_playlistNewColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_PLAYLIST_NEW);
+		return _cursor.isNull(_playlistNewColumn) || _cursor.getInt(_playlistNewColumn) != 0;
 	}
 }

@@ -10,13 +10,13 @@ public abstract class AudioPlayerBase implements Runnable {
 			return MediaPlayer.determineDuration(filename);
 	}
 
-	public static interface OnCompletionListener { public void onCompletion(); }
+	public interface OnCompletionListener { void onCompletion(); }
 	protected OnCompletionListener _completionListener = null;
 	public void setOnCompletionListener(OnCompletionListener completionListener) {
 		this._completionListener = completionListener;
 	}
 
-	public static interface PeriodicListener { public void pulse(float position); }
+	public interface PeriodicListener { void pulse(float position); }
 	protected PeriodicListener _periodicListener = null;
 	public void setPeriodicListener(PeriodicListener periodicListener) {
 		this._periodicListener = periodicListener;

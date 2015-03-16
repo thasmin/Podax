@@ -379,6 +379,7 @@ public class MainActivity extends ActionBarActivity {
 
 	final DrawerItem[] _drawerItems = {
 			new DrawerItem(LatestActivityFragment.class, R.string.latest_activity, R.drawable.ic_menu_alarm, false),
+			new DrawerItem(WeeklyPlannerFragment.class, R.string.weekly_planner, R.drawable.ic_menu_podax, false),
 			new DrawerItem(FinishedEpisodeFragment.class, R.string.finished_episodes, R.drawable.ic_menu_done_all, false),
 			new DrawerItem(AddSubscriptionFragment.class, R.string.add_subscription, R.drawable.ic_menu_add, false),
 			new DrawerItem(GPodderProvider.class, R.string.gpodder_sync, R.drawable.ic_menu_gpoddernet, false),

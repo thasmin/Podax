@@ -160,6 +160,14 @@ public class PlayerService extends Service {
 			PlaylistManager.changeActiveEpisode(PlayerService.this, status.getEpisodeId());
 			_lockscreenManager.setupLockscreenControls(PlayerService.this, status);
 			showNotification();
+
+			if (status.getDuration() == 0) {
+				EpisodeCursor ep = EpisodeCursor.getCursor(PlayerService.this, status.getEpisodeId());
+				if (ep != null) {
+					ep.determineDuration(PlayerService.this);
+					ep.closeCursor();
+				}
+			}
 		}
 
 		@Override

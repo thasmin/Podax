@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	tools:context="@layout/fragment_general">
+
+	<TextView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:textColor="?attr/colorPrimary"
+		android:text="@string/weekly_planner"
+		android:gravity="center_horizontal"
+		android:textSize="18sp" />
+
+	<TextView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Last week's stats" />
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="2px"
+		android:background="?attr/colorPrimaryDark" />
+
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<TextView
+			android:id="@+id/autoadd_label"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+			android:layout_alignParentTop="true"
+			android:layout_alignParentLeft="true"
+			android:layout_alignParentStart="true"
+			android:text="Automatically added episodes" />
+
+		<TextView
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+			android:layout_below="@id/autoadd_label"
+			android:layout_alignParentLeft="true"
+			android:layout_alignParentStart="true"
+			android:text="Listen hours" />
+
+		<TextView
+			android:id="@+id/autoadd_time"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:layout_alignParentEnd="true"
+			android:text="4 hours 3 minutes" />
+
+		<TextView
+			android:id="@+id/listen_time"
+			android:layout_below="@id/autoadd_time"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:layout_alignParentEnd="true"
+			android:text="3 hours 43 minutes" />
+
+		<TextView
+			android:id="@+id/diff_time"
+			android:layout_marginTop="5dp"
+			android:layout_below="@id/listen_time"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:layout_alignParentEnd="true"
+			android:textColor="?attr/colorPrimary"
+			android:textSize="15sp"
+			android:text="20 minutes" />
+
+		<TextView
+			android:id="@+id/diff_label"
+			android:layout_alignBaseline="@id/diff_time"
+			android:layout_toLeftOf="@id/diff_time"
+			android:layout_toStartOf="@id/diff_time"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="?attr/colorPrimary"
+			android:layout_marginRight="10dp"
+			android:layout_marginEnd="10dp"
+			android:textAllCaps="true"
+			android:textSize="15sp"
+			android:text="EXTRA" />
+
+	</RelativeLayout>
+
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="5px"
+		android:background="?attr/colorAccent"
+		android:layout_marginTop="20dp"
+		android:layout_marginBottom="20dp"
+		/>
+
+	<ScrollView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<LinearLayout
+			android:id="@+id/subscription_list"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
+
+			<TextView
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:text="@string/subscriptions"
+				android:textSize="16sp" />
+
+			<TextView
+				android:id="@+id/subscription_instructions"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:textSize="12sp"
+				android:text="check means new episode are added to playlist" />
+
+			<TextView
+				android:id="@+id/subscription_empty"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:textSize="12sp"
+				android:visibility="gone"
+				android:text="no_subscriptions" />
+
+			<CheckBox
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:text="tmp" />
+
+		</LinearLayout>
+	</ScrollView>
+
+	<Button
+		android:id="@+id/add_subscription"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center_horizontal"
+		android:text="Find New Subscriptions"
+		style="@style/Widget.Podax.Button"
+		/>
+</LinearLayout>

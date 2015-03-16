@@ -13,6 +13,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import com.axelby.gpodder.dto.Subscription;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Arrays;
@@ -492,23 +494,17 @@ public class EpisodeProvider extends ContentProvider {
 		} else {
 			episodeId = db.insert("podcasts", null, values);
 
-			// find out if we should download new episodes
-			Cursor playlistNewCursor = db.query("subscriptions",
-					new String[]{SubscriptionProvider.COLUMN_PLAYLIST_NEW},
-					"_id = ?",
-					new String[]{String.valueOf(values.getAsLong(COLUMN_SUBSCRIPTION_ID))},
-					null, null, null);
-			playlistNewCursor.moveToFirst();
-			boolean playlistNew = playlistNewCursor.getInt(0) != 0;
-			playlistNewCursor.close();
-
-			// if the new episode is less than 5 days old , and add it to the playlist
-			if (playlistNew && values.containsKey(COLUMN_PUB_DATE)) {
-				Calendar c = Calendar.getInstance();
-				c.add(Calendar.DATE, -5);
-				if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {
-					updatePlaylistPosition(episodeId, Integer.MAX_VALUE);
+			// if the new episode is less than 5 days old for the right subscriptions, add it to the playlist
+			SubscriptionCursor sub = SubscriptionCursor.getCursor(getContext(), values.getAsLong(COLUMN_SUBSCRIPTION_ID));
+			if (sub != null) {
+				if (sub.areNewEpisodesAddedToPlaylist() && values.containsKey(COLUMN_PUB_DATE)) {
+					Calendar c = Calendar.getInstance();
+					c.add(Calendar.DATE, -5);
+					if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {
+						updatePlaylistPosition(episodeId, Integer.MAX_VALUE);
+					}
 				}
+				sub.closeCursor();
 			}
 		}
 
