@@ -13,8 +13,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
-import com.axelby.gpodder.dto.Subscription;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Arrays;
@@ -394,12 +392,12 @@ public class EpisodeProvider extends ContentProvider {
 	}
 
 	private ContentValues extractFTSValues(ContentValues values) {
-		ContentValues fdsValues = new ContentValues(2);
+		ContentValues ftsValues = new ContentValues(2);
 		if (values.containsKey(COLUMN_TITLE))
-			fdsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
+			ftsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
 		if (values.containsKey(COLUMN_DESCRIPTION))
-			fdsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
-		return fdsValues;
+			ftsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
+		return ftsValues;
 	}
 
 	void updatePlaylistPosition(long episodeId, Integer newPosition) {
@@ -490,9 +488,17 @@ public class EpisodeProvider extends ContentProvider {
 				if (new File(file).length() > values.getAsInteger(COLUMN_FILE_SIZE))
 					values.remove(COLUMN_FILE_SIZE);
 			}
+
 			db.update("podcasts", values, COLUMN_ID + " = ?", new String[]{String.valueOf(episodeId)});
+			// insert into the full text search virtual table
+			if (hasFTSValues(values))
+				db.update("fts_podcasts", extractFTSValues(values), COLUMN_ID + " = ?", new String[]{String.valueOf(episodeId)});
 		} else {
 			episodeId = db.insert("podcasts", null, values);
+
+			ContentValues ftsValues = extractFTSValues(values);
+			ftsValues.put(COLUMN_ID, episodeId);
+			db.insert("fts_podcasts", null, ftsValues);
 
 			// if the new episode is less than 5 days old for the right subscriptions, add it to the playlist
 			SubscriptionCursor sub = SubscriptionCursor.getCursor(getContext(), values.getAsLong(COLUMN_SUBSCRIPTION_ID));

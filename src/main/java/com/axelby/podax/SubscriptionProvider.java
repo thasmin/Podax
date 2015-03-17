@@ -152,7 +152,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 		// default sort order is by title
 		if (sortOrder == null)
-			sortOrder = "title IS NULL, COALESCE(titleOverride, title)";
+			sortOrder = "subscriptions.title IS NULL, COALESCE(subscriptions.titleOverride, subscriptions.title)";
 
 		switch (uriMatch) {
 			case SUBSCRIPTIONS:
@@ -210,14 +210,14 @@ public class SubscriptionProvider extends ContentProvider {
 	}
 
 	private ContentValues extractFTSValues(ContentValues values) {
-		ContentValues fdsValues = new ContentValues(3);
+		ContentValues ftsValues = new ContentValues(3);
 		if (values.containsKey(COLUMN_TITLE))
-			fdsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
+			ftsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
 		if (values.containsKey(COLUMN_TITLE_OVERRIDE))
-			fdsValues.put(COLUMN_TITLE_OVERRIDE, values.getAsString(COLUMN_TITLE_OVERRIDE));
+			ftsValues.put(COLUMN_TITLE_OVERRIDE, values.getAsString(COLUMN_TITLE_OVERRIDE));
 		if (values.containsKey(COLUMN_DESCRIPTION))
-			fdsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
-		return fdsValues;
+			ftsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
+		return ftsValues;
 	}
 
 	@Override
@@ -251,6 +251,10 @@ public class SubscriptionProvider extends ContentProvider {
 		c.close();
 
 		long id = db.insert("subscriptions", null, values);
+
+		ContentValues ftsValues = extractFTSValues(values);
+		ftsValues.put(COLUMN_ID, id);
+		db.insert("fts_subscriptions", null, ftsValues);
 
 		// add during next gpodder sync
 		if (!from_gpodder)

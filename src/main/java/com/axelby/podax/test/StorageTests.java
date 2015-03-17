@@ -14,33 +14,28 @@ import com.axelby.podax.SubscriptionProvider;
 import java.io.File;
 
 public class StorageTests extends AndroidTestCase {
-	@Override
-	public void setUp() {
-		com.axelby.podax.DBAdapter.useTestingDB(getContext());
-	}
-
 	public void testDeletePodcast() throws Exception {
-		String filename = null;
+		Context context = getContext();
+		ContentResolver resolver = context.getContentResolver();
+
+		ContentValues values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "Test Subscription");
+		values.put(SubscriptionProvider.COLUMN_URL, "test");
+		Uri subUri = resolver.insert(SubscriptionProvider.URI, values);
+
+		values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_TITLE, "Test Episode");
+		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test.mp3");
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		Uri epUri = resolver.insert(EpisodeProvider.URI, values);
+
+		long id = ContentUris.parseId(epUri);
+		EpisodeCursor ep = EpisodeCursor.getCursor(context, id);
+		if (ep == null)
+			throw new Exception("couldn't load episode cursor");
+
+		String filename = ep.getFilename(context);
 		try {
-			Context context = getContext();
-			ContentResolver resolver = context.getContentResolver();
-
-			ContentValues values = new ContentValues();
-			values.put(SubscriptionProvider.COLUMN_TITLE, "Test Subscription");
-			values.put(SubscriptionProvider.COLUMN_URL, "test");
-			Uri subUri = resolver.insert(SubscriptionProvider.URI, values);
-
-			values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_TITLE, "Test Episode");
-			values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test.mp3");
-			values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
-			Uri epUri = resolver.insert(EpisodeProvider.URI, values);
-
-			long id = ContentUris.parseId(epUri);
-			EpisodeCursor ep = EpisodeCursor.getCursor(context, id);
-			if (ep == null)
-				throw new Exception("couldn't load episode cursor");
-			filename = ep.getFilename(context);
 			boolean created = new File(filename).createNewFile();
 			if (!created)
 				throw new Exception("unable to create filename");
