@@ -14,12 +14,16 @@ import com.axelby.podax.SubscriptionProvider;
 import java.io.File;
 
 public class StorageTests extends AndroidTestCase {
+	@Override
+	public void setUp() {
+		com.axelby.podax.DBAdapter.useTestingDB(getContext());
+	}
+
 	public void testDeletePodcast() throws Exception {
 		String filename = null;
 		try {
 			Context context = getContext();
 			ContentResolver resolver = context.getContentResolver();
-			context.deleteDatabase("podax.db");
 
 			ContentValues values = new ContentValues();
 			values.put(SubscriptionProvider.COLUMN_TITLE, "Test Subscription");

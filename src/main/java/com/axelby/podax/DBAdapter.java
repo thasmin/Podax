@@ -4,12 +4,19 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-class DBAdapter extends SQLiteOpenHelper {
+public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
+	private static final String TEST_DATABASE_NAME = "podax-test.db";
 	private static final int DATABASE_VERSION = 16;
 
+	private static String dbName = DATABASE_NAME;
+	public static void useTestingDB(Context context) {
+		dbName = TEST_DATABASE_NAME;
+		context.deleteDatabase(TEST_DATABASE_NAME);
+	}
+
 	public DBAdapter(Context context) {
-		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		super(context, dbName, null, DATABASE_VERSION);
 	}
 
 	@Override
