@@ -5,12 +5,9 @@ import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-
 import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,6 +32,8 @@ public class SubscriptionListFragment extends Fragment
 
 	private SubscriptionAdapter _adapter = null;
 
+	private long _selectedId = -1;
+	private int _selectedPosition = -1;
 	private Cursor _cursor;
 
 	private RecyclerView _list;
@@ -66,6 +65,23 @@ public class SubscriptionListFragment extends Fragment
 		_list.setItemAnimator(new DefaultItemAnimator());
 
 		_subscriptionTitle = (TextView) view.findViewById(R.id.subscription_title);
+
+		View settings = view.findViewById(R.id.settings);
+		settings.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), SubscriptionSettingsFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, _selectedId));
+			}
+		});
+
+		View unsub = view.findViewById(R.id.unsubscribe);
+		unsub.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				getActivity().getContentResolver().delete(SubscriptionProvider.getContentUri(_selectedId), null, null);
+				_adapter.notifyItemRemoved(_selectedPosition);
+			}
+		});
 	}
 
 	@Override
@@ -129,6 +145,8 @@ public class SubscriptionListFragment extends Fragment
 			return;
 		_cursor.moveToPosition(position);
 		SubscriptionCursor sub = new SubscriptionCursor(_cursor);
+		_selectedPosition = position;
+		_selectedId = sub.getId();
 		_subscriptionTitle.setText(sub.getTitle());
 	}
 
@@ -146,22 +164,11 @@ public class SubscriptionListFragment extends Fragment
 	private class SubscriptionAdapter extends RecyclerView.Adapter<SubscriptionAdapter.ViewHolder> {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-			/*
-            public final TextView title;
-            public final TextView description;
-            public final ImageButton more;
-            */
 			public final ImageView thumbnail;
 
             public ViewHolder(View v) {
 				super(v);
 
-				/*
-                title = (TextView) v.findViewById(R.id.title);
-                description = (TextView) v.findViewById(R.id.description);
-                more = (ImageButton) v.findViewById(R.id.more);
-				thumbnail = (ImageView) v.findViewById(R.id.thumbnail);
-				*/
 				thumbnail = (ImageView) v;
 				thumbnail.setOnClickListener(_subscriptionChoiceHandler);
             }
@@ -170,40 +177,12 @@ public class SubscriptionListFragment extends Fragment
 		private final View.OnClickListener _subscriptionChoiceHandler = new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (long) view.getTag()));
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, _selectedId));
 			}
 		};
 
-        private final View.OnClickListener _moreClickHandler = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final long subscriptionId = (Long) view.getTag();
-                PopupMenu menu = new PopupMenu(getActivity(), view);
-                menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-                        if (menuItem.getItemId() == R.id.refresh) {
-                            UpdateService.updateSubscription(getActivity(), subscriptionId);
-                            return true;
-                        } else if (menuItem.getItemId() == R.id.unsubscribe) {
-                            Uri subscriptionUri= SubscriptionProvider.getContentUri(subscriptionId);
-                            getActivity().getContentResolver().delete(subscriptionUri, null, null);
-                            return true;
-                        } else if (menuItem.getItemId() == R.id.settings) {
-                            startActivity(PodaxFragmentActivity.createIntent(getActivity(), SubscriptionSettingsFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId));
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-                menu.inflate(R.menu.subscription_list_item);
-                menu.show();
-            }
-        };
-
 		@Override
 		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			//View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.subscription_list_item, parent, false);
 			ImageView view = new ImageView(parent.getContext());
 			view.setLayoutParams(new ViewGroup.LayoutParams(512, 512));
 			view.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -214,19 +193,7 @@ public class SubscriptionListFragment extends Fragment
 		public void onBindViewHolder(ViewHolder holder, int position) {
 			_cursor.moveToPosition(position);
 			SubscriptionCursor subscription = new SubscriptionCursor(_cursor);
-
 			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(holder.thumbnail.getContext(), subscription.getId()));
-			holder.thumbnail.setTag(subscription.getId());
-			/*
-			holder.title.setText(subscription.getTitle());
-            if (subscription.getDescription() != null)
-                holder.description.setText(subscription.getDescription().trim());
-            else
-                holder.description.setText(R.string.description_not_available);
-			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), subscription.getId()));
-            holder.more.setTag(subscription.getId());
-            */
-
 		}
 
 		@Override

@@ -10,7 +10,7 @@
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="5dp"
     />
 
     <TextView
@@ -21,6 +21,26 @@
         android:layout_below="@id/list"
         android:gravity="center"
         tools:text="Fitzdog Radio"
+    />
+
+    <Button
+        android:id="@+id/settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings"
+        android:layout_below="@id/subscription_title"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+    />
+
+    <Button
+        android:id="@+id/unsubscribe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/unsubscribe"
+        android:layout_below="@id/subscription_title"
+        android:layout_toRightOf="@id/settings"
+        android:layout_toEndOf="@id/settings"
     />
 
     <Button
