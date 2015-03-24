@@ -245,7 +245,7 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 
 		rotateChildren();
 
-		return delta;
+		return -delta;
 	}
 
 	private void rotateChildren() {
