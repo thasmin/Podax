@@ -88,8 +88,8 @@
     <orderEntry type="library" exported="" name="recyclerview-v7-21.0.0" level="project" />
     <orderEntry type="library" exported="" name="android-iconify-1.0.6" level="project" />
     <orderEntry type="library" exported="" name="support-v4-22.0.0" level="project" />
-    <orderEntry type="library" exported="" name="okio-1.0.1" level="project" />
     <orderEntry type="library" exported="" name="flattr4j-core-2.11" level="project" />
+    <orderEntry type="library" exported="" name="okio-1.0.1" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-22.0.0" level="project" />
     <orderEntry type="library" exported="" name="retrofit-1.8.0" level="project" />
     <orderEntry type="library" exported="" name="acra-4.5.0" level="project" />
@@ -99,8 +99,9 @@
     <orderEntry type="library" exported="" name="support-annotations-22.0.0" level="project" />
     <orderEntry type="library" exported="" name="joda-time-2.7-no-tzdb" level="project" />
     <orderEntry type="library" exported="" name="okhttp-2.1.0" level="project" />
-    <orderEntry type="library" exported="" name="gson-2.3" level="project" />
     <orderEntry type="library" exported="" name="picasso-2.4.0" level="project" />
+    <orderEntry type="library" exported="" name="gson-2.3" level="project" />
+    <orderEntry type="library" exported="" name="support-v13-22.0.0" level="project" />
   </component>
 </module>
 

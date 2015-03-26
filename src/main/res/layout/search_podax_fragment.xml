@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/subscriptions"
+            android:textAllCaps="true"/>
+        <GridLayout
+            android:id="@+id/subscription_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:columnCount="3"
+            android:rowCount="1"
+            android:layout_marginTop="5dp"
+            />
+        <TextView
+            android:id="@+id/subscription_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="50dp"
+            android:gravity="center_horizontal"
+            android:text="@string/no_subscription_matches"
+            android:textSize="20sp"
+            android:visibility="gone"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/episodes"
+            android:textAllCaps="true"
+            android:layout_marginTop="20dp"/>
+        <LinearLayout
+            android:id="@+id/episode_list"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            />
+        <TextView
+            android:id="@+id/episode_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="50dp"
+            android:gravity="center_horizontal"
+            android:text="@string/no_episode_matches"
+            android:textSize="20sp"
+            android:visibility="gone"
+            />
+    </LinearLayout>
+</ScrollView>
