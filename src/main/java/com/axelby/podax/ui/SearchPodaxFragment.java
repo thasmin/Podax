@@ -70,6 +70,8 @@ public class SearchPodaxFragment extends Fragment
 		_episodeList = (LinearLayout) view.findViewById(R.id.episode_list);
 		_episodeEmpty = (TextView) view.findViewById(R.id.episode_empty);
 
+		getLoaderManager().initLoader(0, getArguments(), this);
+		getLoaderManager().initLoader(1, getArguments(), this);
 	}
 
 	@Override

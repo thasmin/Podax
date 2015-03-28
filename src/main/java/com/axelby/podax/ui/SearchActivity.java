@@ -19,6 +19,8 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
 public class SearchActivity extends ActionBarActivity {
+	private String _query = "";
+
 	public interface QueryChangedHandler {
 		public void onQueryChanged(String query);
 	}
@@ -39,10 +41,14 @@ public class SearchActivity extends ActionBarActivity {
 			if (_fragments[position] == null) {
 				switch (position) {
 					case 0: _fragments[position] = new SearchPodaxFragment(); break;
-					case 1: return new Fragment();
+					case 1: _fragments[position] = new SearchPodaxAppFragment(); break;
 					case 2: return new Fragment();
 					default: return null;
 				}
+				Fragment fragment = (Fragment)_fragments[position];
+				Bundle bundle = new Bundle(1);
+				bundle.putString(SearchManager.QUERY, _query);
+				fragment.setArguments(bundle);
 			}
 
 			return (Fragment) _fragments[position];
@@ -77,7 +83,8 @@ public class SearchActivity extends ActionBarActivity {
 		}
 
 		EditText query = (EditText) findViewById(R.id.query);
-		query.setText(intent.getStringExtra(SearchManager.QUERY));
+		_query = intent.getStringExtra(SearchManager.QUERY);
+		query.setText(_query);
 		query.setSelection(query.getText().length());
 		query.addTextChangedListener(new TextWatcher() {
 			@Override
@@ -90,9 +97,10 @@ public class SearchActivity extends ActionBarActivity {
 
 			@Override
 			public void onTextChanged(CharSequence str, int start, int before, int count) {
+				_query = str.toString();
 				for (QueryChangedHandler fragment : _fragments)
 					if (fragment != null)
-						fragment.onQueryChanged(str.toString());
+						fragment.onQueryChanged(_query);
 			}
 		});
 
