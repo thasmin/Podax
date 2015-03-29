@@ -6,12 +6,15 @@ import android.app.SearchManager;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.content.Loader;
+import android.graphics.Point;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.axelby.podax.R;
 import com.axelby.podax.podaxapp.PodaxAppClient;
@@ -34,7 +37,7 @@ public class SearchPodaxAppFragment extends Fragment
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		RecyclerView list = (RecyclerView) view.findViewById(R.id.recyclerview);
-		list.setLayoutManager(new LinearLayoutManager(view.getContext()));
+		list.setLayoutManager(new GridLayoutManager(view.getContext(), 3));
 		_adapter = new SearchPodaxAppAdapter();
 		list.setAdapter(_adapter);
 
@@ -96,14 +99,25 @@ public class SearchPodaxAppFragment extends Fragment
 	}
 
 	private class SearchPodaxAppAdapter extends RecyclerView.Adapter<SearchPodaxAppAdapter.PodaxAppViewHolder> {
+		private final int _thumbSize;
 		private List<Podcast> _podcasts = null;
 
 		public class PodaxAppViewHolder extends RecyclerView.ViewHolder {
-			public SearchPodaxAppTextView text;
+			public ImageView thumbnail;
+			public TextView title;
+
 			public PodaxAppViewHolder(View view) {
 				super(view);
-				text = (SearchPodaxAppTextView) view;
+				thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+				title = (TextView) view.findViewById(R.id.title);
 			}
+		}
+
+		public SearchPodaxAppAdapter() {
+			super();
+			Point size = new Point();
+			getActivity().getWindowManager().getDefaultDisplay().getSize(size);
+			_thumbSize = size.x;
 		}
 
 		public void setData(List<Podcast> podcasts) {
@@ -113,7 +127,7 @@ public class SearchPodaxAppFragment extends Fragment
 
 		@Override
 		public PodaxAppViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_podaxapp_item, parent, false);
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_item_subscription, parent, false);
 			return new PodaxAppViewHolder(view);
 		}
 
@@ -125,8 +139,8 @@ public class SearchPodaxAppFragment extends Fragment
 		@Override
 		public void onBindViewHolder(PodaxAppViewHolder holder, int position) {
 			Podcast pod = _podcasts.get(position);
-			holder.text.setText(pod.title);
-			Picasso.with(holder.text.getContext()).load(pod.imageUrl).into(holder.text);
+			holder.title.setText(pod.title);
+			Picasso.with(holder.thumbnail.getContext()).load(pod.imageUrl).into(holder.thumbnail);
 		}
 	}
 }
