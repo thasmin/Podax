@@ -6,26 +6,23 @@ import android.app.SearchManager;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.content.Loader;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.axelby.podax.R;
 import com.axelby.podax.podaxapp.PodaxAppClient;
 import com.axelby.podax.podaxapp.Podcast;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 public class SearchPodaxAppFragment extends Fragment
 	implements SearchActivity.QueryChangedHandler, LoaderManager.LoaderCallbacks<List<Podcast>> {
 
+	private List<Podcast> _podcasts = null;
 	private SearchPodaxAppAdapter _adapter;
 
 	@Override
@@ -59,13 +56,18 @@ public class SearchPodaxAppFragment extends Fragment
 	}
 
 	@Override
-	public void onLoadFinished(Loader<List<Podcast>> listLoader, List<Podcast> podcasts) {
-		_adapter.setData(podcasts);
+	public void onLoadFinished(Loader<List<Podcast>> loader, List<Podcast> podcasts) {
+		setPodcasts(podcasts);
 	}
 
 	@Override
-	public void onLoaderReset(Loader<List<Podcast>> listLoader) {
-		_adapter.setData(null);
+	public void onLoaderReset(Loader<List<Podcast>> loader) {
+		setPodcasts(null);
+	}
+
+	public void setPodcasts(List<Podcast> podcasts) {
+		_podcasts = podcasts;
+		_adapter.notifyDataSetChanged();
 	}
 
 	public static class PodaxAppSearcher extends AsyncTaskLoader<List<Podcast>> {
@@ -98,37 +100,10 @@ public class SearchPodaxAppFragment extends Fragment
 		}
 	}
 
-	private class SearchPodaxAppAdapter extends RecyclerView.Adapter<SearchPodaxAppAdapter.PodaxAppViewHolder> {
-		private final int _thumbSize;
-		private List<Podcast> _podcasts = null;
-
-		public class PodaxAppViewHolder extends RecyclerView.ViewHolder {
-			public ImageView thumbnail;
-			public TextView title;
-
-			public PodaxAppViewHolder(View view) {
-				super(view);
-				thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-				title = (TextView) view.findViewById(R.id.title);
-			}
-		}
-
-		public SearchPodaxAppAdapter() {
-			super();
-			Point size = new Point();
-			getActivity().getWindowManager().getDefaultDisplay().getSize(size);
-			_thumbSize = size.x;
-		}
-
-		public void setData(List<Podcast> podcasts) {
-			_podcasts = podcasts;
-			notifyDataSetChanged();
-		}
-
+	private class SearchPodaxAppAdapter extends RecyclerView.Adapter<SmallSubscriptionView.ViewHolder> {
 		@Override
-		public PodaxAppViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_item_subscription, parent, false);
-			return new PodaxAppViewHolder(view);
+		public SmallSubscriptionView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			return new SmallSubscriptionView(parent.getContext()).getViewHolder();
 		}
 
 		@Override
@@ -137,10 +112,9 @@ public class SearchPodaxAppFragment extends Fragment
 		}
 
 		@Override
-		public void onBindViewHolder(PodaxAppViewHolder holder, int position) {
+		public void onBindViewHolder(SmallSubscriptionView.ViewHolder holder, int position) {
 			Podcast pod = _podcasts.get(position);
-			holder.title.setText(pod.title);
-			Picasso.with(holder.thumbnail.getContext()).load(pod.imageUrl).into(holder.thumbnail);
+			holder.set(pod.title, pod.imageUrl);
 		}
 	}
 }
