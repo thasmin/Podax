@@ -1,6 +1,9 @@
 package com.axelby.podax.ui;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -9,12 +12,25 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.axelby.podax.Constants;
 import com.axelby.podax.R;
+import com.axelby.podax.SubscriptionProvider;
 import com.squareup.picasso.Picasso;
 
 public class SmallSubscriptionView extends FrameLayout {
-	private ImageView thumbnail;
-	private TextView title;
+	private ImageView _thumbnail;
+	private TextView _title;
+	private String _rssUrl;
+
+	private OnClickListener _clickHandler = new OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			Uri uri = SubscriptionProvider.addSingleUseSubscription(getContext(), _rssUrl);
+			long subscriptionId = ContentUris.parseId(uri);
+			Intent intent = PodaxFragmentActivity.createIntent(getContext(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
+			getContext().startActivity(intent);
+		}
+	};
 
 	public SmallSubscriptionView(Context context) {
 		super(context);
@@ -34,13 +50,16 @@ public class SmallSubscriptionView extends FrameLayout {
 	private void initView() {
 		View view = LayoutInflater.from(getContext()).inflate(R.layout.search_item_subscription, this, false);
 		addView(view);
-		thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-		title = (TextView) view.findViewById(R.id.title);
+		_thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+		_title = (TextView) view.findViewById(R.id.title);
+
+		view.setOnClickListener(_clickHandler);
 	}
 
-	public void set(String title, String imageUrl) {
-		this.title.setText(title);
-		Picasso.with(getContext()).load(imageUrl).into(thumbnail);
+	public void set(String title, String imageUrl, String rssUrl) {
+		_title.setText(title);
+		Picasso.with(getContext()).load(imageUrl).into(_thumbnail);
+		_rssUrl = rssUrl;
 	}
 
 	public ViewHolder getViewHolder() {
@@ -52,8 +71,8 @@ public class SmallSubscriptionView extends FrameLayout {
 			super(view);
 		}
 
-		public void set(String title, String imageUrl) {
-			SmallSubscriptionView.this.set(title, imageUrl);
+		public void set(String title, String imageUrl, String rssUrl) {
+			SmallSubscriptionView.this.set(title, imageUrl, rssUrl);
 		}
 	}
 }

@@ -51,9 +51,6 @@ class SubscriptionUpdater {
 			if (subscription == null)
 				return;
 
-			if (subscription.IsSingleUse())
-				return;
-
 			showNotification(subscription);
 
 			URL url = new URL(subscription.getUrl());

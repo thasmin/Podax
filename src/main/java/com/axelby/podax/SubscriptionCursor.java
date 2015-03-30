@@ -160,7 +160,7 @@ public class SubscriptionCursor {
         return _cursor.getString(_descriptionColumn);
     }
 
-	public boolean IsSingleUse() {
+	public boolean isSingleUse() {
 		if (_singleUseColumn == null)
 			_singleUseColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_SINGLE_USE);
 		if (_cursor.isNull(_singleUseColumn))

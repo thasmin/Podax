@@ -503,7 +503,9 @@ public class EpisodeProvider extends ContentProvider {
 			// if the new episode is less than 5 days old for the right subscriptions, add it to the playlist
 			SubscriptionCursor sub = SubscriptionCursor.getCursor(getContext(), values.getAsLong(COLUMN_SUBSCRIPTION_ID));
 			if (sub != null) {
-				if (sub.areNewEpisodesAddedToPlaylist() && values.containsKey(COLUMN_PUB_DATE)) {
+				if (sub.areNewEpisodesAddedToPlaylist()
+						&& !sub.isSingleUse()
+						&& values.containsKey(COLUMN_PUB_DATE)) {
 					Calendar c = Calendar.getInstance();
 					c.add(Calendar.DATE, -5);
 					if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {

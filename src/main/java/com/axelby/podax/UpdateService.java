@@ -2,6 +2,7 @@ package com.axelby.podax;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -34,14 +35,8 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
-	public static void updateSubscription(Context context, long subscriptionId) {
-		Intent intent = createUpdateSubscriptionIntent(context, subscriptionId);
-		intent.putExtra(Constants.EXTRA_MANUAL_REFRESH, true);
-		context.startService(intent);
-	}
-
 	public static void updateSubscription(Context context, Uri subscriptionUri) {
-		Integer subscriptionId = Integer.valueOf(subscriptionUri.getLastPathSegment());
+		long subscriptionId = ContentUris.parseId(subscriptionUri);
 		Intent intent = createUpdateSubscriptionIntent(context, subscriptionId);
 		intent.putExtra(Constants.EXTRA_MANUAL_REFRESH, true);
 		context.startService(intent);
@@ -110,7 +105,8 @@ public class UpdateService extends IntentService {
 		switch (action) {
 			case Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS: {
 				String[] projection = new String[]{SubscriptionProvider.COLUMN_ID};
-				Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
+				String selection = SubscriptionProvider.COLUMN_SINGLE_USE + " = 0";
+				Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, selection, null, null);
 				if (c != null) {
 					while (c.moveToNext())
 						handleIntent(createUpdateSubscriptionIntent(this, c.getLong(0)));

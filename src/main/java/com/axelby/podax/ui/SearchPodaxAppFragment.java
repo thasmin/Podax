@@ -114,7 +114,7 @@ public class SearchPodaxAppFragment extends Fragment
 		@Override
 		public void onBindViewHolder(SmallSubscriptionView.ViewHolder holder, int position) {
 			Podcast pod = _podcasts.get(position);
-			holder.set(pod.title, pod.imageUrl);
+			holder.set(pod.title, pod.imageUrl, pod.rssUrl);
 		}
 	}
 }

@@ -14,7 +14,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -51,12 +50,16 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		if (getArguments() == null)
+			throw new IllegalArgumentException("EpisodeListFragment needs a subscription id argument");
+		_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+		if (_subscriptionId == -1)
+			throw new IllegalArgumentException("EpisodeListFragment needs a subscription id argument");
+
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
-		if (getArguments() != null)
-			_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID);
-		getLoaderManager().initLoader(0, getArguments(), this);
+		getLoaderManager().initLoader(0, null, this);
 	}
 
 	@Override
@@ -73,13 +76,6 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 		_listView.setItemAnimator(new DefaultItemAnimator());
 
 		_currentlyUpdatingMessage = view.findViewById(R.id.currently_updating);
-		setCurrentUpdatingVisibility();
-	}
-
-	private void setCurrentUpdatingVisibility() {
-		boolean updating = (UpdateService.getUpdatingSubscriptionId() == _subscriptionId);
-		int visibility = updating ? View.VISIBLE : View.GONE;
-		_currentlyUpdatingMessage.setVisibility(visibility);
 	}
 
 	@Override
@@ -125,28 +121,37 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 	private BroadcastReceiver _updateReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			_subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
-			getLoaderManager().initLoader(0, intent.getExtras(), EpisodeListFragment.this);
-			setCurrentUpdatingVisibility();
+			long updatingId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+			if (updatingId == _subscriptionId) {
+				_currentlyUpdatingMessage.setVisibility(View.VISIBLE);
+			} else {
+				if (_currentlyUpdatingMessage.getVisibility() == View.VISIBLE)
+					setTitle();
+				_currentlyUpdatingMessage.setVisibility(View.GONE);
+			}
 		}
 	};
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		IntentFilter intentFilter = new IntentFilter(Constants.ACTION_UPDATE_SUBSCRIPTION);
-		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(_updateReceiver, intentFilter);
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(_updateReceiver);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(_updateReceiver);
+		IntentFilter intentFilter = new IntentFilter(Constants.ACTION_UPDATE_SUBSCRIPTION);
+		intentFilter.addDataScheme("content");
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(_updateReceiver, intentFilter);
+
+		boolean isCurrentlyUpdating = (UpdateService.getUpdatingSubscriptionId() == _subscriptionId);
+		_currentlyUpdatingMessage.setVisibility(isCurrentlyUpdating ? View.VISIBLE : View.GONE);
 	}
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, args.getLong(Constants.EXTRA_SUBSCRIPTION_ID));
+		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
 		uri = Uri.withAppendedPath(uri, "podcasts");
 		String[] projection = {
 				EpisodeProvider.COLUMN_ID,
@@ -166,7 +171,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 			return;
 
 		_adapter.changeCursor(cursor);
-		setCurrentUpdatingVisibility();
+		setTitle();
 	}
 
 	@Override
