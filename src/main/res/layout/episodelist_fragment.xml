@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:contentDescription="@string/subscription_thumbnail"
+            android:scaleType="centerCrop"
+            tools:src="@drawable/icon" />
+
+        <TextView
+            android:id="@+id/subscription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:gravity="center_horizontal"
+            android:background="#c0000000"
+            tools:text="Subscription Name" />
+
+        <TextView
+            android:id="@+id/currently_updating"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:gravity="center"
+            android:background="@color/orange500"
+            android:padding="10dp"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/primary_text_default_material_light"
+            android:text="@string/subscription_currently_updating"/>
+
+        <CheckBox
+            android:id="@+id/subscribe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/subscribe" />
+
+        <CheckBox
+            android:id="@+id/add_new_episodes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/add_new_episodes_to_playlist"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/episodes"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="18sp"
+            android:textAllCaps="true"
+            android:layout_marginTop="8dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="?attr/colorPrimary" />
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="120dp"
+        android:clipToPadding="false"
+        />
+
+</FrameLayout>
