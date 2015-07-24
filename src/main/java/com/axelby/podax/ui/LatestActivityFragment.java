@@ -155,8 +155,6 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 			public ImageView subscription_img;
 			public TextView episode_title;
 			public TextView episode_description;
-			public TextView downloaded;
-			public View play;
 
 			public ActivityHolder(View view) {
 				super(view);
@@ -166,9 +164,6 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 				episode_title = (TextView) view.findViewById(R.id.episode_title);
 				episode_title.setOnClickListener(_episodeClickHandler);
 				episode_description = (TextView) view.findViewById(R.id.episode_description);
-				downloaded = (TextView) view.findViewById(R.id.downloaded);
-				play = view.findViewById(R.id.play);
-				play.setOnClickListener(_playHandler);
 			}
 		}
 
@@ -249,21 +244,11 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 				_cursor.moveToPosition((Integer) _items.get(position));
 				EpisodeCursor episode = new EpisodeCursor(_cursor);
 
-				holder.play.setTag(episode.getId());
 				holder.subscription_img.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
 				holder.subscription_img.setTag(episode.getSubscriptionId());
 				holder.episode_title.setText(episode.getTitle());
 				holder.episode_title.setTag(episode.getId());
 				holder.episode_description.setText(Html.fromHtml(episode.getDescription(), new NullImageGetter(), new NullTagHandler()));
-
-				float downloaded = new File(episode.getFilename(getActivity())).length();
-				if (episode.getFileSize() != downloaded) {
-					holder.downloaded.setTextColor(getActivity().getResources().getColor(R.color.windowBG));
-					holder.downloaded.setText(R.string.not_downloaded);
-				} else {
-					holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
-					holder.downloaded.setText(R.string.downloaded);
-				}
 			} else if (viewType == TYPE_HEADER) {
 				HeaderHolder holder = (HeaderHolder) viewHolder;
 				String period = (String) _items.get(position);

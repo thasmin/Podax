@@ -53,7 +53,7 @@
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="10dp"
             android:textSize="18sp"
-            tools:text="Episode Title"
+            tools:text="Episode Title that is at least two lines long"
             android:textColor="#ffffffff"
             />
 
@@ -71,45 +71,8 @@
             android:textColor="#ffa0a0a0"
             android:lines="2"
             android:ellipsize="end"
-            />
-
-        <View
-            android:id="@+id/divider"
-            android:layout_width="0dip"
-            android:layout_height="2dp"
-            android:background="#ff2a2a2a"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@id/episode_description"
-            android:layout_marginTop="15dp"
-            />
-
-        <TextView
-            android:id="@+id/downloaded"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/play"
-            android:layout_alignLeft="@id/subscription_img"
-            android:layout_alignStart="@id/subscription_img"
-            android:layout_toLeftOf="@+id/play"
-            android:layout_toStartOf="@+id/play"
-            android:textSize="16sp"
-            android:text="@string/downloaded"
-            android:textColor="#ff8bc34a"
-            android:textAllCaps="true" />
-
-        <Button
-            android:id="@+id/play"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/divider"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            style="@style/Widget.Podax.Button"
-            android:text="@string/play"
-            />
+            android:layout_marginBottom="10dp"/>
 
     </RelativeLayout>
+
 </LinearLayout>
