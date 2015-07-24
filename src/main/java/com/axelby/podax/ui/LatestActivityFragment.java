@@ -35,7 +35,6 @@ import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.xml.sax.XMLReader;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -224,7 +223,7 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 		public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 			LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 			if (viewType == TYPE_ACTIVITY) {
-				View view = inflater.inflate(R.layout.list_item_latest_activity, parent, false);
+				View view = inflater.inflate(R.layout.latest_activity_list_item, parent, false);
 				return new ActivityHolder(view);
 			} else {
 				View view = inflater.inflate(R.layout.latest_activity_date, parent, false);
