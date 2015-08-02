@@ -150,7 +150,7 @@ public class UpdateService extends IntentService {
 				float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
 				if (getPlaylistNumDownloadedItems() >= maxEpisodes)
 					return;
-				EpisodeDownloader.download(this, episodeId);
+				new EpisodeDownloader().download(this, episodeId);
 				break;
 		}
 

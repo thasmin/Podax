@@ -9,12 +9,12 @@ buildscript {
 apply plugin: 'com.android.application'
 
 dependencies {
-    compile 'com.android.support:support-v4:22.0.0'
-    compile 'com.android.support:support-v13:22.0.0'
-    compile 'com.android.support:appcompat-v7:22.0.0'
-    compile 'com.android.support:cardview-v7:22.0.0'
-    compile 'com.android.support:recyclerview-v7:22.0.0'
-    compile 'com.android.support:palette-v7:22.0.0'
+    compile 'com.android.support:support-v4:22.1.1'
+    compile 'com.android.support:support-v13:22.1.1'
+    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.android.support:cardview-v7:22.1.1'
+    compile 'com.android.support:recyclerview-v7:22.1.1'
+    compile 'com.android.support:palette-v7:22.1.1'
     compile 'com.joanzapata.android:android-iconify:1.0.6'
     compile 'com.google.code.gson:gson:2.3'
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.1.0'
@@ -46,7 +46,7 @@ android {
 		mavenCentral()
 	}
     compileSdkVersion 22
-    buildToolsVersion "22"
+    buildToolsVersion "22.0.1"
 
     signingConfigs {
         release {
@@ -61,10 +61,10 @@ android {
 
     defaultConfig {
         applicationId 'com.axelby.podax'
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 22
         versionCode 65
-        versionName '7.08'
+        versionName '8.0'
     }
 
     sourceSets.main {

@@ -3,6 +3,7 @@ package com.axelby.podax.player;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 public class MediaPlayer extends AudioPlayerBase {
 	private final String _audioFile;
@@ -24,14 +25,22 @@ public class MediaPlayer extends AudioPlayerBase {
 	}
 
 	public static float determineDuration(String filename) {
+		float duration = 0;
 		android.media.MediaPlayer mp = new android.media.MediaPlayer();
+		final CountDownLatch latch = new CountDownLatch(1);
 		try {
+			mp.setOnPreparedListener(new android.media.MediaPlayer.OnPreparedListener() {
+				@Override
+				public void onPrepared(android.media.MediaPlayer mp) {
+					latch.countDown();
+				}
+			});
 			mp.setDataSource(filename);
 			mp.prepare();
-		} catch (IOException e) {
-			return 0;
+			latch.await();
+			duration = mp.getDuration() / 1000.0f;
+		} catch (IOException | InterruptedException ignored) {
 		}
-		float duration = mp.getDuration() / 1000.0f;
 		mp.release();
 		return duration;
 	}

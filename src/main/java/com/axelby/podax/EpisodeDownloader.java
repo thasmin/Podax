@@ -26,9 +26,9 @@ public class EpisodeDownloader {
 	private final static ArrayList<String> _currentlyDownloading = new ArrayList<>(5);
 	public static boolean isDownloading(String filename) { return _currentlyDownloading.contains(filename); }
 
-	private EpisodeDownloader() { }
+	public EpisodeDownloader() { }
 
-	public static void download(Context context, long episodeId) {
+	public void download(Context context, long episodeId) {
 		EpisodeCursor episode = null;
 		FileOutputStream outStream = null;
 		File mediaFile = null;
@@ -114,7 +114,7 @@ public class EpisodeDownloader {
 		}
 	}
 
-	private static void showErrorNotification(Context context, EpisodeCursor podcast, Exception e) {
+	private void showErrorNotification(Context context, EpisodeCursor podcast, Exception e) {
 		Intent notificationIntent = new Intent(context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 		Notification notification = new NotificationCompat.Builder(context)
@@ -130,7 +130,7 @@ public class EpisodeDownloader {
 		notificationManager.notify(Constants.NOTIFICATION_DOWNLOADING, notification);
 	}
 
-	private static void showNotification(Context context, EpisodeCursor podcast) {
+	private void showNotification(Context context, EpisodeCursor podcast) {
 		Intent notificationIntent = new Intent(context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 		Notification notification = new NotificationCompat.Builder(context)
@@ -146,7 +146,7 @@ public class EpisodeDownloader {
 		notificationManager.notify(Constants.NOTIFICATION_DOWNLOADING, notification);
 	}
 
-	private static void hideNotification(Context context) {
+	private void hideNotification(Context context) {
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(ns);
 		notificationManager.cancel(Constants.NOTIFICATION_DOWNLOADING);
