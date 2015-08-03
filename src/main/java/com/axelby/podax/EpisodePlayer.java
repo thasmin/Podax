@@ -7,10 +7,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.axelby.podax.player.AudioPlayerBase;
-import com.axelby.podax.player.MP3Player;
 import com.axelby.podax.player.MediaDecoderPlayer;
-import com.axelby.podax.player.MediaPlayer;
-import com.axelby.podax.player.StreamMP3Player;
 
 import java.util.ArrayList;
 
@@ -54,7 +51,6 @@ class EpisodePlayer {
 		if (episode == null)
 			return;
 
-		boolean useMediaDecoder = true;
 		try {
 			if (_player != null) {
 				_player.stop();
@@ -72,20 +68,8 @@ class EpisodePlayer {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_context);
 			float playbackRate = prefs.getFloat("playbackRate", 1.0f);
 
-			if (useMediaDecoder) {
-				// MediaDecoderPlayer is in charge of closing episode cursor
-				_player = new MediaDecoderPlayer(_context, episode, playbackRate);
-			} else {
-				boolean stream = !episode.isDownloaded(_context);
-				boolean useMP3Player = MP3Player.supports(episode.getFilename(_context));
-
-				if (!useMP3Player)
-					_player = new MediaPlayer(episode.getFilename(_context));
-				else if (stream)
-					_player = new StreamMP3Player(episode.getFilename(_context), playbackRate);
-				else
-					_player = new MP3Player(episode.getFilename(_context), playbackRate);
-			}
+			// MediaDecoderPlayer is in charge of closing episode cursor
+			_player = new MediaDecoderPlayer(_context, episode, playbackRate);
 
 			_mp3PlayerThread = new Thread(_player, "MP3Player");
 
@@ -111,9 +95,6 @@ class EpisodePlayer {
 				_onChangeListener.onChange();
 		} catch (Exception ex) {
 			Log.e("Podax", "unable to change to new episode", ex);
-		} finally {
-			if (!useMediaDecoder)
-				episode.closeCursor();
 		}
 	}
 

@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.axelby.podax.player.AudioPlayerBase;
-import com.axelby.podax.player.MP3Player;
 
 import java.io.File;
 import java.util.Date;
