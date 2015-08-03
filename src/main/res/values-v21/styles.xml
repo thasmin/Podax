@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+        <style name="Theme.Podax" parent="Theme.AppCompat.NoActionBar">
+                <item name="colorPrimary">@color/orange500</item>
+                <item name="colorPrimaryDark">@color/orange700</item>
+                <item name="colorAccent">@color/lightblue500</item>
+                <item name="android:windowNoTitle">true</item>
+                <item name="windowActionBar">false</item>
+                <item name="android:windowBackground">@color/windowBG</item>
+
+                <!--
+                colorControlNormal, colorControlActivated, colorControlHighlight change material controls
+                -->
+                <item name="android:colorControlActivated">@color/orange500</item>
+        </style>
+</resources>

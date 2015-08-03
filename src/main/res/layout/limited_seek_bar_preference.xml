@@ -18,10 +18,10 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="longest value"
+            tools:text="longest value"
             android:id="@+id/statusText"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:gravity="center"
-            tools:ignore="HardcodedText"/>
+            />
 </RelativeLayout>

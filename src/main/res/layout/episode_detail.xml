@@ -142,7 +142,9 @@
                     android:contentDescription="@string/restart"
                     android:padding="10dp"
                     android:scaleType="center"
-                    android:src="@android:drawable/ic_media_previous"/>
+                    android:src="@android:drawable/ic_media_previous"
+                    android:tint="?attr/colorPrimary"
+                />
 
             <ImageButton
                     android:id="@+id/rewind_btn"
@@ -153,7 +155,9 @@
                     android:contentDescription="@string/rewind"
                     android:padding="10dp"
                     android:scaleType="center"
-                    android:src="@android:drawable/ic_media_rew"/>
+                    android:src="@android:drawable/ic_media_rew"
+                    android:tint="?attr/colorPrimary"
+                />
 
             <ImageButton
                     android:id="@+id/play_btn"
@@ -164,7 +168,9 @@
                     android:contentDescription="@string/pause"
                     android:padding="10dp"
                     android:scaleType="center"
-                    android:src="@android:drawable/ic_media_play"/>
+                    android:src="@android:drawable/ic_media_play"
+                    android:tint="?attr/colorPrimary"
+                />
 
             <ImageButton
                     android:id="@+id/forward_btn"
@@ -175,7 +181,9 @@
                     android:contentDescription="@string/fast_forward"
                     android:padding="10dp"
                     android:scaleType="center"
-                    android:src="@android:drawable/ic_media_ff"/>
+                    android:src="@android:drawable/ic_media_ff"
+                    android:tint="?attr/colorPrimary"
+                />
 
             <View
                     android:layout_width="30dp"
@@ -191,7 +199,9 @@
                     android:contentDescription="@string/skip_to_end"
                     android:padding="10dp"
                     android:scaleType="center"
-                    android:src="@android:drawable/ic_media_next"/>
+                    android:src="@android:drawable/ic_media_next"
+                    android:tint="?attr/colorPrimary"
+                />
         </LinearLayout>
 
         <WebView
@@ -199,7 +209,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/background_material_light"
-                android:textColorLink="@color/podaxColor" />
+                android:textColorLink="?attr/colorPrimary" />
 
     </LinearLayout>
 
