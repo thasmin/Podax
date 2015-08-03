@@ -40,21 +40,8 @@ public class PodaxLog {
 	}
 
 	public static boolean isDebuggable(Context context) {
-		// make sure debuggable flag is set before writing to the log
-		PackageInfo packageInfo;
-		try {
-			packageInfo = context.getPackageManager().getPackageInfo(
-					context.getApplicationInfo().packageName,
-					PackageManager.GET_CONFIGURATIONS);
-		} catch (NameNotFoundException e) {
-			return false;
-		}
-		if (packageInfo == null)
-			return false;
-
-		int flags = packageInfo.applicationInfo.flags;
+		int flags = context.getApplicationInfo().flags;
         return (flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-
     }
 
 }

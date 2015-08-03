@@ -1,6 +1,8 @@
 package com.axelby.podax;
 
 import android.app.Application;
+import android.os.Build;
+import android.webkit.WebView;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -20,9 +22,17 @@ public class PodaxApplication extends Application {
 
 	@Override
 	public void onCreate() {
-        if (!PodaxLog.isDebuggable(this))
-            ACRA.init(this);
+        if (!PodaxLog.isDebuggable(this)) {
+			ACRA.init(this);
+		}
 		super.onCreate();
+
+		if (PodaxLog.isDebuggable(this)) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+				WebView.setWebContentsDebuggingEnabled(true);
+			}
+		}
+
 		JodaTimeAndroid.init(this);
 
 		PodaxLog.ensureRemoved(this);

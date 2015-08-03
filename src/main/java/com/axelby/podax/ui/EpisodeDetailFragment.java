@@ -9,10 +9,11 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -40,6 +41,8 @@ import com.axelby.podax.SubscriptionCursor;
 import org.shredzone.flattr4j.exception.FlattrException;
 import org.shredzone.flattr4j.exception.ForbiddenException;
 import org.shredzone.flattr4j.model.AutoSubmission;
+
+import java.util.Locale;
 
 public class EpisodeDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int CURSOR_PODCAST = 1;
@@ -256,9 +259,19 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		_subscriptionImage.setImageBitmap(subscriptionThumbnail);
 
 		if (episode.getDescription() != null) {
-			_descriptionView.setBackgroundColor(getResources().getColor(R.color.background_material_light));
-			String fullhtml = "<html><head><title></title></head><body>" + episode.getDescription() + "</body></html>";
-			_descriptionView.loadData(fullhtml, "text/html", "utf8");
+			int textColor = getResources().getColor(R.color.primary_text_default_material_dark);
+			String textColorRgba = String.format(Locale.US, "rgba(%d, %d, %d, %d)",
+					Color.red(textColor), Color.green(textColor), Color.blue(textColor), Color.alpha(textColor));
+
+			int bgColor = getResources().getColor(R.color.primary_material_dark);
+			String bgColorRgba = String.format(Locale.US, "rgba(%d, %d, %d, %d)",
+					Color.red(bgColor), Color.green(bgColor), Color.blue(bgColor), Color.alpha(bgColor));
+
+			String fullhtml = "<html><head><title></title><style>body{color:" + textColorRgba + ";background:" + bgColorRgba + "}</style></head><body>" + episode.getDescription() + "</body></html>";
+
+			_descriptionView.setBackgroundColor(bgColor);
+			_descriptionView.getSettings().setDefaultTextEncodingName("utf-8");
+			_descriptionView.loadData(fullhtml, "text/html; charset=utf-8", null);
 		}
 
 		_position.setText(Helper.getTimeString(episode.getLastPosition()));
