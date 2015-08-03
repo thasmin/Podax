@@ -7,6 +7,11 @@
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
         <item name="android:windowBackground">@color/windowBG</item>
+
+        <!--
+        colorControlNormal, colorControlActivated, colorControlHighlight change material controls
+        <item name="android:colorControlActivated">@color/orange500</item>
+        -->
     </style>
 
     <style name="Widget.Podax.Button.Small" parent="android:Widget.Button.Small">
