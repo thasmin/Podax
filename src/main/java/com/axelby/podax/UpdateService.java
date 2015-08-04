@@ -127,6 +127,7 @@ public class UpdateService extends IntentService {
 				new SubscriptionUpdater(this).update(subscriptionId);
 
 				_updatingSubscriptionId = -1;
+				// this shows a warning in logcat because it can't find a subscription with id -1
 				localIntent = new Intent(Constants.ACTION_UPDATE_SUBSCRIPTION, SubscriptionProvider.getContentUri(-1));
 				localBroadcastManager.sendBroadcast(localIntent);
 				break;
