@@ -1,30 +1,28 @@
 package com.axelby.podax.player;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
 public abstract class AudioPlayerBase implements Runnable {
 
 	// returns seconds
 	public static float determineDuration(String filename) {
-		float duration = 0;
-		android.media.MediaPlayer mp = new android.media.MediaPlayer();
-		final CountDownLatch latch = new CountDownLatch(1);
-		try {
-			mp.setOnPreparedListener(new android.media.MediaPlayer.OnPreparedListener() {
-				@Override
-				public void onPrepared(android.media.MediaPlayer mp) {
-					latch.countDown();
+		for (int att = 0; att < 3; att++) {
+			android.media.MediaPlayer mp = new android.media.MediaPlayer();
+			try {
+				mp.setDataSource(filename);
+				mp.prepare();
+				return mp.getDuration() / 1000.0f;
+			} catch (IOException ignored) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					return 0;
 				}
-			});
-			mp.setDataSource(filename);
-			mp.prepare();
-			latch.await();
-			duration = mp.getDuration() / 1000.0f;
-		} catch (IOException | InterruptedException ignored) {
+			} finally {
+				mp.release();
+			}
 		}
-		mp.release();
-		return duration;
+		return 0;
 	}
 
 	public interface OnCompletionListener { void onCompletion(); }
