@@ -68,30 +68,16 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="240dp"
+
+        <android.support.design.widget.NavigationView
+            android:id="@+id/navmenu"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
-            android:orientation="vertical">
-            <ImageView
-                android:id="@+id/drawer_top"
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:src="@drawable/drawer_top"
-                android:contentDescription="@string/decorative_image"
-                android:scaleType="fitXY"
-                />
-            <ListView
-                android:id="@+id/drawer"
-                android:layout_width="match_parent"
-                android:layout_height="0dip"
-                android:layout_weight="1"
-                android:background="@color/windowBG"
-                android:choiceMode="singleChoice"
-                android:dividerHeight="0dp"
-                android:divider="@color/windowBG"
-                />
-       </LinearLayout>
+            android:fitsSystemWindows="true"
+            app:headerLayout="@layout/nav_header"
+            app:menu="@menu/app"
+            />
 
     </android.support.v4.widget.DrawerLayout>
 

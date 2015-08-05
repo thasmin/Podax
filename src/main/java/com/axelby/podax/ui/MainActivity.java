@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.app.SearchManager;
@@ -21,27 +22,24 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.StringRes;
+import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.BootReceiver;
@@ -55,7 +53,7 @@ import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
@@ -166,24 +164,47 @@ public class MainActivity extends ActionBarActivity {
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		ListView drawer = (ListView) findViewById(R.id.drawer);
-		final PodaxDrawerAdapter _drawerAdapter = new PodaxDrawerAdapter();
-		drawer.setAdapter(_drawerAdapter);
-		drawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+		NavigationView navMenu = (NavigationView) findViewById(R.id.navmenu);
+		navMenu.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
 			@Override
-			public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+			public boolean onNavigationItemSelected(MenuItem menuItem) {
 				_drawerLayout.closeDrawer(GravityCompat.START);
-				Class fragmentClass = _drawerItems[position].fragmentClass;
-				if (fragmentClass == GPodderProvider.class) {
-					handleGPodder();
-					return;
-				} else if (fragmentClass == PodaxPreferenceFragment.class) {
-					startActivity(new Intent(MainActivity.this, PodaxPreferenceActivity.class));
-					return;
+
+				switch (menuItem.getItemId()) {
+					case R.id.latest_activity:
+						startFragmentActivity(LatestActivityFragment.class);
+						return true;
+					case R.id.weekly_planner:
+						startFragmentActivity(WeeklyPlannerFragment.class);
+						return true;
+					case R.id.finished_episodes:
+						startFragmentActivity(FinishedEpisodeFragment.class);
+						return true;
+					case R.id.add_subscription:
+						startFragmentActivity(AddSubscriptionFragment.class);
+						return true;
+					case R.id.gpodder:
+						handleGPodder();
+						return true;
+					case R.id.stats:
+						startFragmentActivity(StatsFragment.class);
+						return true;
+					case R.id.preferences:
+						startFragmentActivity(PreferenceFragment.class);
+						return true;
+					case R.id.about:
+						startFragmentActivity(AboutFragment.class);
+						return true;
+					case R.id.log_viewer:
+						startFragmentActivity(LogViewerFragment.class);
+						return true;
 				}
-				startActivity(PodaxFragmentActivity.createIntent(view.getContext(), fragmentClass, null));
+				return false;
 			}
 		});
+
+		if (!PodaxLog.isDebuggable(this))
+			navMenu.findViewById(R.id.log_viewer).setVisibility(View.GONE);
 
 		_drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		_drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -231,6 +252,11 @@ public class MainActivity extends ActionBarActivity {
 		_episodeTitle = (TextView) findViewById(R.id.episodeTitle);
 		_expand = (ImageButton) findViewById(R.id.expand);
 		initializeBottom(PlayerStatus.getCurrentState(this));
+	}
+
+	private void startFragmentActivity(Class<? extends Fragment> fragmentClass) {
+		startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, fragmentClass, null));
+
 	}
 
 	private void decorateTab(TextView tab, @ColorRes int textColor, @DrawableRes int background) {
@@ -355,82 +381,11 @@ public class MainActivity extends ActionBarActivity {
 		AccountManager am = AccountManager.get(this);
 		Account[] gpodder_accounts = am.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
 		if (gpodder_accounts == null || gpodder_accounts.length == 0) {
-			finish();
 			startActivity(new Intent(this, AuthenticatorActivity.class));
 		} else {
-			Toast.makeText(this, "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Toast.LENGTH_SHORT).show();
+			Snackbar.make(findViewById(R.id.main), "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Snackbar.LENGTH_SHORT).show();
 			ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
 		}
 	}
 
-	class DrawerItem {
-		final Class fragmentClass;
-		final int label;
-		final int drawable;
-		final boolean dividerAbove;
-
-		public DrawerItem(Class fragmentClass, @StringRes int labelId, @DrawableRes int drawableId, boolean dividerAbove) {
-			this.fragmentClass = fragmentClass;
-			this.label = labelId;
-			this.drawable = drawableId;
-			this.dividerAbove = dividerAbove;
-		}
-	}
-
-	final DrawerItem[] _drawerItems = {
-			new DrawerItem(LatestActivityFragment.class, R.string.latest_activity, R.drawable.ic_menu_alarm, false),
-			new DrawerItem(WeeklyPlannerFragment.class, R.string.weekly_planner, R.drawable.ic_menu_podax, false),
-			new DrawerItem(FinishedEpisodeFragment.class, R.string.finished_episodes, R.drawable.ic_menu_done_all, false),
-			new DrawerItem(AddSubscriptionFragment.class, R.string.add_subscription, R.drawable.ic_menu_add, false),
-			new DrawerItem(GPodderProvider.class, R.string.gpodder_sync, R.drawable.ic_menu_gpoddernet, false),
-			new DrawerItem(StatsFragment.class, R.string.stats, R.drawable.ic_menu_trending_up, true),
-			new DrawerItem(PodaxPreferenceFragment.class, R.string.preferences, R.drawable.ic_menu_settings, true),
-			new DrawerItem(AboutFragment.class, R.string.about, R.drawable.ic_menu_podax, false),
-			new DrawerItem(LogViewerFragment.class, R.string.log_viewer, R.drawable.ic_menu_info, false),
-	};
-
-    class PodaxDrawerAdapter extends BaseAdapter {
-        @Override
-        public int getCount() {
-            // log viewer is only available when debugging
-            if (PodaxLog.isDebuggable(MainActivity.this))
-                return _drawerItems.length;
-            return _drawerItems.length - 1;
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return _drawerItems[position];
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-			if (convertView == null)
-                convertView = LayoutInflater.from(MainActivity.this).inflate(R.layout.drawer_listitem, parent, false);
-            if (convertView == null)
-                return null;
-
-			DrawerItem drawerItem = _drawerItems[position];
-
-            TextView tv = (TextView) convertView.findViewById(R.id.text);
-            tv.setText(drawerItem.label);
-            tv.setCompoundDrawablesWithIntrinsicBounds(drawerItem.drawable, 0, 0, 0);
-
-			View separator = convertView.findViewById(R.id.separator);
-			separator.setVisibility(drawerItem.dividerAbove ? View.VISIBLE : View.GONE);
-
-            return convertView;
-        }
-
-        @Override
-        public boolean hasStableIds() {
-            return true;
-        }
-
-    }
 }

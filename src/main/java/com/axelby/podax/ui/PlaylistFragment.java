@@ -115,7 +115,7 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 				// switch if the overlay isn't on top of the original view
 				View underView = rv.findChildViewUnder(0, (int) e.getY());
 				if (underView != null && rv.getChildItemId(underView) != _dragEpisodeId) {
-					int newPosition = rv.getChildPosition(underView);
+					int newPosition = rv.getChildLayoutPosition(underView);
 					_adapter.moveItem(_dragEpisodeId, newPosition);
 					if (newPosition == 0)
 						rv.scrollToPosition(0);
@@ -130,6 +130,10 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 				}
 				_overlay.setPadding(0, overlayPaddingTop, 0, 0);
 			}
+		}
+
+		@Override
+		public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
 		}
 	};
 	private RecyclerView _listView;
