@@ -201,7 +201,7 @@ public class MediaDecoderPlayer extends AudioPlayerBase {
 				}
 			}
 
-			if (_completionListener != null)
+			if (_state.isFinished() && _completionListener != null)
 				_completionListener.onCompletion();
 		} catch (InterruptedException e1) {
 			_state.interrupt();
