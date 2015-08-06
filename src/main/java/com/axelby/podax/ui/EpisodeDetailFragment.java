@@ -13,7 +13,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -258,7 +257,8 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		Bitmap subscriptionThumbnail = SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId());
 		_subscriptionImage.setImageBitmap(subscriptionThumbnail);
 
-		if (episode.getDescription() != null) {
+		String description = episode.getDescription();
+		if (description != null) {
 			int textColor = getResources().getColor(R.color.primary_text_default_material_dark);
 			String textColorRgba = String.format(Locale.US, "rgba(%d, %d, %d, %d)",
 					Color.red(textColor), Color.green(textColor), Color.blue(textColor), Color.alpha(textColor));
@@ -267,7 +267,12 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 			String bgColorRgba = String.format(Locale.US, "rgba(%d, %d, %d, %d)",
 					Color.red(bgColor), Color.green(bgColor), Color.blue(bgColor), Color.alpha(bgColor));
 
-			String fullhtml = "<html><head><title></title><style>body{color:" + textColorRgba + ";background:" + bgColorRgba + "}</style></head><body>" + episode.getDescription() + "</body></html>";
+			int linkColor = getResources().getColor(R.color.orange500);
+			String linkColorRgba = String.format(Locale.US, "rgba(%d, %d, %d, %d)",
+					Color.red(linkColor), Color.green(linkColor), Color.blue(linkColor), Color.alpha(linkColor));
+
+			description = description.replaceAll("color:", "color,");
+			String fullhtml = "<html><head><title></title><style>body{color:" + textColorRgba + ";background:" + bgColorRgba + "} a{color:" + linkColorRgba + "}</style></head><body>" + description + "</body></html>";
 
 			_descriptionView.setBackgroundColor(bgColor);
 			_descriptionView.getSettings().setDefaultTextEncodingName("utf-8");
