@@ -28,6 +28,7 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -57,8 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
-
-    private int _fragment;
 
 	private View _progressbg;
 	private View _progressline;
@@ -214,36 +213,23 @@ public class MainActivity extends AppCompatActivity {
 		_drawerLayout.setDrawerListener(_drawerToggle);
 
 		// main section
-		final TextView playlistText = (TextView) findViewById(R.id.toolbar_playlist_btn);
-		final TextView subscriptionsText = (TextView) findViewById(R.id.toolbar_subscriptions_btn);
-		playlistText.setOnClickListener(new View.OnClickListener() {
+		TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
+		tabs.addTab(tabs.newTab().setText(R.string.playlist_caps));
+		tabs.addTab(tabs.newTab().setText(R.string.subscriptions_caps));
+		tabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 			@Override
-			public void onClick(View view) {
-				if (_fragment == 0)
-					return;
-				_fragment = 0;
-				setTabActive(playlistText);
-				setTabInactive(subscriptionsText);
-				getFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
+			public void onTabSelected(TabLayout.Tab tab) {
+				if (tab.getPosition() == 0) {
+					getFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
+				} else {
+					getFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
+				}
 			}
-		});
-		subscriptionsText.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (_fragment == 1)
-					return;
-				_fragment = 1;
-				setTabActive(subscriptionsText);
-				setTabInactive(playlistText);
-				getFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
-			}
-		});
 
-		FragmentManager fragmentManager = getFragmentManager();
-		if (_fragment == 0)
-			fragmentManager.beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
-		else if (_fragment == 1)
-			fragmentManager.beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
+			@Override public void onTabUnselected(TabLayout.Tab tab) { }
+			@Override public void onTabReselected(TabLayout.Tab tab) { }
+		});
+		getFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
 
 		// bottom bar controls
 		_progressbg = findViewById(R.id.progressbg);
