@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
@@ -48,7 +48,6 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	private static final int CURSOR_ACTIVE = 2;
 
 	private long _podcastId;
-	private boolean _uiInitialized = false;
 
 	private ImageView _subscriptionImage;
 	private TextView _titleView;
@@ -63,6 +62,60 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	private Button _viewInBrowserButton;
 	private TextView _position;
 	private TextView _duration;
+	private AsyncTask<Long, Void, Void> _flattr_task = new AsyncTask<Long, Void, Void>() {
+		@Override
+		protected Void doInBackground(Long... params) {
+			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
+			String[] projection = new String[]{
+					EpisodeProvider.COLUMN_ID,
+					EpisodeProvider.COLUMN_TITLE,
+					EpisodeProvider.COLUMN_PAYMENT,
+			};
+			Activity activity = getActivity();
+			Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
+			if (c == null)
+				return null;
+			if (c.moveToNext()) {
+				EpisodeCursor episode = new EpisodeCursor(c);
+				String payment_url = episode.getPaymentUrl();
+				if (payment_url != null) {
+					AutoSubmission sub = FlattrHelper.parseAutoSubmissionLink(Uri.parse(payment_url));
+					if (sub != null) {
+						// it's a flattr link
+						try {
+							FlattrHelper.flattr(activity, sub);
+							String message = "You flattred " + episode.getTitle() + "!";
+							showToast(message);
+						} catch (ForbiddenException e) {
+							if (e.getCode().equals("flattr_once")) {
+								String message = "Podcast was already flattred";
+								showToast(message);
+							} else {
+								try {
+									FlattrHelper.obtainToken(activity);
+								} catch (NoAppSecretFlattrException e1) {
+									String message = "No flattr app secret in this build.";
+									showToast(message);
+								}
+							}
+						} catch (FlattrException e) {
+							String message = "Could not flattr: " + e.getMessage();
+							showToast(message);
+						}
+
+					} else {
+						// it's another kind of payment link
+						Intent intent = new Intent(Intent.ACTION_VIEW);
+						intent.setData(Uri.parse(episode.getPaymentUrl()));
+						startActivity(intent);
+					}
+				}
+			}
+			c.close();
+
+			return null;
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -76,59 +129,45 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.episode_detail, container, false);
-	}
+		View v = inflater.inflate(R.layout.episode_detail, container, false);
 
-	private void showToast(final Activity activity, final String message) {
-		activity.runOnUiThread(new Runnable() {
-			public void run() {
-				Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
-			}
-		});
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-
-		final Activity activity = getActivity();
-		_subscriptionImage = (ImageView) activity.findViewById(R.id.subscription_img);
-		_titleView = (TextView) activity.findViewById(R.id.title);
-		_subscriptionTitleView = (TextView) activity.findViewById(R.id.subscription_title);
-		_descriptionView = (WebView) activity.findViewById(R.id.description);
-		_playlistPosition = (TextView) activity.findViewById(R.id.playlist_position);
-		_playlistButton = (Button) activity.findViewById(R.id.playlist_btn);
-		View restartButton = activity.findViewById(R.id.restart_btn);
-		View rewindButton = activity.findViewById(R.id.rewind_btn);
-		_playButton = (ImageButton) activity.findViewById(R.id.play_btn);
-		View forwardButton = activity.findViewById(R.id.forward_btn);
-		View skipToEndButton = activity.findViewById(R.id.skiptoend_btn);
-		_seekbar = (SeekBar) activity.findViewById(R.id.seekbar);
-		_position = (TextView) activity.findViewById(R.id.position);
-		_duration = (TextView) activity.findViewById(R.id.duration);
-		_paymentButton = (Button) activity.findViewById(R.id.payment);
-		_viewInBrowserButton = (Button) activity.findViewById(R.id.view_in_browser);
+		_subscriptionImage = (ImageView) v.findViewById(R.id.subscription_img);
+		_titleView = (TextView) v.findViewById(R.id.title);
+		_subscriptionTitleView = (TextView) v.findViewById(R.id.subscription_title);
+		_descriptionView = (WebView) v.findViewById(R.id.description);
+		_playlistPosition = (TextView) v.findViewById(R.id.playlist_position);
+		_playlistButton = (Button) v.findViewById(R.id.playlist_btn);
+		View restartButton = v.findViewById(R.id.restart_btn);
+		View rewindButton = v.findViewById(R.id.rewind_btn);
+		_playButton = (ImageButton) v.findViewById(R.id.play_btn);
+		View forwardButton = v.findViewById(R.id.forward_btn);
+		View skipToEndButton = v.findViewById(R.id.skiptoend_btn);
+		_seekbar = (SeekBar) v.findViewById(R.id.seekbar);
+		_position = (TextView) v.findViewById(R.id.position);
+		_duration = (TextView) v.findViewById(R.id.duration);
+		_paymentButton = (Button) v.findViewById(R.id.payment);
+		_viewInBrowserButton = (Button) v.findViewById(R.id.view_in_browser);
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				PlayerStatus playerState = PlayerStatus.getCurrentState(activity);
+				PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());
 				if (playerState.isPlaying() && playerState.getEpisodeId() == _podcastId) {
-					PlayerService.stop(activity);
+					PlayerService.stop(getActivity());
 					return;
 				}
-				PlayerService.play(activity, _podcastId);
+				PlayerService.play(getActivity(), _podcastId);
 			}
 		});
 
 		forwardButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				EpisodeProvider.movePositionBy(activity, _podcastId, 30);
+				EpisodeProvider.movePositionBy(getActivity(), _podcastId, 30);
 			}
 		});
 
 		skipToEndButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				EpisodeProvider.skipToEnd(activity, _podcastId);
+				EpisodeProvider.skipToEnd(getActivity(), _podcastId);
 			}
 		});
 
@@ -144,7 +183,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				_seekbar_dragging = false;
-				EpisodeProvider.movePositionTo(activity, _podcastId, seekBar.getProgress());
+				EpisodeProvider.movePositionTo(getActivity(), _podcastId, seekBar.getProgress());
 			}
 		};
 		_seekbar.setOnSeekBarChangeListener(seekBarChangeListener);
@@ -153,15 +192,15 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
             public void onClick(View v) {
                 Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
                 String[] projection = new String[]{EpisodeProvider.COLUMN_ID, EpisodeProvider.COLUMN_PLAYLIST_POSITION};
-                Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
+                Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
                 if (c == null)
                     return;
                 if (c.moveToNext()) {
                     EpisodeCursor episode = new EpisodeCursor(c);
                     if (episode.getPlaylistPosition() == null)
-                        episode.addToPlaylist(activity);
+                        episode.addToPlaylist(getActivity());
                     else
-                        episode.removeFromPlaylist(activity);
+                        episode.removeFromPlaylist(getActivity());
                 }
                 c.close();
             }
@@ -169,70 +208,18 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 
 		restartButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				EpisodeProvider.restart(activity, _podcastId);
+				EpisodeProvider.restart(getActivity(), _podcastId);
 			}
 		});
 
 		rewindButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				EpisodeProvider.movePositionBy(activity, _podcastId, -15);
+				EpisodeProvider.movePositionBy(getActivity(), _podcastId, -15);
 			}
 		});
 		_paymentButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				new AsyncTask<Long, Void, Void>() {
-					@Override
-					protected Void doInBackground(Long... params) {
-						Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
-						String[] projection = new String[]{
-								EpisodeProvider.COLUMN_ID,
-								EpisodeProvider.COLUMN_TITLE,
-								EpisodeProvider.COLUMN_PAYMENT,
-						};
-						Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
-						if (c == null)
-							return null;
-						if (c.moveToNext()) {
-							EpisodeCursor episode = new EpisodeCursor(c);
-							String payment_url = episode.getPaymentUrl();
-							if (payment_url != null) {
-								AutoSubmission sub = FlattrHelper.parseAutoSubmissionLink(Uri.parse(payment_url));
-								if (sub != null) {
-									// it's a flattr link
-									try {
-										FlattrHelper.flattr(activity, sub);
-										String message = "You flattred " + episode.getTitle() + "!";
-										showToast(activity, message);
-									} catch (ForbiddenException e) {
-										if (e.getCode().equals("flattr_once")) {
-											String message = "Podcast was already flattred";
-											showToast(activity, message);
-										} else {
-											try {
-												FlattrHelper.obtainToken(activity);
-											} catch (NoAppSecretFlattrException e1) {
-												String message = "No flattr app secret in this build.";
-												showToast(activity, message);
-											}
-										}
-									} catch (FlattrException e) {
-										String message = "Could not flattr: " + e.getMessage();
-										showToast(activity, message);
-									}
-
-								} else {
-									// it's another kind of payment link
-									Intent intent = new Intent(Intent.ACTION_VIEW);
-									intent.setData(Uri.parse(episode.getPaymentUrl()));
-									startActivity(intent);
-								}
-							}
-						}
-						c.close();
-
-						return null;
-					}
-				}.execute(_podcastId);
+				_flattr_task.execute(_podcastId);
 			}
 		});
 
@@ -243,12 +230,17 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 					startActivity(new Intent(Intent.ACTION_VIEW, uri));
 			}
 		});
+
+		return v;
 	}
 
-	@Override
-	public void onDestroyView() {
-		super.onDestroyView();
-		_uiInitialized = false;
+	private void showToast(final String message) {
+		getActivity().runOnUiThread(new Runnable() {
+			public void run() {
+				View v = getActivity().findViewById(R.id.scrollview);
+				Snackbar.make(v, message, Snackbar.LENGTH_LONG).show();
+			}
+		});
 	}
 
 	private void initializeUI(EpisodeCursor episode) {
@@ -377,23 +369,19 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		if (getActivity() == null)
 			return;
 
-		if (!cursor.moveToFirst()) {
-            _uiInitialized = true;
+		if (!cursor.moveToFirst())
             return;
-        }
 
 		EpisodeCursor episode = new EpisodeCursor(cursor);
-		if (episode.getId() != _podcastId || !_uiInitialized) {
+		if (episode.getId() != _podcastId) {
 			initializeUI(episode);
-			_uiInitialized = true;
 		}
 		_podcastId = episode.getId();
 		updateControls(episode);
 	}
 
 	@Override
-	public void onLoaderReset(Loader<Cursor> loader) {
-	}
+	public void onLoaderReset(Loader<Cursor> loader) { }
 
 	@Override
 	public void onResume() {

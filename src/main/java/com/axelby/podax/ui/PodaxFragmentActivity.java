@@ -75,7 +75,7 @@ public class PodaxFragmentActivity extends ActionBarActivity {
         fragment.setArguments(arguments);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
-        ft.add(R.id.fragment, fragment);
+        ft.replace(R.id.fragment, fragment);
         ft.commit();
     }
 }
