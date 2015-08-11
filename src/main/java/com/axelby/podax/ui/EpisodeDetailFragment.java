@@ -43,6 +43,8 @@ import org.shredzone.flattr4j.model.AutoSubmission;
 
 import java.util.Locale;
 
+import javax.annotation.Nullable;
+
 public class EpisodeDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
@@ -129,24 +131,29 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.episode_detail, container, false);
+		return inflater.inflate(R.layout.episode_detail, container, false);
+	}
 
-		_subscriptionImage = (ImageView) v.findViewById(R.id.subscription_img);
-		_titleView = (TextView) v.findViewById(R.id.title);
-		_subscriptionTitleView = (TextView) v.findViewById(R.id.subscription_title);
-		_descriptionView = (WebView) v.findViewById(R.id.description);
-		_playlistPosition = (TextView) v.findViewById(R.id.playlist_position);
-		_playlistButton = (Button) v.findViewById(R.id.playlist_btn);
-		View restartButton = v.findViewById(R.id.restart_btn);
-		View rewindButton = v.findViewById(R.id.rewind_btn);
-		_playButton = (ImageButton) v.findViewById(R.id.play_btn);
-		View forwardButton = v.findViewById(R.id.forward_btn);
-		View skipToEndButton = v.findViewById(R.id.skiptoend_btn);
-		_seekbar = (SeekBar) v.findViewById(R.id.seekbar);
-		_position = (TextView) v.findViewById(R.id.position);
-		_duration = (TextView) v.findViewById(R.id.duration);
-		_paymentButton = (Button) v.findViewById(R.id.payment);
-		_viewInBrowserButton = (Button) v.findViewById(R.id.view_in_browser);
+	@Override
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		_subscriptionImage = (ImageView) view.findViewById(R.id.subscription_img);
+		_titleView = (TextView) view.findViewById(R.id.title);
+		_subscriptionTitleView = (TextView) view.findViewById(R.id.subscription_title);
+		_descriptionView = (WebView) view.findViewById(R.id.description);
+		_playlistPosition = (TextView) view.findViewById(R.id.playlist_position);
+		_playlistButton = (Button) view.findViewById(R.id.playlist_btn);
+		View restartButton = view.findViewById(R.id.restart_btn);
+		View rewindButton = view.findViewById(R.id.rewind_btn);
+		_playButton = (ImageButton) view.findViewById(R.id.play_btn);
+		View forwardButton = view.findViewById(R.id.forward_btn);
+		View skipToEndButton = view.findViewById(R.id.skiptoend_btn);
+		_seekbar = (SeekBar) view.findViewById(R.id.seekbar);
+		_position = (TextView) view.findViewById(R.id.position);
+		_duration = (TextView) view.findViewById(R.id.duration);
+		_paymentButton = (Button) view.findViewById(R.id.payment);
+		_viewInBrowserButton = (Button) view.findViewById(R.id.view_in_browser);
 
 		_playButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -230,8 +237,6 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 					startActivity(new Intent(Intent.ACTION_VIEW, uri));
 			}
 		});
-
-		return v;
 	}
 
 	private void showToast(final String message) {
@@ -355,8 +360,8 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		};
 
 		if (id == CURSOR_PODCAST && args != null && args.containsKey(Constants.EXTRA_EPISODE_ID)) {
-			_podcastId = args.getLong(Constants.EXTRA_EPISODE_ID);
-			Uri uri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
+			long podcastId = args.getLong(Constants.EXTRA_EPISODE_ID);
+			Uri uri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
 			return new CursorLoader(getActivity(), uri, projection, null, null, null);
 		} else if (id == CURSOR_ACTIVE) {
 			return new CursorLoader(getActivity(), EpisodeProvider.ACTIVE_EPISODE_URI, projection, null, null, null);
