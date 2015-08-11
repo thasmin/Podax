@@ -177,7 +177,8 @@ public class SubscriptionListFragment extends Fragment
 		private final View.OnClickListener _subscriptionChoiceHandler = new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, _selectedId));
+				long subId = (long) view.getTag();
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subId));
 			}
 		};
 
@@ -194,6 +195,7 @@ public class SubscriptionListFragment extends Fragment
 			_cursor.moveToPosition(position);
 			SubscriptionCursor subscription = new SubscriptionCursor(_cursor);
 			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(holder.thumbnail.getContext(), subscription.getId()));
+			holder.thumbnail.setTag(subscription.getId());
 		}
 
 		@Override

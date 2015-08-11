@@ -11,7 +11,7 @@ public class CoverFlowLayoutManager extends RecyclerView.LayoutManager {
 	private int _selectedChild = 0;
 
 	public interface SelectedChildChangedHandler {
-		public void onSelectedChildChanged(int position);
+		void onSelectedChildChanged(int position);
 	}
 	private SelectedChildChangedHandler _selectedChildChangedHandler;
 	public void setOnSelectedChildChanged(SelectedChildChangedHandler handler) {
