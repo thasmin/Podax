@@ -8,7 +8,10 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,28 +19,30 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
+import com.axelby.podax.ITunesPodcastLoader;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
 
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+
 public class SubscriptionListFragment extends Fragment
-		implements LoaderManager.LoaderCallbacks<Cursor>,
-		CoverFlowLayoutManager.SelectedChildChangedHandler {
+		implements LoaderManager.LoaderCallbacks<Cursor> {
 
 	private SubscriptionAdapter _adapter = null;
 
-	private long _selectedId = -1;
-	private int _selectedPosition = -1;
 	private Cursor _cursor;
-
-	private RecyclerView _list;
-	private TextView _subscriptionTitle;
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -58,14 +63,26 @@ public class SubscriptionListFragment extends Fragment
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		_list = (RecyclerView) view.findViewById(R.id.list);
-		CoverFlowLayoutManager coverFlowLayoutManager = new CoverFlowLayoutManager();
-		coverFlowLayoutManager.setOnSelectedChildChanged(this);
-		_list.setLayoutManager(coverFlowLayoutManager);
-		_list.setItemAnimator(new DefaultItemAnimator());
+		RecyclerView subscriptionList = (RecyclerView) view.findViewById(R.id.subscription_list);
+		subscriptionList.setLayoutManager(new WrappingLinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false));
+		subscriptionList.setItemAnimator(new DefaultItemAnimator());
+		subscriptionList.setAdapter(_adapter);
 
-		_subscriptionTitle = (TextView) view.findViewById(R.id.subscription_title);
+		LinearLayout layout = (LinearLayout) view.findViewById(R.id.layout);
 
+		TextView title = (TextView) LayoutInflater.from(view.getContext())
+				.inflate(R.layout.subscription_list_title, layout, false);
+		title.setText("iTunes");
+		layout.addView(title);
+
+		RecyclerView rv = new RecyclerView(view.getContext());
+		rv.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+		rv.setLayoutManager(new WrappingLinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false));
+		rv.setItemAnimator(new DefaultItemAnimator());
+		rv.setAdapter(new iTunesAdapter());
+		layout.addView(rv);
+
+		/*
 		View settings = view.findViewById(R.id.settings);
 		settings.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -82,22 +99,15 @@ public class SubscriptionListFragment extends Fragment
 				_adapter.notifyItemRemoved(_selectedPosition);
 			}
 		});
-	}
 
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-
-		_list.setAdapter(_adapter);
-
-        View.OnClickListener addListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null));
-            }
-        };
-        getActivity().findViewById(R.id.add).setOnClickListener(addListener);
-
+		View.OnClickListener addListener = new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null));
+			}
+		};
+		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
+		*/
 	}
 
     @Override
@@ -139,40 +149,31 @@ public class SubscriptionListFragment extends Fragment
 		clearCursor();
 	}
 
-	@Override
-	public void onSelectedChildChanged(int position) {
-		if (_cursor == null)
-			return;
-		_cursor.moveToPosition(position);
-		SubscriptionCursor sub = new SubscriptionCursor(_cursor);
-		_selectedPosition = position;
-		_selectedId = sub.getId();
-		_subscriptionTitle.setText(sub.getTitle());
-	}
-
-	public void changeCursor(Cursor cursor) {
+	private void changeCursor(Cursor cursor) {
 		_cursor = cursor;
 		_adapter.notifyDataSetChanged();
-		onSelectedChildChanged(0);
 	}
 
-	public void clearCursor() {
+	private void clearCursor() {
 		_cursor = null;
 		_adapter.notifyDataSetChanged();
 	}
 
-	private class SubscriptionAdapter extends RecyclerView.Adapter<SubscriptionAdapter.ViewHolder> {
+	public class SubscriptionListViewHolder extends RecyclerView.ViewHolder {
+		public final View holder;
+		public final ImageView thumbnail;
+		public final TextView title;
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
-			public final ImageView thumbnail;
+		public SubscriptionListViewHolder(View v) {
+			super(v);
 
-            public ViewHolder(View v) {
-				super(v);
+			holder = v;
+			thumbnail = (ImageView) v.findViewById(R.id.thumbnail);
+			title = (TextView) v.findViewById(R.id.title);
+		}
+	}
 
-				thumbnail = (ImageView) v;
-				thumbnail.setOnClickListener(_subscriptionChoiceHandler);
-            }
-        }
+	private class SubscriptionAdapter extends RecyclerView.Adapter<SubscriptionListViewHolder> {
 
 		private final View.OnClickListener _subscriptionChoiceHandler = new View.OnClickListener() {
 			@Override
@@ -183,19 +184,19 @@ public class SubscriptionListFragment extends Fragment
 		};
 
 		@Override
-		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			ImageView view = new ImageView(parent.getContext());
-			view.setLayoutParams(new ViewGroup.LayoutParams(512, 512));
-			view.setScaleType(ImageView.ScaleType.FIT_XY);
-			return new ViewHolder(view);
+		public SubscriptionListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.subscription_list_item, parent, false);
+			view.setOnClickListener(_subscriptionChoiceHandler);
+			return new SubscriptionListViewHolder(view);
 		}
 
 		@Override
-		public void onBindViewHolder(ViewHolder holder, int position) {
+		public void onBindViewHolder(SubscriptionListViewHolder holder, int position) {
 			_cursor.moveToPosition(position);
 			SubscriptionCursor subscription = new SubscriptionCursor(_cursor);
+			holder.holder.setTag(subscription.getId());
 			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(holder.thumbnail.getContext(), subscription.getId()));
-			holder.thumbnail.setTag(subscription.getId());
+			holder.title.setText(subscription.getTitle());
 		}
 
 		@Override
@@ -211,5 +212,64 @@ public class SubscriptionListFragment extends Fragment
 			return _cursor.getCount();
 		}
 
+	}
+
+	private class iTunesAdapter extends RecyclerView.Adapter<SubscriptionListViewHolder> {
+		private final ArrayList<ITunesPodcastLoader.Podcast> _podcasts = new ArrayList<>(100);
+
+		public iTunesAdapter() {
+			setHasStableIds(true);
+
+			ITunesPodcastLoader.getPodcasts()
+					.onBackpressureBuffer(100)
+					.observeOn(AndroidSchedulers.mainThread())
+					.subscribe(new Subscriber<ITunesPodcastLoader.Podcast>() {
+						@Override
+						public void onError(Throwable e) {
+							Log.e("itunesloader", "subscriber error", e);
+						}
+
+						@Override
+						public void onNext(ITunesPodcastLoader.Podcast podcast) {
+							_podcasts.add(podcast);
+							notifyItemInserted(_podcasts.size() - 1);
+							notifyDataSetChanged();
+						}
+
+						@Override
+						public void onCompleted() {
+						}
+					});
+		}
+
+		@Override
+		public SubscriptionListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.subscription_list_item, parent, false);
+			return new SubscriptionListViewHolder(view);
+		}
+
+		@Override
+		public void onBindViewHolder(SubscriptionListViewHolder holder, int position) {
+			ITunesPodcastLoader.Podcast p = _podcasts.get(position);
+			holder.holder.setTag(p.id);
+			holder.title.setText(p.name);
+
+			DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+			int px = (int)((128 * displayMetrics.density) + 0.5);
+			Picasso.with(holder.thumbnail.getContext())
+					.load(p.imageUrl)
+					.resize(px, px)
+					.into(holder.thumbnail);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return _podcasts.get(position).id;
+		}
+
+		@Override
+		public int getItemCount() {
+			return _podcasts.size();
+		}
 	}
 }

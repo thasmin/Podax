@@ -1,61 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/list"
+    <LinearLayout
+        android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-    />
+        android:orientation="vertical"
+        >
 
-    <TextView
-        android:id="@id/subscription_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:layout_below="@id/list"
-        android:gravity="center"
-        tools:text="Fitzdog Radio"
-    />
+        <TextView
+            android:id="@id/subscription_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:background="?attr/colorAccent"
+            android:textColor="@color/primary_text_default_material_dark"
+            android:text="@string/subscriptions"
+            android:paddingTop="5dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:layout_marginTop="5dp"
+            />
 
-    <Button
-        android:id="@+id/settings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/settings"
-        android:layout_below="@id/subscription_title"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-    />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/subscription_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+        />
 
-    <Button
-        android:id="@+id/unsubscribe"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/unsubscribe"
-        android:layout_below="@id/subscription_title"
-        android:layout_toRightOf="@id/settings"
-        android:layout_toEndOf="@id/settings"
-    />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/add"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="24dp"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/circle"
-        android:elevation="8dp"
-        tools:ignore="HardcodedText,UnusedAttribute"
-        android:text="+"
-        android:textSize="24sp"
-    />
-
-</RelativeLayout>
+</ScrollView>

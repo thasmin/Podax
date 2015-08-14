@@ -1,72 +1,28 @@
-<android.support.v7.widget.CardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:descendantFocusability="blocksDescendants">
+    android:orientation="vertical">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:scaleType="fitStart"
+        android:contentDescription="@string/subscription_thumbnail"
+        tools:src="@drawable/icon"
+        />
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#ccffffff"
-            tools:text="Fitzdog Radio"
-            android:layout_toLeftOf="@+id/more"
-            android:layout_toStartOf="@+id/more"
-            android:layout_margin="10dp"
-            android:textSize="20sp"
-            />
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="128dp"
+        android:layout_height="wrap_content"
+        tools:text="Fitzdog Radio"
+        android:textSize="16sp"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"
+        android:maxLines="3"
+        />
 
-        <ImageButton
-            android:id="@+id/more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:padding="10dp"
-            android:src="@drawable/ic_action_overflow"
-            android:contentDescription="@string/abc_action_menu_overflow_description"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:focusable="false"
-            />
-
-        <ImageView
-            android:id="@+id/thumbnail"
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:scaleType="fitStart"
-            android:layout_below="@id/title"
-            android:contentDescription="@string/subscription_thumbnail"
-            tools:src="@drawable/icon"
-            android:layout_marginRight="10dp"
-            android:layout_marginEnd="10dp"
-            />
-
-        <TextView
-            android:id="@+id/description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#ccffffff"
-            tools:text="Greg Fitzsimmons's podcast. He's a comedian. His podcast is pretty good and you might want to listen to it. Or you might not like it so then you wouldn't want to listen to it. But then you'd be missing out on a great podcast. So check it out and if you don't like it, then stop listening. Go find another. Podax can help you."
-            android:layout_alignTop="@id/thumbnail"
-            android:layout_toRightOf="@id/thumbnail"
-            android:layout_toEndOf="@id/thumbnail"
-            android:ellipsize="end"
-            android:maxLines="6"
-            />
-
-       <!-- fix for bug with relativelayout not using bottom margins -->
-        <View
-            android:layout_width="wrap_content"
-            android:layout_height="10dp"
-            android:layout_below="@id/thumbnail"
-            />
-
-    </RelativeLayout>
-
-</android.support.v7.widget.CardView>
+</LinearLayout>

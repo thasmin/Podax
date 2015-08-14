@@ -17,12 +17,16 @@ dependencies {
     compile 'com.android.support:palette-v7:22.2.1'
     compile 'com.android.support:design:22.2.1'
 
-    compile 'com.joanzapata.android:android-iconify:1.0.6'
-    compile 'com.google.code.gson:gson:2.3'
-    compile 'com.squareup.okhttp:okhttp-urlconnection:2.1.0'
-    compile 'com.squareup.okhttp:okhttp:2.1.0'
-    compile 'com.squareup.picasso:picasso:2.4.0'
-    compile 'com.squareup.retrofit:retrofit:1.8.0'
+    compile 'io.reactivex:rxandroid:1.0.1'
+    compile 'com.trello:rxlifecycle:0.1.0'
+    compile 'com.trello:rxlifecycle-components:0.1.0'
+
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.4.0'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+
     compile('ch.acra:acra:4.5.0') {
         exclude group: 'org.json'
     }
@@ -31,11 +35,14 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
 	compile 'com.google.code.findbugs:jsr305:3.0.0'
-    compile 'com.squareup.okhttp:okhttp:2.1.0'
 
     // joda-time for android
     // https://github.com/dlew/joda-time-android
     compile 'net.danlew:android.joda:2.7.1'
+
+    compile 'com.joanzapata.android:android-iconify:1.0.6'
+
+    testCompile 'junit:junit:4.12'
 }
 
 Properties props = new Properties()
@@ -44,6 +51,10 @@ if (new File("signing.properties").exists()) {
 }
 
 android {
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
 	repositories {
 		mavenCentral()
 	}
