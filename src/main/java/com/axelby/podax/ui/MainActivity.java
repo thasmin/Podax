@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
 		// main section
 		TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
 		tabs.addTab(tabs.newTab().setText(R.string.playlist_caps));
-		tabs.addTab(tabs.newTab().setText(R.string.subscriptions_caps));
+		tabs.addTab(tabs.newTab().setText(R.string.podcasts));
 		tabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
