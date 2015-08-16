@@ -70,10 +70,11 @@ public class SubscriptionListFragment extends Fragment
 
 		LinearLayout layout = (LinearLayout) view.findViewById(R.id.layout);
 
-		TextView title = (TextView) LayoutInflater.from(view.getContext())
+		LinearLayout titleLayout = (LinearLayout) LayoutInflater.from(view.getContext())
 				.inflate(R.layout.subscription_list_title, layout, false);
-		title.setText("iTunes");
-		layout.addView(title);
+		TextView title = (TextView) titleLayout.findViewById(R.id.title);
+		title.setText("iTunes Top Podcasts");
+		layout.addView(titleLayout);
 
 		RecyclerView rv = new RecyclerView(view.getContext());
 		rv.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
