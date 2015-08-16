@@ -3,6 +3,7 @@ package com.axelby.podax.ui;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -13,7 +14,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -27,6 +27,8 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -51,6 +53,8 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 	private View _currentlyUpdatingMessage;
 	private View _top;
 	private RecyclerView _listView;
+	private CheckBox _subscribed;
+	private CheckBox _addNewEpisodes;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -84,12 +88,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 			@Override
 			public void onGlobalLayout() {
 				_listView.setPadding(0, _top.getHeight(), 0, 0);
-				ViewTreeObserver vto = _top.getViewTreeObserver();
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-					vto.removeOnGlobalLayoutListener(this);
-				} else {
-					vto.removeGlobalOnLayoutListener(this);
-				}
+				_top.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 			}
 		};
 		_top.getViewTreeObserver().addOnGlobalLayoutListener(layoutListener);
@@ -97,7 +96,7 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 		_listView = (RecyclerView) view.findViewById(R.id.list);
 		_listView.setLayoutManager(new LinearLayoutManager(context));
 		_listView.setItemAnimator(new DefaultItemAnimator());
-		_listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+		_listView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 			@Override
 			public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
 				super.onScrolled(recyclerView, dx, dy);
@@ -109,6 +108,32 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 		_listView.setAdapter(_adapter);
 
 		_currentlyUpdatingMessage = view.findViewById(R.id.currently_updating);
+
+		_subscribed = (CheckBox) view.findViewById(R.id.subscribe);
+		_subscribed.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton button, boolean isChecked) {
+				ContentValues values = new ContentValues(1);
+				values.put(SubscriptionProvider.COLUMN_SINGLE_USE, !isChecked);
+				ContentResolver contentResolver = button.getContext().getContentResolver();
+				Uri subscriptionUri = SubscriptionProvider.getContentUri(_subscriptionId);
+				contentResolver.update(subscriptionUri, values, null, null);
+
+				_addNewEpisodes.setChecked(isChecked);
+			}
+		});
+
+		_addNewEpisodes = (CheckBox) view.findViewById(R.id.add_new_episodes);
+		_addNewEpisodes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton button, boolean isChecked) {
+				ContentValues values = new ContentValues(1);
+				values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, isChecked);
+				ContentResolver contentResolver = button.getContext().getContentResolver();
+				Uri subscriptionUri = SubscriptionProvider.getContentUri(_subscriptionId);
+				contentResolver.update(subscriptionUri, values, null, null);
+			}
+		});
 
 		setupHeader();
 	}
@@ -127,11 +152,17 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 		Bitmap thumbnailImage = SubscriptionCursor.getThumbnailImage(context, _subscriptionId);
 		thumbnail.setImageBitmap(thumbnailImage);
 
-		Palette palette = Palette.generate(thumbnailImage);
 		TextView title = (TextView) view.findViewById(R.id.subscription);
 		title.setText(subscriptionCursor.getTitle());
-		title.setBackgroundColor(palette.getMutedColor(R.color.background_material_dark));
-		title.setTextColor(palette.getVibrantColor(R.color.primary_text_default_material_dark));
+		if (thumbnailImage != null) {
+			Palette palette = Palette.from(thumbnailImage).generate();
+			title.setTextColor(palette.getVibrantColor(title.getTextColors().getDefaultColor()));
+		} else {
+			thumbnail.setVisibility(View.GONE);
+		}
+
+		_subscribed.setChecked(!subscriptionCursor.isSingleUse());
+		_addNewEpisodes.setChecked(subscriptionCursor.areNewEpisodesAddedToPlaylist());
 
 		subscriptionCursor.closeCursor();
 	}
@@ -179,6 +210,9 @@ public class EpisodeListFragment extends Fragment implements LoaderManager.Loade
 			return null;
 
 		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
+		if (uri == null)
+			return null;
+
 		uri = Uri.withAppendedPath(uri, "podcasts");
 		String[] projection = {
 				EpisodeProvider.COLUMN_ID,

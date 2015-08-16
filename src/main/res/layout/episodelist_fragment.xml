@@ -14,9 +14,9 @@
         <ImageView
             android:id="@+id/thumbnail"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="wrap_content"
             android:contentDescription="@string/subscription_thumbnail"
-            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
             tools:src="@drawable/icon" />
 
         <TextView
@@ -25,7 +25,6 @@
             android:layout_height="wrap_content"
             android:textSize="24sp"
             android:gravity="center_horizontal"
-            android:background="#c0000000"
             tools:text="Subscription Name" />
 
         <TextView
