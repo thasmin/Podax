@@ -131,8 +131,11 @@ public class MediaDecoderPlayer extends AudioPlayerBase {
 					_seekFlag = -1f;
 
 					if (_state.extractor.getSampleTime() > -1) {
-						if (_track != null)
+						if (_track != null) {
 							_track.play();
+							// not sure why this changes to 0 when flush() is called
+							_track.setPositionNotificationPeriod(_track.getSampleRate());
+						}
 					} else if (_state.wasCompleteFileLoaded()) {
 						// skipped past end
 						break;
