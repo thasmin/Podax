@@ -5,7 +5,6 @@ import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.ComponentName;
@@ -22,7 +21,6 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
@@ -189,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
 						startFragmentActivity(StatsFragment.class);
 						return true;
 					case R.id.preferences:
-						startFragmentActivity(PreferenceFragment.class);
+						startFragmentActivity(PodaxPreferenceFragment.class);
 						return true;
 					case R.id.about:
 						startFragmentActivity(AboutFragment.class);
