@@ -195,35 +195,43 @@ public class PlayerService extends Service {
 		if (intent == null || intent.getExtras() == null)
 			return START_NOT_STICKY;
 
-		if (!intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND))
+		int extra = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1);
+		if (extra == -1)
 			return START_NOT_STICKY;
 
 		int pauseReason = intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND_ARG, -1);
 
-		if (_player == null && intent.getExtras().containsKey(Constants.EXTRA_PLAYER_COMMAND))
+		if (_player == null &&
+				extra != Constants.PLAYER_COMMAND_PAUSE && extra != Constants.PLAYER_COMMAND_STOP)
 			createPlayer();
-		switch (intent.getIntExtra(Constants.EXTRA_PLAYER_COMMAND, -1)) {
-			case -1:
-				break;
+
+		switch (extra) {
 			case Constants.PLAYER_COMMAND_PLAYPAUSE:
+				PodaxLog.log(this, "PLAYER_COMMAND_PLAYPAUSE");
 				_player.playPause(pauseReason);
 				break;
 			case Constants.PLAYER_COMMAND_PLAY:
+				PodaxLog.log(this, "PLAYER_COMMAND_PLAY");
 				_player.play();
 				break;
 			case Constants.PLAYER_COMMAND_PLAYSTOP:
+				PodaxLog.log(this, "PLAYER_COMMAND_PLAYSTOP");
 				_player.playStop();
 				break;
 			case Constants.PLAYER_COMMAND_PAUSE:
+				PodaxLog.log(this, "PLAYER_COMMAND_PAUSE");
 				_player.pause(pauseReason);
 				break;
 			case Constants.PLAYER_COMMAND_RESUME:
+				PodaxLog.log(this, "PLAYER_COMMAND_RESUME");
 				_player.unpause(pauseReason);
 				break;
 			case Constants.PLAYER_COMMAND_STOP:
+				PodaxLog.log(this, "PLAYER_COMMAND_STOP");
 				_player.stop();
 				break;
 			case Constants.PLAYER_COMMAND_REFRESHEPISODE:
+				PodaxLog.log(this, "PLAYER_COMMAND_REFRESHEPISODE");
 				ensurePlayerStatus();
 				break;
 		}
