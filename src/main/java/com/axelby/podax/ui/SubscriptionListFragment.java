@@ -1,7 +1,9 @@
 package com.axelby.podax.ui;
 
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -12,12 +14,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -59,6 +63,39 @@ public class SubscriptionListFragment extends Fragment
 		return inflater.inflate(R.layout.subscription_list, container, false);
 	}
 
+	public static class AddSubscriptionDialog extends DialogFragment {
+		public AddSubscriptionDialog() {
+		}
+
+		@Nullable
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+			return inflater.inflate(R.layout.subscription_list_add, container, false);
+		}
+
+		@Override
+		public void onViewCreated(View view, Bundle savedInstanceState) {
+			EditText url = (EditText) view.findViewById(R.id.url);
+			url.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+				@Override
+				public boolean onEditorAction(TextView url, int actionId, KeyEvent event) {
+					SubscriptionProvider.addNewSubscription(url.getContext(), url.getText().toString());
+					dismiss();
+					return true;
+				}
+			});
+
+			view.findViewById(R.id.subscribe).setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View button) {
+					EditText url = (EditText) ((ViewGroup)button.getParent()).findViewById(R.id.url);
+					SubscriptionProvider.addNewSubscription(button.getContext(), url.getText().toString());
+					dismiss();
+				}
+			});
+		}
+	}
+
 	@Override
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
@@ -83,6 +120,17 @@ public class SubscriptionListFragment extends Fragment
 		rv.setAdapter(new iTunesAdapter());
 		layout.addView(rv);
 
+
+		View.OnClickListener addListener = new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				//startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null));
+				AddSubscriptionDialog dialog = new AddSubscriptionDialog();
+				dialog.show(getFragmentManager(), "addSubscription");
+			}
+		};
+		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
+
 		/*
 		View settings = view.findViewById(R.id.settings);
 		settings.setOnClickListener(new View.OnClickListener() {
@@ -100,14 +148,6 @@ public class SubscriptionListFragment extends Fragment
 				_adapter.notifyItemRemoved(_selectedPosition);
 			}
 		});
-
-		View.OnClickListener addListener = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null));
-			}
-		};
-		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
 		*/
 	}
 
