@@ -4,9 +4,11 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath 'me.tatarka:gradle-retrolambda:3.2.2'
     }
 }
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
 dependencies {
     compile 'com.android.support:support-v4:22.2.1'
@@ -16,6 +18,8 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:22.2.1'
     compile 'com.android.support:palette-v7:22.2.1'
     compile 'com.android.support:design:22.2.1'
+
+    compile 'com.facebook.stetho:stetho:1.1.1'
 
     compile 'io.reactivex:rxandroid:1.0.1'
     compile 'com.trello:rxlifecycle:0.1.0'
@@ -38,7 +42,7 @@ dependencies {
 
     // joda-time for android
     // https://github.com/dlew/joda-time-android
-    compile 'net.danlew:android.joda:2.7.1'
+    compile 'net.danlew:android.joda:2.8.2'
 
     compile 'com.joanzapata.android:android-iconify:1.0.6'
 
@@ -53,6 +57,16 @@ if (new File("signing.properties").exists()) {
 android {
     testOptions {
         unitTests.returnDefaultValues = true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
     }
 
 	repositories {

@@ -4,6 +4,8 @@ import android.app.Application;
 import android.os.Build;
 import android.webkit.WebView;
 
+import com.facebook.stetho.Stetho;
+
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.acra.ACRA;
@@ -31,6 +33,13 @@ public class PodaxApplication extends Application {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 				WebView.setWebContentsDebuggingEnabled(true);
 			}
+
+			Stetho.initialize(
+				Stetho.newInitializerBuilder(this)
+					.enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+					.enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this))
+				.build()
+			);
 		}
 
 		JodaTimeAndroid.init(this);

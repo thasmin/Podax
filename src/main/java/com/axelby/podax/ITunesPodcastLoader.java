@@ -1,27 +1,39 @@
 package com.axelby.podax;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Xml;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.joda.time.LocalDate;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
 import rx.Observable;
-import rx.Subscriber;
 import rx.exceptions.OnErrorThrowable;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class ITunesPodcastLoader {
+	private Context _context = null;
+	private final long _category;
+
 	public static class Podcast {
 		public long id;
+		public LocalDate date;
+		public long category;
+		public int position;
 		public String name;
 		public String summary;
 		public String imageUrl;
@@ -30,80 +42,138 @@ public class ITunesPodcastLoader {
 		@Override public String toString() { return name; }
 	}
 
-	private ITunesPodcastLoader() { }
-
-	public static Observable<Podcast> getPodcasts() {
-		return getPodcasts(0);
+	public ITunesPodcastLoader(Context context) {
+		this(context, 0);
 	}
 
-	public static Observable<Podcast> getPodcasts(long category) {
-		return Observable.just(category)
-				.subscribeOn(Schedulers.io())
-				.map(_buildUrl)
-				.flatMap(_fetchFromITunes)
-				.flatMap(_extractEntries);
+	public ITunesPodcastLoader(Context context, long category) {
+		_context = context;
+		_category = category;
 	}
 
-	private static Func1<Long,String> _buildUrl = new Func1<Long, String>() {
-		@Override
-		public String call(Long category) {
-			StringBuilder url = new StringBuilder();
-			// TODO: figure out why https isn't working with okhttp and fix it
-			url.append("http://itunes.apple.com/us/rss/toppodcasts/limit=100/");
-			if (category != 0) {
-				url.append("genre=");
-				url.append(category);
-				url.append("/");
+	public Observable<List<Podcast>> getPodcasts() {
+		return loadFromDB(_category)
+			.subscribeOn(Schedulers.io())
+			.concatWith(
+					Observable.just(_category)
+							.map(_buildUrl)
+							.flatMap(_fetchFromITunes)
+							.flatMap(_extractEntries)
+							.map(_saveToDB)
+			).first();
+	}
+
+	private Observable<List<Podcast>> loadFromDB(long category) {
+		return Observable.create(subscriber -> {
+			SQLiteDatabase db = new DBAdapter(_context).getReadableDatabase();
+			String[] projection = new String[] {
+					"_id", "date", "category", "position",
+					"name", "summary", "imageUrl", "idUrl"
+			};
+			String selection = "category = ? AND date = ?";
+			String[] selectionArgs = {Long.toString(category), Long.toString(LocalDate.now().toDate().getTime())};
+			Cursor c = db.query("itunes", projection, selection, selectionArgs, null, null, "position");
+			if (c == null) {
+				subscriber.onCompleted();
+				return;
 			}
-			url.append("explicit=true/xml");
-			return url.toString();
+
+			ArrayList<Podcast> podcasts = new ArrayList<>(100);
+			while (c.moveToNext()) {
+				Podcast p = new Podcast();
+				p.id = c.getLong(0);
+				p.date = new LocalDate(c.getInt(1));
+				p.category = c.getLong(2);
+				p.position = c.getInt(3);
+				p.name = c.getString(4);
+				p.summary = c.getString(5);
+				p.imageUrl = c.getString(6);
+				p.idUrl = c.getString(7);
+				podcasts.add(p);
+			}
+			c.close();
+
+			if (podcasts.size() > 0)
+				subscriber.onNext(podcasts);
+			subscriber.onCompleted();
+		});
+	}
+
+	private Func1<Long,String> _buildUrl = category -> {
+		StringBuilder url = new StringBuilder();
+		// TODO: figure out why https isn't working with okhttp and fix it
+		url.append("http://itunes.apple.com/us/rss/toppodcasts/limit=100/");
+		if (category != 0) {
+			url.append("genre=");
+			url.append(category);
+			url.append("/");
+		}
+		url.append("explicit=true/xml");
+		return url.toString();
+	};
+
+	private Func1<String, Observable<Response>> _fetchFromITunes = url -> {
+		Request request = new Request.Builder()
+				.url(url)
+				.build();
+		try {
+			return Observable.just(new OkHttpClient().newCall(request).execute());
+		} catch (IOException e) {
+			return Observable.error(OnErrorThrowable.addValueAsLastCause(e, url));
 		}
 	};
 
-	private static Func1<String, Observable<Response>> _fetchFromITunes = new Func1<String, Observable<Response>>() {
-		@Override
-		public Observable<Response> call(String url) {
-			Request request = new Request.Builder()
-					.url(url)
-					.build();
+	private Func1<Response, Observable<List<Podcast>>> _extractEntries = response ->
+		Observable.create(subscriber -> {
 			try {
-				return Observable.just(new OkHttpClient().newCall(request).execute());
-			} catch (IOException e) {
-				return Observable.error(OnErrorThrowable.addValueAsLastCause(e, url));
-			}
-		}
-	};
+				XmlPullParser parser = Xml.newPullParser();
+				parser.setInput(response.body().byteStream(), "utf-8");
 
-	private static Func1<Response, Observable<Podcast>> _extractEntries = new Func1<Response, Observable<Podcast>>() {
-		@Override
-		public Observable<Podcast> call(final Response response) {
-			return Observable.create(new Observable.OnSubscribe<Podcast>() {
-				@Override
-				public void call(Subscriber<? super Podcast> subscriber) {
-					try {
-						XmlPullParser parser = Xml.newPullParser();
-						parser.setInput(response.body().byteStream(), "utf-8");
+				// find feed tag
+				int eventType = parser.getEventType();
+				while (eventType != XmlPullParser.START_TAG)
+					eventType = parser.next();
 
-						// find feed tag
-						int eventType = parser.getEventType();
-						while (eventType != XmlPullParser.START_TAG)
-							eventType = parser.next();
-
-						// find entry tag
-						for (eventType = parser.next(); eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next())
-							if (eventType == XmlPullParser.START_TAG && isAtomElement(parser, "entry"))
-								subscriber.onNext(handleEntry(parser));
-						subscriber.onCompleted();
-					} catch (XmlPullParserException | IOException e) {
-						subscriber.onError(OnErrorThrowable.addValueAsLastCause(e, response.request().urlString()));
+				ArrayList<Podcast> podcasts = new ArrayList<>(100);
+				// find entry tag
+				for (eventType = parser.next(); eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next())
+					if (eventType == XmlPullParser.START_TAG && isAtomElement(parser, "entry")) {
+						Podcast podcast = handleEntry(parser);
+						podcast.position = podcasts.size();
+						podcasts.add(podcast);
 					}
-				}
-			});
+				subscriber.onNext(podcasts);
+				subscriber.onCompleted();
+			} catch (XmlPullParserException | IOException e) {
+				subscriber.onError(OnErrorThrowable.addValueAsLastCause(e, response.request().urlString()));
+			}
+		});
+
+	private Func1<List<Podcast>, List<Podcast>> _saveToDB = podcasts -> {
+		SQLiteDatabase db = new DBAdapter(_context).getWritableDatabase();
+		db.delete("itunes", "category = ?", new String[] { Long.toString(podcasts.get(0).category) });
+
+		for (Podcast p : podcasts) {
+			ContentValues values = new ContentValues(8);
+			values.put("_id", p.id);
+			values.put("date", p.date.toDate().getTime());
+			values.put("category", p.category);
+			values.put("position", p.position);
+			values.put("name", p.name);
+			values.put("summary", p.summary);
+			values.put("imageUrl", p.imageUrl);
+			values.put("idUrl", p.idUrl);
+			db.insert("itunes", "_id", values);
 		}
+
+		return podcasts;
 	};
 
-	private static Podcast handleEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
+	private Podcast handleEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
 		Podcast podcast = new Podcast();
+		podcast.category = _category;
+		podcast.date = LocalDate.now();
+
 		for (int eventType = parser.getEventType(); eventType != XmlPullParser.END_DOCUMENT; eventType = parser.next()) {
 			if (eventType == XmlPullParser.START_TAG) {
 				if (isAtomElement(parser, "id")) {

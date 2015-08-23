@@ -3,7 +3,7 @@ package com.axelby.podax.ui;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.ContentValues;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -14,7 +14,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,6 +34,7 @@ import com.axelby.podax.UpdateService;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -76,22 +76,16 @@ public class SubscriptionListFragment extends Fragment
 		@Override
 		public void onViewCreated(View view, Bundle savedInstanceState) {
 			EditText url = (EditText) view.findViewById(R.id.url);
-			url.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-				@Override
-				public boolean onEditorAction(TextView url, int actionId, KeyEvent event) {
-					SubscriptionProvider.addNewSubscription(url.getContext(), url.getText().toString());
-					dismiss();
-					return true;
-				}
+			url.setOnEditorActionListener((url1, actionId, event) -> {
+				SubscriptionProvider.addNewSubscription(url1.getContext(), url1.getText().toString());
+				dismiss();
+				return true;
 			});
 
-			view.findViewById(R.id.subscribe).setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View button) {
-					EditText url = (EditText) ((ViewGroup)button.getParent()).findViewById(R.id.url);
-					SubscriptionProvider.addNewSubscription(button.getContext(), url.getText().toString());
-					dismiss();
-				}
+			view.findViewById(R.id.subscribe).setOnClickListener(button -> {
+				EditText url1 = (EditText) ((ViewGroup)button.getParent()).findViewById(R.id.url);
+				SubscriptionProvider.addNewSubscription(button.getContext(), url1.getText().toString());
+				dismiss();
 			});
 		}
 	}
@@ -117,17 +111,13 @@ public class SubscriptionListFragment extends Fragment
 		rv.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 		rv.setLayoutManager(new WrappingLinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false));
 		rv.setItemAnimator(new DefaultItemAnimator());
-		rv.setAdapter(new iTunesAdapter());
+		rv.setAdapter(new iTunesAdapter(view.getContext()));
 		layout.addView(rv);
 
 
-		View.OnClickListener addListener = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				//startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null));
-				AddSubscriptionDialog dialog = new AddSubscriptionDialog();
-				dialog.show(getFragmentManager(), "addSubscription");
-			}
+		View.OnClickListener addListener = view1 -> {
+			AddSubscriptionDialog dialog = new AddSubscriptionDialog();
+			dialog.show(getFragmentManager(), "addSubscription");
 		};
 		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
 
@@ -216,12 +206,9 @@ public class SubscriptionListFragment extends Fragment
 
 	private class SubscriptionAdapter extends RecyclerView.Adapter<SubscriptionListViewHolder> {
 
-		private final View.OnClickListener _subscriptionChoiceHandler = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				long subId = (long) view.getTag();
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subId));
-			}
+		private final View.OnClickListener _subscriptionChoiceHandler = view -> {
+			long subId = (long) view.getTag();
+			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subId));
 		};
 
 		@Override
@@ -258,27 +245,28 @@ public class SubscriptionListFragment extends Fragment
 	private class iTunesAdapter extends RecyclerView.Adapter<SubscriptionListViewHolder> {
 		private final ArrayList<ITunesPodcastLoader.Podcast> _podcasts = new ArrayList<>(100);
 
-		public iTunesAdapter() {
+		public iTunesAdapter(Context context) {
 			setHasStableIds(true);
 
-			ITunesPodcastLoader.getPodcasts()
+			new ITunesPodcastLoader(context).getPodcasts()
 					.onBackpressureBuffer(100)
 					.observeOn(AndroidSchedulers.mainThread())
-					.subscribe(new Subscriber<ITunesPodcastLoader.Podcast>() {
+					.subscribe(new Subscriber<List<ITunesPodcastLoader.Podcast>>() {
 						@Override
 						public void onError(Throwable e) {
 							Log.e("itunesloader", "subscriber error", e);
 						}
 
 						@Override
-						public void onNext(ITunesPodcastLoader.Podcast podcast) {
-							_podcasts.add(podcast);
+						public void onNext(List<ITunesPodcastLoader.Podcast> podcast) {
+							_podcasts.clear();
+							_podcasts.addAll(podcast);
 							notifyItemInserted(_podcasts.size() - 1);
-							notifyDataSetChanged();
 						}
 
 						@Override
 						public void onCompleted() {
+							notifyDataSetChanged();
 						}
 					});
 		}
