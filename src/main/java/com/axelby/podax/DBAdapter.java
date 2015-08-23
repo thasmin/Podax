@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 16;
+	private static final int DATABASE_VERSION = 17;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -68,6 +68,17 @@ class DBAdapter extends SQLiteOpenHelper {
 
 		db.execSQL("CREATE VIRTUAL TABLE fts_podcasts USING fts3(_id, title, description);");
 		db.execSQL("CREATE VIRTUAL TABLE fts_subscriptions USING FTS3(_id, title, url, titleOverride, description);");
+
+		db.execSQL("CREATE TABLE itunes(" +
+				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"date DATE, " +
+				"category INTEGER, " +
+				"position INTEGER, " +
+				"name VARCHAR, " +
+				"summary VARCHAR, " +
+				"imageUrl VARCHAR, " +
+				"idUrl VARCHAR)");
+		db.execSQL("CREATE INDEX itunes_category_position_idx ON itunes(category, position)");
 	}
 
 	@SuppressWarnings("ConstantConditions")
@@ -116,6 +127,9 @@ class DBAdapter extends SQLiteOpenHelper {
 
 		if (oldVersion < 16)
 			upgradeV15toV16(db);
+
+		if (oldVersion < 17)
+			updateV16toV17(db);
     }
 
 	private void upgradeV1toV2(SQLiteDatabase db) {
@@ -237,5 +251,18 @@ class DBAdapter extends SQLiteOpenHelper {
 		db.execSQL("CREATE VIRTUAL TABLE fts_subscriptions USING FTS3(_id, title, url, titleOverride, description);");
 		db.execSQL("INSERT INTO fts_subscriptions(_id, title, url, titleOverride, description) " +
 				"SELECT _id, title, url, titleOverride, description FROM subscriptions;");
+	}
+
+	private void updateV16toV17(SQLiteDatabase db) {
+		db.execSQL("CREATE TABLE itunes(" +
+				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"date DATE, " +
+				"category INTEGER, " +
+				"position INTEGER, " +
+				"name VARCHAR, " +
+				"summary VARCHAR, " +
+				"imageUrl VARCHAR, " +
+				"idUrl VARCHAR)");
+		db.execSQL("CREATE INDEX itunes_category_position_idx ON itunes(category, position)");
 	}
 }
