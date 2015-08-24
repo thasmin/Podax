@@ -25,7 +25,7 @@ public class UpdateService extends IntentService {
 		super("UpdateService");
 	}
 
-	private static long _updatingSubscriptionId = -1;
+	private static long _updatingSubscriptionId = -1000;
 	public static long getUpdatingSubscriptionId() { return _updatingSubscriptionId; }
 
 	public static void updateSubscriptions(Context context) {
@@ -128,7 +128,7 @@ public class UpdateService extends IntentService {
 
 				_updatingSubscriptionId = -1;
 				// this shows a warning in logcat because it can't find a subscription with id -1
-				localIntent = new Intent(Constants.ACTION_UPDATE_SUBSCRIPTION, SubscriptionProvider.getContentUri(-1));
+				localIntent = new Intent(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION);
 				localBroadcastManager.sendBroadcast(localIntent);
 				break;
 			case Constants.ACTION_DOWNLOAD_EPISODES: {

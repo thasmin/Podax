@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 
 import rx.Observable;
 import rx.exceptions.OnErrorThrowable;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class ITunesPodcastLoader {
@@ -56,17 +55,17 @@ public class ITunesPodcastLoader {
 			.subscribeOn(Schedulers.io())
 			.concatWith(
 					Observable.just(_category)
-							.map(_buildUrl)
-							.flatMap(_fetchFromITunes)
-							.flatMap(_extractEntries)
-							.map(_saveToDB)
+							.map(this::buildUrl)
+							.flatMap(this::fetchFromITunes)
+							.flatMap(this::extractEntries)
+							.map(this::saveToDB)
 			).first();
 	}
 
 	private Observable<List<Podcast>> loadFromDB(long category) {
 		return Observable.create(subscriber -> {
 			SQLiteDatabase db = new DBAdapter(_context).getReadableDatabase();
-			String[] projection = new String[] {
+			String[] projection = new String[]{
 					"_id", "date", "category", "position",
 					"name", "summary", "imageUrl", "idUrl"
 			};
@@ -99,7 +98,7 @@ public class ITunesPodcastLoader {
 		});
 	}
 
-	private Func1<Long,String> _buildUrl = category -> {
+	String buildUrl(long category) {
 		StringBuilder url = new StringBuilder();
 		// TODO: figure out why https isn't working with okhttp and fix it
 		url.append("http://itunes.apple.com/us/rss/toppodcasts/limit=100/");
@@ -110,9 +109,9 @@ public class ITunesPodcastLoader {
 		}
 		url.append("explicit=true/xml");
 		return url.toString();
-	};
+	}
 
-	private Func1<String, Observable<Response>> _fetchFromITunes = url -> {
+	private Observable<Response> fetchFromITunes(String url) {
 		Request request = new Request.Builder()
 				.url(url)
 				.build();
@@ -121,10 +120,10 @@ public class ITunesPodcastLoader {
 		} catch (IOException e) {
 			return Observable.error(OnErrorThrowable.addValueAsLastCause(e, url));
 		}
-	};
+	}
 
-	private Func1<Response, Observable<List<Podcast>>> _extractEntries = response ->
-		Observable.create(subscriber -> {
+	private Observable<List<Podcast>> extractEntries(Response response) {
+		return Observable.create(subscriber -> {
 			try {
 				XmlPullParser parser = Xml.newPullParser();
 				parser.setInput(response.body().byteStream(), "utf-8");
@@ -148,8 +147,9 @@ public class ITunesPodcastLoader {
 				subscriber.onError(OnErrorThrowable.addValueAsLastCause(e, response.request().urlString()));
 			}
 		});
+	}
 
-	private Func1<List<Podcast>, List<Podcast>> _saveToDB = podcasts -> {
+	private List<Podcast> saveToDB(List<Podcast> podcasts) {
 		SQLiteDatabase db = new DBAdapter(_context).getWritableDatabase();
 		db.delete("itunes", "category = ?", new String[] { Long.toString(podcasts.get(0).category) });
 
@@ -167,7 +167,7 @@ public class ITunesPodcastLoader {
 		}
 
 		return podcasts;
-	};
+	}
 
 	private Podcast handleEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
 		Podcast podcast = new Podcast();
@@ -201,5 +201,45 @@ public class ITunesPodcastLoader {
 	}
 	private static boolean isAtomElement(@Nonnull XmlPullParser parser, @Nonnull String name) {
 		return name.equals(parser.getName()) && NS_ATOM.equals(parser.getNamespace());
+	}
+
+
+	public static Observable<String> getRSSUrl(String iTunesUrl) {
+		return Observable.just(iTunesUrl)
+				.observeOn(Schedulers.io())
+				.flatMap(ITunesPodcastLoader::requestPlist)
+				.flatMap(ITunesPodcastLoader::parsePlist);
+	}
+
+	private static Observable<String> requestPlist(String iTunesUrl) {
+		try {
+			OkHttpClient client = new OkHttpClient();
+			Response call = client.newCall(new Request.Builder()
+					.url(iTunesUrl)
+					.addHeader("User-Agent", "iTunes/10.2.1")
+					.build()).execute();
+			return Observable.just(call.body().string());
+		} catch (IOException e) {
+			return Observable.error(e);
+		}
+	}
+
+	private static Observable<String> parsePlist(String resp) {
+		int doctypeAt = resp.indexOf("<!DOCTYPE ");
+		String doctype = resp.substring(doctypeAt + 10, resp.indexOf(" ", doctypeAt + 10));
+		if (doctype.equals("plist")) {
+			int urlAt = resp.indexOf("<key>url</key>");
+			int urlStart = resp.indexOf(">", urlAt + 15) + 1;
+			int urlEnd = resp.indexOf("<", urlStart);
+			String newUrl = resp.substring(urlStart, urlEnd).replace("&amp;", "&");
+
+			return Observable.just(newUrl)
+					.flatMap(ITunesPodcastLoader::requestPlist)
+					.flatMap(ITunesPodcastLoader::parsePlist);
+		}
+
+		int rssUrlStart = resp.indexOf("feed-url=\"") + 10;
+		int rssUrlEnd = resp.indexOf("\"", rssUrlStart);
+		return Observable.just(resp.substring(rssUrlStart, rssUrlEnd));
 	}
 }

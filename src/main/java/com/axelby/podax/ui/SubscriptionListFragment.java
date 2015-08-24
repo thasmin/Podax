@@ -253,7 +253,7 @@ public class SubscriptionListFragment extends Fragment
 					.subscribe(new Subscriber<List<ITunesPodcastLoader.Podcast>>() {
 						@Override
 						public void onError(Throwable e) {
-							Log.e("itunesloader", "subscriber error", e);
+							Log.e("itunesloader", "error while loading itunes toplist", e);
 						}
 
 						@Override
@@ -274,13 +274,18 @@ public class SubscriptionListFragment extends Fragment
 		@Override
 		public SubscriptionListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.subscription_list_item, parent, false);
+			view.setOnClickListener(v -> {
+				Bundle b = new Bundle(1);
+				b.putString(Constants.EXTRA_ITUNES_ID, (String) v.getTag());
+				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, b));
+			});
 			return new SubscriptionListViewHolder(view);
 		}
 
 		@Override
 		public void onBindViewHolder(SubscriptionListViewHolder holder, int position) {
 			ITunesPodcastLoader.Podcast p = _podcasts.get(position);
-			holder.holder.setTag(p.id);
+			holder.holder.setTag(p.idUrl);
 			holder.title.setText(p.name);
 
 			DisplayMetrics displayMetrics = getResources().getDisplayMetrics();

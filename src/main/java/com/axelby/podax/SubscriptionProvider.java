@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v4.database.DatabaseUtilsCompat;
 
 import java.util.ArrayList;
@@ -94,6 +95,7 @@ public class SubscriptionProvider extends ContentProvider {
         ContentValues values = new ContentValues(1);
         values.put(COLUMN_URL, url);
 		values.put(COLUMN_SINGLE_USE, 1);
+		values.put(COLUMN_PLAYLIST_NEW, 0);
         Uri uri = context.getContentResolver().insert(URI, values);
         UpdateService.updateSubscription(context, uri);
 		return uri;
@@ -120,7 +122,7 @@ public class SubscriptionProvider extends ContentProvider {
 	}
 
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+	public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		int uriMatch = _uriMatcher.match(uri);
 
 		if (uriMatch == PODCASTS) {
@@ -167,7 +169,7 @@ public class SubscriptionProvider extends ContentProvider {
 				sqlBuilder.appendWhere("singleUse = 0");
 				break;
 			default:
-				throw new IllegalArgumentException("Unknown URI");
+				throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();

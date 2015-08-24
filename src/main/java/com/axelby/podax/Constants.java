@@ -21,9 +21,11 @@ public class Constants {
 	public static final String ACTION_DOWNLOAD_EPISODE = "com.axelby.podax.DOWNLOAD_EPISODE";
 	public static final String ACTION_DOWNLOAD_EPISODES = "com.axelby.podax.DOWNLOAD_EPISODES";
 	public static final String ACTION_UPDATE_SUBSCRIPTION = "com.axelby.podax.ACTION_UPDATE_SUBSCRIPTION";
+	public static final String ACTION_DONE_UPDATING_SUBSCRIPTION = "com.axelby.podax.ACTION_DONE_UPDATING_SUBSCRIPTION";
 
 	public static final String EXTRA_EPISODE_ID = "com.axelby.podax.episodeId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
+	public static final String EXTRA_ITUNES_ID = "com.axelby.podax.itunesId";
 	public static final String EXTRA_MANUAL_REFRESH = "com.axelby.podax.manual_refresh";
     public static final String EXTRA_CATEGORY_ID = "com.axelby.podax.categoryId";
     public static final String EXTRA_FRAGMENT_CLASSNAME = "com.axelby.podax.fragmenClassName";

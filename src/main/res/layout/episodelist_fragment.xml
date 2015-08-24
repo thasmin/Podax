@@ -48,6 +48,7 @@
             android:textColor="@color/primary_text_default_material_light"
             android:text="@string/subscription_currently_updating"/>
 
+        <!-- TODO: next two checkboxes width should be wrap_content -->
         <CheckBox
             android:id="@+id/subscribe"
             android:layout_width="match_parent"
