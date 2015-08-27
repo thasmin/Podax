@@ -337,7 +337,11 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         Helper.registerMediaButtons(this);
 
-        if (getContentResolver().query(SubscriptionProvider.URI, null, null, null, null).getCount() == 0)
+		Cursor cursor = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
+		int count = cursor.getCount();
+		cursor.close();
+
+		if (count == 0)
             startActivity(PodaxFragmentActivity.createIntent(this, AddSubscriptionFragment.class, null));
 
         getContentResolver().registerContentObserver(EpisodeProvider.ACTIVE_EPISODE_URI, false, _activeEpisodeObserver);

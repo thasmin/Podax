@@ -9,7 +9,6 @@
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="120dp"
         android:clipToPadding="false"
         />
 
@@ -45,7 +44,7 @@
             android:background="@color/orange500"
             android:padding="10dp"
             android:layout_marginTop="10dp"
-            android:textColor="@color/primary_text_default_material_light"
+            android:textColor="#111111"
             android:text="@string/subscription_currently_updating"/>
 
         <!-- TODO: next two checkboxes width should be wrap_content -->

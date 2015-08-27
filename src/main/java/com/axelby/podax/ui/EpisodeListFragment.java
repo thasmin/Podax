@@ -234,23 +234,28 @@ public class EpisodeListFragment extends RxFragment {
 			@Override
 			public void onGlobalLayout() {
 				_listView.setPadding(0, _top.getHeight(), 0, 0);
+				_listView.scrollToPosition(0);
+				Log.d("episodelistfragment", "_listView's top padding: " + _listView.getPaddingTop());
 				_top.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 			}
 		};
 		_top.getViewTreeObserver().addOnGlobalLayoutListener(layoutListener);
 
 		ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-		Bitmap thumbnailImage = SubscriptionCursor.getThumbnailImage(context, _subscriptionId);
-		thumbnail.setImageBitmap(thumbnailImage);
-
 		TextView title = (TextView) view.findViewById(R.id.subscription);
-		title.setText(subscriptionCursor.getTitle());
+
+		Bitmap thumbnailImage = SubscriptionCursor.getThumbnailImage(context, _subscriptionId);
+
 		if (thumbnailImage != null) {
+			thumbnail.setVisibility(View.VISIBLE);
+			thumbnail.setImageBitmap(thumbnailImage);
 			Palette palette = Palette.from(thumbnailImage).generate();
 			title.setTextColor(palette.getVibrantColor(title.getTextColors().getDefaultColor()));
 		} else {
 			thumbnail.setVisibility(View.GONE);
 		}
+
+		title.setText(subscriptionCursor.getTitle());
 
 		_subscribed.setChecked(!subscriptionCursor.isSingleUse());
 		_subscribed.setOnCheckedChangeListener((button, isChecked) -> {
@@ -278,15 +283,15 @@ public class EpisodeListFragment extends RxFragment {
 	private BroadcastReceiver _updateReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
-				if (_currentlyUpdatingMessage.getVisibility() == View.VISIBLE)
-					setupHeader();
+			long updatingId = ContentUris.parseId(intent.getData());
+			if (updatingId == -1 || updatingId != _subscriptionId) {
 				_currentlyUpdatingMessage.setVisibility(View.GONE);
 				return;
 			}
 
-			long updatingId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
-			if (updatingId == -1 || updatingId != _subscriptionId) {
+			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
+				setupHeader();
+				_adapter.changeCursor(getPodcastsCursor(_subscriptionId));
 				_currentlyUpdatingMessage.setVisibility(View.GONE);
 			} else {
 				_currentlyUpdatingMessage.setVisibility(View.VISIBLE);
@@ -315,6 +320,9 @@ public class EpisodeListFragment extends RxFragment {
 		IntentFilter intentFilter = new IntentFilter(Constants.ACTION_UPDATE_SUBSCRIPTION);
 		intentFilter.addAction(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION);
 		intentFilter.addDataScheme("content");
+		try {
+			intentFilter.addDataType(SubscriptionProvider.ITEM_TYPE);
+		} catch (IntentFilter.MalformedMimeTypeException ignored) { }
 		LocalBroadcastManager.getInstance(getView().getContext()).registerReceiver(_updateReceiver, intentFilter);
 	}
 
@@ -390,6 +398,7 @@ public class EpisodeListFragment extends RxFragment {
 			if (_cursor == null)
 				return;
 			_cursor.unregisterContentObserver(_podcastCursorObserver);
+			_cursor.close();
 		}
 
 		@Override
