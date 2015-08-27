@@ -74,6 +74,7 @@ public class ITunesPodcastLoader {
 			Cursor c = db.query("itunes", projection, selection, selectionArgs, null, null, "position");
 			if (c == null) {
 				subscriber.onCompleted();
+				db.close();
 				return;
 			}
 
@@ -91,6 +92,7 @@ public class ITunesPodcastLoader {
 				podcasts.add(p);
 			}
 			c.close();
+			db.close();
 
 			if (podcasts.size() > 0)
 				subscriber.onNext(podcasts);
@@ -166,6 +168,7 @@ public class ITunesPodcastLoader {
 			db.insert("itunes", "_id", values);
 		}
 
+		db.close();
 		return podcasts;
 	}
 
