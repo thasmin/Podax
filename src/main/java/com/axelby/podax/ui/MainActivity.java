@@ -10,7 +10,6 @@ import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -22,8 +21,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -56,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
+	private TabLayout _tabs;
 
 	private View _progressbg;
 	private View _progressline;
@@ -70,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    @Override
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -100,17 +98,11 @@ public class MainActivity extends AppCompatActivity {
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.release_notes)
                             .setMessage(R.string.release_notes_detailed)
-                            .setPositiveButton(R.string.view_release_notes, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, AboutFragment.class, null));
-                                }
-                            })
-                            .setNegativeButton(R.string.no_thanks, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                }
-                            })
+                            .setPositiveButton(R.string.view_release_notes, (dialogInterface, i) -> {
+								startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, AboutFragment.class, null));
+							})
+                            .setNegativeButton(R.string.no_thanks, (dialogInterface, i) -> {
+							})
                             .create()
                             .show();
                     preferences.edit().putInt("lastReleaseNoteDialog", versionCode).apply();
@@ -162,42 +154,39 @@ public class MainActivity extends AppCompatActivity {
 		setSupportActionBar(toolbar);
 
 		NavigationView navMenu = (NavigationView) findViewById(R.id.navmenu);
-		navMenu.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-			@Override
-			public boolean onNavigationItemSelected(MenuItem menuItem) {
-				_drawerLayout.closeDrawer(GravityCompat.START);
+		navMenu.setNavigationItemSelectedListener(menuItem -> {
+			_drawerLayout.closeDrawer(GravityCompat.START);
 
-				switch (menuItem.getItemId()) {
-					case R.id.latest_activity:
-						startFragmentActivity(LatestActivityFragment.class);
-						return true;
-					case R.id.weekly_planner:
-						startFragmentActivity(WeeklyPlannerFragment.class);
-						return true;
-					case R.id.finished_episodes:
-						startFragmentActivity(FinishedEpisodeFragment.class);
-						return true;
-					case R.id.add_subscription:
-						startFragmentActivity(AddSubscriptionFragment.class);
-						return true;
-					case R.id.gpodder:
-						handleGPodder();
-						return true;
-					case R.id.stats:
-						startFragmentActivity(StatsFragment.class);
-						return true;
-					case R.id.preferences:
-						startFragmentActivity(PodaxPreferenceFragment.class);
-						return true;
-					case R.id.about:
-						startFragmentActivity(AboutFragment.class);
-						return true;
-					case R.id.log_viewer:
-						startFragmentActivity(LogViewerFragment.class);
-						return true;
-				}
-				return false;
+			switch (menuItem.getItemId()) {
+				case R.id.latest_activity:
+					startFragmentActivity(LatestActivityFragment.class);
+					return true;
+				case R.id.weekly_planner:
+					startFragmentActivity(WeeklyPlannerFragment.class);
+					return true;
+				case R.id.finished_episodes:
+					startFragmentActivity(FinishedEpisodeFragment.class);
+					return true;
+				case R.id.add_subscription:
+					startFragmentActivity(AddSubscriptionFragment.class);
+					return true;
+				case R.id.gpodder:
+					handleGPodder();
+					return true;
+				case R.id.stats:
+					startFragmentActivity(StatsFragment.class);
+					return true;
+				case R.id.preferences:
+					startFragmentActivity(PodaxPreferenceFragment.class);
+					return true;
+				case R.id.about:
+					startFragmentActivity(AboutFragment.class);
+					return true;
+				case R.id.log_viewer:
+					startFragmentActivity(LogViewerFragment.class);
+					return true;
 			}
+			return false;
 		});
 
 		if (!PodaxLog.isDebuggable(this))
@@ -211,10 +200,10 @@ public class MainActivity extends AppCompatActivity {
 		_drawerLayout.setDrawerListener(_drawerToggle);
 
 		// main section
-		TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
-		tabs.addTab(tabs.newTab().setText(R.string.playlist_caps));
-		tabs.addTab(tabs.newTab().setText(R.string.podcasts));
-		tabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+		_tabs = (TabLayout) findViewById(R.id.tabs);
+		_tabs.addTab(_tabs.newTab().setText(R.string.playlist_caps));
+		_tabs.addTab(_tabs.newTab().setText(R.string.podcasts));
+		_tabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
 				if (tab.getPosition() == 0) {
@@ -224,8 +213,13 @@ public class MainActivity extends AppCompatActivity {
 				}
 			}
 
-			@Override public void onTabUnselected(TabLayout.Tab tab) { }
-			@Override public void onTabReselected(TabLayout.Tab tab) { }
+			@Override
+			public void onTabUnselected(TabLayout.Tab tab) {
+			}
+
+			@Override
+			public void onTabReselected(TabLayout.Tab tab) {
+			}
 		});
 		getFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
 
@@ -240,25 +234,6 @@ public class MainActivity extends AppCompatActivity {
 
 	private void startFragmentActivity(Class<? extends Fragment> fragmentClass) {
 		startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, fragmentClass, null));
-
-	}
-
-	private void decorateTab(TextView tab, @ColorRes int textColor, @DrawableRes int background) {
-		int pL = tab.getPaddingLeft();
-		int pT = tab.getPaddingTop();
-		int pR = tab.getPaddingRight();
-		int pB = tab.getPaddingBottom();
-		tab.setTextColor(getResources().getColor(textColor));
-		tab.setBackgroundResource(background);
-		tab.setPadding(pL, pT, pR, pB);
-	}
-
-	private void setTabActive(TextView tab) {
-		decorateTab(tab, R.color.white, R.drawable.main_tab);
-	}
-
-	private void setTabInactive(TextView tab) {
-		decorateTab(tab, R.color.dimTextOnPrimary, 0);
 	}
 
 	private void initializeBottom(PlayerStatus playerState) {
@@ -280,27 +255,20 @@ public class MainActivity extends AppCompatActivity {
 
            int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
             _play.setImageResource(playResource);
-            _play.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Context context = MainActivity.this;
-                    PlayerStatus playerState = PlayerStatus.getCurrentState(context);
-                    if (playerState.isPlaying()) {
-                        _play.setImageResource(R.drawable.ic_action_play);
-                        PlayerService.stop(context);
-                    } else {
-                        _play.setImageResource(R.drawable.ic_action_pause);
-                        PlayerService.play(context);
-                    }
-                }
-            });
-
-			View.OnClickListener displayCurrentEpisode = new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, EpisodeDetailFragment.class, null));
+            _play.setOnClickListener(view -> {
+				Context context = MainActivity.this;
+				PlayerStatus playerState1 = PlayerStatus.getCurrentState(context);
+				if (playerState1.isPlaying()) {
+					_play.setImageResource(R.drawable.ic_action_play);
+					PlayerService.stop(context);
+				} else {
+					_play.setImageResource(R.drawable.ic_action_pause);
+					PlayerService.play(context);
 				}
-			};
+			});
+
+			View.OnClickListener displayCurrentEpisode =
+				view -> startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, EpisodeDetailFragment.class, null));
 
             _episodeTitle.setText(playerState.getTitle());
 			_episodeTitle.setOnClickListener(displayCurrentEpisode);
@@ -338,6 +306,9 @@ public class MainActivity extends AppCompatActivity {
         Helper.registerMediaButtons(this);
 
 		Cursor cursor = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
+		if (cursor == null)
+			return;
+
 		int count = cursor.getCount();
 		cursor.close();
 
@@ -359,6 +330,20 @@ public class MainActivity extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
         _drawerToggle.syncState();
     }
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt("selectedTab", _tabs.getSelectedTabPosition());
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		TabLayout.Tab selectedTab = _tabs.getTabAt(savedInstanceState.getInt("selectedTab"));
+		if (selectedTab != null)
+			selectedTab.select();
+	}
 
 	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
