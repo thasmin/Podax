@@ -1,7 +1,7 @@
 package com.axelby.podax.ui;
 
+import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -32,6 +32,8 @@ import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.squareup.picasso.Picasso;
+import com.trello.rxlifecycle.RxLifecycle;
+import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +43,7 @@ import javax.annotation.Nonnull;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class SubscriptionListFragment extends Fragment
+public class SubscriptionListFragment extends RxFragment
 		implements LoaderManager.LoaderCallbacks<Cursor> {
 
 	private SubscriptionAdapter _adapter = null;
@@ -49,8 +51,8 @@ public class SubscriptionListFragment extends Fragment
 	private Cursor _cursor;
 
     @Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
 
 		setHasOptionsMenu(true);
 
@@ -120,25 +122,6 @@ public class SubscriptionListFragment extends Fragment
 			dialog.show(getFragmentManager(), "addSubscription");
 		};
 		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
-
-		/*
-		View settings = view.findViewById(R.id.settings);
-		settings.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), SubscriptionSettingsFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, _selectedId));
-			}
-		});
-
-		View unsub = view.findViewById(R.id.unsubscribe);
-		unsub.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				getActivity().getContentResolver().delete(SubscriptionProvider.getContentUri(_selectedId), null, null);
-				_adapter.notifyItemRemoved(_selectedPosition);
-			}
-		});
-		*/
 	}
 
     @Override
@@ -249,26 +232,26 @@ public class SubscriptionListFragment extends Fragment
 			setHasStableIds(true);
 
 			new ITunesPodcastLoader(context).getPodcasts()
-					.observeOn(AndroidSchedulers.mainThread())
-					.subscribe(new Subscriber<List<ITunesPodcastLoader.Podcast>>() {
-						@Override
-						public void onError(Throwable e) {
-							Log.e("itunesloader", "error while loading itunes toplist", e);
-						}
+				.observeOn(AndroidSchedulers.mainThread())
+				.compose(RxLifecycle.bindFragment(lifecycle()))
+				.subscribe(new Subscriber<List<ITunesPodcastLoader.Podcast>>() {
+					@Override
+					public void onError(Throwable e) {
+						Log.e("itunesloader", "error while loading itunes toplist", e);
+					}
 
-						@Override
-						public void onNext(List<ITunesPodcastLoader.Podcast> podcasts) {
-							_podcasts.clear();
-							_podcasts.addAll(podcasts);
-							for (int i = 0; i < _podcasts.size(); ++i)
-								notifyItemInserted(i);
-						}
+					@Override
+					public void onNext(List<ITunesPodcastLoader.Podcast> podcasts) {
+						_podcasts.clear();
+						_podcasts.addAll(podcasts);
+						notifyItemRangeInserted(0, podcasts.size());
+					}
 
-						@Override
-						public void onCompleted() {
-							notifyDataSetChanged();
-						}
-					});
+					@Override
+					public void onCompleted() {
+						notifyDataSetChanged();
+					}
+				});
 		}
 
 		@Override
