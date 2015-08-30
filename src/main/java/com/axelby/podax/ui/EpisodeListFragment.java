@@ -34,12 +34,12 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
-import com.axelby.podax.ITunesPodcastLoader;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -104,8 +104,7 @@ public class EpisodeListFragment extends RxFragment {
 					}
 				});
 		} else {
-			ITunesPodcastLoader.getRSSUrl(itunesIdUrl)
-				.first()
+			new RSSUrlFetcher(activity, itunesIdUrl).getRSSUrl()
 				.flatMap(url -> {
 					Cursor c = activity.getContentResolver().query(SubscriptionProvider.URI,
 						new String[]{"_id"}, "url = ?", new String[]{url}, null);

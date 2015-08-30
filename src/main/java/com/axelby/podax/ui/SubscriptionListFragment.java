@@ -1,6 +1,5 @@
 package com.axelby.podax.ui;
 
-import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.LoaderManager;
 import android.content.Context;
@@ -26,11 +25,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.ITunesPodcastLoader;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.itunes.Podcast;
+import com.axelby.podax.itunes.PodcastFetcher;
 import com.squareup.picasso.Picasso;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
@@ -51,10 +51,11 @@ public class SubscriptionListFragment extends RxFragment
 	private Cursor _cursor;
 
     @Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
 		setHasOptionsMenu(true);
+		setRetainInstance(true);
 
 		getLoaderManager().initLoader(0, null, this);
 		_adapter = new SubscriptionAdapter();
@@ -66,8 +67,7 @@ public class SubscriptionListFragment extends RxFragment
 	}
 
 	public static class AddSubscriptionDialog extends DialogFragment {
-		public AddSubscriptionDialog() {
-		}
+		public AddSubscriptionDialog() { }
 
 		@Nullable
 		@Override
@@ -104,7 +104,7 @@ public class SubscriptionListFragment extends RxFragment
 		LinearLayout layout = (LinearLayout) view.findViewById(R.id.layout);
 
 		LinearLayout titleLayout = (LinearLayout) LayoutInflater.from(view.getContext())
-				.inflate(R.layout.subscription_list_title, layout, false);
+			.inflate(R.layout.subscription_list_title, layout, false);
 		TextView title = (TextView) titleLayout.findViewById(R.id.title);
 		title.setText("iTunes Top Podcasts");
 		layout.addView(titleLayout);
@@ -226,22 +226,22 @@ public class SubscriptionListFragment extends RxFragment
 	}
 
 	private class iTunesAdapter extends RecyclerView.Adapter<SubscriptionListViewHolder> {
-		private final ArrayList<ITunesPodcastLoader.Podcast> _podcasts = new ArrayList<>(100);
+		private final ArrayList<Podcast> _podcasts = new ArrayList<>(100);
 
 		public iTunesAdapter(Context context) {
 			setHasStableIds(true);
 
-			new ITunesPodcastLoader(context).getPodcasts()
+			new PodcastFetcher(context).getPodcasts()
 				.observeOn(AndroidSchedulers.mainThread())
 				.compose(RxLifecycle.bindFragment(lifecycle()))
-				.subscribe(new Subscriber<List<ITunesPodcastLoader.Podcast>>() {
+				.subscribe(new Subscriber<List<Podcast>>() {
 					@Override
 					public void onError(Throwable e) {
 						Log.e("itunesloader", "error while loading itunes toplist", e);
 					}
 
 					@Override
-					public void onNext(List<ITunesPodcastLoader.Podcast> podcasts) {
+					public void onNext(List<Podcast> podcasts) {
 						_podcasts.clear();
 						_podcasts.addAll(podcasts);
 						notifyItemRangeInserted(0, podcasts.size());
@@ -267,7 +267,7 @@ public class SubscriptionListFragment extends RxFragment
 
 		@Override
 		public void onBindViewHolder(SubscriptionListViewHolder holder, int position) {
-			ITunesPodcastLoader.Podcast p = _podcasts.get(position);
+			Podcast p = _podcasts.get(position);
 			holder.holder.setTag(p.idUrl);
 			holder.title.setText(p.name);
 
