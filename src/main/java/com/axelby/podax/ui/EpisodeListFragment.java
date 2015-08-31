@@ -8,27 +8,23 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
@@ -55,14 +51,12 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class EpisodeListFragment extends RxFragment {
-	private PodcastAdapter _adapter = null;
 	private long _subscriptionId = -1;
 
 	private View _currentlyUpdatingMessage;
-	private View _top;
-	private RecyclerView _listView;
 	private CheckBox _subscribed;
 	private CheckBox _addNewEpisodes;
+	private LinearLayout _listView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -75,7 +69,8 @@ public class EpisodeListFragment extends RxFragment {
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 
-		_adapter = new PodcastAdapter();
+		if (_listView != null)
+			_listView.removeAllViews();
 
 		// extract subscription id
 		if (getArguments() == null)
@@ -90,19 +85,20 @@ public class EpisodeListFragment extends RxFragment {
 				.observeOn(Schedulers.io())
 				.map(this::getPodcastsCursor)
 				.observeOn(AndroidSchedulers.mainThread())
+				.map(this::showPodcasts)
 				.compose(RxLifecycle.bindFragment(lifecycle()))
 				.subscribe(new Subscriber<Cursor>() {
 					@Override
-					public void onCompleted() { }
+					public void onNext(Cursor cursor) {
+					}
+
+					@Override
+					public void onCompleted() {
+					}
 
 					@Override
 					public void onError(Throwable e) {
 						Log.e("episodelistfragment", "error while loading podcasts from db", e);
-					}
-
-					@Override
-					public void onNext(Cursor cursor) {
-						_adapter.changeCursor(cursor);
 					}
 				});
 		} else {
@@ -110,21 +106,21 @@ public class EpisodeListFragment extends RxFragment {
 				.observeOn(Schedulers.io())
 				.flatMap(this::getSubscriptionIdFromITunesUrl)
 				.concatWith(new RSSUrlFetcher(activity, itunesIdUrl).getRSSUrl()
-					.flatMap(url -> {
-						Cursor c = activity.getContentResolver().query(SubscriptionProvider.URI,
-							new String[]{"_id"}, "url = ?", new String[]{url}, null);
-						if (c != null) {
-							try {
-								if (c.moveToNext())
-									return Observable.just(c.getLong(0));
-							} finally {
-								c.close();
+						.flatMap(url -> {
+							Cursor c = activity.getContentResolver().query(SubscriptionProvider.URI,
+								new String[]{"_id"}, "url = ?", new String[]{url}, null);
+							if (c != null) {
+								try {
+									if (c.moveToNext())
+										return Observable.just(c.getLong(0));
+								} finally {
+									c.close();
+								}
 							}
-						}
 
-						Uri newUri = SubscriptionProvider.addSingleUseSubscription(activity, url);
-						return Observable.just(ContentUris.parseId(newUri));
-					})
+							Uri newUri = SubscriptionProvider.addSingleUseSubscription(activity, url);
+							return Observable.just(ContentUris.parseId(newUri));
+						})
 				)
 				.first()
 				.observeOn(AndroidSchedulers.mainThread())
@@ -136,20 +132,15 @@ public class EpisodeListFragment extends RxFragment {
 				.observeOn(Schedulers.io())
 				.map(this::getPodcastsCursor)
 				.observeOn(AndroidSchedulers.mainThread())
+				.map(this::showPodcasts)
 				.compose(RxLifecycle.bindFragment(lifecycle()))
 				.subscribe(new Subscriber<Cursor>() {
-					@Override
-					public void onCompleted() {
-					}
+					@Override public void onNext(Cursor cursor) { }
+					@Override public void onCompleted() { }
 
 					@Override
 					public void onError(Throwable e) {
 						Log.e("itunesloader", "error while getting rss url from itunes", e);
-					}
-
-					@Override
-					public void onNext(Cursor cursor) {
-						_adapter.changeCursor(cursor);
 					}
 				});
 		}
@@ -200,38 +191,16 @@ public class EpisodeListFragment extends RxFragment {
 	}
 
 	@Override
-	public void onDetach() {
-		super.onDetach();
-
-		if (_adapter != null)
-			_adapter.closeCursor();
-	}
-
-	@Override
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		Context context = view.getContext();
-
-		_top = view.findViewById(R.id.top);
-		_listView = (RecyclerView) view.findViewById(R.id.list);
+		_listView = (LinearLayout) view.findViewById(R.id.list);
 		_currentlyUpdatingMessage = view.findViewById(R.id.currently_updating);
 		_subscribed = (CheckBox) view.findViewById(R.id.subscribe);
 		_addNewEpisodes = (CheckBox) view.findViewById(R.id.add_new_episodes);
 
 		if (_subscriptionId != -1)
 			setupHeader();
-
-		_listView.setLayoutManager(new LinearLayoutManager(context));
-		_listView.setItemAnimator(new DefaultItemAnimator());
-		_listView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-			@Override
-			public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-				super.onScrolled(recyclerView, dx, dy);
-				_top.setTranslationY(_top.getTranslationY() - dy);
-			}
-		});
-		_listView.setAdapter(_adapter);
 	}
 
 	void setupHeader() {
@@ -248,18 +217,6 @@ public class EpisodeListFragment extends RxFragment {
 		SubscriptionCursor subscriptionCursor = SubscriptionCursor.getCursor(context, _subscriptionId);
 		if (subscriptionCursor == null)
 			return;
-
-		// make sure listview is in proper spot below top part
-		ViewTreeObserver.OnGlobalLayoutListener layoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-			@Override
-			public void onGlobalLayout() {
-				_listView.setPadding(0, _top.getHeight(), 0, 0);
-				_listView.scrollToPosition(0);
-				Log.d("episodelistfragment", "_listView's top padding: " + _listView.getPaddingTop());
-				_top.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-			}
-		};
-		_top.getViewTreeObserver().addOnGlobalLayoutListener(layoutListener);
 
 		ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
 		TextView title = (TextView) view.findViewById(R.id.subscription);
@@ -311,13 +268,31 @@ public class EpisodeListFragment extends RxFragment {
 
 			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
 				setupHeader();
-				_adapter.changeCursor(getPodcastsCursor(_subscriptionId));
+				showPodcasts(getPodcastsCursor(_subscriptionId));
 				_currentlyUpdatingMessage.setVisibility(View.GONE);
 			} else {
 				_currentlyUpdatingMessage.setVisibility(View.VISIBLE);
 			}
 		}
 	};
+
+	private Cursor showPodcasts(Cursor cursor) {
+		if (_listView == null)
+			return cursor;
+		_listView.removeAllViews();
+
+		if (!cursor.moveToFirst())
+			return cursor;
+		do {
+			View v = LayoutInflater.from(getActivity()).inflate(R.layout.episodelist_item, _listView, false);
+			ViewHolder holder = new ViewHolder(v);
+			v.setTag(holder);
+			bindPodcast(cursor, holder);
+			_listView.addView(v);
+		} while (cursor.moveToNext());
+
+		return cursor;
+	}
 
 	@Override
 	public void onPause() {
@@ -386,93 +361,41 @@ public class EpisodeListFragment extends RxFragment {
 			});
 
 			view.setOnClickListener(button -> {
-				long episodeId = (Long) button.getTag();
+				ViewHolder holder = (ViewHolder) button.getTag();
+				long episodeId = (Long) holder.play.getTag();
 				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
 			});
 		}
 	}
 
-	private class PodcastAdapter extends RecyclerView.Adapter<ViewHolder> {
+	private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
+	public void bindPodcast(Cursor cursor, @Nonnull ViewHolder holder) {
+		Context context = holder.container.getContext();
+		EpisodeCursor episode = new EpisodeCursor(cursor);
 
-		private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
-		private Cursor _cursor;
+		holder.title.setText(episode.getTitle());
+		holder.date.setText(context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
+		if (episode.getDuration() > 0) {
+			holder.duration.setText(Helper.getVerboseTimeString(context, episode.getDuration() / 1000f, false) + " " + context.getString(R.string.in_duration));
+			holder.duration.setVisibility(View.VISIBLE);
+		} else
+			holder.duration.setVisibility(View.GONE);
+		holder.play.setTag(episode.getId());
+		holder.playlist.setTag(R.id.episodeId, episode.getId());
 
-		private ContentObserver _podcastCursorObserver = new ContentObserver(new Handler()) {
-			@Override public boolean deliverSelfNotifications() { return true; }
-			@Override public void onChange(boolean selfChange) { onChange(selfChange, null); }
-			@Override public void onChange(boolean selfChange, Uri uri) { notifyDataSetChanged(); }
-		};
-
-		public PodcastAdapter() {
-			setHasStableIds(true);
+		Integer inPlaylist = episode.getPlaylistPosition();
+		if (inPlaylist == null) {
+			holder.playlist.setTag(R.id.playlist, Integer.MAX_VALUE);
+			holder.playlist.setText(R.string.add_to_playlist);
+		} else {
+			holder.playlist.setTag(R.id.playlist, null);
+			holder.playlist.setText(R.string.remove_from_playlist);
 		}
 
-		public void changeCursor(Cursor cursor) {
-			closeCursor();
-			_cursor = cursor;
-			_cursor.registerContentObserver(_podcastCursorObserver);
-			notifyDataSetChanged();
-		}
-
-		public void closeCursor() {
-			if (_cursor == null)
-				return;
-			_cursor.unregisterContentObserver(_podcastCursorObserver);
-			_cursor.close();
-		}
-
-		@Override
-		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.episodelist_item, parent, false);
-			return new ViewHolder(view);
-		}
-
-		@Override
-		public void onBindViewHolder(ViewHolder holder, int position) {
-			if (_cursor == null)
-				return;
-			Context context = holder.container.getContext();
-
-			_cursor.moveToPosition(position);
-			EpisodeCursor episode = new EpisodeCursor(_cursor);
-
-			holder.container.setTag(episode.getId());
-			holder.title.setText(episode.getTitle());
-			holder.date.setText(context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
-			if (episode.getDuration() > 0) {
-				holder.duration.setText(Helper.getVerboseTimeString(context, episode.getDuration() / 1000f, false) + " " + context.getString(R.string.in_duration));
-				holder.duration.setVisibility(View.VISIBLE);
-			} else
-				holder.duration.setVisibility(View.GONE);
-			holder.play.setTag(episode.getId());
-			holder.playlist.setTag(R.id.episodeId, episode.getId());
-
-			Integer inPlaylist = episode.getPlaylistPosition();
-			if (inPlaylist == null) {
-				holder.playlist.setTag(R.id.playlist, Integer.MAX_VALUE);
-				holder.playlist.setText(R.string.add_to_playlist);
-			} else {
-				holder.playlist.setTag(R.id.playlist, null);
-				holder.playlist.setText(R.string.remove_from_playlist);
-			}
-
-			if (episode.isDownloaded(context))
-				holder.play.setText(R.string.play);
-			else
-				holder.play.setText(R.string.stream);
-		}
-
-		@Override
-		public long getItemId(int position) {
-			_cursor.moveToPosition(position);
-			return new EpisodeCursor(_cursor).getId();
-		}
-
-		@Override
-		public int getItemCount() {
-			if (_cursor == null)
-				return 0;
-			return _cursor.getCount();
-		}
+		if (episode.isDownloaded(context))
+			holder.play.setText(R.string.play);
+		else
+			holder.play.setText(R.string.stream);
 	}
+
 }
