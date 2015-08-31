@@ -151,9 +151,6 @@
         <receiver
             android:name="com.axelby.podax.ActiveEpisodeReceiver"
             android:exported="false" >
-            <intent-filter>
-                <action android:name="com.axelby.podax.ACTIVE_EPISODE" />
-            </intent-filter>
         </receiver>
 
         <provider

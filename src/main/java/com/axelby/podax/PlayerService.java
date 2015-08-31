@@ -281,7 +281,7 @@ public class PlayerService extends Service {
 		// set up forward intent
 		Intent forwardIntent = new Intent(this, ActiveEpisodeReceiver.class);
 		forwardIntent.setData(Constants.ACTIVE_EPISODE_DATA_FORWARD);
-		PendingIntent forwardPendingIntent = PendingIntent.getService(this, 0, forwardIntent, 0);
+		PendingIntent forwardPendingIntent = PendingIntent.getBroadcast(this, 0, forwardIntent, 0);
 
 		Bitmap subscriptionBitmap = SubscriptionCursor.getThumbnailImage(this, playerStatus.getSubscriptionId());
 		if (subscriptionBitmap != null)
