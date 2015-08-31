@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 17;
+	private static final int DATABASE_VERSION = 18;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -71,6 +71,7 @@ public class DBAdapter extends SQLiteOpenHelper {
 
 		db.execSQL("CREATE TABLE itunes(" +
 				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"subscriptionId INTEGER, " +
 				"date DATE, " +
 				"category INTEGER, " +
 				"position INTEGER, " +
@@ -79,6 +80,7 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"imageUrl VARCHAR, " +
 				"idUrl VARCHAR)");
 		db.execSQL("CREATE INDEX itunes_category_position_idx ON itunes(category, position)");
+		db.execSQL("CREATE INDEX itunes_subscriptionId_idx ON itunes(subscriptionId)");
 	}
 
 	@SuppressWarnings("ConstantConditions")
@@ -130,6 +132,9 @@ public class DBAdapter extends SQLiteOpenHelper {
 
 		if (oldVersion < 17)
 			updateV16toV17(db);
+
+		if (oldVersion < 18)
+			updateV17toV18(db);
     }
 
 	private void upgradeV1toV2(SQLiteDatabase db) {
@@ -264,5 +269,10 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"imageUrl VARCHAR, " +
 				"idUrl VARCHAR)");
 		db.execSQL("CREATE INDEX itunes_category_position_idx ON itunes(category, position)");
+	}
+
+	private void updateV17toV18(SQLiteDatabase db) {
+		db.execSQL("ALTER TABLE itunes ADD COLUMN subscriptionId INTEGER");
+		db.execSQL("CREATE INDEX itunes_subscriptionId_idx ON itunes(subscriptionId)");
 	}
 }

@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
+import com.axelby.podax.DBAdapter;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
@@ -104,22 +106,27 @@ public class EpisodeListFragment extends RxFragment {
 					}
 				});
 		} else {
-			new RSSUrlFetcher(activity, itunesIdUrl).getRSSUrl()
-				.flatMap(url -> {
-					Cursor c = activity.getContentResolver().query(SubscriptionProvider.URI,
-						new String[]{"_id"}, "url = ?", new String[]{url}, null);
-					if (c != null) {
-						try {
-							if (c.moveToNext())
-								return Observable.just(c.getLong(0));
-						} finally {
-							c.close();
+			Observable.just(itunesIdUrl)
+				.observeOn(Schedulers.io())
+				.flatMap(this::getSubscriptionIdFromITunesUrl)
+				.concatWith(new RSSUrlFetcher(activity, itunesIdUrl).getRSSUrl()
+					.flatMap(url -> {
+						Cursor c = activity.getContentResolver().query(SubscriptionProvider.URI,
+							new String[]{"_id"}, "url = ?", new String[]{url}, null);
+						if (c != null) {
+							try {
+								if (c.moveToNext())
+									return Observable.just(c.getLong(0));
+							} finally {
+								c.close();
+							}
 						}
-					}
 
-					Uri newUri = SubscriptionProvider.addSingleUseSubscription(activity, url);
-					return Observable.just(ContentUris.parseId(newUri));
-				})
+						Uri newUri = SubscriptionProvider.addSingleUseSubscription(activity, url);
+						return Observable.just(ContentUris.parseId(newUri));
+					})
+				)
+				.first()
 				.observeOn(AndroidSchedulers.mainThread())
 				.map(subId -> {
 					_subscriptionId = subId;
@@ -146,6 +153,20 @@ public class EpisodeListFragment extends RxFragment {
 					}
 				});
 		}
+	}
+
+	private Observable<Long> getSubscriptionIdFromITunesUrl(String iTunesUrl) {
+		SQLiteDatabase db = new DBAdapter(getActivity()).getReadableDatabase();
+		Cursor c = db.rawQuery("SELECT subscriptionId FROM itunes WHERE idUrl = ?", new String[]{iTunesUrl});
+		if (c == null)
+			return Observable.empty();
+		if (!c.moveToFirst() || c.isNull(0)) {
+			c.close();
+			return Observable.empty();
+		}
+		long subId = c.getLong(0);
+		c.close();
+		return Observable.just(subId);
 	}
 
 	public Cursor getPodcastsCursor(long subId) {
