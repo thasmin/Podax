@@ -82,6 +82,8 @@ public class SubscriptionProvider extends ContentProvider {
         ContentValues values = new ContentValues(1);
         values.put(COLUMN_URL, url);
         Uri uri = context.getContentResolver().insert(URI, values);
+		if (uri == null)
+			return null;
 
 		values = new ContentValues(1);
 		values.put(COLUMN_SINGLE_USE, 0);
@@ -108,7 +110,7 @@ public class SubscriptionProvider extends ContentProvider {
 	}
 
 	@Override
-	public String getType(Uri uri) {
+	public String getType(@NonNull Uri uri) {
 		switch (_uriMatcher.match(uri)) {
 			case SUBSCRIPTIONS:
 				return DIR_TYPE;
@@ -126,6 +128,8 @@ public class SubscriptionProvider extends ContentProvider {
 		int uriMatch = _uriMatcher.match(uri);
 
 		if (uriMatch == PODCASTS) {
+			if (getContext() == null)
+				return null;
 			return getContext().getContentResolver().query(EpisodeProvider.URI,
 					projection, "subscriptionId = ?",
 					new String[]{uri.getPathSegments().get(1)},
@@ -174,12 +178,13 @@ public class SubscriptionProvider extends ContentProvider {
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-		c.setNotificationUri(getContext().getContentResolver(), uri);
+		if (getContext() != null)
+			c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
 
 	@Override
-	public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
+	public int update(@NonNull Uri uri, ContentValues values, String where, String[] whereArgs) {
 		// the url is not allowed to be changed -- insert a new one instead
 		if (values.containsKey(COLUMN_URL))
 			return 0;
@@ -196,9 +201,11 @@ public class SubscriptionProvider extends ContentProvider {
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		int count = db.update("subscriptions", values, where, whereArgs);
-		if (!URI.equals(uri))
-			getContext().getContentResolver().notifyChange(uri, null);
-		getContext().getContentResolver().notifyChange(URI, null);
+		if (getContext() != null) {
+			if (!URI.equals(uri))
+				getContext().getContentResolver().notifyChange(uri, null);
+			getContext().getContentResolver().notifyChange(URI, null);
+		}
 
 		// update the full text search virtual table
 		if (hasFTSValues(values))
@@ -223,7 +230,7 @@ public class SubscriptionProvider extends ContentProvider {
 	}
 
 	@Override
-	public Uri insert(Uri uri, ContentValues values) {
+	public Uri insert(@NonNull Uri uri, ContentValues values) {
 		// url is required
 		if (!values.containsKey(COLUMN_URL))
 			return null;
@@ -258,16 +265,20 @@ public class SubscriptionProvider extends ContentProvider {
 		ftsValues.put(COLUMN_ID, id);
 		db.insert("fts_subscriptions", null, ftsValues);
 
-		// add during next gpodder sync
-		if (!from_gpodder)
-			getContext().getContentResolver().insert(GPodderProvider.URI, GPodderProvider.makeValuesToAdd(url));
+		if (getContext() != null) {
+			// add during next gpodder sync
+			if (!from_gpodder)
+				getContext().getContentResolver().insert(GPodderProvider.URI, GPodderProvider.makeValuesToAdd(url));
+			getContext().getContentResolver().notifyChange(URI, null);
+		}
 
-		getContext().getContentResolver().notifyChange(URI, null);
 		return ContentUris.withAppendedId(URI, id);
 	}
 
 	@Override
-	public int delete(Uri uri, String where, String[] whereArgs) {
+	public int delete(@NonNull Uri uri, String where, String[] whereArgs) {
+		if (getContext() == null)
+			return 0;
 		ContentResolver contentResolver = getContext().getContentResolver();
 
 		boolean from_gpodder = false;

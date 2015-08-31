@@ -12,9 +12,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -117,7 +117,7 @@ public class EpisodeProvider extends ContentProvider {
 	}
 
 	@Override
-	public String getType(Uri uri) {
+	public String getType(@NonNull Uri uri) {
 		switch (uriMatcher.match(uri)) {
 			case EPISODES:
 			case EPISODES_PLAYLIST:
@@ -132,7 +132,7 @@ public class EpisodeProvider extends ContentProvider {
 	}
 
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+	public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setProjectionMap(_columnMap);
 		if (projection != null) {
@@ -166,20 +166,22 @@ public class EpisodeProvider extends ContentProvider {
 				_dbAdapter.getWritableDatabase().execSQL("update podcasts set queueposition = (select count(*) from podcasts p2 where p2.queueposition is not null and p2.queueposition < podcasts.queueposition) where podcasts.queueposition is not null");
 				break;
 			case EPISODE_ACTIVE:
-				SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
-				if (prefs.contains(PREF_ACTIVE)) {
-					long activeId = prefs.getLong(PREF_ACTIVE, -1);
-					// make sure the active episode wasn't deleted
-					Cursor c = _dbAdapter.getReadableDatabase().query("podcasts", new String[]{"_id"}, "_id = ?", new String[]{String.valueOf(activeId)}, null, null, null);
-					if (c.moveToFirst())
-						sqlBuilder.appendWhere("podcasts._id = " + activeId);
-					else {
-						prefs.edit().remove(PREF_ACTIVE).apply();
+				if (getContext() != null) {
+					SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
+					if (prefs.contains(PREF_ACTIVE)) {
+						long activeId = prefs.getLong(PREF_ACTIVE, -1);
+						// make sure the active episode wasn't deleted
+						Cursor c = _dbAdapter.getReadableDatabase().query("podcasts", new String[]{"_id"}, "_id = ?", new String[]{String.valueOf(activeId)}, null, null, null);
+						if (c.moveToFirst())
+							sqlBuilder.appendWhere("podcasts._id = " + activeId);
+						else {
+							prefs.edit().remove(PREF_ACTIVE).apply();
+							sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
+						}
+						c.close();
+					} else {
 						sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
 					}
-					c.close();
-				} else {
-					sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
 				}
 				break;
 			case EPISODES_SEARCH:
@@ -212,7 +214,7 @@ public class EpisodeProvider extends ContentProvider {
 
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder, limit);
-		if (c != null)
+		if (c != null && getContext() != null)
 			c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
@@ -224,6 +226,9 @@ public class EpisodeProvider extends ContentProvider {
 				EpisodeProvider.COLUMN_MEDIA_URL,
 		};
 		Cursor c = query(PLAYLIST_URI, projection, null, null, null);
+		if (c == null)
+			return -1;
+
 		long episodeId = -1;
 		while (c.moveToNext()) {
 			EpisodeCursor episode = new EpisodeCursor(c);
@@ -261,7 +266,10 @@ public class EpisodeProvider extends ContentProvider {
 	}
 
 	@Override
-	public int update(Uri uri, ContentValues values, String where, String[] whereArgs) {
+	public int update(@NonNull Uri uri, ContentValues values, String where, String[] whereArgs) {
+		if (getContext() == null)
+			return 0;
+
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		if (db == null)
 			return 0;
@@ -458,12 +466,13 @@ public class EpisodeProvider extends ContentProvider {
 
 		// update specified episode
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
-				new Object[]{newPosition, episodeId});
-		getContext().getContentResolver().notifyChange(PLAYLIST_URI, null);
+			new Object[]{newPosition, episodeId});
+		if (getContext() != null)
+			getContext().getContentResolver().notifyChange(PLAYLIST_URI, null);
 	}
 
 	@Override
-	public Uri insert(Uri uri, ContentValues values) {
+	public Uri insert(@NonNull Uri uri, ContentValues values) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		if (!(uriMatcher.match(uri) == EPISODES))
@@ -516,12 +525,13 @@ public class EpisodeProvider extends ContentProvider {
 			}
 		}
 
-		getContext().getContentResolver().notifyChange(uri, null);
+		if (getContext() != null)
+			getContext().getContentResolver().notifyChange(uri, null);
 		return EpisodeProvider.getContentUri(episodeId);
 	}
 
 	@Override
-	public int delete(Uri uri, String where, String[] whereArgs) {
+	public int delete(@NonNull Uri uri, String where, String[] whereArgs) {
 		switch (uriMatcher.match(uri)) {
 			case EPISODES:
 				break;
@@ -557,19 +567,19 @@ public class EpisodeProvider extends ContentProvider {
 			updatePlaylistPosition(c.getLong(0), null);
 		c.close();
 
-		int count = db.delete("podcasts", where, whereArgs);
-		if (!uri.equals(URI))
-			getContext().getContentResolver().notifyChange(URI, null);
-		getContext().getContentResolver().notifyChange(uri, null);
-		return count;
+		if (getContext() != null) {
+			if (!uri.equals(URI))
+				getContext().getContentResolver().notifyChange(URI, null);
+			getContext().getContentResolver().notifyChange(uri, null);
+		}
+
+		return db.delete("podcasts", where, whereArgs);
 	}
 
 	private static void deleteFiles(Context context, final long episodeId) {
 		File storage = new File(EpisodeCursor.getPodcastStoragePath(context));
-		File[] files = storage.listFiles(new FileFilter() {
-			public boolean accept(File pathname) {
-				return pathname.getName().startsWith(String.valueOf(episodeId) + ".");
-			}
+		File[] files = storage.listFiles(pathname -> {
+			return pathname.getName().startsWith(String.valueOf(episodeId) + ".");
 		});
 		for (File f : files)
 			f.delete();
@@ -603,6 +613,8 @@ public class EpisodeProvider extends ContentProvider {
 	public static void movePositionBy(Context context, Uri uri, int delta) {
 		String[] projection = new String[]{EpisodeProvider.COLUMN_LAST_POSITION, EpisodeProvider.COLUMN_DURATION};
 		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
+		if (c == null)
+			return;
 		if (!c.moveToFirst()) {
 			c.close();
 			return;
