@@ -1,76 +1,98 @@
-<android.support.v7.widget.CardView
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="wrap_content"
-    android:layout_width="match_parent"
-    >
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="com.axelby.podax.ui.EpisodeListFragment.ItemModel" />
+    </data>
+
+    <android.support.v7.widget.CardView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_height="wrap_content"
-        android:background="@color/cardBG">
+        android:layout_width="match_parent"
+        app:cardBackgroundColor="@color/cardBG"
+        app:cardCornerRadius="5dp"
+        app:cardElevation="8dp"
+        app:cardUseCompatPadding="true"
+        >
 
-        <TextView
-            android:id="@+id/title"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginStart="10dp"
-            android:textSize="24sp"
-            tools:text="Episode Name"
-            />
+            >
 
-        <TextView
-            android:id="@+id/date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@id/title"
-            android:layout_alignStart="@id/title"
-            android:layout_below="@id/title"
-            android:layout_marginTop="4dp"
-            tools:text="Released on June 12, 2014"
-            />
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
+                android:textSize="24sp"
+                tools:text="Episode Name"
+                android:text="@{model.title}"
+                />
 
-        <TextView
-            android:id="@+id/duration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@id/title"
-            android:layout_alignStart="@id/title"
-            android:layout_below="@id/date"
-            android:layout_marginTop="4dp"
-            tools:text="57 minutes long"
-            />
+            <TextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/title"
+                android:layout_alignStart="@id/title"
+                android:layout_below="@id/title"
+                android:layout_marginTop="4dp"
+                tools:text="Released on June 12, 2014"
+                android:text="@{model.releaseDate}"
+                />
 
-        <Button
-            android:id="@+id/playlist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Podax.Button"
-            android:text="@string/add_to_playlist"
-            android:textAllCaps="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@id/duration"
-            android:focusable="false" />
+            <TextView
+                android:id="@+id/duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/title"
+                android:layout_alignStart="@id/title"
+                android:layout_below="@id/date"
+                android:layout_marginTop="4dp"
+                tools:text="57 minutes long"
+                android:text="@{model.duration}"
+                android:visibility="@{model.hasDuration ? View.VISIBLE : View.INVISIBLE}"
+                />
 
-        <Button
-            android:id="@+id/play"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Podax.Button"
-            android:text="@string/play"
-            android:textAllCaps="true"
-            android:layout_alignBaseline="@id/playlist"
-            android:layout_toLeftOf="@id/playlist"
-            android:layout_toStartOf="@id/playlist"
-            android:focusable="false" />
+            <Button
+                android:id="@+id/playlist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Podax.Button"
+                android:text="@{model.playlistPosition == null ? @string/add_to_playlist : @string/remove_from_playlist}"
+                android:textAllCaps="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@id/duration"
+                android:focusable="false" />
 
-        <View
-            android:layout_width="wrap_content"
-            android:layout_height="10dp"
-            android:layout_below="@id/playlist" />
+            <Button
+                android:id="@+id/play"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Podax.Button"
+                android:text="@{model.isDownloaded ? @string/play : @string/stream}"
+                android:onClick="@{model.onPlay}"
+                android:textAllCaps="true"
+                android:layout_alignBaseline="@id/playlist"
+                android:layout_toLeftOf="@id/playlist"
+                android:layout_toStartOf="@id/playlist"
+                android:focusable="false"
+                />
 
-    </RelativeLayout>
-</android.support.v7.widget.CardView>
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="10dp"
+                android:layout_below="@id/playlist" />
+
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+</layout>

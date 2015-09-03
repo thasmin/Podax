@@ -10,23 +10,24 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.graphics.Palette;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.axelby.podax.BR;
 import com.axelby.podax.Constants;
 import com.axelby.podax.DBAdapter;
 import com.axelby.podax.EpisodeCursor;
@@ -37,16 +38,17 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.databinding.EpisodelistItemBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.text.DateFormat;
+import java.util.Date;
 
 import javax.annotation.Nonnull;
 
 import rx.Observable;
-import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -57,6 +59,9 @@ public class EpisodeListFragment extends RxFragment {
 	private CheckBox _subscribed;
 	private CheckBox _addNewEpisodes;
 	private LinearLayout _listView;
+
+	private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
+	protected ItemModel[] _models;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -85,22 +90,11 @@ public class EpisodeListFragment extends RxFragment {
 				.observeOn(Schedulers.io())
 				.map(this::getPodcastsCursor)
 				.observeOn(AndroidSchedulers.mainThread())
-				.map(this::showPodcasts)
 				.compose(RxLifecycle.bindFragment(lifecycle()))
-				.subscribe(new Subscriber<Cursor>() {
-					@Override
-					public void onNext(Cursor cursor) {
-					}
-
-					@Override
-					public void onCompleted() {
-					}
-
-					@Override
-					public void onError(Throwable e) {
-						Log.e("episodelistfragment", "error while loading podcasts from db", e);
-					}
-				});
+				.subscribe(
+					this::showPodcasts,
+					e -> Log.e("episodelistfragment", "error while loading podcasts from db", e)
+				);
 		} else {
 			Observable.just(itunesIdUrl)
 				.observeOn(Schedulers.io())
@@ -132,17 +126,11 @@ public class EpisodeListFragment extends RxFragment {
 				.observeOn(Schedulers.io())
 				.map(this::getPodcastsCursor)
 				.observeOn(AndroidSchedulers.mainThread())
-				.map(this::showPodcasts)
 				.compose(RxLifecycle.bindFragment(lifecycle()))
-				.subscribe(new Subscriber<Cursor>() {
-					@Override public void onNext(Cursor cursor) { }
-					@Override public void onCompleted() { }
-
-					@Override
-					public void onError(Throwable e) {
-						Log.e("itunesloader", "error while getting rss url from itunes", e);
-					}
-				});
+				.subscribe(
+					this::showPodcasts,
+					e -> Log.e("itunesloader", "error while getting rss url from itunes", e)
+				);
 		}
 	}
 
@@ -276,22 +264,86 @@ public class EpisodeListFragment extends RxFragment {
 		}
 	};
 
-	private Cursor showPodcasts(Cursor cursor) {
+	@SuppressWarnings("unused")
+	public class ItemModel extends BaseObservable {
+		private long _id;
+		private final String _title;
+		private final Date _releaseDate;
+		private final Integer _duration;
+		private Integer _playlistPosition = null;
+		private final boolean _isDownloaded;
+
+		public ItemModel(EpisodeCursor episode) {
+			_id = episode.getId();
+			_title = episode.getTitle();
+			_releaseDate = episode.getPubDate();
+			_duration = episode.getDuration();
+			_playlistPosition = episode.getPlaylistPosition();
+			_isDownloaded = episode.isDownloaded(getActivity());
+		}
+
+		public String getTitle() { return _title; }
+		public String getReleaseDate() {
+			return getActivity().getString(R.string.released_on) + " " + _pubDateFormat.format(_releaseDate);
+		}
+		public boolean hasDuration() { return _duration != null; }
+		public String getDuration() {
+			return Helper.getVerboseTimeString(getActivity(), _duration / 1000f, false) + " " + getActivity().getString(R.string.in_duration);
+		}
+		@Bindable public Integer getPlaylistPosition() { return _playlistPosition; }
+		public boolean isDownloaded() { return _isDownloaded; }
+
+		public void setPlaylistPosition(Integer newPosition) {
+			_playlistPosition = newPosition;
+			notifyPropertyChanged(BR.playlistPosition);
+		}
+
+		public View.OnClickListener onPlay = v -> {
+			PlayerService.play(v.getContext(), _id);
+
+			// put podcast on top of playlist
+			ContentValues values = new ContentValues(1);
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
+			v.getContext().getContentResolver().update(EpisodeProvider.getContentUri(_id), values, null, null);
+
+			setPlaylistPosition(0);
+
+			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, _id));
+		};
+
+		public View.OnClickListener onPlaylist = button -> {
+			Integer newPosition = (_playlistPosition == null) ? Integer.MAX_VALUE : null;
+			ContentValues values = new ContentValues(1);
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, newPosition);
+			button.getContext().getContentResolver().update(EpisodeProvider.getContentUri(_id), values, null, null);
+		};
+
+		public View.OnClickListener onClick = button -> {
+			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, _id));
+		};
+	}
+
+	private void showPodcasts(Cursor cursor) {
 		if (_listView == null)
-			return cursor;
+			return;
 		_listView.removeAllViews();
 
+		_models = new ItemModel[cursor.getCount()];
+		int i = 0;
 		if (!cursor.moveToFirst())
-			return cursor;
+			return;
+
 		do {
-			View v = LayoutInflater.from(getActivity()).inflate(R.layout.episodelist_item, _listView, false);
-			ViewHolder holder = new ViewHolder(v);
-			v.setTag(holder);
-			bindPodcast(cursor, holder);
-			_listView.addView(v);
+			EpisodeCursor episode = new EpisodeCursor(cursor);
+			_models[i] = new ItemModel(episode);
+
+			EpisodelistItemBinding x = EpisodelistItemBinding.inflate(LayoutInflater.from(getActivity()), _listView, false);
+			x.setModel(_models[i]);
+
+			_listView.addView(x.getRoot());
 		} while (cursor.moveToNext());
 
-		return cursor;
+		cursor.close();
 	}
 
 	@Override
@@ -319,83 +371,6 @@ public class EpisodeListFragment extends RxFragment {
 			intentFilter.addDataType(SubscriptionProvider.ITEM_TYPE);
 		} catch (IntentFilter.MalformedMimeTypeException ignored) { }
 		LocalBroadcastManager.getInstance(getView().getContext()).registerReceiver(_updateReceiver, intentFilter);
-	}
-
-	public class ViewHolder extends RecyclerView.ViewHolder {
-		public final View container;
-		public final TextView title;
-		public final TextView date;
-		public final TextView duration;
-		public final Button play;
-		public final Button playlist;
-
-		public ViewHolder (View view) {
-			super(view);
-
-			container = view;
-			title = (TextView) view.findViewById(R.id.title);
-			date = (TextView) view.findViewById(R.id.date);
-			duration = (TextView) view.findViewById(R.id.duration);
-			play = (Button) view.findViewById(R.id.play);
-			playlist = (Button) view.findViewById(R.id.playlist);
-
-			play.setOnClickListener(button -> {
-				long episodeId = (Long) button.getTag();
-				PlayerService.play(button.getContext(), episodeId);
-
-				// put podcast on top of playlist
-				ContentValues values = new ContentValues(1);
-				values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
-				button.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
-
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
-			});
-
-			playlist.setOnClickListener(button -> {
-				long episodeId = (Long) button.getTag(R.id.episodeId);
-				Integer position = (Integer) button.getTag(R.id.playlist);
-
-				ContentValues values = new ContentValues(1);
-				values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, position);
-				button.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
-			});
-
-			view.setOnClickListener(button -> {
-				ViewHolder holder = (ViewHolder) button.getTag();
-				long episodeId = (Long) holder.play.getTag();
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
-			});
-		}
-	}
-
-	private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
-	public void bindPodcast(Cursor cursor, @Nonnull ViewHolder holder) {
-		Context context = holder.container.getContext();
-		EpisodeCursor episode = new EpisodeCursor(cursor);
-
-		holder.title.setText(episode.getTitle());
-		holder.date.setText(context.getString(R.string.released_on) + " " + _pubDateFormat.format(episode.getPubDate()));
-		if (episode.getDuration() > 0) {
-			holder.duration.setText(Helper.getVerboseTimeString(context, episode.getDuration() / 1000f, false) + " " + context.getString(R.string.in_duration));
-			holder.duration.setVisibility(View.VISIBLE);
-		} else
-			holder.duration.setVisibility(View.GONE);
-		holder.play.setTag(episode.getId());
-		holder.playlist.setTag(R.id.episodeId, episode.getId());
-
-		Integer inPlaylist = episode.getPlaylistPosition();
-		if (inPlaylist == null) {
-			holder.playlist.setTag(R.id.playlist, Integer.MAX_VALUE);
-			holder.playlist.setText(R.string.add_to_playlist);
-		} else {
-			holder.playlist.setTag(R.id.playlist, null);
-			holder.playlist.setText(R.string.remove_from_playlist);
-		}
-
-		if (episode.isDownloaded(context))
-			holder.play.setText(R.string.play);
-		else
-			holder.play.setText(R.string.stream);
 	}
 
 }
