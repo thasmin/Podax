@@ -1,76 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="com.axelby.podax.ui.EpisodeListFragment.Model" />
+    </data>
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/thumbnail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/subscription_thumbnail"
-            android:adjustViewBounds="true"
-            tools:src="@drawable/icon" />
-
-        <TextView
-            android:id="@+id/subscription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="24sp"
-            android:gravity="center_horizontal"
-            tools:text="Subscription Name" />
-
-        <TextView
-            android:id="@+id/currently_updating"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            tools:visibility="visible"
-            android:gravity="center"
-            android:background="@color/orange500"
-            android:padding="10dp"
-            android:layout_marginTop="10dp"
-            android:textColor="#111111"
-            android:text="@string/subscription_currently_updating"/>
-
-        <!-- TODO: next two checkboxes width should be wrap_content -->
-        <CheckBox
-            android:id="@+id/subscribe"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/subscribe" />
-
-        <CheckBox
-            android:id="@+id/add_new_episodes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/add_new_episodes_to_playlist"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/episodes"
-            android:textColor="?attr/colorPrimary"
-            android:textSize="18sp"
-            android:textAllCaps="true"
-            android:layout_marginTop="8dp"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:background="?attr/colorPrimary" />
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical">
 
-    </LinearLayout>
-</ScrollView>
+            <ImageView
+                android:id="@+id/thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/subscription_thumbnail"
+                android:adjustViewBounds="true"
+                android:src="@{model.imageSrc}"
+                tools:src="@drawable/icon" />
+
+            <TextView
+                android:id="@+id/subscription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:gravity="center_horizontal"
+                android:text="@{model.title}"
+                tools:text="Subscription Name" />
+
+            <TextView
+                android:id="@+id/currently_updating"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{model.isCurrentlyUpdating ? View.VISIBLE : View.GONE}"
+                tools:visibility="visible"
+                android:gravity="center"
+                android:background="@color/orange500"
+                android:padding="10dp"
+                android:layout_marginTop="10dp"
+                android:textColor="#111111"
+                android:text="@string/subscription_currently_updating"/>
+
+            <!-- TODO: next two checkboxes width should be wrap_content -->
+            <CheckBox
+                android:id="@+id/subscribe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/subscribe"
+                android:checked="@{model.isSubscribed}"
+                android:onChange="@{model.subscribeChange}" />
+
+            <CheckBox
+                android:id="@+id/add_new_episodes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/add_new_episodes_to_playlist"
+                android:checked="@{model.areNewEpisodesAddedToPlaylist}"
+                android:onChange="@{model.addNewToPlaylistChange}" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/episodes"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="18sp"
+                android:textAllCaps="true"
+                android:layout_marginTop="8dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="?attr/colorPrimary" />
+
+            <LinearLayout
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</layout>

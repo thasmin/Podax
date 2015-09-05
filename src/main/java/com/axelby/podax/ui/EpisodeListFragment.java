@@ -12,20 +12,19 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
-import android.graphics.Bitmap;
+import android.databinding.BindingAdapter;
+import android.databinding.ObservableBoolean;
+import android.databinding.ObservableField;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.graphics.Palette;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ImageView;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.axelby.podax.BR;
 import com.axelby.podax.Constants;
@@ -38,6 +37,7 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.databinding.EpisodelistItemBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.trello.rxlifecycle.RxLifecycle;
@@ -55,13 +55,12 @@ import rx.schedulers.Schedulers;
 public class EpisodeListFragment extends RxFragment {
 	private long _subscriptionId = -1;
 
-	private View _currentlyUpdatingMessage;
-	private CheckBox _subscribed;
-	private CheckBox _addNewEpisodes;
 	private LinearLayout _listView;
 
 	private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
-	protected ItemModel[] _models;
+	protected ItemModel[] _itemModels;
+	private EpisodelistFragmentBinding _binding;
+	protected Model _model;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -175,7 +174,8 @@ public class EpisodeListFragment extends RxFragment {
 
 	@Override
 	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.episodelist_fragment, container, false);
+		_binding = EpisodelistFragmentBinding.inflate(inflater, container, false);
+		return _binding.getRoot();
 	}
 
 	@Override
@@ -183,12 +183,52 @@ public class EpisodeListFragment extends RxFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		_listView = (LinearLayout) view.findViewById(R.id.list);
-		_currentlyUpdatingMessage = view.findViewById(R.id.currently_updating);
-		_subscribed = (CheckBox) view.findViewById(R.id.subscribe);
-		_addNewEpisodes = (CheckBox) view.findViewById(R.id.add_new_episodes);
 
 		if (_subscriptionId != -1)
 			setupHeader();
+	}
+
+	@BindingAdapter("android:onChange")
+	@SuppressWarnings("unused")
+	public static void setOnChangeListener(CompoundButton button, CompoundButton.OnCheckedChangeListener listener) {
+		button.setOnCheckedChangeListener(listener);
+	}
+
+	@SuppressWarnings("unused")
+	public class Model extends BaseObservable {
+		private long _id;
+		public final ObservableField<String> title;
+		public final ObservableBoolean isCurrentlyUpdating;
+		public final ObservableBoolean isSubscribed;
+		public ObservableBoolean areNewEpisodesAddedToPlaylist;
+
+		public Model(@Nonnull SubscriptionCursor sub) {
+			_id = sub.getId();
+			title = new ObservableField<>(sub.getTitle());
+			isCurrentlyUpdating = new ObservableBoolean(false);
+			isSubscribed = new ObservableBoolean(!sub.isSingleUse());
+			areNewEpisodesAddedToPlaylist = new ObservableBoolean(sub.areNewEpisodesAddedToPlaylist());
+		}
+
+		public String getImageSrc() { return "file://" + SubscriptionCursor.getThumbnailFilename(getActivity(), _id); }
+
+		public CompoundButton.OnCheckedChangeListener subscribeChange = (button, isChecked) -> {
+			ContentValues values = new ContentValues(1);
+			values.put(SubscriptionProvider.COLUMN_SINGLE_USE, !isChecked);
+			ContentResolver contentResolver = button.getContext().getContentResolver();
+			Uri subscriptionUri = SubscriptionProvider.getContentUri(_id);
+			contentResolver.update(subscriptionUri, values, null, null);
+
+			areNewEpisodesAddedToPlaylist.set(isChecked);
+		};
+
+		public CompoundButton.OnCheckedChangeListener addNewToPlaylistChange = (button, isChecked) -> {
+			ContentValues values = new ContentValues(1);
+			values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, isChecked);
+			ContentResolver contentResolver = button.getContext().getContentResolver();
+			Uri subscriptionUri = SubscriptionProvider.getContentUri(_id);
+			contentResolver.update(subscriptionUri, values, null, null);
+		};
 	}
 
 	void setupHeader() {
@@ -206,42 +246,8 @@ public class EpisodeListFragment extends RxFragment {
 		if (subscriptionCursor == null)
 			return;
 
-		ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-		TextView title = (TextView) view.findViewById(R.id.subscription);
-
-		Bitmap thumbnailImage = SubscriptionCursor.getThumbnailImage(context, _subscriptionId);
-
-		if (thumbnailImage != null) {
-			thumbnail.setVisibility(View.VISIBLE);
-			thumbnail.setImageBitmap(thumbnailImage);
-			Palette palette = Palette.from(thumbnailImage).generate();
-			title.setTextColor(palette.getVibrantColor(title.getTextColors().getDefaultColor()));
-		} else {
-			thumbnail.setVisibility(View.GONE);
-		}
-
-		title.setText(subscriptionCursor.getTitle());
-
-		_subscribed.setChecked(!subscriptionCursor.isSingleUse());
-		_subscribed.setOnCheckedChangeListener((button, isChecked) -> {
-			ContentValues values = new ContentValues(1);
-			values.put(SubscriptionProvider.COLUMN_SINGLE_USE, !isChecked);
-			ContentResolver contentResolver = button.getContext().getContentResolver();
-			Uri subscriptionUri = SubscriptionProvider.getContentUri(_subscriptionId);
-			contentResolver.update(subscriptionUri, values, null, null);
-
-			_addNewEpisodes.setChecked(isChecked);
-		});
-
-		_addNewEpisodes.setChecked(subscriptionCursor.areNewEpisodesAddedToPlaylist());
-		_addNewEpisodes.setOnCheckedChangeListener((button, isChecked) -> {
-			ContentValues values = new ContentValues(1);
-			values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, isChecked);
-			ContentResolver contentResolver = button.getContext().getContentResolver();
-			Uri subscriptionUri = SubscriptionProvider.getContentUri(_subscriptionId);
-			contentResolver.update(subscriptionUri, values, null, null);
-		});
-
+		_model = new Model(subscriptionCursor);
+		_binding.setModel(_model);
 		subscriptionCursor.closeCursor();
 	}
 
@@ -250,16 +256,16 @@ public class EpisodeListFragment extends RxFragment {
 		public void onReceive(Context context, Intent intent) {
 			long updatingId = ContentUris.parseId(intent.getData());
 			if (updatingId == -1 || updatingId != _subscriptionId) {
-				_currentlyUpdatingMessage.setVisibility(View.GONE);
+				_model.isCurrentlyUpdating.set(false);
 				return;
 			}
 
 			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
 				setupHeader();
 				showPodcasts(getPodcastsCursor(_subscriptionId));
-				_currentlyUpdatingMessage.setVisibility(View.GONE);
+				_model.isCurrentlyUpdating.set(false);
 			} else {
-				_currentlyUpdatingMessage.setVisibility(View.VISIBLE);
+				_model.isCurrentlyUpdating.set(true);
 			}
 		}
 	};
@@ -328,17 +334,17 @@ public class EpisodeListFragment extends RxFragment {
 			return;
 		_listView.removeAllViews();
 
-		_models = new ItemModel[cursor.getCount()];
+		_itemModels = new ItemModel[cursor.getCount()];
 		int i = 0;
 		if (!cursor.moveToFirst())
 			return;
 
 		do {
 			EpisodeCursor episode = new EpisodeCursor(cursor);
-			_models[i] = new ItemModel(episode);
+			_itemModels[i] = new ItemModel(episode);
 
 			EpisodelistItemBinding x = EpisodelistItemBinding.inflate(LayoutInflater.from(getActivity()), _listView, false);
-			x.setModel(_models[i]);
+			x.setModel(_itemModels[i]);
 
 			_listView.addView(x.getRoot());
 		} while (cursor.moveToNext());
@@ -360,7 +366,7 @@ public class EpisodeListFragment extends RxFragment {
 		super.onResume();
 
 		boolean isCurrentlyUpdating = (UpdateService.getUpdatingSubscriptionId() == _subscriptionId);
-		_currentlyUpdatingMessage.setVisibility(isCurrentlyUpdating ? View.VISIBLE : View.GONE);
+		_model.isCurrentlyUpdating.set(isCurrentlyUpdating);
 
 		if (getView() == null)
 			return;

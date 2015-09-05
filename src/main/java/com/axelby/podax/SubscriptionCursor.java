@@ -121,7 +121,7 @@ public class SubscriptionCursor {
 		return _cursor.getString(_thumbnailColumn);
 	}
 
-	private static String getThumbnailFilename(Context context, long subscriptionId) {
+	public static String getThumbnailFilename(Context context, long subscriptionId) {
 		String storagePath = EpisodeCursor.getStoragePath(context);
 		return storagePath + String.valueOf(subscriptionId) + "podcast.image";
 	}
