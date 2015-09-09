@@ -13,10 +13,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.BindingAdapter;
+import android.databinding.DataBindingUtil;
+import android.databinding.ObservableArrayList;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
+import android.databinding.ObservableList;
+import android.databinding.ViewDataBinding;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -44,6 +49,8 @@ import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 import javax.annotation.Nonnull;
@@ -58,7 +65,6 @@ public class EpisodeListFragment extends RxFragment {
 	private LinearLayout _listView;
 
 	private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
-	protected ItemModel[] _itemModels;
 	private EpisodelistFragmentBinding _binding;
 	protected Model _model;
 
@@ -194,6 +200,63 @@ public class EpisodeListFragment extends RxFragment {
 		button.setOnCheckedChangeListener(listener);
 	}
 
+	@BindingAdapter({"app:children", "app:childLayout"})
+	@SuppressWarnings("unused")
+	public static <T> void setChildren(ViewGroup parent, Collection<T> children, @LayoutRes int layoutId) {
+		for (T child : children)
+			addBoundChild(parent, layoutId, child, -1);
+
+		if (children instanceof ObservableList<?>) {
+			ObservableList<T> observables = (ObservableList<T>) children;
+			observables.addOnListChangedCallback(new ObservableList.OnListChangedCallback<ObservableList<T>>() {
+				@Override
+				public void onChanged(ObservableList<T> sender) {
+					for (T child : sender)
+						addBoundChild(parent, layoutId, child, -1);
+				}
+
+				@Override
+				public void onItemRangeChanged(ObservableList<T> sender, int positionStart, int itemCount) {
+					for (int i = positionStart; i < positionStart + itemCount; ++i) {
+						parent.removeViewAt(i);
+						addBoundChild(parent, layoutId, sender.get(i), i);
+					}
+				}
+
+				@Override
+				public void onItemRangeInserted(ObservableList<T> sender, int positionStart, int itemCount) {
+					for (int i = positionStart; i < positionStart + itemCount; ++i)
+						addBoundChild(parent, layoutId, sender.get(i), i);
+				}
+
+				@Override
+				public void onItemRangeMoved(ObservableList<T> sender, int fromPosition, int toPosition, int itemCount) {
+					for (int i = fromPosition; i < fromPosition + itemCount; ++i)
+						parent.removeViewAt(i);
+					for (int i = toPosition; i < toPosition + itemCount; ++i)
+						addBoundChild(parent, layoutId, sender.get(i), i);
+				}
+
+				@Override
+				public void onItemRangeRemoved(ObservableList<T> sender, int positionStart, int itemCount) {
+					for (int i = positionStart; i < positionStart + itemCount; ++i)
+						parent.removeViewAt(i);
+				}
+			});
+		}
+
+	}
+
+	private static <T> void addBoundChild(ViewGroup parent, @LayoutRes int layoutId, T child, int position) {
+		ViewDataBinding v = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), layoutId, parent, false);
+		v.setVariable(BR.podcast, child);
+		v.executePendingBindings();
+		if (position == -1)
+			parent.addView(v.getRoot());
+		else
+			parent.addView(v.getRoot(), position);
+	}
+
 	@SuppressWarnings("unused")
 	public class Model extends BaseObservable {
 		private long _id;
@@ -201,6 +264,7 @@ public class EpisodeListFragment extends RxFragment {
 		public final ObservableBoolean isCurrentlyUpdating;
 		public final ObservableBoolean isSubscribed;
 		public ObservableBoolean areNewEpisodesAddedToPlaylist;
+		public final ObservableArrayList<PodcastModel> podcasts = new ObservableArrayList<>();
 
 		public Model(@Nonnull SubscriptionCursor sub) {
 			_id = sub.getId();
@@ -231,47 +295,8 @@ public class EpisodeListFragment extends RxFragment {
 		};
 	}
 
-	void setupHeader() {
-		if (_subscriptionId == -1) {
-			Log.e("EpisodeListFragment", "cannot set up header when subscription id is not set");
-			return;
-		}
-
-		View view = getView();
-		if (view == null)
-			return;
-
-		Context context = view.getContext();
-		SubscriptionCursor subscriptionCursor = SubscriptionCursor.getCursor(context, _subscriptionId);
-		if (subscriptionCursor == null)
-			return;
-
-		_model = new Model(subscriptionCursor);
-		_binding.setModel(_model);
-		subscriptionCursor.closeCursor();
-	}
-
-	private BroadcastReceiver _updateReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			long updatingId = ContentUris.parseId(intent.getData());
-			if (updatingId == -1 || updatingId != _subscriptionId) {
-				_model.isCurrentlyUpdating.set(false);
-				return;
-			}
-
-			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
-				setupHeader();
-				showPodcasts(getPodcastsCursor(_subscriptionId));
-				_model.isCurrentlyUpdating.set(false);
-			} else {
-				_model.isCurrentlyUpdating.set(true);
-			}
-		}
-	};
-
 	@SuppressWarnings("unused")
-	public class ItemModel extends BaseObservable {
+	public class PodcastModel extends BaseObservable {
 		private long _id;
 		private final String _title;
 		private final Date _releaseDate;
@@ -279,7 +304,7 @@ public class EpisodeListFragment extends RxFragment {
 		private Integer _playlistPosition = null;
 		private final boolean _isDownloaded;
 
-		public ItemModel(EpisodeCursor episode) {
+		public PodcastModel(EpisodeCursor episode) {
 			_id = episode.getId();
 			_title = episode.getTitle();
 			_releaseDate = episode.getPubDate();
@@ -324,31 +349,71 @@ public class EpisodeListFragment extends RxFragment {
 			button.getContext().getContentResolver().update(EpisodeProvider.getContentUri(_id), values, null, null);
 		};
 
-		public View.OnClickListener onClick = button -> {
+		public View.OnClickListener onClick = button ->
 			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, _id));
-		};
 	}
+
+	void setupHeader() {
+		if (_subscriptionId == -1) {
+			Log.e("EpisodeListFragment", "cannot set up header when subscription id is not set");
+			return;
+		}
+
+		View view = getView();
+		if (view == null)
+			return;
+
+		Context context = view.getContext();
+		SubscriptionCursor subscriptionCursor = SubscriptionCursor.getCursor(context, _subscriptionId);
+		if (subscriptionCursor == null)
+			return;
+
+		_model = new Model(subscriptionCursor);
+		_binding.setModel(_model);
+		subscriptionCursor.closeCursor();
+	}
+
+	private BroadcastReceiver _updateReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			long updatingId = ContentUris.parseId(intent.getData());
+			if (updatingId == -1 || updatingId != _subscriptionId) {
+				_model.isCurrentlyUpdating.set(false);
+				return;
+			}
+
+			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
+				setupHeader();
+				showPodcasts(getPodcastsCursor(_subscriptionId));
+				_model.isCurrentlyUpdating.set(false);
+			} else {
+				_model.isCurrentlyUpdating.set(true);
+			}
+		}
+	};
 
 	private void showPodcasts(Cursor cursor) {
 		if (_listView == null)
 			return;
 		_listView.removeAllViews();
 
-		_itemModels = new ItemModel[cursor.getCount()];
-		int i = 0;
+		_model.podcasts.clear();
 		if (!cursor.moveToFirst())
 			return;
 
+		ArrayList<PodcastModel> models = new ArrayList<>(cursor.getCount());
 		do {
 			EpisodeCursor episode = new EpisodeCursor(cursor);
-			_itemModels[i] = new ItemModel(episode);
+			PodcastModel podcastModel = new PodcastModel(episode);
+			models.add(podcastModel);
 
 			EpisodelistItemBinding x = EpisodelistItemBinding.inflate(LayoutInflater.from(getActivity()), _listView, false);
-			x.setModel(_itemModels[i]);
+			x.setPodcast(podcastModel);
 
 			_listView.addView(x.getRoot());
 		} while (cursor.moveToNext());
 
+		_model.podcasts.addAll(models);
 		cursor.close();
 	}
 
