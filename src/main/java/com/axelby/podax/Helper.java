@@ -48,11 +48,6 @@ public class Helper {
 		return builder.toString();
 	}
 
-	public static void registerMediaButtons(Context context) {
-		AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-		audioManager.registerMediaButtonEventReceiver(new ComponentName(context, MediaButtonIntentReceiver.class));
-	}
-
     public static boolean isTablet(Context context) {
 		return (context.getResources().getConfiguration().screenLayout
 				& Configuration.SCREENLAYOUT_SIZE_MASK)

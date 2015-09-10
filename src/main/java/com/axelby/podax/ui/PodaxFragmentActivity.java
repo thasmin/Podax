@@ -53,13 +53,6 @@ public class PodaxFragmentActivity extends ActionBarActivity {
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-
-		Helper.registerMediaButtons(this);
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case android.R.id.home:

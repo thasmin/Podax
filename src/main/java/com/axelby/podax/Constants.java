@@ -15,6 +15,7 @@ public class Constants {
 	public static final Uri ACTIVE_EPISODE_DATA_BACK = Uri.parse("podax://activeepisode/back");
 	public static final Uri ACTIVE_EPISODE_DATA_FORWARD = Uri.parse("podax://activeepisode/forward");
 	public static final Uri ACTIVE_EPISODE_DATA_END = Uri.parse("podax://activeepisode/end");
+	public static final Uri ACTIVE_EPISODE_DATA_PAUSE = Uri.parse("podax://activeepisode/pause");
 
 	public static final String ACTION_REFRESH_ALL_SUBSCRIPTIONS = "com.axelby.podax.REFRESH_ALL_SUBSCRIPTIONS";
 	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";

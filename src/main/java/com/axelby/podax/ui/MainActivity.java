@@ -303,7 +303,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Helper.registerMediaButtons(this);
 
 		Cursor cursor = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
 		if (cursor == null)

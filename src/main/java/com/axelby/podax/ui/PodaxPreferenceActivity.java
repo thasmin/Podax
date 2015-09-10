@@ -30,14 +30,6 @@ public class PodaxPreferenceActivity extends ActionBarActivity {
         ft.commit();
 	}
 
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		Helper.registerMediaButtons(this);
-	}
-
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

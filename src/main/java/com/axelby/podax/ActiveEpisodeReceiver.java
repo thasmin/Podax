@@ -26,6 +26,8 @@ public class ActiveEpisodeReceiver extends BroadcastReceiver {
 			EpisodeProvider.movePositionBy(context, activeEpisodeUri, 30);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_END))
 			EpisodeProvider.skipToEnd(context, activeEpisodeUri);
+		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_PAUSE))
+			PlayerService.playpause(context);
 	}
 
 	public static void notifyExternal(Context context) {

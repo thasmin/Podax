@@ -600,7 +600,7 @@ public class EpisodeProvider extends ContentProvider {
 		movePositionTo(context, EpisodeProvider.getContentUri(episodeId), position);
 	}
 
-	private static void movePositionTo(Context context, Uri uri, int position) {
+	public static void movePositionTo(Context context, Uri uri, int position) {
 		ContentValues values = new ContentValues(1);
 		values.put(EpisodeProvider.COLUMN_LAST_POSITION, position);
 		context.getContentResolver().update(uri, values, null, null);
