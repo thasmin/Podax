@@ -250,32 +250,23 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
             }
         }
 
-		private final OnClickListener _clickHandler = new OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				long episodeId = (Long) view.getTag();
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
-			}
+		private final OnClickListener _clickHandler = view -> {
+			long episodeId = (Long) view.getTag();
+			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
 		};
 
-        private final OnClickListener _playHandler = new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                long episodeId = (Long) view.getTag();
-				PlayerService.play(getActivity(), episodeId);
-            }
-        };
+        private final OnClickListener _playHandler = view -> {
+			long episodeId = (Long) view.getTag();
+			PlayerService.play(getActivity(), episodeId);
+		};
 
-        private final OnClickListener _removeHandler = new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                long episodeId = (Long) view.getTag();
+        private final OnClickListener _removeHandler = view -> {
+			long episodeId = (Long) view.getTag();
 
-                ContentValues values = new ContentValues();
-                values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-                getActivity().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
-            }
-        };
+			ContentValues values = new ContentValues();
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
+			getActivity().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
+		};
 
 		public PlaylistListAdapter() {
 			setHasStableIds(true);

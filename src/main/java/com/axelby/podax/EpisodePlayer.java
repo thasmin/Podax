@@ -76,19 +76,13 @@ class EpisodePlayer {
 			if (episode.getLastPosition() != 0)
 				_player.seekTo(episode.getLastPosition() / 1000f);
 
-			_player.setOnCompletionListener(new AudioPlayerBase.OnCompletionListener() {
-				@Override
-				public void onCompletion() {
-					if (_onCompletionListener != null)
-						_onCompletionListener.onCompletion();
-				}
+			_player.setOnCompletionListener(() -> {
+				if (_onCompletionListener != null)
+					_onCompletionListener.onCompletion();
 			});
-			_player.setPeriodicListener(new AudioPlayerBase.PeriodicListener() {
-				@Override
-				public void pulse(float position) {
-					if (_onSeekListener != null)
-						_onSeekListener.onSeek(position);
-				}
+			_player.setPeriodicListener(position -> {
+				if (_onSeekListener != null)
+					_onSeekListener.onSeek(position);
 			});
 
 			if (_onChangeListener != null)

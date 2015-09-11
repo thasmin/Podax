@@ -163,9 +163,7 @@ public class SubscriptionCursor {
 	public boolean isSingleUse() {
 		if (_singleUseColumn == null)
 			_singleUseColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_SINGLE_USE);
-		if (_cursor.isNull(_singleUseColumn))
-			return false;
-		return _cursor.getInt(_singleUseColumn) != 0;
+		return _cursor.isNull(_singleUseColumn) && _cursor.getInt(_singleUseColumn) != 0;
 	}
 
 	public boolean areNewEpisodesAddedToPlaylist() {

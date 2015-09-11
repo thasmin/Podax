@@ -8,10 +8,10 @@ import org.xmlpull.v1.XmlPullParserException;
 public class FeedParser {
 
 	public interface FeedInfoHandler {
-		public void OnFeedInfo(FeedParser feedParser, Feed feed);
+		void OnFeedInfo(FeedParser feedParser, Feed feed);
 	}
 	public interface FeedItemHandler {
-		public void OnFeedItem(FeedParser feedParser, FeedItem item);
+		void OnFeedItem(FeedParser feedParser, FeedItem item);
 	}
 
 	public class UnknownFeedException extends Exception {

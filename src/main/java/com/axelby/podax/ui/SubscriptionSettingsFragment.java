@@ -10,7 +10,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -18,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 
@@ -102,43 +100,34 @@ public class SubscriptionSettingsFragment extends Fragment implements LoaderMana
 	}
 
 	void initializeControls() {
-		_autoName.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton button, boolean checked) {
-				ContentValues values = new ContentValues();
-				values.putNull(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
-				getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
-				if (checked)
-					_name.setText(_feedTitle);
-			}
+		_autoName.setOnCheckedChangeListener((button, checked) -> {
+			ContentValues values = new ContentValues();
+			values.putNull(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
+			getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
+			if (checked)
+				_name.setText(_feedTitle);
 		});
 
-		_autoPlaylist.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                ContentValues values = new ContentValues();
-                values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, checkedId == R.id.autoPlaylistYes);
-                getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
-            }
-        });
+		_autoPlaylist.setOnCheckedChangeListener((group, checkedId) -> {
+			ContentValues values = new ContentValues();
+			values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, checkedId == R.id.autoPlaylistYes);
+			getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
+		});
 
-		_expiration.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				ContentValues values = new ContentValues();
-				switch (checkedId) {
-					case R.id.expire0:
-						values.putNull(SubscriptionProvider.COLUMN_EXPIRATION);
-						break;
-					case R.id.expire7:
-						values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
-						break;
-					case R.id.expire14:
-						values.put(SubscriptionProvider.COLUMN_EXPIRATION, 14);
-						break;
-				}
-				getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
+		_expiration.setOnCheckedChangeListener((group, checkedId) -> {
+			ContentValues values = new ContentValues();
+			switch (checkedId) {
+				case R.id.expire0:
+					values.putNull(SubscriptionProvider.COLUMN_EXPIRATION);
+					break;
+				case R.id.expire7:
+					values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
+					break;
+				case R.id.expire14:
+					values.put(SubscriptionProvider.COLUMN_EXPIRATION, 14);
+					break;
 			}
+			getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
 		});
 	}
 

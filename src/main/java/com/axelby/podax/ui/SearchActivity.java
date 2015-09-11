@@ -8,21 +8,20 @@ import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.widget.EditText;
 
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
-public class SearchActivity extends ActionBarActivity {
+public class SearchActivity extends AppCompatActivity {
 	private String _query = "";
 
 	public interface QueryChangedHandler {
-		public void onQueryChanged(String query);
+		void onQueryChanged(String query);
 	}
 	private QueryChangedHandler[] _fragments = new QueryChangedHandler[3];
 

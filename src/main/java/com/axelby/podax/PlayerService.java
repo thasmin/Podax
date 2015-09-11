@@ -35,11 +35,6 @@ public class PlayerService extends Service {
 
 	private MediaSessionCompat _mediaSession;
 	private MediaSessionCompat.Callback _mediaCallback = new MediaSessionCompat.Callback() {
-		@Override
-		public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
-			return super.onMediaButtonEvent(mediaButtonEvent);
-		}
-
 		@Override public void onPlay() {
 			super.onPlay();
 			play(PlayerService.this);

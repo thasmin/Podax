@@ -22,7 +22,6 @@ import android.widget.TextView;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
@@ -142,39 +141,30 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 			notifyDataSetChanged();
 		}
 
-        final View.OnClickListener _playHandler = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                long episodeId = (Long) view.getTag();
-                PlayerService.play(view.getContext(), episodeId);
+        final View.OnClickListener _playHandler = view -> {
+			long episodeId = (Long) view.getTag();
+			PlayerService.play(view.getContext(), episodeId);
 
-				// put podcast on top of playlist
-				ContentValues values = new ContentValues(1);
-				values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
-				view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
+			// put podcast on top of playlist
+			ContentValues values = new ContentValues(1);
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
+			view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
 
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
-            }
-        };
+			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
+		};
 
-        final View.OnClickListener _playlistHandler = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                long episodeId = (Long) view.getTag(R.id.episodeId);
-                Integer position = (Integer) view.getTag(R.id.playlist);
+        final View.OnClickListener _playlistHandler = view -> {
+			long episodeId = (Long) view.getTag(R.id.episodeId);
+			Integer position = (Integer) view.getTag(R.id.playlist);
 
-                ContentValues values = new ContentValues(1);
-                values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, position);
-                view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
-            }
-        };
+			ContentValues values = new ContentValues(1);
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, position);
+			view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
+		};
 
-		final View.OnClickListener _clickHandler = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				long episodeId = (Long) view.getTag();
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
-			}
+		final View.OnClickListener _clickHandler = view -> {
+			long episodeId = (Long) view.getTag();
+			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
 		};
 
 		@Override

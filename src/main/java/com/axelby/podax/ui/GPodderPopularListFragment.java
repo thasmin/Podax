@@ -98,23 +98,17 @@ public class GPodderPopularListFragment extends ListFragment {
 	}
 
 	private static class ToplistAdapter extends ArrayAdapter<Podcast> {
-		private final Activity _activity;
+		private Activity _activity;
 
-		private final View.OnClickListener addPodcastHandler = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				View listitem = (View) view.getParent().getParent();
-				Podcast podcast = (Podcast) listitem.getTag();
-                SubscriptionProvider.addNewSubscription(getContext(), podcast.url);
-			}
+		private final View.OnClickListener addPodcastHandler = view -> {
+			View listitem = (View) view.getParent().getParent();
+			Podcast podcast = (Podcast) listitem.getTag();
+			SubscriptionProvider.addNewSubscription(getContext(), podcast.url);
 		};
-		private final View.OnClickListener viewWebsiteHandler = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				View listitem = (View) view.getParent().getParent();
-				Podcast podcast = (Podcast) listitem.getTag();
-				_activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(podcast.website)));
-			}
+		private final View.OnClickListener viewWebsiteHandler = view -> {
+			View listitem = (View) view.getParent().getParent();
+			Podcast podcast = (Podcast) listitem.getTag();
+			_activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(podcast.website)));
 		};
 
 		public ToplistAdapter(Activity context, Podcast[] feeds) {

@@ -42,7 +42,6 @@ import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.GPodderProvider;
-import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;

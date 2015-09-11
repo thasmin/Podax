@@ -1,12 +1,5 @@
 package com.axelby.gpodder.dto;
 
-import android.net.Uri;
-
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-
-import java.io.IOException;
-
 public class Podcast {
 	public String website;
 	public String description;

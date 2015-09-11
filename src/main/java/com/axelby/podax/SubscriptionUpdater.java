@@ -14,8 +14,6 @@ import android.util.Log;
 import android.util.Xml;
 
 import com.axelby.podax.ui.MainActivity;
-import com.axelby.riasel.Feed;
-import com.axelby.riasel.FeedItem;
 import com.axelby.riasel.FeedParser;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -95,46 +93,42 @@ class SubscriptionUpdater {
 				parser.setInput(inputStream, encoding);
 
 				FeedParser feedParser = new FeedParser();
-				feedParser.setOnFeedInfoHandler(new FeedParser.FeedInfoHandler() {
-					@Override
-					public void OnFeedInfo(FeedParser feedParser, Feed feed) {
-						subscriptionValues.putAll(feed.getContentValues());
-						subscriptionValues.remove("pubDate");
-						changeKeyString(subscriptionValues, "lastBuildDate", SubscriptionProvider.COLUMN_LAST_UPDATE);
-					}
+				feedParser.setOnFeedInfoHandler((feedParser1, feed) -> {
+					subscriptionValues.putAll(feed.getContentValues());
+					subscriptionValues.remove("pubDate");
+					changeKeyString(subscriptionValues, "lastBuildDate", SubscriptionProvider.COLUMN_LAST_UPDATE);
 				});
-				feedParser.setOnFeedItemHandler(new FeedParser.FeedItemHandler() {
-					@Override
-					public void OnFeedItem(FeedParser feedParser, FeedItem item) {
-						if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
-							return;
+				feedParser.setOnFeedItemHandler((feedParser1, item) -> {
+					if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
+						return;
 
-						ContentValues episodeValues = item.getContentValues();
-						episodeValues.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
+					ContentValues episodeValues = item.getContentValues();
+					episodeValues.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
 
-						// translate Riasel keys to old Podax keys
-						changeKeyString(episodeValues, "mediaURL", EpisodeProvider.COLUMN_MEDIA_URL);
-						changeKeyString(episodeValues, "mediaSize", EpisodeProvider.COLUMN_FILE_SIZE);
-						changeKeyString(episodeValues, "paymentURL", EpisodeProvider.COLUMN_PAYMENT);
-						if (episodeValues.containsKey("publicationDate")) {
-							episodeValues.put(EpisodeProvider.COLUMN_PUB_DATE, episodeValues.getAsLong("publicationDate") / 1000);
-							episodeValues.remove("publicationDate");
+					// translate Riasel keys to old Podax keys
+					changeKeyString(episodeValues, "mediaURL", EpisodeProvider.COLUMN_MEDIA_URL);
+					changeKeyString(episodeValues, "mediaSize", EpisodeProvider.COLUMN_FILE_SIZE);
+					changeKeyString(episodeValues, "paymentURL", EpisodeProvider.COLUMN_PAYMENT);
+					if (episodeValues.containsKey("publicationDate")) {
+						episodeValues.put(EpisodeProvider.COLUMN_PUB_DATE, episodeValues.getAsLong("publicationDate") / 1000);
+						episodeValues.remove("publicationDate");
+					}
+
+					if (episodeValues.containsKey(EpisodeProvider.COLUMN_MEDIA_URL)) {
+						// stop parsing if this episode already existed
+						String selection = EpisodeProvider.COLUMN_MEDIA_URL + "=?";
+						String[] selectionArgs = {episodeValues.getAsString(EpisodeProvider.COLUMN_MEDIA_URL)};
+						Cursor c = _context.getContentResolver().query(EpisodeProvider.URI, null, selection, selectionArgs, null);
+						if (c != null) {
+							if (c.moveToNext())
+								feedParser1.stopProcessing();
+							c.close();
 						}
 
-						if (episodeValues.containsKey(EpisodeProvider.COLUMN_MEDIA_URL)) {
-							// stop parsing if this episode already existed
-							String selection = EpisodeProvider.COLUMN_MEDIA_URL + "=?";
-							String[] selectionArgs = {episodeValues.getAsString(EpisodeProvider.COLUMN_MEDIA_URL)};
-							Cursor c = _context.getContentResolver().query(EpisodeProvider.URI, null, selection, selectionArgs, null);
-							if (c.moveToNext())
-								feedParser.stopProcessing();
-							c.close();
-
-							try {
-								_context.getContentResolver().insert(EpisodeProvider.URI, episodeValues);
-							} catch (IllegalArgumentException e) {
-								Log.w("Podax", "error while inserting episode: " + e.getMessage());
-							}
+						try {
+							_context.getContentResolver().insert(EpisodeProvider.URI, episodeValues);
+						} catch (IllegalArgumentException e) {
+							Log.w("Podax", "error while inserting episode: " + e.getMessage());
 						}
 					}
 				});

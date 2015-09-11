@@ -293,9 +293,4 @@ public class RangeSeekBar extends View {
 		_minEntry = bundle.getInt("minEntry");
 		_maxEntry = bundle.getInt("maxEntry");
 	}
-
-	@Override
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
-	}
 }

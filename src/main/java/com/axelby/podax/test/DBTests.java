@@ -22,6 +22,10 @@ public class DBTests extends AndroidTestCase {
 
 		String[] selectionArgs = {"test"};
 		Cursor c = resolver.query(SubscriptionProvider.SEARCH_URI, null, null, selectionArgs, null);
+		if (c == null) {
+			fail("unable to get cursor");
+			return;
+		}
 		assertEquals("search results", 1, c.getCount());
 		c.close();
 	}

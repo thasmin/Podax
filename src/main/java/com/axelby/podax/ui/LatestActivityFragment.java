@@ -18,14 +18,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
-import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 
@@ -45,7 +43,6 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 
 	private LatestActivityAdapter _adapter;
 	private RecyclerView _listView;
-	private CheckBox _showAutomatic;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -68,16 +65,12 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
 		_listView.setItemAnimator(new DefaultItemAnimator());
 
-		_showAutomatic = (CheckBox) view.findViewById(R.id.show_automatic);
-		_showAutomatic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton compoundButton, boolean value) {
-				getActivity().getSharedPreferences("latest_activity", Context.MODE_PRIVATE)
-						.edit().putBoolean("automatic_show", true).apply();
-			}
-		});
+		CheckBox showAutomatic = (CheckBox) view.findViewById(R.id.show_automatic);
+		showAutomatic.setOnCheckedChangeListener((compoundButton, value) ->
+			getActivity().getSharedPreferences("latest_activity", Context.MODE_PRIVATE)
+				.edit().putBoolean("automatic_show", true).apply());
 		boolean showAutomatically = getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean("automatic_show_latest_activity", true);
-		_showAutomatic.setChecked(showAutomatically);
+		showAutomatic.setChecked(showAutomatically);
 	}
 
 	@Override
@@ -166,26 +159,11 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 			}
 		}
 
-		private final View.OnClickListener _subscriptionClickHandler = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				getActivity().startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (long) view.getTag()));
-			}
-		};
+		private final View.OnClickListener _subscriptionClickHandler = view ->
+			getActivity().startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (long) view.getTag()));
 
-		private final View.OnClickListener _episodeClickHandler = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				getActivity().startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, (long) view.getTag()));
-			}
-		};
-
-		private final View.OnClickListener _playHandler = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				PlayerService.play(getActivity(), (long) view.getTag());
-			}
-		};
+		private final View.OnClickListener _episodeClickHandler = view ->
+			getActivity().startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, (long) view.getTag()));
 
 		public LatestActivityAdapter() {
 			setHasStableIds(true);

@@ -32,12 +32,8 @@ public class ProgressDialogFragment extends DialogFragment {
 		dialog.setCancelable(false);
 
 		// Disable the back button
-		DialogInterface.OnKeyListener keyListener = new DialogInterface.OnKeyListener() {
-			@Override
-			public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-				return keyCode == KeyEvent.KEYCODE_BACK;
-			}
-		};
+		DialogInterface.OnKeyListener keyListener = (dialog1, keyCode, event) ->
+			keyCode == KeyEvent.KEYCODE_BACK;
 		dialog.setOnKeyListener(keyListener);
 		return dialog;
 	}

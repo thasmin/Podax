@@ -9,6 +9,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
+import javax.annotation.Nonnull;
+
 public class GPodderProvider extends ContentProvider {
 	public static final String AUTHORITY = "com.axelby.podax.gpodder_sync";
 	public static final Uri URI = Uri.parse("content://" + AUTHORITY);
@@ -41,12 +43,12 @@ public class GPodderProvider extends ContentProvider {
 	}
 
 	@Override
-	public String getType(Uri uri) {
+	public String getType(@Nonnull Uri uri) {
 		return DIR_TYPE;
 	}
 
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+	public Cursor query(@Nonnull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 
 		if (selection == null)
@@ -67,7 +69,7 @@ public class GPodderProvider extends ContentProvider {
 
 	// not a valid operation
 	@Override
-	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+	public int update(@Nonnull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 		return 0;
 	}
 
@@ -86,7 +88,7 @@ public class GPodderProvider extends ContentProvider {
 	}
 
 	@Override
-	public Uri insert(Uri uri, ContentValues values) {
+	public Uri insert(@Nonnull Uri uri, ContentValues values) {
 		if (!uri.equals(URI) || !values.containsKey("url"))
 			return null;
 		if (!values.containsKey("to_add") && !values.containsKey("to_remove"))
@@ -98,7 +100,7 @@ public class GPodderProvider extends ContentProvider {
 	}
 
 	@Override
-	public int delete(Uri uri, String selection, String[] selectionArgs) {
+	public int delete(@Nonnull Uri uri, String selection, String[] selectionArgs) {
 		if (!uri.equals(URI))
 			return 0;
 

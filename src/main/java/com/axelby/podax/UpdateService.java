@@ -92,13 +92,9 @@ public class UpdateService extends IntentService {
 			return;
 
 		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && Helper.isInvalidNetworkState(this)) {
-			_uiHandler.post(new Runnable() {
-				public void run() {
-					Toast.makeText(UpdateService.this,
-							R.string.update_request_no_wifi,
-							Toast.LENGTH_SHORT).show();
-				}
-			});
+			_uiHandler.post(() -> Toast.makeText(UpdateService.this,
+					R.string.update_request_no_wifi,
+					Toast.LENGTH_SHORT).show());
 			return;
 		}
 

@@ -36,26 +36,15 @@ public class SearchPodaxFragment extends Fragment
 
 	private HashMap<Long, Bitmap> _thumbnails = new HashMap<>();
 
-	private View.OnClickListener _subscriptionClickHandler = new View.OnClickListener() {
-		@Override
-		public void onClick(View view) {
-			long id = (long) view.getTag();
-			startActivity(PodaxFragmentActivity.createIntent(view.getContext(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, id));
-		}
+	private View.OnClickListener _subscriptionClickHandler = view -> {
+		long id = (long) view.getTag();
+		startActivity(PodaxFragmentActivity.createIntent(view.getContext(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, id));
 	};
 
-	private final View.OnClickListener _episodeClickHandler = new View.OnClickListener() {
-		@Override
-		public void onClick(View view) {
-			long id = (long) view.getTag();
-			startActivity(PodaxFragmentActivity.createIntent(view.getContext(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
-		}
+	private final View.OnClickListener _episodeClickHandler = view -> {
+		long id = (long) view.getTag();
+		startActivity(PodaxFragmentActivity.createIntent(view.getContext(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
 	};
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

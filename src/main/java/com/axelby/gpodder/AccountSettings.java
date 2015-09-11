@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
-import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.widget.FrameLayout;
 
@@ -46,31 +45,25 @@ public class AccountSettings extends Activity {
 			EditTextPreference device_name = (EditTextPreference) screen.findPreference("device_name");
 			device_name.setText(_gpodderPrefs.getString("caption", "podax"));
 			device_name.setSummary("Currently: " + _gpodderPrefs.getString("caption", "podax"));
-			device_name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object value) {
-					_gpodderPrefs.edit()
-							.putString("caption", value.toString())
-							.putBoolean("configurationNeedsUpdate", true)
-							.apply();
-					preference.setSummary("Currently: " + value);
-					return true;
-				}
+			device_name.setOnPreferenceChangeListener((preference, value) -> {
+				_gpodderPrefs.edit()
+						.putString("caption", value.toString())
+						.putBoolean("configurationNeedsUpdate", true)
+						.apply();
+				preference.setSummary("Currently: " + value);
+				return true;
 			});
 
 			ListPreference device_type = (ListPreference) screen.findPreference("device_type");
 			device_type.setValue(_gpodderPrefs.getString("type", Helper.isTablet(getActivity()) ? "laptop" : "phone"));
 			device_type.setSummary("Currently: " + _gpodderPrefs.getString("type", Helper.isTablet(getActivity()) ? "laptop" : "phone"));
-			device_type.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object value) {
-					_gpodderPrefs.edit()
-							.putString("type", value.toString())
-							.putBoolean("configurationNeedsUpdate", true)
-							.apply();
-					preference.setSummary("Currently: " + value);
-					return true;
-				}
+			device_type.setOnPreferenceChangeListener((preference, value) -> {
+				_gpodderPrefs.edit()
+						.putString("type", value.toString())
+						.putBoolean("configurationNeedsUpdate", true)
+						.apply();
+				preference.setSummary("Currently: " + value);
+				return true;
 			});
 
 			setPreferenceScreen(screen);

@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -155,28 +154,18 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		_paymentButton = (Button) view.findViewById(R.id.payment);
 		_viewInBrowserButton = (Button) view.findViewById(R.id.view_in_browser);
 
-		_playButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());
-				if (playerState.isPlaying() && playerState.getEpisodeId() == _podcastId) {
-					PlayerService.stop(getActivity());
-					return;
-				}
-				PlayerService.play(getActivity(), _podcastId);
+		_playButton.setOnClickListener(v -> {
+			PlayerStatus playerState = PlayerStatus.getCurrentState(getActivity());
+			if (playerState.isPlaying() && playerState.getEpisodeId() == _podcastId) {
+				PlayerService.stop(getActivity());
+				return;
 			}
+			PlayerService.play(getActivity(), _podcastId);
 		});
 
-		forwardButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				EpisodeProvider.movePositionBy(getActivity(), _podcastId, 30);
-			}
-		});
+		forwardButton.setOnClickListener(v -> EpisodeProvider.movePositionBy(getActivity(), _podcastId, 30));
 
-		skipToEndButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				EpisodeProvider.skipToEnd(getActivity(), _podcastId);
-			}
-		});
+		skipToEndButton.setOnClickListener(v -> EpisodeProvider.skipToEnd(getActivity(), _podcastId));
 
 		OnSeekBarChangeListener seekBarChangeListener = new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress,
@@ -195,56 +184,38 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		};
 		_seekbar.setOnSeekBarChangeListener(seekBarChangeListener);
 
-		_playlistButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
-                String[] projection = new String[]{EpisodeProvider.COLUMN_ID, EpisodeProvider.COLUMN_PLAYLIST_POSITION};
-                Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
-                if (c == null)
-                    return;
-                if (c.moveToNext()) {
-                    EpisodeCursor episode = new EpisodeCursor(c);
-                    if (episode.getPlaylistPosition() == null)
-                        episode.addToPlaylist(getActivity());
-                    else
-                        episode.removeFromPlaylist(getActivity());
-                }
-                c.close();
-            }
-        });
-
-		restartButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				EpisodeProvider.restart(getActivity(), _podcastId);
+		_playlistButton.setOnClickListener(v -> {
+			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
+			String[] projection = new String[]{EpisodeProvider.COLUMN_ID, EpisodeProvider.COLUMN_PLAYLIST_POSITION};
+			Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
+			if (c == null)
+				return;
+			if (c.moveToNext()) {
+				EpisodeCursor episode = new EpisodeCursor(c);
+				if (episode.getPlaylistPosition() == null)
+					episode.addToPlaylist(getActivity());
+				else
+					episode.removeFromPlaylist(getActivity());
 			}
+			c.close();
 		});
 
-		rewindButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				EpisodeProvider.movePositionBy(getActivity(), _podcastId, -15);
-			}
-		});
-		_paymentButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				_flattr_task.execute(_podcastId);
-			}
-		});
+		restartButton.setOnClickListener(v -> EpisodeProvider.restart(getActivity(), _podcastId));
 
-		_viewInBrowserButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Uri uri = (Uri) v.getTag();
-				if (uri != null)
-					startActivity(new Intent(Intent.ACTION_VIEW, uri));
-			}
+		rewindButton.setOnClickListener(v -> EpisodeProvider.movePositionBy(getActivity(), _podcastId, -15));
+		_paymentButton.setOnClickListener(v -> _flattr_task.execute(_podcastId));
+
+		_viewInBrowserButton.setOnClickListener(v -> {
+			Uri uri = (Uri) v.getTag();
+			if (uri != null)
+				startActivity(new Intent(Intent.ACTION_VIEW, uri));
 		});
 	}
 
 	private void showToast(final String message) {
-		getActivity().runOnUiThread(new Runnable() {
-			public void run() {
-				View v = getActivity().findViewById(R.id.scrollview);
-				Snackbar.make(v, message, Snackbar.LENGTH_LONG).show();
-			}
+		getActivity().runOnUiThread(() -> {
+			View v = getActivity().findViewById(R.id.scrollview);
+			Snackbar.make(v, message, Snackbar.LENGTH_LONG).show();
 		});
 	}
 

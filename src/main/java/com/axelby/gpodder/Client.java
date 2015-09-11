@@ -97,12 +97,9 @@ public class Client {
 
 	private ClientConfig retrieveGPodderConfig() {
 		RestAdapter restAdapter = new RestAdapter.Builder()
-				.setRequestInterceptor(new RequestInterceptor() {
-					@Override
-					public void intercept(RequestFacade request) {
-						request.addHeader("User-Agent", "podax/" + _context.getString(R.string.app_version));
-					}
-				})
+				.setRequestInterceptor(request ->
+					request.addHeader("User-Agent", "podax/" + _context.getString(R.string.app_version))
+				)
 				.setEndpoint("http://gpodder.net")
 				.setLogLevel(RestAdapter.LogLevel.FULL)
 				.build();

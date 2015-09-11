@@ -142,22 +142,15 @@ public class ITunesToplistFragment
 				}
 			};
 
-			private final View.OnClickListener _episodeListListener = new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					new ITunesPodcastDetailShower().execute((String) view.getTag());
-				}
-			};
+			private final View.OnClickListener _episodeListListener = view ->
+                new ITunesPodcastDetailShower().execute((String) view.getTag());
 
-			private final View.OnClickListener _subscribeListener = new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					_progressDialog = ProgressDialogFragment.newInstance();
-					_progressDialog.setMessage("Retrieving RSS from iTunes...");
-					_progressDialog.show(getActivity().getFragmentManager(), "progress");
+			private final View.OnClickListener _subscribeListener = view -> {
+				_progressDialog = ProgressDialogFragment.newInstance();
+				_progressDialog.setMessage("Retrieving RSS from iTunes...");
+				_progressDialog.show(getActivity().getFragmentManager(), "progress");
 
-					new ITunesPodcastSubscriber().execute((String) view.getTag());
-				}
+				new ITunesPodcastSubscriber().execute((String) view.getTag());
 			};
 
 			public ViewHolder(View view) {

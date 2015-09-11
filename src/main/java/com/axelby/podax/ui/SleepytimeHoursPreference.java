@@ -56,18 +56,15 @@ public class SleepytimeHoursPreference extends Preference {
 		super.onBindView(view);
 
 		_times = (RangeSeekBar) view.findViewById(R.id.times);
-		_times.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener() {
-			@Override
-			public void onValuesChanged(RangeSeekBar rangeSeekBar, int minValue, int maxValue) {
-				int[] hours = {20, 21, 22, 23, 0, 1, 2, 3, 4};
-				int minHour = hours[minValue];
-				int maxHour = hours[maxValue];
+		_times.setOnRangeSeekBarChangeListener((rangeSeekBar, minValue, maxValue) -> {
+			int[] hours = {20, 21, 22, 23, 0, 1, 2, 3, 4};
+			int minHour = hours[minValue];
+			int maxHour = hours[maxValue];
 
-				SharedPreferences.Editor editor = getSharedPreferences().edit();
-				editor.putInt(_minKey, minHour);
-				editor.putInt(_maxKey, maxHour);
-				editor.apply();
-			}
+			SharedPreferences.Editor editor = getSharedPreferences().edit();
+			editor.putInt(_minKey, minHour);
+			editor.putInt(_maxKey, maxHour);
+			editor.apply();
 		});
 	}
 

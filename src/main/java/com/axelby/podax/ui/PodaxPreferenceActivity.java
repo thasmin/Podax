@@ -4,14 +4,13 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
-import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 
-public class PodaxPreferenceActivity extends ActionBarActivity {
+public class PodaxPreferenceActivity extends AppCompatActivity {
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {

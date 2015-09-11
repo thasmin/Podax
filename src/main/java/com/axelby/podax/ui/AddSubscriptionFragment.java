@@ -56,12 +56,9 @@ public class AddSubscriptionFragment extends Fragment {
                 new iTunesCategory("Technology", 1318, Iconify.IconValue.fa_code)
         };
 
-		View.OnClickListener categoryClickListener = new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Long catId = (Long) view.getTag();
-				startActivity(PodaxFragmentActivity.createIntent(view.getContext(), ITunesToplistFragment.class, Constants.EXTRA_CATEGORY_ID, catId));
-			}
+		View.OnClickListener categoryClickListener = view1 -> {
+			Long catId = (Long) view1.getTag();
+			startActivity(PodaxFragmentActivity.createIntent(view1.getContext(), ITunesToplistFragment.class, Constants.EXTRA_CATEGORY_ID, catId));
 		};
 
         LinearLayout toplists = (LinearLayout) view.findViewById(R.id.toplists);
@@ -77,29 +74,23 @@ public class AddSubscriptionFragment extends Fragment {
 			toplists.addView(catView);
 		}
 
-        view.findViewById(R.id.web_subscribe).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(PodaxFragmentActivity.createIntent(view.getContext(), WebSubscriptionFragment.class, null));
-            }
-        });
+        view.findViewById(R.id.web_subscribe).setOnClickListener(view1 ->
+			startActivity(PodaxFragmentActivity.createIntent(view1.getContext(), WebSubscriptionFragment.class, null))
+		);
 
-        view.findViewById(R.id.add_rss).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EditText rssText = (EditText) getActivity().findViewById(R.id.rssurl);
-                if (rssText.getText() == null)
-                    return;
-                String url = rssText.getText().toString();
-                if (url.length() == 0)
-                    return;
-                if (!url.contains("://"))
-                    url = "http://" + url;
+        view.findViewById(R.id.add_rss).setOnClickListener(view1 -> {
+			EditText rssText = (EditText) getActivity().findViewById(R.id.rssurl);
+			if (rssText.getText() == null)
+				return;
+			String url = rssText.getText().toString();
+			if (url.length() == 0)
+				return;
+			if (!url.contains("://"))
+				url = "http://" + url;
 
-                SubscriptionProvider.addNewSubscription(getActivity(), url);
-                rssText.setText("");
-            }
-        });
+			SubscriptionProvider.addNewSubscription(getActivity(), url);
+			rssText.setText("");
+		});
     }
 
     public static class iTunesCategory {

@@ -1,9 +1,7 @@
 package com.axelby.podax;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;

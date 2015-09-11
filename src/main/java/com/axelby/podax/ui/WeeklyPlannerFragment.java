@@ -9,13 +9,10 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.axelby.podax.EpisodeCursor;
@@ -38,15 +35,12 @@ public class WeeklyPlannerFragment extends Fragment implements LoaderManager.Loa
 	private ViewGroup _subList;
 	private View _subEmpty;
 
-	private CheckBox.OnCheckedChangeListener _subCheckHandler = new CompoundButton.OnCheckedChangeListener() {
-		@Override
-		public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
-			long subId = (long) checkbox.getTag();
-			ContentValues values = new ContentValues(1);
-			values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, checked);
-			ContentResolver contentResolver = checkbox.getContext().getContentResolver();
-			contentResolver.update(SubscriptionProvider.getContentUri(subId), values, null, null);
-		}
+	private CheckBox.OnCheckedChangeListener _subCheckHandler = (checkbox, checked) -> {
+		long subId = (long) checkbox.getTag();
+		ContentValues values = new ContentValues(1);
+		values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, checked);
+		ContentResolver contentResolver = checkbox.getContext().getContentResolver();
+		contentResolver.update(SubscriptionProvider.getContentUri(subId), values, null, null);
 	};
 
 	@Override
@@ -73,12 +67,9 @@ public class WeeklyPlannerFragment extends Fragment implements LoaderManager.Loa
 		_subEmpty = view.findViewById(R.id.subscription_empty);
 
 		View findNew = view.findViewById(R.id.add_subscription);
-		findNew.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null));
-			}
-		});
+		findNew.setOnClickListener(view1 ->
+			startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null))
+		);
 	}
 
 	@Override
@@ -92,26 +83,30 @@ public class WeeklyPlannerFragment extends Fragment implements LoaderManager.Loa
 
 		ContentResolver contentResolver = getActivity().getContentResolver();
 
+		StringBuilder subIds = new StringBuilder(200);
 		String[] projection = { SubscriptionProvider.COLUMN_ID };
 		Cursor c = contentResolver.query(SubscriptionProvider.URI, projection, SubscriptionProvider.COLUMN_PLAYLIST_NEW + " = 1", null, null);
-		StringBuilder subIds = new StringBuilder(100);
-		while (c.moveToNext())
-			subIds.append(c.getLong(0) + ", ");
-		c.close();
+		if (c != null) {
+			while (c.moveToNext())
+				subIds.append(c.getLong(0)).append(", ");
+			c.close();
+		}
 
 		float autoAdded = 0f;
 		if (subIds.length() > 0) {
 			String subIdStr = subIds.toString().substring(0, subIds.length() - 2);
 			String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + " IN (" + subIdStr + ")" +
-					" AND " + EpisodeProvider.COLUMN_PUB_DATE + " > " + (LocalDate.now().minusDays(7).toDate().getTime() / 1000);
+				" AND " + EpisodeProvider.COLUMN_PUB_DATE + " > " + (LocalDate.now().minusDays(7).toDate().getTime() / 1000);
 			c = contentResolver.query(EpisodeProvider.URI, null, selection, null, null);
-			while (c.moveToNext()) {
-				EpisodeCursor ep = new EpisodeCursor(c);
-				if (ep.getDuration() == 0)
-					ep.determineDuration(getActivity());
-				autoAdded += ep.getDuration() / 1000.0f;
+			if (c != null) {
+				while (c.moveToNext()) {
+					EpisodeCursor ep = new EpisodeCursor(c);
+					if (ep.getDuration() == 0)
+						ep.determineDuration(getActivity());
+					autoAdded += ep.getDuration() / 1000.0f;
+				}
+				c.close();
 			}
-			c.close();
 		}
 		_autoAddTime.setText(Helper.getVerboseTimeString(getActivity(), autoAdded, false));
 
