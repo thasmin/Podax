@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -17,10 +16,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
-import android.support.v7.app.NotificationCompat;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v7.app.NotificationCompat;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.ui.MainActivity;
@@ -32,49 +30,6 @@ import com.axelby.podax.ui.MainActivity;
 public class PlayerService extends Service {
 	private long _currentEpisodeId;
 	private EpisodePlayer _player;
-
-	private MediaSessionCompat _mediaSession;
-	private MediaSessionCompat.Callback _mediaCallback = new MediaSessionCompat.Callback() {
-		@Override public void onPlay() {
-			super.onPlay();
-			play(PlayerService.this);
-		}
-
-		@Override public void onPause() {
-			super.onPause();
-			pause(PlayerService.this);
-		}
-
-		@Override public void onStop() {
-			super.onStop();
-			stop(PlayerService.this);
-		}
-
-
-		@Override public void onSkipToNext() {
-			super.onSkipToNext();
-			EpisodeProvider.skipToEnd(PlayerService.this, EpisodeProvider.ACTIVE_EPISODE_URI);
-		}
-
-		@Override public void onSkipToPrevious() {
-			super.onSkipToPrevious();
-			EpisodeProvider.restart(PlayerService.this, EpisodeProvider.ACTIVE_EPISODE_URI);
-		}
-
-		@Override public void onFastForward() {
-			super.onFastForward();
-			EpisodeProvider.movePositionBy(PlayerService.this, EpisodeProvider.ACTIVE_EPISODE_URI, 30);
-		}
-		@Override public void onRewind() {
-			super.onRewind();
-			EpisodeProvider.movePositionBy(PlayerService.this, EpisodeProvider.ACTIVE_EPISODE_URI, -15);
-		}
-
-		@Override public void onSeekTo(long pos) {
-			super.onSeekTo(pos);
-			EpisodeProvider.movePositionTo(PlayerService.this, EpisodeProvider.ACTIVE_EPISODE_URI, (int) pos);
-		}
-	};
 
 	private final ContentObserver _episodeChangeObserver = new ContentObserver(new Handler()) {
 		@Override
@@ -150,28 +105,12 @@ public class PlayerService extends Service {
 		unregisterReceiver(_stopReceiver);
 	}
 
-	private static final long PLAYBACK_ACTIONS = PlaybackStateCompat.ACTION_PLAY
-		| PlaybackStateCompat.ACTION_PAUSE | PlaybackStateCompat.ACTION_STOP
-		| PlaybackStateCompat.ACTION_REWIND | PlaybackStateCompat.ACTION_FAST_FORWARD
-		| PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-		| PlaybackStateCompat.ACTION_SEEK_TO;
-
 	private class EpisodeEventHandler implements EpisodePlayer.OnCompletionListener,
 			EpisodePlayer.OnPauseListener,
 			EpisodePlayer.OnPlayListener,
 			EpisodePlayer.OnChangeListener,
 			EpisodePlayer.OnSeekListener,
 			EpisodePlayer.OnStopListener {
-
-		private void updateMediaState(@PlaybackStateCompat.State int state, float positionInSeconds, float playbackRate) {
-			PlaybackStateCompat.Builder bob = new PlaybackStateCompat.Builder();
-			bob.setState(state, (long) (positionInSeconds * 1000), playbackRate);
-			bob.setActions(PLAYBACK_ACTIONS);
-			PlaybackStateCompat pbState = bob.build();
-			_mediaSession.setPlaybackState(pbState);
-			if (state == PlaybackStateCompat.STATE_PLAYING)
-				_mediaSession.setActive(true);
-		}
 
 		@Override
 		public void onPlay(float positionInSeconds, float playbackRate) {
@@ -180,7 +119,7 @@ public class PlayerService extends Service {
 			// listen for changes to the episode
 			getContentResolver().registerContentObserver(EpisodeProvider.PLAYER_UPDATE_URI, false, _episodeChangeObserver);
 
-			updateMediaState(PlaybackStateCompat.STATE_PLAYING, positionInSeconds, playbackRate);
+			MediaButtonIntentReceiver.updateState(PlaybackStateCompat.STATE_PLAYING, positionInSeconds, playbackRate);
 			PlayerStatus.updateState(PlayerService.this, PlayerStates.PLAYING);
 			showNotification();
 		}
@@ -189,7 +128,7 @@ public class PlayerService extends Service {
 		public void onPause(float positionInSeconds) {
 			updateActiveEpisodePosition(positionInSeconds);
 
-			updateMediaState(PlaybackStateCompat.STATE_PAUSED, positionInSeconds, 0);
+			MediaButtonIntentReceiver.updateState(PlaybackStateCompat.STATE_PAUSED, positionInSeconds, 0);
 			PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.PAUSED);
 			showNotification();
 		}
@@ -200,7 +139,7 @@ public class PlayerService extends Service {
 			removeNotification();
 			getContentResolver().unregisterContentObserver(_episodeChangeObserver);
 
-			updateMediaState(PlaybackStateCompat.STATE_STOPPED, positionInSeconds, 0);
+			MediaButtonIntentReceiver.updateState(PlaybackStateCompat.STATE_STOPPED, positionInSeconds, 0);
 			PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.STOPPED);
 			stopSelf();
 		}
@@ -249,13 +188,6 @@ public class PlayerService extends Service {
 		}
 
 
-		if (_mediaSession == null) {
-			_mediaSession = new MediaSessionCompat(this, "podax", new ComponentName(this, PlayerService.class), null);
-			_mediaSession.setCallback(_mediaCallback);
-			_mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-				| MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-			updateMetadata();
-		}
 	}
 
 	@Override
@@ -290,9 +222,6 @@ public class PlayerService extends Service {
 				break;
 			case Constants.PLAYER_COMMAND_PAUSE:
 				_player.pause(pauseReason);
-				break;
-			case Constants.PLAYER_COMMAND_RESUME:
-				_player.unpause(pauseReason);
 				break;
 			case Constants.PLAYER_COMMAND_STOP:
 				_player.stop();
@@ -368,7 +297,7 @@ public class PlayerService extends Service {
 					.setShowCancelButton(true)
 					.setCancelButtonIntent(deletePI)
 					.setShowActionsInCompactView(2)
-					.setMediaSession(_mediaSession.getSessionToken())
+					.setMediaSession(MediaButtonIntentReceiver.getSessionToken())
 			);
 
 		Notification notification = builder.build();
@@ -383,7 +312,7 @@ public class PlayerService extends Service {
 		ContentValues values = new ContentValues(1);
 		values.put(EpisodeProvider.COLUMN_ID, _currentEpisodeId);
 		getContentResolver().update(EpisodeProvider.ACTIVE_EPISODE_URI, values, null, null);
-		updateMetadata();
+		MediaButtonIntentReceiver.updateMetadata(this);
 	}
 
 	private void updateActiveEpisodePosition(float positionInSeconds) {
@@ -392,23 +321,4 @@ public class PlayerService extends Service {
 		getContentResolver().update(EpisodeProvider.PLAYER_UPDATE_URI, values, null, null);
 	}
 
-	protected void updateMetadata() {
-		PlayerStatus status = PlayerStatus.getCurrentState(this);
-		MediaMetadataCompat.Builder bob = new MediaMetadataCompat.Builder();
-		bob.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, status.getTitle());
-		bob.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, status.getSubscriptionTitle());
-		bob.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, status.getSubscriptionTitle());
-		bob.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, status.getSubscriptionTitle());
-		bob.putString(MediaMetadataCompat.METADATA_KEY_TITLE, status.getTitle());
-		bob.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, status.getDuration());
-
-		Bitmap thumbnail = SubscriptionCursor.getThumbnailImage(this, status.getSubscriptionId());
-		if (thumbnail != null) {
-			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, thumbnail);
-			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, thumbnail);
-			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, thumbnail);
-		}
-
-		_mediaSession.setMetadata(bob.build());
-	}
 }

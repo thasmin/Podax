@@ -177,9 +177,11 @@ class EpisodePlayer {
 		if (!grabAudioFocus())
 			return;
 
+		/*
 		// make sure we're not pausing
 		if (_pausingFor.contains(true))
 			return;
+		*/
 
 		PlayerStatus status = PlayerStatus.getCurrentState(_context);
 		if (!status.isEpisodeDownloaded())

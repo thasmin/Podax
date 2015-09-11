@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import android.app.Application;
+import android.content.Intent;
 import android.os.Build;
 import android.webkit.WebView;
 
@@ -45,6 +46,8 @@ public class PodaxApplication extends Application {
 		JodaTimeAndroid.init(this);
 
 		PodaxLog.ensureRemoved(this);
+
+		MediaButtonIntentReceiver.initialize(this);
 	}
 
 }

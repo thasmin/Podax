@@ -238,11 +238,15 @@ public class MediaDecoderPlayer extends AudioPlayerBase {
 		public void onPeriodicNotification(AudioTrack audioTrack) {
 			if (!isPlaying())
 				return;
-			if (audioTrack == null || audioTrack.getPlayState() == AudioTrack.STATE_UNINITIALIZED)
+			if (audioTrack == null || audioTrack.getPlayState() != AudioTrack.STATE_UNINITIALIZED)
 				return;
 			if (_periodicListener == null)
 				return;
-			_periodicListener.pulse(_seekbase + _playbackRate * audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate());
+			// sometimes this causes exception (possibly when stopped shortly after starting)
+			// java.lang.IllegalStateException: Unable to retrieve AudioTrack pointer for getPosition()
+			try {
+				_periodicListener.pulse(_seekbase + _playbackRate * audioTrack.getPlaybackHeadPosition() / audioTrack.getSampleRate());
+			} catch (Exception ignored) { }
 		}
 	};
 
