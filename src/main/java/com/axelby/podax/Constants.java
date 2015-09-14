@@ -26,6 +26,7 @@ public class Constants {
 
 	public static final String EXTRA_EPISODE_ID = "com.axelby.podax.episodeId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";
+	public static final String EXTRA_SUBSCRIPTION_NAME = "com.axelby.podax.subscriptionName";
 	public static final String EXTRA_ITUNES_ID = "com.axelby.podax.itunesId";
 	public static final String EXTRA_MANUAL_REFRESH = "com.axelby.podax.manual_refresh";
     public static final String EXTRA_CATEGORY_ID = "com.axelby.podax.categoryId";

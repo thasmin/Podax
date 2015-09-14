@@ -24,7 +24,7 @@ dependencies {
     compile 'com.android.support:palette-v7:23.0.1'
     compile 'com.android.support:design:23.0.1'
 
-    compile 'com.facebook.stetho:stetho:1.1.1'
+    compile 'com.facebook.stetho:stetho:1.2.0'
 
     apt 'com.android.databinding:compiler:1.0-rc1'
 

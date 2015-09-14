@@ -24,7 +24,7 @@ public class WrappingLinearLayoutManager extends LinearLayoutManager {
 		int width = 0;
 		int height = 0;
 		for (int i = 0; i < getItemCount(); i++) {
-			measureScrapChild(recycler, i,
+			measureScrapChild(recycler, i, state,
 					View.MeasureSpec.makeMeasureSpec(i, View.MeasureSpec.UNSPECIFIED),
 					View.MeasureSpec.makeMeasureSpec(i, View.MeasureSpec.UNSPECIFIED),
 					mMeasuredDimension);
@@ -65,8 +65,11 @@ public class WrappingLinearLayoutManager extends LinearLayoutManager {
 		setMeasuredDimension(width, height);
 	}
 
-	private void measureScrapChild(RecyclerView.Recycler recycler, int position, int widthSpec,
-								   int heightSpec, int[] measuredDimension) {
+	private void measureScrapChild(RecyclerView.Recycler recycler, int position, RecyclerView.State state,
+								   int widthSpec, int heightSpec, int[] measuredDimension) {
+		if (state.getItemCount() <= position)
+			return;
+
 		View view = recycler.getViewForPosition(position);
 
 		// For adding Item Decor Insets to view

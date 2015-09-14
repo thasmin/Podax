@@ -101,6 +101,7 @@ public class EpisodeListFragment extends RxFragment {
 					e -> Log.e("episodelistfragment", "error while loading podcasts from db", e)
 				);
 		} else {
+			_model = new Model(getArguments().getString(Constants.EXTRA_SUBSCRIPTION_NAME));
 			Observable.just(itunesIdUrl)
 				.observeOn(Schedulers.io())
 				.flatMap(this::getSubscriptionIdFromITunesUrl)
@@ -181,6 +182,7 @@ public class EpisodeListFragment extends RxFragment {
 	@Override
 	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		_binding = EpisodelistFragmentBinding.inflate(inflater, container, false);
+		_binding.setModel(_model);
 		return _binding.getRoot();
 	}
 
@@ -203,6 +205,11 @@ public class EpisodeListFragment extends RxFragment {
 	@BindingAdapter({"app:children", "app:childLayout"})
 	@SuppressWarnings("unused")
 	public static <T> void setChildren(ViewGroup parent, Collection<T> children, @LayoutRes int layoutId) {
+		if (children == null) {
+			parent.removeAllViews();
+			return;
+		}
+
 		for (T child : children)
 			addBoundChild(parent, layoutId, child, -1);
 
@@ -260,18 +267,22 @@ public class EpisodeListFragment extends RxFragment {
 	@SuppressWarnings("unused")
 	public class Model extends BaseObservable {
 		private long _id;
-		public final ObservableField<String> title;
-		public final ObservableBoolean isCurrentlyUpdating;
-		public final ObservableBoolean isSubscribed;
-		public ObservableBoolean areNewEpisodesAddedToPlaylist;
+		public final ObservableField<String> title = new ObservableField<>("");
+		public final ObservableBoolean isCurrentlyUpdating = new ObservableBoolean(false);
+		public final ObservableBoolean isSubscribed = new ObservableBoolean(false);
+		public final ObservableBoolean areNewEpisodesAddedToPlaylist = new ObservableBoolean(false);
 		public final ObservableArrayList<PodcastModel> podcasts = new ObservableArrayList<>();
+
+		public Model (String name) {
+			title.set(name);
+		}
 
 		public Model(@Nonnull SubscriptionCursor sub) {
 			_id = sub.getId();
-			title = new ObservableField<>(sub.getTitle());
-			isCurrentlyUpdating = new ObservableBoolean(false);
-			isSubscribed = new ObservableBoolean(!sub.isSingleUse());
-			areNewEpisodesAddedToPlaylist = new ObservableBoolean(sub.areNewEpisodesAddedToPlaylist());
+			title.set(sub.getTitle());
+			isCurrentlyUpdating.set(false);
+			isSubscribed.set(!sub.isSingleUse());
+			areNewEpisodesAddedToPlaylist.set(sub.areNewEpisodesAddedToPlaylist());
 		}
 
 		public String getImageSrc() { return "file://" + SubscriptionCursor.getThumbnailFilename(getActivity(), _id); }

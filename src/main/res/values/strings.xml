@@ -299,5 +299,7 @@ limitations under the License.</p>
     <string name="weekly_planner">Weekly Planner</string>
     <string name="extra">Extra</string>
     <string name="shortage">Shortage</string>
+    <string name="itunes_top_podcasts">iTunes Top Podcasts</string>
+    <string name="npr_podcasts">NPR Podcasts</string>
 
 </resources>

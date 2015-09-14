@@ -163,12 +163,16 @@ public class SubscriptionCursor {
 	public boolean isSingleUse() {
 		if (_singleUseColumn == null)
 			_singleUseColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_SINGLE_USE);
-		return _cursor.isNull(_singleUseColumn) && _cursor.getInt(_singleUseColumn) != 0;
+		if (_cursor.isNull(_singleUseColumn))
+			return false;
+		return _cursor.getInt(_singleUseColumn) != 0;
 	}
 
 	public boolean areNewEpisodesAddedToPlaylist() {
 		if (_playlistNewColumn == null)
 			_playlistNewColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_PLAYLIST_NEW);
-		return _cursor.isNull(_playlistNewColumn) || _cursor.getInt(_playlistNewColumn) != 0;
+		if (_cursor.isNull(_playlistNewColumn))
+			return true;
+		return _cursor.getInt(_playlistNewColumn) != 0;
 	}
 }
