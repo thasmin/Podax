@@ -91,19 +91,11 @@ limitations under the License.</p>
     <string name="restart">Restart</string>
     <string name="about">About</string>
     <string name="refresh">Refresh</string>
-    <string name="welcome_intro">Thanks for using Podax! You\'re almost ready to enter the blossoming world of podcasts. All you need to do is subscribe to a podcast and Podax will do the rest. Visit the RSS link in the browser, type the RSS feed URL below, or choose one of our favorite podcasts below.</string>
-    <string name="welcome_american_life">This American Life</string>
-    <string name="welcome_american_life_desc">This American Life is a weekly podcast that tells interesting stories in otherwise mundane situations. It has won all of the major broadcasting awards.</string>
     <string name="subscribe">Subscribe</string>
-    <string name="rss">RSS</string>
-    <string name="welcome_tech_news_today">Tech News Today</string>
-    <string name="welcome_tech_news_today_desc">Tom Merritt brings you "Tech News Today" with co-hosts Sarah Lane (TechTV, Revision3), Iyaz Akhtar (PC Mag, TechVi) and others. Get up to speed, with a fun and friendly ride through the need-to-know tech news of the day.</string>
     <string name="subscription_thumbnail">subscription thumbnail</string>
     <string name="download">Download</string>
     <string name="pref_update_wifi">Only update subscriptions or download episodes while connected to a Wi-Fi network.</string>
     <string name="pref_update_wifi_title">Wi-Fi Only</string>
-    <string name="pref_auto_delete">Delete episodes automatically when playback finishes or you skip to the next episode. If disabled, the episode will be added to the bottom of the playlist.</string>
-    <string name="pref_auto_delete_title">Delete Episodes Automatically</string>
     <string name="pref_max_num_episodes">Maximum number of downloaded episodes in playlist.</string>
     <string name="pref_max_num_episodes_title">Limit Number of Downloaded Episodes</string>
 
@@ -124,7 +116,6 @@ limitations under the License.</p>
 
     <string name="pref_crash_reports">Send error reports to the developers if Podax crashes.</string>
     <string name="pref_crash_reports_title">Send Crash Reports</string>
-    <string name="more_options">More Options</string>
     <string name="payment">Payment</string>
     <string name="donate">Donate</string>
     <string name="flattr">Flattr</string>
@@ -218,7 +209,6 @@ limitations under the License.</p>
         <item>4 AM</item>
     </string-array>
 
-    <string name="clear_search">Clear Search</string>
     <string name="stats">Stats</string>
     <string name="episodes_finished">Episodes Finished</string>
     <string name="time_spent_listening">Time Spent Listening</string>
@@ -253,7 +243,6 @@ limitations under the License.</p>
     <string name="release_notes_detailed">        Version 7 of Podax has many new things, including an all new audio player that has a speed knob that works.</string>
     <string name="view_release_notes">View Release Notes</string>
     <string name="no_thanks">No Thanks</string>
-    <string name="description_not_available">Description is not available.</string>
     <string name="use_name_from_feed">Use name from feed</string>
     <string name="new_episodes">New Episodes</string>
     <string name="add_new_episodes_to_playlist">Add new episodes to playlist</string>
@@ -265,7 +254,6 @@ limitations under the License.</p>
     <string name="find_a_podcast">Find a Podcast from iTunes Toplists</string>
     <string name="released_on">Released on</string>
     <string name="in_duration">long</string>
-    <string name="subscriptions_caps">SUBSCRIPTIONS</string>
     <string name="playlist_caps">PLAYLIST</string>
     <string name="expand">Expand</string>
     <string name="subscribe_on_web">Subscribe on the Web</string>
@@ -277,7 +265,6 @@ limitations under the License.</p>
     <string name="decorative_image">Decorative Image</string>
     <string name="episode_list">Episode List</string>
     <string name="subscription_currently_updating">This subscription is currently updating. It will automatically refresh when it\'s ready.</string>
-    <string name="latest_caps">LATEST</string>
     <string name="subscription_logo">subscription logo</string>
     <string name="now_downloading">Now Downloading</string>
     <string name="view_in_browser">View in Browser</string>
@@ -291,7 +278,6 @@ limitations under the License.</p>
     <string name="no_finished_episodes">You haven\'t finished any episodes yet. Get to it!</string>
     <string name="finished_on">Finished on</string>
     <string name="search_results">Search Results</string>
-    <string name="no_search_matches">No subscriptions or episodes match that search.</string>
     <string name="subscriptions">Subscriptions</string>
     <string name="episodes">Episodes</string>
     <string name="no_subscription_matches">No subscriptions match this search.</string>

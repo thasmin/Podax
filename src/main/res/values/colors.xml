@@ -2,7 +2,6 @@
 <resources>
 
     <color name="podaxColor">#FFE59F39</color>
-    <color name="podaxBlue">#FF085D99</color>
 
     <color name="orange500">#FFff9800</color>
     <color name="orange700">#FFf57c00</color>
@@ -13,6 +12,4 @@
     <color name="windowBG">#FF212121</color>
     <color name="cardBG">#FF303030</color>
     <color name="drawerSeparator">#FF1C1C1C</color>
-
-    <color name="dimTextOnPrimary">#FFFFCB7F</color>
 </resources>
