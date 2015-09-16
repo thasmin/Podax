@@ -87,71 +87,71 @@ public class EpisodeListFragment extends RxFragment {
 			throw new IllegalArgumentException("EpisodeListFragment needs a subscription id or itunes id url");
 		_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
 		String itunesIdUrl = getArguments().getString(Constants.EXTRA_ITUNES_ID);
-		if (_subscriptionId == -1 && itunesIdUrl == null)
-			throw new IllegalArgumentException("EpisodeListFragment needs a subscription id or itunes id url");
+		String rssUrl = getArguments().getString(Constants.EXTRA_RSSURL);
+		if (_subscriptionId == -1 && itunesIdUrl == null && rssUrl == null)
+			throw new IllegalArgumentException("EpisodeListFragment needs a subscription id, itunes id url, or rss url");
 
+		_model = new Model(getArguments().getString(Constants.EXTRA_SUBSCRIPTION_NAME));
+
+		Observable<Long> subIdObservable;
 		if (_subscriptionId != -1) {
-			Observable.just(_subscriptionId)
-				.observeOn(Schedulers.io())
-				.map(this::getPodcastsCursor)
-				.observeOn(AndroidSchedulers.mainThread())
-				.compose(RxLifecycle.bindFragment(lifecycle()))
-				.subscribe(
-					this::showPodcasts,
-					e -> Log.e("episodelistfragment", "error while loading podcasts from db", e)
-				);
+			subIdObservable = Observable.just(_subscriptionId);
+			setupHeader(_subscriptionId);
 		} else {
-			_model = new Model(getArguments().getString(Constants.EXTRA_SUBSCRIPTION_NAME));
-			Observable.just(itunesIdUrl)
-				.observeOn(Schedulers.io())
-				.flatMap(this::getSubscriptionIdFromITunesUrl)
-				.concatWith(new RSSUrlFetcher(activity, itunesIdUrl).getRSSUrl()
-						.flatMap(url -> {
-							Cursor c = activity.getContentResolver().query(SubscriptionProvider.URI,
-								new String[]{"_id"}, "url = ?", new String[]{url}, null);
-							if (c != null) {
-								try {
-									if (c.moveToNext())
-										return Observable.just(c.getLong(0));
-								} finally {
-									c.close();
-								}
-							}
+			// get subscription id from either rss url or itunes id url
+			Observable<String> rssUrlObservable;
+			if (itunesIdUrl != null)
+				rssUrlObservable = getRSSUrlFromITunesUrl(itunesIdUrl);
+			else
+				rssUrlObservable = Observable.just(rssUrl);
 
-							Uri newUri = SubscriptionProvider.addSingleUseSubscription(activity, url);
-							return Observable.just(ContentUris.parseId(newUri));
-						})
-				)
-				.first()
-				.observeOn(AndroidSchedulers.mainThread())
-				.map(subId -> {
-					_subscriptionId = subId;
-					setupHeader();
-					return subId;
-				})
-				.observeOn(Schedulers.io())
-				.map(this::getPodcastsCursor)
-				.observeOn(AndroidSchedulers.mainThread())
-				.compose(RxLifecycle.bindFragment(lifecycle()))
-				.subscribe(
-					this::showPodcasts,
-					e -> Log.e("itunesloader", "error while getting rss url from itunes", e)
-				);
+			subIdObservable = rssUrlObservable
+				.subscribeOn(Schedulers.io())
+				.flatMap(this::getSubscriptionIdFromRSSUrl);
 		}
+
+		subIdObservable
+			.observeOn(AndroidSchedulers.mainThread())
+			.map(this::setupHeader)
+			.observeOn(Schedulers.io())
+			.map(this::getPodcastsCursor)
+			.observeOn(AndroidSchedulers.mainThread())
+			.compose(RxLifecycle.bindFragment(lifecycle()))
+			.subscribe(
+				this::showPodcasts,
+				e -> Log.e("itunesloader", "error while getting rss url from itunes", e)
+			);
 	}
 
-	private Observable<Long> getSubscriptionIdFromITunesUrl(String iTunesUrl) {
-		SQLiteDatabase db = new DBAdapter(getActivity()).getReadableDatabase();
-		Cursor c = db.rawQuery("SELECT subscriptionId FROM itunes WHERE idUrl = ?", new String[]{iTunesUrl});
-		if (c == null)
-			return Observable.empty();
-		if (!c.moveToFirst() || c.isNull(0)) {
-			c.close();
-			return Observable.empty();
+	private Observable<Long> getSubscriptionIdFromRSSUrl(String rssUrl) {
+		String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
+		Cursor c = getActivity().getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
+		if (c != null) {
+			try {
+				if (!c.moveToFirst() && c.isNull(0))
+					return Observable.just(c.getLong(0));
+			} finally {
+				c.close();
+			}
 		}
-		long subId = c.getLong(0);
-		c.close();
-		return Observable.just(subId);
+
+		Uri newUri = SubscriptionProvider.addSingleUseSubscription(getActivity(), rssUrl);
+		return Observable.just(ContentUris.parseId(newUri));
+	}
+
+	private Observable<String> getRSSUrlFromITunesUrl(String iTunesUrl) {
+		SQLiteDatabase db = new DBAdapter(getActivity()).getReadableDatabase();
+		Cursor c = db.rawQuery("SELECT " + SubscriptionProvider.COLUMN_URL + " FROM subscriptions WHERE id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
+		if (c != null) {
+			if (c.moveToFirst() && c.isNull(0)) {
+				String url = c.getString(0);
+				c.close();
+				return Observable.just(url);
+			}
+			c.close();
+		}
+
+		return new RSSUrlFetcher(getActivity(), iTunesUrl).getRSSUrl();
 	}
 
 	public Cursor getPodcastsCursor(long subId) {
@@ -191,9 +191,6 @@ public class EpisodeListFragment extends RxFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		_listView = (LinearLayout) view.findViewById(R.id.list);
-
-		if (_subscriptionId != -1)
-			setupHeader();
 	}
 
 	@BindingAdapter("android:onChange")
@@ -364,24 +361,28 @@ public class EpisodeListFragment extends RxFragment {
 			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, _id));
 	}
 
-	void setupHeader() {
+	private long setupHeader(long subscriptionId) {
+		_subscriptionId = subscriptionId;
+
 		if (_subscriptionId == -1) {
 			Log.e("EpisodeListFragment", "cannot set up header when subscription id is not set");
-			return;
+			return _subscriptionId;
 		}
 
 		View view = getView();
 		if (view == null)
-			return;
+			return _subscriptionId;
 
 		Context context = view.getContext();
 		SubscriptionCursor subscriptionCursor = SubscriptionCursor.getCursor(context, _subscriptionId);
 		if (subscriptionCursor == null)
-			return;
+			return _subscriptionId;
 
 		_model = new Model(subscriptionCursor);
 		_binding.setModel(_model);
 		subscriptionCursor.closeCursor();
+
+		return _subscriptionId;
 	}
 
 	private BroadcastReceiver _updateReceiver = new BroadcastReceiver() {
@@ -394,7 +395,7 @@ public class EpisodeListFragment extends RxFragment {
 			}
 
 			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
-				setupHeader();
+				setupHeader(_subscriptionId);
 				showPodcasts(getPodcastsCursor(_subscriptionId));
 				_model.isCurrentlyUpdating.set(false);
 			} else {
