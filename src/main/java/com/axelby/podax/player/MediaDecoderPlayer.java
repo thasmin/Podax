@@ -238,7 +238,7 @@ public class MediaDecoderPlayer extends AudioPlayerBase {
 		public void onPeriodicNotification(AudioTrack audioTrack) {
 			if (!isPlaying())
 				return;
-			if (audioTrack == null || audioTrack.getPlayState() != AudioTrack.STATE_UNINITIALIZED)
+			if (audioTrack == null || audioTrack.getPlayState() == AudioTrack.STATE_UNINITIALIZED)
 				return;
 			if (_periodicListener == null)
 				return;
