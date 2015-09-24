@@ -15,44 +15,50 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 
 	@Override
     public void onReceive(Context context, Intent intent) {
+		if (handleMediaButton(context, intent))
+			return;
+
+		if (isOrderedBroadcast())
+            abortBroadcast();
+    }
+
+	private static boolean handleMediaButton(Context context, Intent intent) {
         KeyEvent event = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
 
         if (event == null || event.getAction() != KeyEvent.ACTION_DOWN)
-            return;
+            return false;
 
-        switch (event.getKeyCode()) {
-            // Simple headsets only send KEYCODE_HEADSETHOOK
-            case KeyEvent.KEYCODE_HEADSETHOOK:
-                PlayerService.stop(context);
-                break;
-            case KeyEvent.KEYCODE_MEDIA_PLAY:
-                PlayerService.play(context);
-                break;
-            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                PlayerService.playpause(context);
-                break;
-            case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                PlayerService.pause(context);
-                break;
-            case KeyEvent.KEYCODE_MEDIA_STOP:
-                PlayerService.stop(context);
-                break;
-            case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-            case KeyEvent.KEYCODE_MEDIA_NEXT:
-                EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, 30);
-                break;
-            case KeyEvent.KEYCODE_MEDIA_REWIND:
-            case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-                EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, -15);
-                break;
-            default:
-                Log.e("Podax", "No matched event: " + event.getKeyCode());
-        }
+		switch (event.getKeyCode()) {
+			// Simple headsets only send KEYCODE_HEADSETHOOK
+			case KeyEvent.KEYCODE_HEADSETHOOK:
+				PlayerService.stop(context);
+				break;
+			case KeyEvent.KEYCODE_MEDIA_PLAY:
+				PlayerService.play(context);
+				break;
+			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+				PlayerService.playpause(context);
+				break;
+			case KeyEvent.KEYCODE_MEDIA_PAUSE:
+				PlayerService.pause(context);
+				break;
+			case KeyEvent.KEYCODE_MEDIA_STOP:
+				PlayerService.stop(context);
+				break;
+			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+			case KeyEvent.KEYCODE_MEDIA_NEXT:
+				EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, 30);
+				break;
+			case KeyEvent.KEYCODE_MEDIA_REWIND:
+			case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+				EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, -15);
+				break;
+			default:
+				Log.e("Podax", "No matched event: " + event.getKeyCode());
+		}
 
-        if (this.isOrderedBroadcast()) {
-            abortBroadcast();
-        }
-    }
+		return true;
+	}
 
 	private static Context _context;
 
@@ -64,6 +70,11 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 	}
 
 	private static MediaSessionCompat.Callback _mediaCallback = new MediaSessionCompat.Callback() {
+		@Override
+		public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
+			return handleMediaButton(_context, mediaButtonEvent);
+		}
+
 		@Override public void onPlay() {
 			super.onPlay();
 			PlayerService.play(_context);
@@ -109,8 +120,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 
 		_mediaSession = new MediaSessionCompat(context, "podax", new ComponentName(context, MediaButtonIntentReceiver.class), null);
 		_mediaSession.setCallback(_mediaCallback);
-		_mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
-			| MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+		_mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
 		updateMetadata(context);
 	}
 
