@@ -31,7 +31,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		switch (event.getKeyCode()) {
 			// Simple headsets only send KEYCODE_HEADSETHOOK
 			case KeyEvent.KEYCODE_HEADSETHOOK:
-				PlayerService.stop(context);
+				PlayerService.pause(context);
 				break;
 			case KeyEvent.KEYCODE_MEDIA_PLAY:
 				PlayerService.play(context);

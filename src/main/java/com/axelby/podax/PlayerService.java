@@ -16,7 +16,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
-import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.NotificationCompat;
 
@@ -48,10 +48,10 @@ public class PlayerService extends Service {
 		}
 	};
 
-	private final BroadcastReceiver _stopReceiver = new BroadcastReceiver() {
+	private final BroadcastReceiver _pauseReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			PlayerService.stop(PlayerService.this);
+			PlayerService.pause(PlayerService.this);
 		}
 	};
 
@@ -97,12 +97,12 @@ public class PlayerService extends Service {
 
 	@Override
 	public void onCreate() {
-		registerReceiver(_stopReceiver, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+		registerReceiver(_pauseReceiver, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
 	}
 
 	@Override
 	public void onDestroy() {
-		unregisterReceiver(_stopReceiver);
+		unregisterReceiver(_pauseReceiver);
 	}
 
 	private class EpisodeEventHandler implements EpisodePlayer.OnCompletionListener,
@@ -261,9 +261,11 @@ public class PlayerService extends Service {
 		PlayerStatus playerStatus = PlayerStatus.getCurrentState(this);
 
 		Intent showIntent = new Intent(this, MainActivity.class);
+		showIntent.setAction("podax://show");
 		PendingIntent showPI = PendingIntent.getActivity(this, 0, showIntent, 0);
 
 		Intent deleteIntent = new Intent(this, PlayerService.class);
+		deleteIntent.setAction("podax://delete");
 		deleteIntent.putExtra(Constants.EXTRA_PLAYER_COMMAND, Constants.PLAYER_COMMAND_STOP);
 		PendingIntent deletePI = PendingIntent.getService(this, 0, deleteIntent, 0);
 
@@ -273,8 +275,7 @@ public class PlayerService extends Service {
 			.setContentTitle(playerStatus.getTitle())
 			.setContentText(playerStatus.getSubscriptionTitle())
 			.setDeleteIntent(deletePI)
-			.setContentIntent(showPI)
-			.setOngoing(true);
+			.setContentIntent(showPI);
 
 		Bitmap subscriptionBitmap = SubscriptionCursor.getThumbnailImage(this, playerStatus.getSubscriptionId());
 		if (subscriptionBitmap != null)
@@ -296,12 +297,17 @@ public class PlayerService extends Service {
 				new NotificationCompat.MediaStyle()
 					.setShowCancelButton(true)
 					.setCancelButtonIntent(deletePI)
-					.setShowActionsInCompactView(2)
+					.setShowActionsInCompactView(2,3)
 					.setMediaSession(MediaButtonIntentReceiver.getSessionToken())
 			);
 
 		Notification notification = builder.build();
-		startForeground(Constants.NOTIFICATION_PLAYING, notification);
+		if (playerStatus.getState() == PlayerStates.PLAYING)
+			startForeground(Constants.NOTIFICATION_PLAYING, notification);
+		else {
+			NotificationManagerCompat.from(this).notify(Constants.NOTIFICATION_PLAYING, notification);
+			stopForeground(false);
+		}
 	}
 
 	private void removeNotification() {
