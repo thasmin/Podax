@@ -141,15 +141,17 @@ public class EpisodeListFragment extends RxFragment {
 
 	private Observable<String> getRSSUrlFromITunesUrl(String iTunesUrl) {
 		SQLiteDatabase db = new DBAdapter(getActivity()).getReadableDatabase();
-		Cursor c = db.rawQuery("SELECT " + SubscriptionProvider.COLUMN_URL + " FROM subscriptions WHERE id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
+		Cursor c = db.rawQuery("SELECT " + SubscriptionProvider.COLUMN_URL + " FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
 		if (c != null) {
 			if (c.moveToFirst() && c.isNull(0)) {
 				String url = c.getString(0);
 				c.close();
+				db.close();
 				return Observable.just(url);
 			}
 			c.close();
 		}
+		db.close();
 
 		return new RSSUrlFetcher(getActivity(), iTunesUrl).getRSSUrl();
 	}
@@ -325,7 +327,7 @@ public class EpisodeListFragment extends RxFragment {
 		public String getReleaseDate() {
 			return getActivity().getString(R.string.released_on) + " " + _pubDateFormat.format(_releaseDate);
 		}
-		public boolean hasDuration() { return _duration != null; }
+		public boolean hasDuration() { return _duration != null && _duration != 0; }
 		public String getDuration() {
 			return Helper.getVerboseTimeString(getActivity(), _duration / 1000f, false) + " " + getActivity().getString(R.string.in_duration);
 		}

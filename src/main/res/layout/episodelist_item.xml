@@ -13,16 +13,15 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:onClick="@{podcast.onClick}"
         app:cardBackgroundColor="@color/cardBG"
         app:cardCornerRadius="5dp"
         app:cardElevation="8dp"
-        app:cardUseCompatPadding="true"
-        >
+        app:cardUseCompatPadding="true">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/title"
@@ -33,8 +32,7 @@
                 android:layout_marginStart="10dp"
                 android:textSize="24sp"
                 tools:text="Episode Name"
-                android:text="@{podcast.title}"
-                />
+                android:text="@{podcast.title}" />
 
             <TextView
                 android:id="@+id/date"
@@ -45,8 +43,7 @@
                 android:layout_below="@id/title"
                 android:layout_marginTop="4dp"
                 tools:text="Released on June 12, 2014"
-                android:text="@{podcast.releaseDate}"
-                />
+                android:text="@{podcast.releaseDate}" />
 
             <TextView
                 android:id="@+id/duration"
@@ -58,34 +55,45 @@
                 android:layout_marginTop="4dp"
                 tools:text="57 minutes long"
                 android:text="@{podcast.duration}"
-                android:visibility="@{podcast.hasDuration ? View.VISIBLE : View.INVISIBLE}"
-                />
+                android:visibility="@{podcast.hasDuration ? View.VISIBLE : View.GONE}" />
 
-            <Button
+            <View
+                android:id="@+id/divider"
+                android:layout_width="wrap_content"
+                android:layout_height="2dp"
+                android:background="#333333"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:layout_below="@id/duration" />
+
+            <TextView
                 android:id="@+id/playlist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/Widget.Podax.Button"
                 android:text="@{podcast.playlistPosition == null ? @string/add_to_playlist : @string/remove_from_playlist}"
                 android:textAllCaps="true"
+                android:onClick="@{podcast.onPlaylist}"
+                android:layout_margin="10dp"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:layout_below="@id/duration"
-                android:focusable="false" />
+                android:layout_below="@id/divider"
+                android:focusable="false"
+                tools:text="Add to Playlist"
+                android:textColor="?attr/colorPrimary" />
 
-            <Button
+            <TextView
                 android:id="@+id/play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/Widget.Podax.Button"
                 android:text="@{podcast.isDownloaded ? @string/play : @string/stream}"
                 android:onClick="@{podcast.onPlay}"
                 android:textAllCaps="true"
                 android:layout_alignBaseline="@id/playlist"
                 android:layout_toLeftOf="@id/playlist"
                 android:layout_toStartOf="@id/playlist"
+                android:layout_margin="10dp"
                 android:focusable="false"
-                />
+                tools:text="Stream" />
 
             <View
                 android:layout_width="wrap_content"
