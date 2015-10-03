@@ -1,48 +1,57 @@
 package com.axelby.podax.ui;
 
-import android.app.Fragment;
-import android.app.LoaderManager;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
+import com.trello.rxlifecycle.components.RxFragment;
 
 import java.text.DateFormat;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
-public class FinishedEpisodeFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+import rx.subjects.BehaviorSubject;
+
+public class FinishedEpisodeFragment extends RxFragment {
 	private PodcastAdapter _adapter = null;
 	private RecyclerView _listView;
 	private View _emptyView;
 
+	private BehaviorSubject<EpisodeData> _t = BehaviorSubject.create();
+
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
 
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
-		getLoaderManager().initLoader(0, getArguments(), this);
+		EpisodeData.getObservable(activity, EpisodeData.FINISHED)
+			.concatWith(_t)
+			.toList()
+			.compose(bindToLifecycle())
+			.subscribe(
+				_adapter::setEpisodes,
+				e -> Log.e("FinishedEpisodeFragment", "error while retrieving finished episodes", e)
+			);
 	}
 
 	@Override
@@ -59,6 +68,8 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 		_listView.setItemAnimator(new DefaultItemAnimator());
 
 		_emptyView = view.findViewById(R.id.empty);
+
+		_t.onCompleted();
 	}
 
 	@Override
@@ -68,43 +79,10 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 		_listView.setAdapter(_adapter);
 	}
 
-	@Override
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = {
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_TITLE,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
-                EpisodeProvider.COLUMN_DURATION,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-				EpisodeProvider.COLUMN_FILE_SIZE,
-				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
-				EpisodeProvider.COLUMN_FINISHED_TIME,
-				EpisodeProvider.COLUMN_DURATION,
-		};
-		return new CursorLoader(getActivity(), EpisodeProvider.FINISHED_URI, projection, null, null, null);
-	}
-
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		if (getActivity() == null)
-			return;
-
-		_adapter.changeCursor(cursor);
-		boolean isEmpty = cursor.getCount() == 0;
-		_emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-		_listView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-	}
-
-	@Override
-	public void onLoaderReset(Loader<Cursor> loader) {
-		_adapter.changeCursor(null);
-	}
-
 	private class PodcastAdapter extends RecyclerView.Adapter<PodcastAdapter.ViewHolder> {
 
         private final DateFormat _finishedDateFormat = DateFormat.getDateInstance();
-		private Cursor _cursor;
+		private List<EpisodeData> _episodes;
 
         class ViewHolder extends RecyclerView.ViewHolder {
 			public final View container;
@@ -112,8 +90,8 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 			public final TextView subscriptionTitle;
             public final TextView title;
             public final TextView date;
-            public final Button play;
-            public final Button playlist;
+            public final TextView play;
+            public final TextView playlist;
 
             public ViewHolder (View view) {
 				super(view);
@@ -121,8 +99,8 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 				container = view;
                 title = (TextView) view.findViewById(R.id.title);
                 date = (TextView) view.findViewById(R.id.date);
-                play = (Button) view.findViewById(R.id.play);
-                playlist = (Button) view.findViewById(R.id.playlist);
+                play = (TextView) view.findViewById(R.id.play);
+                playlist = (TextView) view.findViewById(R.id.playlist);
 				thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
 				subscriptionTitle = (TextView) view.findViewById(R.id.subscription_title);
 
@@ -136,9 +114,13 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 			setHasStableIds(true);
         }
 
-		public void changeCursor(Cursor cursor) {
-			_cursor = cursor;
+		public void setEpisodes(List<EpisodeData> episodes) {
+			_episodes = episodes;
 			notifyDataSetChanged();
+
+			boolean isEmpty = episodes.size() == 0;
+			_emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+			_listView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 		}
 
         final View.OnClickListener _playHandler = view -> {
@@ -175,18 +157,17 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 
 		@Override
 		public void onBindViewHolder(ViewHolder holder, int position) {
-			if (_cursor == null)
+			if (_episodes == null)
 				return;
 			Context context = holder.container.getContext();
 
-			_cursor.moveToPosition(position);
-			EpisodeCursor episode = new EpisodeCursor(_cursor);
+			EpisodeData episode = _episodes.get(position);
 
 			holder.container.setTag(episode.getId());
 			holder.subscriptionTitle.setText(episode.getSubscriptionTitle());
 			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
             holder.title.setText(episode.getTitle());
-            holder.date.setText(context.getString(R.string.finished_on) + " " + _finishedDateFormat.format(episode.getFinishedDate()));
+            holder.date.setText(context.getString(R.string.finished_on, _finishedDateFormat.format(episode.getFinishedDate())));
             holder.play.setTag(episode.getId());
             holder.playlist.setTag(R.id.episodeId, episode.getId());
 
@@ -207,15 +188,14 @@ public class FinishedEpisodeFragment extends Fragment implements LoaderManager.L
 
 		@Override
         public long getItemId(int position) {
-			_cursor.moveToPosition(position);
-            return new EpisodeCursor(_cursor).getId();
+            return _episodes.get(position).getId();
         }
 
 		@Override
 		public int getItemCount() {
-			if (_cursor == null)
+			if (_episodes == null)
 				return 0;
-			return _cursor.getCount();
+			return _episodes.size();
 		}
 	}
 }

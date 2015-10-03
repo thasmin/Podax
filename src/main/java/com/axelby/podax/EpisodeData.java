@@ -1,7 +1,12 @@
 package com.axelby.podax;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.support.annotation.IntDef;
 
+import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Date;
 
 import rx.Observable;
@@ -27,6 +32,8 @@ public class EpisodeData {
 	private final Date _gpodderUpdateTimestamp;
 	private final String _payment;
 	private final Date _finishedDate;
+
+	private String _filename = null;
 
 	public EpisodeData(EpisodeCursor ep) {
 		_id = ep.getId();
@@ -124,11 +131,63 @@ public class EpisodeData {
 		return _finishedDate;
 	}
 
+	public String getFilename(Context context) {
+		if (_filename == null)
+			_filename = String.format("%s%s.%s",
+				EpisodeCursor.getPodcastStoragePath(context),
+				String.valueOf(getId()),
+				EpisodeCursor.getExtension(getMediaUrl())
+			);
+
+		return _filename;
+	}
+
+	public boolean isDownloaded(Context context) {
+		if (getFileSize() == null)
+			return false;
+		File file = new File(getFilename(context));
+		return file.exists() && file.length() == getFileSize() && getFileSize() != 0;
+	}
+
 	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
 		Observable<EpisodeData> ob = Observable.create(o -> {
 			EpisodeData data = EpisodeData.create(context, episodeId);
 			o.onNext(data);
 			o.onCompleted();
+		});
+		ob.subscribeOn(Schedulers.io());
+		ob.observeOn(AndroidSchedulers.mainThread());
+		return ob;
+	}
+
+	public static final int FINISHED = 0;
+	public static final int TO_DOWNLOAD = 1;
+	@IntDef({FINISHED, TO_DOWNLOAD})
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Filter {}
+
+	// by default, runs on io thread and is observed on main thread
+	public static Observable<EpisodeData> getObservable(Context context, @Filter int filter) {
+		Observable<EpisodeData> ob = Observable.create(o -> {
+			Cursor c = null;
+			switch (filter) {
+				case FINISHED:
+					c = context.getContentResolver().query(EpisodeProvider.FINISHED_URI, null, null, null, null);
+					break;
+				case TO_DOWNLOAD:
+					c = context.getContentResolver().query(EpisodeProvider.TO_DOWNLOAD_URI, null, null, null, null);
+					break;
+			}
+			if (c == null) {
+				o.onError(new Exception("cursor came back null"));
+				return;
+			}
+
+			while (c.moveToNext())
+				o.onNext(new EpisodeData(new EpisodeCursor(c)));
+			o.onCompleted();
+
+			c.close();
 		});
 		ob.subscribeOn(Schedulers.io());
 		ob.observeOn(AndroidSchedulers.mainThread());

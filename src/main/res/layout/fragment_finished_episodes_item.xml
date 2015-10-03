@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    >
+    app:cardCornerRadius="5dp"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -29,8 +32,8 @@
             android:layout_marginStart="10dp"
             android:layout_toRightOf="@+id/thumbnail"
             android:layout_toEndOf="@+id/thumbnail"
-            android:textSize="24sp"
-            tools:text="Episode Name"
+            android:textSize="18sp"
+            tools:text="Episode Name that is VERY VERY LONG"
             />
 
         <TextView
@@ -41,6 +44,7 @@
             android:layout_alignStart="@id/title"
             android:layout_below="@id/title"
             android:layout_marginTop="4dp"
+            android:textSize="16sp"
             tools:text="Subscription Name"
             />
 
@@ -55,35 +59,41 @@
             tools:text="Finished on June 12, 2014"
             />
 
-        <Button
-            android:id="@+id/playlist"
+        <View
+            android:id="@+id/divider"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Podax.Button"
-            android:text="@string/add_to_playlist"
-            android:textAllCaps="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@id/date"
-            android:focusable="false" />
+            android:layout_height="2dp"
+            android:background="#333333"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/date" />
 
-        <Button
+        <TextView
             android:id="@+id/play"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Widget.Podax.Button"
             android:text="@string/play"
             android:textAllCaps="true"
-            android:layout_alignBaseline="@id/playlist"
-            android:layout_toLeftOf="@id/playlist"
-            android:layout_toStartOf="@id/playlist"
-            android:focusable="false" />
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="20dp"
+            android:layout_below="@id/divider"
+            android:textColor="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/playlist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_to_playlist"
+            android:textAllCaps="true"
+            android:layout_toLeftOf="@id/play"
+            android:layout_toStartOf="@id/play"
+            android:layout_alignBaseline="@id/play" />
 
         <!-- fixes issue where card height doesn't cover controls -->
         <View
             android:layout_width="wrap_content"
             android:layout_height="1dp"
-            android:layout_below="@id/playlist" />
+            android:layout_below="@id/play" />
 
     </RelativeLayout>
 </android.support.v7.widget.CardView>
