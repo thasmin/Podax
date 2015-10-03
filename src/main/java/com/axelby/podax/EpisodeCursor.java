@@ -60,19 +60,11 @@ public class EpisodeCursor {
 		return prefs.getLong(PREF_ACTIVE, -1);
 	}
 
-	public static Observable<EpisodeCursor> getObservableCursor(Context context, long episodeId) {
-		return Observable.create(o -> {
-			EpisodeCursor cursor = getCursor(context, episodeId);
-			o.onNext(cursor);
-			o.onCompleted();
-		});
-	}
-
-	private static PublishSubject<EpisodeCursor> _changeWatcher = PublishSubject.create();
-	public static PublishSubject<EpisodeCursor> getChangeWatcher() { return _changeWatcher; }
-
-	private static BehaviorSubject<EpisodeData> _activeWatcher = BehaviorSubject.create();
-	public static BehaviorSubject<EpisodeData> getActiveEpisodeWatcher() { return _activeWatcher; }
+	private static PublishSubject<EpisodeCursor> _changeSubject = PublishSubject.create();
+	public static void notifyChange(EpisodeCursor c) { _changeSubject.onNext(c); }
+	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new);
+	public static Observable<EpisodeData> getEpisodeWatcher() { return _changeWatcher; }
+	public static Observable<EpisodeData> getEpisodeWatcher(long id) { return _changeWatcher.filter(d -> d.getId() == id); }
 
 	private static Uri getContentUri(long id) {
 		return ContentUris.withAppendedId(EpisodeProvider.URI, id);

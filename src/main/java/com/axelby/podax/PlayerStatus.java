@@ -4,7 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 
+import rx.subjects.BehaviorSubject;
+
 public class PlayerStatus {
+
+	public static BehaviorSubject<PlayerStatus> asObservable = BehaviorSubject.create();
+	public static void notify(Context context) { asObservable.onNext(getCurrentState(context)); }
 
 	public static PlayerStatus getCurrentState(Context context) {
 		String[] projection = {

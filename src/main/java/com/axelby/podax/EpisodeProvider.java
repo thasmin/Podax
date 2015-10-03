@@ -289,7 +289,7 @@ public class EpisodeProvider extends ContentProvider {
 			Cursor c = db.query("podcasts", null, where, whereArgs, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
-					EpisodeCursor.getChangeWatcher().onNext(new EpisodeCursor(c));
+					EpisodeCursor.notifyChange(new EpisodeCursor(c));
 				c.close();
 			}
 
@@ -316,7 +316,7 @@ public class EpisodeProvider extends ContentProvider {
 
 			db.update("podcasts", values, "_id = ?", new String[]{String.valueOf(activeEpisodeId)});
 			getContext().getContentResolver().notifyChange(ACTIVE_EPISODE_URI, null);
-			notifyActiveChange(activeEpisodeId);
+			notifyActiveChange();
 			getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, activeEpisodeId), null);
 			ActiveEpisodeReceiver.notifyExternal(getContext());
 
@@ -335,10 +335,10 @@ public class EpisodeProvider extends ContentProvider {
 					Editor editor = prefs.edit();
 					if (activeEpisodeId != null) {
 						editor.putLong(PREF_ACTIVE, activeEpisodeId);
-						notifyActiveChange(activeEpisodeId);
+						notifyActiveChange();
 					} else {
 						editor.remove(PREF_ACTIVE);
-						notifyActiveChange(-1);
+						notifyActiveChange();
 					}
 					editor.apply();
 
@@ -400,7 +400,7 @@ public class EpisodeProvider extends ContentProvider {
 			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
 		if (episodeId == activeEpisodeId) {
 			getContext().getContentResolver().notifyChange(ACTIVE_EPISODE_URI, null);
-			notifyActiveChange(activeEpisodeId);
+			notifyActiveChange();
 			ActiveEpisodeReceiver.notifyExternal(getContext());
 		}
 		// if the current episode has updated the position but it's not from the player, tell the player to update
@@ -417,13 +417,13 @@ public class EpisodeProvider extends ContentProvider {
 	private void notifyChange(long episodeId) {
 		EpisodeCursor episodeCursor = EpisodeCursor.getCursor(getContext(), episodeId);
 		if (episodeCursor != null) {
-			EpisodeCursor.getChangeWatcher().onNext(episodeCursor);
+			EpisodeCursor.notifyChange(episodeCursor);
 			episodeCursor.closeCursor();
 		}
 	}
 
-	private void notifyActiveChange(long episodeId) {
-		EpisodeCursor.getActiveEpisodeWatcher().onNext(EpisodeData.create(getContext(), episodeId));
+	private void notifyActiveChange() {
+		PlayerStatus.notify(getContext());
 	}
 
 	private boolean hasFTSValues(ContentValues values) {

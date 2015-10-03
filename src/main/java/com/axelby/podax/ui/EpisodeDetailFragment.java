@@ -1,11 +1,8 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.app.LoaderManager;
 import android.content.ContentUris;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -46,14 +43,14 @@ import java.util.Locale;
 
 import javax.annotation.Nullable;
 
-import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class EpisodeDetailFragment extends RxFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-	private static final int CURSOR_PODCAST = 1;
-	private static final int CURSOR_ACTIVE = 2;
-
+public class EpisodeDetailFragment extends RxFragment {
 	private long _podcastId;
+	private boolean _onActive;
+
+	private Subscriber<EpisodeData> _episodeDataSubscriber;
 
 	private ImageView _subscriptionImage;
 	private TextView _titleView;
@@ -124,35 +121,20 @@ public class EpisodeDetailFragment extends RxFragment implements LoaderManager.L
 	};
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
 
-		if (getArguments() != null && getArguments().containsKey(Constants.EXTRA_EPISODE_ID))
-			getLoaderManager().initLoader(CURSOR_PODCAST, getArguments(), this);
-		else {
-			long activeEpisodeId = EpisodeCursor.getActiveEpisodeId(getActivity());
-			if (activeEpisodeId == -1) {
-				Log.w("EpisodeDetailFragment", "no active episode to show");
-				return;
-			}
-			EpisodeCursor.getObservableCursor(getActivity(), activeEpisodeId)
-				.observeOn(AndroidSchedulers.mainThread())
-				.compose(bindToLifecycle())
-				.subscribe(
-					cursor -> {
-						initializeUI(cursor);
-						cursor.closeCursor();
-					},
-					e -> Log.e("EpisodeDetailFragment", "unable to initialize active episode", e)
-				);
-			EpisodeCursor.getActiveEpisodeWatcher()
-				.observeOn(AndroidSchedulers.mainThread())
-				.compose(bindToLifecycle())
-				.subscribe(
-					this::updateControls,
-					e -> Log.e("EpisodeDetailFragment", "unable to watch active episode", e)
-				);
+		if (getArguments() != null && getArguments().containsKey(Constants.EXTRA_EPISODE_ID)) {
+			_podcastId = getArguments().getLong(Constants.EXTRA_EPISODE_ID);
+		} else {
+			_podcastId = EpisodeCursor.getActiveEpisodeId(getActivity());
+			_onActive = true;
 		}
+
+		if (_podcastId == -1) {
+			Log.w("EpisodeDetailFragment", "no active episode to show");
+		}
+
 	}
 
 	@Override
@@ -237,7 +219,40 @@ public class EpisodeDetailFragment extends RxFragment implements LoaderManager.L
 			if (uri != null)
 				startActivity(new Intent(Intent.ACTION_VIEW, uri));
 		});
+
+		// initialize data and set up subscribers
+		initializeUI(EpisodeData.create(getActivity(), _podcastId));
+		if (_onActive)
+			subscribeToActivePodcastChanges();
+		subscribeToPodcastData();
 	}
+
+	private void subscribeToActivePodcastChanges() {
+		PlayerStatus.asObservable
+			.observeOn(AndroidSchedulers.mainThread())
+			.compose(bindToLifecycle())
+			.subscribe(
+				this::updateControls,
+				e -> Log.e("EpisodeDetailFragment", "unable to watch active episode", e)
+			);
+	}
+
+	private void subscribeToPodcastData() {
+		if (_episodeDataSubscriber == null) {
+			_episodeDataSubscriber = new Subscriber<EpisodeData>() {
+				@Override public void onCompleted() { }
+				@Override public void onError(Throwable e) { Log.e("EpisodeDetailFragment", "unable to initialize active episode", e); }
+				@Override public void onNext(EpisodeData episodeData) { initializeUI(episodeData); }
+			};
+		} else {
+			_episodeDataSubscriber.unsubscribe();
+		}
+
+		EpisodeData.getObservable(getActivity(), _podcastId)
+			.compose(bindToLifecycle())
+			.subscribe(_episodeDataSubscriber);
+	}
+
 
 	private void showToast(final String message) {
 		getActivity().runOnUiThread(() -> {
@@ -246,7 +261,7 @@ public class EpisodeDetailFragment extends RxFragment implements LoaderManager.L
 		});
 	}
 
-	private void initializeUI(EpisodeCursor episode) {
+	private void initializeUI(EpisodeData episode) {
 		_podcastId = episode.getId();
 
 		_titleView.setText(episode.getTitle());
@@ -312,29 +327,8 @@ public class EpisodeDetailFragment extends RxFragment implements LoaderManager.L
 				_viewInBrowserButton.setVisibility(View.GONE);
 			}
 		}
-	}
 
-	private void updateControls(EpisodeData episode) {
-		if (episode == null)
-			return;
-
-		if (episode.getDuration() == 0) {
-			_position.setText(Helper.getTimeString(episode.getLastPosition()));
-			_duration.setText("");
-			_seekbar.setEnabled(false);
-		} else if (!_seekbar_dragging) {
-			_position.setText(Helper.getTimeString(episode.getLastPosition()));
-			_duration.setText("-" + Helper.getTimeString(episode.getDuration() - episode.getLastPosition()));
-			_seekbar.setProgress(episode.getLastPosition());
-			_seekbar.setMax(episode.getDuration());
-			_seekbar.setEnabled(true);
-		}
-
-		PlayerStatus status = PlayerStatus.getCurrentState(getActivity());
-		boolean isPlaying = status.isPlaying() && status.getEpisodeId() == _podcastId;
-		int playResource = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
-		_playButton.setImageResource(playResource);
-
+		// playlist position button
 		if (episode.getPlaylistPosition() == null) {
 			_playlistButton.setText(R.string.add);
 			_playlistPosition.setText("");
@@ -346,45 +340,31 @@ public class EpisodeDetailFragment extends RxFragment implements LoaderManager.L
 		}
 	}
 
-	@Override
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = new String[]{
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_TITLE,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
-				EpisodeProvider.COLUMN_DESCRIPTION,
-				EpisodeProvider.COLUMN_DURATION,
-				EpisodeProvider.COLUMN_LAST_POSITION,
-				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-				EpisodeProvider.COLUMN_PAYMENT,
-				EpisodeProvider.COLUMN_LINK,
-		};
-
-		if (id == CURSOR_PODCAST && args != null && args.containsKey(Constants.EXTRA_EPISODE_ID)) {
-			long podcastId = args.getLong(Constants.EXTRA_EPISODE_ID);
-			Uri uri = ContentUris.withAppendedId(EpisodeProvider.URI, podcastId);
-			return new CursorLoader(getActivity(), uri, projection, null, null, null);
-		} else if (id == CURSOR_ACTIVE) {
-			return new CursorLoader(getActivity(), EpisodeProvider.ACTIVE_EPISODE_URI, projection, null, null, null);
-		}
-		return null;
-	}
-
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		if (getActivity() == null)
+	private void updateControls(PlayerStatus status) {
+		if (status == null)
 			return;
 
-		if (!cursor.moveToFirst())
-            return;
+		if (status.getEpisodeId() != _podcastId) {
 
-		updateControls(new EpisodeData(new EpisodeCursor(cursor)));
+		}
+
+		if (status.getDuration() == 0) {
+			_position.setText(Helper.getTimeString(status.getPosition()));
+			_duration.setText("");
+			_seekbar.setEnabled(false);
+		} else if (!_seekbar_dragging) {
+			_position.setText(Helper.getTimeString(status.getPosition()));
+			_duration.setText("-" + Helper.getTimeString(status.getDuration() - status.getPosition()));
+			_seekbar.setProgress(status.getPosition());
+			_seekbar.setMax(status.getDuration());
+			_seekbar.setEnabled(true);
+		}
+
+		boolean isPlaying = status.isPlaying() && status.getEpisodeId() == _podcastId;
+		int playResource = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
+		_playButton.setImageResource(playResource);
+
 	}
-
-	@Override
-	public void onLoaderReset(Loader<Cursor> loader) { }
 
 	@Override
 	public void onResume() {
@@ -397,10 +377,5 @@ public class EpisodeDetailFragment extends RxFragment implements LoaderManager.L
 				return null;
 			}
 		}.execute();
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
 	}
 }

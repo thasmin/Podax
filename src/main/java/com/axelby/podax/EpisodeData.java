@@ -4,6 +4,10 @@ import android.content.Context;
 
 import java.util.Date;
 
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
 public class EpisodeData {
 
 	// TODO: change Date to LocalDateTime
@@ -112,11 +116,23 @@ public class EpisodeData {
 		return _gpodderUpdateTimestamp;
 	}
 
-	public String getPayment() {
+	public String getPaymentUrl() {
 		return _payment;
 	}
 
 	public Date getFinishedDate() {
 		return _finishedDate;
 	}
+
+	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
+		Observable<EpisodeData> ob = Observable.create(o -> {
+			EpisodeData data = EpisodeData.create(context, episodeId);
+			o.onNext(data);
+			o.onCompleted();
+		});
+		ob.subscribeOn(Schedulers.io());
+		ob.observeOn(AndroidSchedulers.mainThread());
+		return ob;
+	}
+
 }
