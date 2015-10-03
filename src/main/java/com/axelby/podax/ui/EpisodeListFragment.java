@@ -96,7 +96,6 @@ public class EpisodeListFragment extends RxFragment {
 		Observable<Long> subIdObservable;
 		if (_subscriptionId != -1) {
 			subIdObservable = Observable.just(_subscriptionId);
-			setupHeader(_subscriptionId);
 		} else {
 			// get subscription id from either rss url or itunes id url
 			Observable<String> rssUrlObservable;

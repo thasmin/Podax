@@ -131,7 +131,7 @@ public class UpdateService extends IntentService {
 				expireDownloadedFiles();
 
 				String[] projection = {EpisodeProvider.COLUMN_ID};
-				Cursor c = getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
+				Cursor c = getContentResolver().query(EpisodeProvider.TO_DOWNLOAD_URI, projection, null, null, null);
 				if (c != null) {
 					while (c.moveToNext())
 						handleIntent(createDownloadEpisodeIntent(this, c.getLong(0)));

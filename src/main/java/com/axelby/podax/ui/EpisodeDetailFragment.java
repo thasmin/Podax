@@ -1,7 +1,6 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.CursorLoader;
@@ -14,6 +13,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +27,7 @@ import android.widget.TextView;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
@@ -35,6 +36,7 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
+import com.trello.rxlifecycle.components.RxFragment;
 
 import org.shredzone.flattr4j.exception.FlattrException;
 import org.shredzone.flattr4j.exception.ForbiddenException;
@@ -44,7 +46,10 @@ import java.util.Locale;
 
 import javax.annotation.Nullable;
 
-public class EpisodeDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+
+public class EpisodeDetailFragment extends RxFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int CURSOR_PODCAST = 1;
 	private static final int CURSOR_ACTIVE = 2;
 
@@ -124,8 +129,30 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 
 		if (getArguments() != null && getArguments().containsKey(Constants.EXTRA_EPISODE_ID))
 			getLoaderManager().initLoader(CURSOR_PODCAST, getArguments(), this);
-		else
-			getLoaderManager().initLoader(CURSOR_ACTIVE, null, this);
+		else {
+			long activeEpisodeId = EpisodeCursor.getActiveEpisodeId(getActivity());
+			if (activeEpisodeId == -1) {
+				Log.w("EpisodeDetailFragment", "no active episode to show");
+				return;
+			}
+			EpisodeCursor.getObservableCursor(getActivity(), activeEpisodeId)
+				.observeOn(AndroidSchedulers.mainThread())
+				.compose(bindToLifecycle())
+				.subscribe(
+					cursor -> {
+						initializeUI(cursor);
+						cursor.closeCursor();
+					},
+					e -> Log.e("EpisodeDetailFragment", "unable to initialize active episode", e)
+				);
+			EpisodeCursor.getActiveEpisodeWatcher()
+				.observeOn(AndroidSchedulers.mainThread())
+				.compose(bindToLifecycle())
+				.subscribe(
+					this::updateControls,
+					e -> Log.e("EpisodeDetailFragment", "unable to watch active episode", e)
+				);
+		}
 	}
 
 	@Override
@@ -220,6 +247,8 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 	}
 
 	private void initializeUI(EpisodeCursor episode) {
+		_podcastId = episode.getId();
+
 		_titleView.setText(episode.getTitle());
 		_subscriptionTitleView.setText(episode.getSubscriptionTitle());
 		Bitmap subscriptionThumbnail = SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId());
@@ -285,7 +314,10 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		}
 	}
 
-	private void updateControls(EpisodeCursor episode) {
+	private void updateControls(EpisodeData episode) {
+		if (episode == null)
+			return;
+
 		if (episode.getDuration() == 0) {
 			_position.setText(Helper.getTimeString(episode.getLastPosition()));
 			_duration.setText("");
@@ -348,12 +380,7 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 		if (!cursor.moveToFirst())
             return;
 
-		EpisodeCursor episode = new EpisodeCursor(cursor);
-		if (episode.getId() != _podcastId) {
-			initializeUI(episode);
-		}
-		_podcastId = episode.getId();
-		updateControls(episode);
+		updateControls(new EpisodeData(new EpisodeCursor(cursor)));
 	}
 
 	@Override
@@ -370,5 +397,10 @@ public class EpisodeDetailFragment extends Fragment implements LoaderManager.Loa
 				return null;
 			}
 		}.execute();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
 	}
 }

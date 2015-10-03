@@ -27,6 +27,7 @@ public class EpisodeProvider extends ContentProvider {
 	private static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.podcast";
 	private static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.podcast";
 	public static final Uri PLAYLIST_URI = Uri.withAppendedPath(EpisodeProvider.URI, "playlist");
+	public static final Uri TO_DOWNLOAD_URI = Uri.withAppendedPath(EpisodeProvider.URI, "to_download");
 	public static final Uri SEARCH_URI = Uri.withAppendedPath(EpisodeProvider.URI, "search");
 	public static final Uri EXPIRED_URI = Uri.withAppendedPath(EpisodeProvider.URI, "expired");
 	public static final Uri ACTIVE_EPISODE_URI = Uri.parse("content://" + AUTHORITY + "/active");
@@ -283,6 +284,15 @@ public class EpisodeProvider extends ContentProvider {
 			int count = db.update("podcasts", values, where, whereArgs);
 			// only main uri is notified
 			getContext().getContentResolver().notifyChange(URI, null);
+
+			// tell every listener that every podcast changed
+			Cursor c = db.query("podcasts", null, where, whereArgs, null, null, null);
+			if (c != null) {
+				while (c.moveToNext())
+					EpisodeCursor.getChangeWatcher().onNext(new EpisodeCursor(c));
+				c.close();
+			}
+
 			return count;
 		}
 
@@ -304,10 +314,14 @@ public class EpisodeProvider extends ContentProvider {
 			Stats.addListenTime(getContext(), (values.getAsInteger(COLUMN_LAST_POSITION) - lastPositionCursor.getInt(0)) / 1000.0f);
 			lastPositionCursor.close();
 
-			db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activeEpisodeId) });
+			db.update("podcasts", values, "_id = ?", new String[]{String.valueOf(activeEpisodeId)});
 			getContext().getContentResolver().notifyChange(ACTIVE_EPISODE_URI, null);
+			notifyActiveChange(activeEpisodeId);
 			getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, activeEpisodeId), null);
 			ActiveEpisodeReceiver.notifyExternal(getContext());
+
+			notifyChange(activeEpisodeId);
+
 			return 1;
 		}
 
@@ -319,10 +333,13 @@ public class EpisodeProvider extends ContentProvider {
 				if (values.containsKey(COLUMN_ID)) {
 					activeEpisodeId = values.getAsLong(COLUMN_ID);
 					Editor editor = prefs.edit();
-					if (activeEpisodeId != null)
-						editor.putLong(PREF_ACTIVE, values.getAsLong(COLUMN_ID));
-					else
+					if (activeEpisodeId != null) {
+						editor.putLong(PREF_ACTIVE, activeEpisodeId);
+						notifyActiveChange(activeEpisodeId);
+					} else {
 						editor.remove(PREF_ACTIVE);
+						notifyActiveChange(-1);
+					}
 					editor.apply();
 
 					// if we're clearing the active podcast or updating just the ID, don't go to the DB
@@ -378,10 +395,12 @@ public class EpisodeProvider extends ContentProvider {
 		if (values.size() > 0)
 			count += db.update("podcasts", values, where, whereArgs);
 		getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, episodeId), null);
+		notifyChange(episodeId);
 		if (values.containsKey(COLUMN_FILE_SIZE))
 			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
 		if (episodeId == activeEpisodeId) {
 			getContext().getContentResolver().notifyChange(ACTIVE_EPISODE_URI, null);
+			notifyActiveChange(activeEpisodeId);
 			ActiveEpisodeReceiver.notifyExternal(getContext());
 		}
 		// if the current episode has updated the position but it's not from the player, tell the player to update
@@ -393,6 +412,18 @@ public class EpisodeProvider extends ContentProvider {
 			db.update("fts_podcasts", extractFTSValues(values), where, whereArgs);
 
 		return count;
+	}
+
+	private void notifyChange(long episodeId) {
+		EpisodeCursor episodeCursor = EpisodeCursor.getCursor(getContext(), episodeId);
+		if (episodeCursor != null) {
+			EpisodeCursor.getChangeWatcher().onNext(episodeCursor);
+			episodeCursor.closeCursor();
+		}
+	}
+
+	private void notifyActiveChange(long episodeId) {
+		EpisodeCursor.getActiveEpisodeWatcher().onNext(EpisodeData.create(getContext(), episodeId));
 	}
 
 	private boolean hasFTSValues(ContentValues values) {

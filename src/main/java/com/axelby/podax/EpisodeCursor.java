@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 
@@ -11,6 +12,10 @@ import com.axelby.podax.player.AudioPlayerBase;
 
 import java.io.File;
 import java.util.Date;
+
+import rx.Observable;
+import rx.subjects.BehaviorSubject;
+import rx.subjects.PublishSubject;
 
 public class EpisodeCursor {
 
@@ -48,6 +53,26 @@ public class EpisodeCursor {
 			return null;
 		return new EpisodeCursor(c);
 	}
+
+	public static long getActiveEpisodeId(Context context) {
+		final String PREF_ACTIVE = "active";
+		SharedPreferences prefs = context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		return prefs.getLong(PREF_ACTIVE, -1);
+	}
+
+	public static Observable<EpisodeCursor> getObservableCursor(Context context, long episodeId) {
+		return Observable.create(o -> {
+			EpisodeCursor cursor = getCursor(context, episodeId);
+			o.onNext(cursor);
+			o.onCompleted();
+		});
+	}
+
+	private static PublishSubject<EpisodeCursor> _changeWatcher = PublishSubject.create();
+	public static PublishSubject<EpisodeCursor> getChangeWatcher() { return _changeWatcher; }
+
+	private static BehaviorSubject<EpisodeData> _activeWatcher = BehaviorSubject.create();
+	public static BehaviorSubject<EpisodeData> getActiveEpisodeWatcher() { return _activeWatcher; }
 
 	private static Uri getContentUri(long id) {
 		return ContentUris.withAppendedId(EpisodeProvider.URI, id);
