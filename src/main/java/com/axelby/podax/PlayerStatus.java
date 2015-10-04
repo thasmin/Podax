@@ -4,12 +4,16 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.BehaviorSubject;
 
 public class PlayerStatus {
 
-	public static BehaviorSubject<PlayerStatus> asObservable = BehaviorSubject.create();
-	public static void notify(Context context) { asObservable.onNext(getCurrentState(context)); }
+	private static BehaviorSubject<PlayerStatus> _subject = BehaviorSubject.create();
+	private static Observable<PlayerStatus> _asObservable = _subject.observeOn(AndroidSchedulers.mainThread());
+	public static Observable<PlayerStatus> asObservable() { return _asObservable; };
+	public static void notify(Context context) { _subject.onNext(getCurrentState(context)); }
 
 	public static PlayerStatus getCurrentState(Context context) {
 		String[] projection = {

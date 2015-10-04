@@ -228,7 +228,7 @@ public class EpisodeDetailFragment extends RxFragment {
 	}
 
 	private void subscribeToActivePodcastChanges() {
-		PlayerStatus.asObservable
+		PlayerStatus.asObservable()
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(

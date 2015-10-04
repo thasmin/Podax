@@ -14,12 +14,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -27,8 +24,8 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,8 +44,9 @@ import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends RxAppCompatActivity {
 
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
@@ -59,13 +57,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton _play;
     private TextView _episodeTitle;
     private ImageButton _expand;
-
-    private final ContentObserver _activeEpisodeObserver = new ContentObserver(new Handler()) {
-        @Override public void onChange(boolean selfChange) { onChange(selfChange, null); }
-        @Override public void onChange(boolean selfChange, Uri uri) {
-            initializeBottom(PlayerStatus.getCurrentState(MainActivity.this));
-        }
-    };
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -229,6 +220,11 @@ public class MainActivity extends AppCompatActivity {
 		_episodeTitle = (TextView) findViewById(R.id.episodeTitle);
 		_expand = (ImageButton) findViewById(R.id.expand);
 		initializeBottom(PlayerStatus.getCurrentState(this));
+
+		PlayerStatus.asObservable().subscribe(
+			this::initializeBottom,
+			e -> Log.d("MainActivity", "unable to update bottom bar", e)
+		);
 	}
 
 	private void startFragmentActivity(Class<? extends Fragment> fragmentClass) {
@@ -294,12 +290,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        getContentResolver().unregisterContentObserver(_activeEpisodeObserver);
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
 
@@ -312,9 +302,6 @@ public class MainActivity extends AppCompatActivity {
 
 		if (count == 0)
             startActivity(PodaxFragmentActivity.createIntent(this, AddSubscriptionFragment.class, null));
-
-        getContentResolver().registerContentObserver(EpisodeProvider.ACTIVE_EPISODE_URI, false, _activeEpisodeObserver);
-        initializeBottom(PlayerStatus.getCurrentState(this));
     }
 
     @Override
