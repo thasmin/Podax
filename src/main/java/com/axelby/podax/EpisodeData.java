@@ -12,6 +12,7 @@ import java.util.Date;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
 public class EpisodeData {
 
@@ -194,4 +195,9 @@ public class EpisodeData {
 		return ob;
 	}
 
+	private static PublishSubject<EpisodeCursor> _changeSubject = PublishSubject.create();
+	public static void notifyChange(EpisodeCursor c) { _changeSubject.onNext(c); }
+	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new);
+	public static Observable<EpisodeData> getEpisodeWatcher() { return _changeWatcher; }
+	public static Observable<EpisodeData> getEpisodeWatcher(long id) { return _changeWatcher.filter(d -> d.getId() == id); }
 }

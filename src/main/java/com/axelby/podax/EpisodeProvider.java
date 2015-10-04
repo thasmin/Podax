@@ -289,7 +289,7 @@ public class EpisodeProvider extends ContentProvider {
 			Cursor c = db.query("podcasts", null, where, whereArgs, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
-					EpisodeCursor.notifyChange(new EpisodeCursor(c));
+					EpisodeData.notifyChange(new EpisodeCursor(c));
 				c.close();
 			}
 
@@ -417,7 +417,7 @@ public class EpisodeProvider extends ContentProvider {
 	private void notifyChange(long episodeId) {
 		EpisodeCursor episodeCursor = EpisodeCursor.getCursor(getContext(), episodeId);
 		if (episodeCursor != null) {
-			EpisodeCursor.notifyChange(episodeCursor);
+			EpisodeData.notifyChange(episodeCursor);
 			episodeCursor.closeCursor();
 		}
 	}

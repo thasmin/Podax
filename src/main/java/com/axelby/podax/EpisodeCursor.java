@@ -60,12 +60,6 @@ public class EpisodeCursor {
 		return prefs.getLong(PREF_ACTIVE, -1);
 	}
 
-	private static PublishSubject<EpisodeCursor> _changeSubject = PublishSubject.create();
-	public static void notifyChange(EpisodeCursor c) { _changeSubject.onNext(c); }
-	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new);
-	public static Observable<EpisodeData> getEpisodeWatcher() { return _changeWatcher; }
-	public static Observable<EpisodeData> getEpisodeWatcher(long id) { return _changeWatcher.filter(d -> d.getId() == id); }
-
 	private static Uri getContentUri(long id) {
 		return ContentUris.withAppendedId(EpisodeProvider.URI, id);
 	}

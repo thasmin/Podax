@@ -25,9 +25,12 @@ import com.trello.rxlifecycle.components.RxFragment;
 
 import java.text.DateFormat;
 import java.util.List;
+import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.BehaviorSubject;
 
 public class FinishedEpisodeFragment extends RxFragment {
@@ -35,7 +38,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 	private RecyclerView _listView;
 	private View _emptyView;
 
-	private BehaviorSubject<EpisodeData> _t = BehaviorSubject.create();
+	private BehaviorSubject<EpisodeData> _timing = BehaviorSubject.create();
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -45,7 +48,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 
 		_adapter = new PodcastAdapter();
 		EpisodeData.getObservable(activity, EpisodeData.FINISHED)
-			.concatWith(_t)
+			.concatWith(_timing)
 			.toList()
 			.compose(bindToLifecycle())
 			.subscribe(
@@ -69,7 +72,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 
 		_emptyView = view.findViewById(R.id.empty);
 
-		_t.onCompleted();
+		_timing.onCompleted();
 	}
 
 	@Override
@@ -82,7 +85,9 @@ public class FinishedEpisodeFragment extends RxFragment {
 	private class PodcastAdapter extends RecyclerView.Adapter<PodcastAdapter.ViewHolder> {
 
         private final DateFormat _finishedDateFormat = DateFormat.getDateInstance();
+
 		private List<EpisodeData> _episodes;
+		private TreeMap<Long, Integer> _ids = new TreeMap<>();
 
         class ViewHolder extends RecyclerView.ViewHolder {
 			public final View container;
@@ -118,9 +123,28 @@ public class FinishedEpisodeFragment extends RxFragment {
 			_episodes = episodes;
 			notifyDataSetChanged();
 
+			for (int i = 0; i < _episodes.size(); ++i)
+				_ids.put(_episodes.get(i).getId(), i);
+
+			EpisodeData.getEpisodeWatcher()
+				.observeOn(AndroidSchedulers.mainThread())
+				.compose(bindToLifecycle())
+				.subscribe(
+					_adapter::updateEpisode,
+					e -> Log.e("FinishedEpisodeFragment", "error while updating episode", e)
+				);
+
 			boolean isEmpty = episodes.size() == 0;
 			_emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 			_listView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+		}
+
+		public void updateEpisode(EpisodeData episode) {
+			Integer position = _ids.get(episode.getId());
+			if (position == null)
+				return;
+			_episodes.set(position, episode);
+			notifyItemChanged(position);
 		}
 
         final View.OnClickListener _playHandler = view -> {
