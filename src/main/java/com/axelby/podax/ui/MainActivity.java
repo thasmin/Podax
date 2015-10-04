@@ -221,10 +221,12 @@ public class MainActivity extends RxAppCompatActivity {
 		_expand = (ImageButton) findViewById(R.id.expand);
 		initializeBottom(PlayerStatus.getCurrentState(this));
 
-		PlayerStatus.asObservable().subscribe(
-			this::initializeBottom,
-			e -> Log.d("MainActivity", "unable to update bottom bar", e)
-		);
+		PlayerStatus.asObservable()
+			.compose(bindToLifecycle())
+			.subscribe(
+				this::initializeBottom,
+				e -> Log.d("MainActivity", "unable to update bottom bar", e)
+			);
 	}
 
 	private void startFragmentActivity(Class<? extends Fragment> fragmentClass) {
