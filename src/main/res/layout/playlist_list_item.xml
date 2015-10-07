@@ -76,30 +76,29 @@
             android:layout_marginBottom="2dp"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
-        <Button
+        <TextView
             android:id="@+id/play"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/play"
             android:textAllCaps="true"
-            style="@style/Widget.Podax.Button"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_below="@id/thumbnail"
             android:layout_marginTop="20dp"
-            android:focusable="false" />
+            android:layout_margin="10dp"
+            android:textColor="?attr/colorPrimary" />
 
-        <Button
+        <TextView
             android:id="@+id/remove"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/remove"
             android:textAllCaps="true"
-            style="@style/Widget.Podax.Button"
             android:layout_toLeftOf="@id/play"
             android:layout_toStartOf="@id/play"
             android:layout_alignBaseline="@+id/play"
-            android:focusable="false" />
+            android:layout_margin="10dp" />
 
         <View
             android:layout_height="10dp"
