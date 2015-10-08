@@ -1,10 +1,7 @@
 package com.axelby.podax.ui;
 
-import android.app.Fragment;
-import android.app.LoaderManager;
+import android.app.Activity;
 import android.content.Context;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -14,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +24,7 @@ import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
+import com.trello.rxlifecycle.components.RxFragment;
 
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
@@ -39,17 +38,28 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-public class LatestActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
+public class LatestActivityFragment extends RxFragment {
 
 	private LatestActivityAdapter _adapter;
 	private RecyclerView _listView;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
 
 		_adapter = new LatestActivityAdapter();
-		getLoaderManager().initLoader(0, null, this);
+		Observable.just(activity.getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI, null, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC"))
+			.subscribeOn(Schedulers.io())
+			.observeOn(AndroidSchedulers.mainThread())
+			.compose(bindToLifecycle())
+			.subscribe(
+				this::setCursor,
+				e -> Log.e("LatestActivityFragment", "unable to load latest activity", e)
+			);
 	}
 
 	@Override
@@ -63,7 +73,6 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 
 		_listView = (RecyclerView) view.findViewById(R.id.recyclerview);
 		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
-		_listView.setItemAnimator(new DefaultItemAnimator());
 
 		CheckBox showAutomatic = (CheckBox) view.findViewById(R.id.show_automatic);
 		showAutomatic.setOnCheckedChangeListener((compoundButton, value) ->
@@ -79,11 +88,7 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 		_listView.setAdapter(_adapter);
 	}
 
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		return new CursorLoader(getActivity(), EpisodeProvider.LATEST_ACTIVITY_URI, null, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC");
-	}
-
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+	public void setCursor(Cursor cursor) {
 		// could really use algebraic data types here
 		List<Object> items = new ArrayList<>(cursor.getCount() * 2);
 		String lastPeriod = null;
@@ -118,14 +123,6 @@ public class LatestActivityFragment extends Fragment implements LoaderManager.Lo
 
 		getActivity().getSharedPreferences("latest_activity", Context.MODE_PRIVATE)
 				.edit().putLong("last_check", Instant.now().getMillis() / 1000).apply();
-	}
-
-	public void onLoaderReset(Loader<Cursor> loader) {
-		if (getActivity() == null)
-			return;
-
-		_adapter.clear();
-		_adapter.notifyDataSetChanged();
 	}
 
 	private class LatestActivityAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
