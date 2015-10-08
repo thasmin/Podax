@@ -1,14 +1,12 @@
 package com.axelby.podax.ui;
 
-import android.app.Fragment;
-import android.app.LoaderManager;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,13 +20,18 @@ import com.axelby.podax.R;
 import com.axelby.podax.Stats;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
+import com.trello.rxlifecycle.components.RxFragment;
 
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
 // TODO: localize, add "find new subscriptions" button
-public class WeeklyPlannerFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class WeeklyPlannerFragment extends RxFragment {
 	private TextView _listenTime;
 	private TextView _autoAddTime;
 	private TextView _diffTime;
@@ -45,10 +48,16 @@ public class WeeklyPlannerFragment extends Fragment implements LoaderManager.Loa
 	};
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
 
-		getLoaderManager().initLoader(0, null, this);
+		Observable.just(activity.getContentResolver().query(SubscriptionProvider.URI, null, null, null, null))
+			.subscribeOn(Schedulers.io())
+			.observeOn(AndroidSchedulers.mainThread())
+			.subscribe(
+				this::setSubscriptions,
+				e -> Log.e("WeeklyPlannerFragment", "unable to retrieve subscriptions", e)
+			);
 	}
 
 	@Override
@@ -111,41 +120,21 @@ public class WeeklyPlannerFragment extends Fragment implements LoaderManager.Loa
 		_diffLabel.setText(autoAdded > weekListenTime ? R.string.extra : R.string.shortage);
 	}
 
-	@Override
-	public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-		if (id == 0)
-			return new CursorLoader(getActivity(), SubscriptionProvider.URI, null, null, null, null);
+	public void setSubscriptions(Cursor cursor) {
+		boolean isEmpty = cursor.getCount() == 0;
+		while (_subList.getChildCount() > 3)
+			_subList.removeViewAt(3);
+		_subEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
-		return null;
-	}
-
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		if (loader.getId() == 0) {
-			boolean isEmpty = cursor.getCount() == 0;
-			while (_subList.getChildCount() > 3)
-				_subList.removeViewAt(3);
-			_subEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-
-			LayoutInflater inflater = LayoutInflater.from(getActivity());
-			while (cursor.moveToNext()) {
-				SubscriptionCursor sub = new SubscriptionCursor(cursor);
-				CheckBox cb = (CheckBox) inflater.inflate(R.layout.checkbox, _subList, false);
-				cb.setText(sub.getTitle());
-				cb.setTag(sub.getId());
-				cb.setChecked(sub.areNewEpisodesAddedToPlaylist());
-				cb.setOnCheckedChangeListener(_subCheckHandler);
-				_subList.addView(cb);
-			}
-		}
-	}
-
-	@Override
-	public void onLoaderReset(Loader<Cursor> loader) {
-		if (loader.getId() == 0) {
-			while (_subList.getChildCount() > 3)
-				_subList.removeViewAt(3);
-			_subEmpty.setVisibility(View.VISIBLE);
+		LayoutInflater inflater = LayoutInflater.from(getActivity());
+		while (cursor.moveToNext()) {
+			SubscriptionCursor sub = new SubscriptionCursor(cursor);
+			CheckBox cb = (CheckBox) inflater.inflate(R.layout.checkbox, _subList, false);
+			cb.setText(sub.getTitle());
+			cb.setTag(sub.getId());
+			cb.setChecked(sub.areNewEpisodesAddedToPlaylist());
+			cb.setOnCheckedChangeListener(_subCheckHandler);
+			_subList.addView(cb);
 		}
 	}
 }
