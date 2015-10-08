@@ -27,6 +27,7 @@ import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 
+// TODO: localize, add "find new subscriptions" button
 public class WeeklyPlannerFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private TextView _listenTime;
 	private TextView _autoAddTime;
@@ -65,11 +66,6 @@ public class WeeklyPlannerFragment extends Fragment implements LoaderManager.Loa
 		_diffLabel = (TextView) view.findViewById(R.id.diff_label);
 		_subList = (ViewGroup) view.findViewById(R.id.subscription_list);
 		_subEmpty = view.findViewById(R.id.subscription_empty);
-
-		View findNew = view.findViewById(R.id.add_subscription);
-		findNew.setOnClickListener(view1 ->
-			startActivity(PodaxFragmentActivity.createIntent(getActivity(), AddSubscriptionFragment.class, null))
-		);
 	}
 
 	@Override

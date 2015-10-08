@@ -14,10 +14,6 @@
               android:icon="@drawable/ic_menu_done_all"
               android:title="@string/finished_episodes" />
 
-        <item android:id="@+id/add_subscription"
-              android:icon="@drawable/ic_menu_add"
-              android:title="@string/add_subscription" />
-
         <item android:id="@+id/gpodder"
               android:icon="@drawable/ic_menu_gpoddernet"
               android:title="@string/gpodder_sync" />

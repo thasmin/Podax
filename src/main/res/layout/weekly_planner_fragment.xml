@@ -136,12 +136,4 @@
 		</LinearLayout>
 	</ScrollView>
 
-	<Button
-		android:id="@+id/add_subscription"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_gravity="center_horizontal"
-		android:text="Find New Subscriptions"
-		style="@style/Widget.Podax.Button"
-		/>
 </LinearLayout>

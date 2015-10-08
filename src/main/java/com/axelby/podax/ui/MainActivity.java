@@ -157,9 +157,6 @@ public class MainActivity extends RxAppCompatActivity {
 				case R.id.finished_episodes:
 					startFragmentActivity(FinishedEpisodeFragment.class);
 					return true;
-				case R.id.add_subscription:
-					startFragmentActivity(AddSubscriptionFragment.class);
-					return true;
 				case R.id.gpodder:
 					handleGPodder();
 					return true;
@@ -302,8 +299,11 @@ public class MainActivity extends RxAppCompatActivity {
 		int count = cursor.getCount();
 		cursor.close();
 
-		if (count == 0)
-            startActivity(PodaxFragmentActivity.createIntent(this, AddSubscriptionFragment.class, null));
+		if (count == 0) {
+			TabLayout.Tab tabAt = _tabs.getTabAt(1);
+			if (tabAt != null)
+				tabAt.select();
+		}
     }
 
     @Override
