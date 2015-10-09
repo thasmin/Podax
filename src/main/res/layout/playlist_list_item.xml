@@ -82,11 +82,11 @@
             android:layout_height="wrap_content"
             android:text="@string/play"
             android:textAllCaps="true"
+            android:textStyle="bold"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_below="@id/thumbnail"
-            android:layout_marginTop="20dp"
-            android:layout_margin="10dp"
+            android:layout_margin="20dp"
             android:textColor="?attr/colorPrimary" />
 
         <TextView
@@ -95,16 +95,12 @@
             android:layout_height="wrap_content"
             android:text="@string/remove"
             android:textAllCaps="true"
+            android:textStyle="bold"
             android:layout_toLeftOf="@id/play"
             android:layout_toStartOf="@id/play"
             android:layout_alignBaseline="@+id/play"
-            android:layout_margin="10dp" />
-
-        <View
-            android:layout_height="10dp"
-            android:layout_width="0dp"
-            android:layout_below="@id/downloaded"
-            />
+            android:layout_margin="20dp"
+            android:textColor="?attr/colorPrimary" />
 
     </RelativeLayout>
 
