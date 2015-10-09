@@ -29,10 +29,6 @@ public class PodcastFetcher {
 		private Context _context = null;
 		private final long _category;
 
-		public PodcastFetcher(Context context) {
-			this(context, 0);
-		}
-
 		public PodcastFetcher(Context context, long category) {
 			_context = context;
 			_category = category;
@@ -143,7 +139,7 @@ public class PodcastFetcher {
 
 			for (Podcast p : podcasts) {
 				ContentValues values = new ContentValues(8);
-				values.put("_id", p.id);
+				values.put("_id", Long.valueOf(String.valueOf(p.category) + String.valueOf(p.id)));
 				values.put("date", p.date.toDate().getTime());
 				values.put("category", p.category);
 				values.put("position", p.position);

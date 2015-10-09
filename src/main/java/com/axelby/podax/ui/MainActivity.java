@@ -72,8 +72,6 @@ public class MainActivity extends RxAppCompatActivity {
         notificationManager.cancel(Constants.SUBSCRIPTION_UPDATE_ERROR);
 		notificationManager.cancel(Constants.NOTIFICATION_DOWNLOAD_ERROR);
 
-        BootReceiver.setupAlarms(getApplicationContext());
-
         if (!isPlayerServiceRunning())
             PlayerStatus.updateState(this, PlayerStatus.PlayerStates.STOPPED);
 

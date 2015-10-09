@@ -3,7 +3,6 @@ package com.axelby.podax;
 import android.app.Application;
 import android.os.Build;
 import android.webkit.WebView;
-import android.widget.Toast;
 
 import com.facebook.stetho.Stetho;
 
@@ -25,9 +24,9 @@ public class PodaxApplication extends Application {
 
 	@Override
 	public void onCreate() {
-        if (!PodaxLog.isDebuggable(this)) {
+        if (!PodaxLog.isDebuggable(this))
 			ACRA.init(this);
-		}
+
 		super.onCreate();
 
 		if (PodaxLog.isDebuggable(this)) {
@@ -36,6 +35,12 @@ public class PodaxApplication extends Application {
 			}
 
 			Stetho.initializeWithDefaults(this);
+
+			Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
+				PodaxLog.log(this, "error: " + ex.getMessage());
+				for (StackTraceElement ste : ex.getStackTrace())
+					PodaxLog.log(this, "  " + ste.toString());
+			});
 		}
 
 		JodaTimeAndroid.init(this);
@@ -43,6 +48,7 @@ public class PodaxApplication extends Application {
 		PodaxLog.ensureRemoved(this);
 
 		MediaButtonIntentReceiver.initialize(this);
+		BootReceiver.setupAlarms(getApplicationContext());
 	}
 
 }
