@@ -1,21 +1,17 @@
 package com.axelby.podax.ui;
 
-import android.app.Fragment;
-import android.app.LoaderManager;
+import android.app.Activity;
 import android.content.ContentValues;
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,7 +24,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeDownloader;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
@@ -36,12 +32,18 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.UpdateService;
+import com.trello.rxlifecycle.components.RxFragment;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
-public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+import rx.Subscriber;
+
+public class PlaylistFragment extends RxFragment {
 	private PlaylistListAdapter _adapter;
 
 	private ImageView _overlay;
@@ -139,13 +141,19 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 	private RecyclerView _listView;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
 
 		setHasOptionsMenu(true);
 
 		_adapter = new PlaylistListAdapter();
-		getLoaderManager().initLoader(0, null, this);
+		EpisodeData.getObservables(activity, EpisodeData.PLAYLIST)
+			.toList()
+			.compose(bindToLifecycle())
+			.subscribe(
+				_adapter::setEpisodes,
+				e -> Log.e("PlaylistFragment", "unable to retrieve episodes", e)
+			);
 	}
 
 	@Override
@@ -185,32 +193,6 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 		return super.onOptionsItemSelected(item);
 	}
 
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = new String[]{
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_TITLE,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
-				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-				EpisodeProvider.COLUMN_FILE_SIZE,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
-				EpisodeProvider.COLUMN_DURATION,
-		};
-		return new CursorLoader(getActivity(), EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
-	}
-
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		_adapter.changeCursor(cursor);
-	}
-
-	public void onLoaderReset(Loader<Cursor> loader) {
-		if (getActivity() == null)
-			return;
-
-		_adapter.changeCursor(null);
-	}
-
 	private Bitmap viewToBitmap(View view) {
 		Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
 		Canvas canvas = new Canvas(bitmap);
@@ -220,7 +202,21 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 
 	private class PlaylistListAdapter extends RecyclerView.Adapter<PlaylistListAdapter.ViewHolder> {
 
-		private Cursor _cursor = null;
+		private List<EpisodeData> _episodes = new ArrayList<>(0);
+		private TreeMap<Long, Integer> _ids = new TreeMap<>();
+		private final Subscriber<EpisodeData> _episodeSubscriber = new Subscriber<EpisodeData>() {
+			@Override public void onCompleted() { }
+
+			@Override
+			public void onError(Throwable e) {
+				Log.e("FinishedEpisodeFragment", "error while updating episode", e);
+			}
+
+			@Override
+			public void onNext(EpisodeData episodeData) {
+				updateEpisode(episodeData);
+			}
+		};
 
 		class ViewHolder extends RecyclerView.ViewHolder {
 			public final View container;
@@ -272,9 +268,26 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 			setHasStableIds(true);
 		}
 
-		public void changeCursor(Cursor cursor) {
-			_cursor = cursor;
+		public void setEpisodes(List<EpisodeData> episodes) {
+			_episodes = episodes;
 			notifyDataSetChanged();
+
+			_ids.clear();
+			for (int i = 0; i < _episodes.size(); ++i)
+				_ids.put(_episodes.get(i).getId(), i);
+
+			_episodeSubscriber.unsubscribe();
+			EpisodeData.getEpisodeWatcher()
+				.compose(bindToLifecycle())
+				.subscribe(_episodeSubscriber);
+		}
+
+		public void updateEpisode(EpisodeData episode) {
+			Integer position = _ids.get(episode.getId());
+			if (position == null)
+				return;
+			_episodes.set(position, episode);
+			notifyItemChanged(position);
 		}
 
 		@Override
@@ -285,10 +298,7 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
 		public void onBindViewHolder(ViewHolder holder, int position) {
-			if (_cursor == null)
-				return;
-			_cursor.moveToPosition(position);
-			EpisodeCursor episode = new EpisodeCursor(_cursor);
+			EpisodeData episode = _episodes.get(position);
 
 			holder.play.setTag(episode.getId());
 			holder.remove.setTag(episode.getId());
@@ -320,15 +330,12 @@ public class PlaylistFragment extends Fragment implements LoaderManager.LoaderCa
 
 		@Override
 		public int getItemCount() {
-			if (_cursor == null)
-				return 0;
-			return _cursor.getCount();
+			return _episodes.size();
 		}
 
 		@Override
 		public long getItemId(int position) {
-			_cursor.moveToPosition(position);
-			return new EpisodeCursor(_cursor).getId();
+			return _episodes.get(position).getId();
 		}
 
 		public int getPositionForId(long id) {

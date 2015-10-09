@@ -29,7 +29,7 @@ import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
-import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.BehaviorSubject;
 
@@ -47,7 +47,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
-		EpisodeData.getObservable(activity, EpisodeData.FINISHED)
+		EpisodeData.getObservables(activity, EpisodeData.FINISHED)
 			.concatWith(_timing)
 			.toList()
 			.compose(bindToLifecycle())
@@ -88,8 +88,21 @@ public class FinishedEpisodeFragment extends RxFragment {
 
 		private List<EpisodeData> _episodes;
 		private TreeMap<Long, Integer> _ids = new TreeMap<>();
+		private final Subscriber<EpisodeData> _episodeSubscriber = new Subscriber<EpisodeData>() {
+			@Override public void onCompleted() { }
 
-        class ViewHolder extends RecyclerView.ViewHolder {
+			@Override
+			public void onError(Throwable e) {
+				Log.e("FinishedEpisodeFragment", "error while updating episode", e);
+			}
+
+			@Override
+			public void onNext(EpisodeData episodeData) {
+				updateEpisode(episodeData);
+			}
+		};
+
+		class ViewHolder extends RecyclerView.ViewHolder {
 			public final View container;
 			public final ImageView thumbnail;
 			public final TextView subscriptionTitle;
@@ -123,16 +136,14 @@ public class FinishedEpisodeFragment extends RxFragment {
 			_episodes = episodes;
 			notifyDataSetChanged();
 
+			_ids.clear();
 			for (int i = 0; i < _episodes.size(); ++i)
 				_ids.put(_episodes.get(i).getId(), i);
 
+			_episodeSubscriber.unsubscribe();
 			EpisodeData.getEpisodeWatcher()
-				.observeOn(AndroidSchedulers.mainThread())
 				.compose(bindToLifecycle())
-				.subscribe(
-					_adapter::updateEpisode,
-					e -> Log.e("FinishedEpisodeFragment", "error while updating episode", e)
-				);
+				.subscribe(_episodeSubscriber);
 
 			boolean isEmpty = episodes.size() == 0;
 			_emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);

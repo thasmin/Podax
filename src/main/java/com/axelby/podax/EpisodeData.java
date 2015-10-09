@@ -163,12 +163,13 @@ public class EpisodeData {
 
 	public static final int FINISHED = 0;
 	public static final int TO_DOWNLOAD = 1;
-	@IntDef({FINISHED, TO_DOWNLOAD})
+	public static final int PLAYLIST = 2;
+	@IntDef({FINISHED, TO_DOWNLOAD, PLAYLIST})
 	@Retention(RetentionPolicy.SOURCE)
 	public @interface Filter {}
 
 	// by default, runs on io thread and is observed on main thread
-	public static Observable<EpisodeData> getObservable(Context context, @Filter int filter) {
+	public static Observable<EpisodeData> getObservables(Context context, @Filter int filter) {
 		Observable<EpisodeData> ob = Observable.create(o -> {
 			Cursor c = null;
 			switch (filter) {
@@ -177,6 +178,9 @@ public class EpisodeData {
 					break;
 				case TO_DOWNLOAD:
 					c = context.getContentResolver().query(EpisodeProvider.TO_DOWNLOAD_URI, null, null, null, null);
+					break;
+				case PLAYLIST:
+					c = context.getContentResolver().query(EpisodeProvider.PLAYLIST_URI, null, null, null, null);
 					break;
 			}
 			if (c == null) {
@@ -198,6 +202,6 @@ public class EpisodeData {
 	private static PublishSubject<EpisodeCursor> _changeSubject = PublishSubject.create();
 	public static void notifyChange(EpisodeCursor c) { _changeSubject.onNext(c); }
 	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new);
-	public static Observable<EpisodeData> getEpisodeWatcher() { return _changeWatcher; }
-	public static Observable<EpisodeData> getEpisodeWatcher(long id) { return _changeWatcher.filter(d -> d.getId() == id); }
+	public static Observable<EpisodeData> getEpisodeWatcher() { return _changeWatcher.observeOn(AndroidSchedulers.mainThread()); }
+	public static Observable<EpisodeData> getEpisodeWatcher(long id) { return _changeWatcher.filter(d -> d.getId() == id).observeOn(AndroidSchedulers.mainThread()); }
 }
