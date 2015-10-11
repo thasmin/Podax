@@ -25,13 +25,12 @@ import android.widget.TextView;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeData;
-import com.axelby.podax.EpisodeDownloader;
+import com.axelby.podax.EpisodeDownloadService;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
-import com.axelby.podax.UpdateService;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.io.File;
@@ -187,7 +186,7 @@ public class PlaylistFragment extends RxFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.download) {
-			UpdateService.downloadEpisodes(getActivity());
+			EpisodeDownloadService.downloadEpisodes(getActivity());
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -313,7 +312,7 @@ public class PlaylistFragment extends RxFragment {
             if (episode.getFileSize() == downloaded) {
 				holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
 				holder.downloaded.setText(R.string.downloaded);
-            } else if (EpisodeDownloader.isDownloading(episodeFilename)) {
+            } else if (EpisodeDownloadService.isDownloading(episodeFilename)) {
 				holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
 				holder.downloaded.setText(R.string.now_downloading);
 			} else {

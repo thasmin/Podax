@@ -461,7 +461,7 @@ public class EpisodeProvider extends ContentProvider {
 					+ "WHERE queuePosition >= ?", new Object[]{newPosition});
 
 			// download the newly added episode
-			UpdateService.downloadEpisodesSilently(getContext());
+			EpisodeDownloadService.downloadEpisodesSilently(getContext());
 		} else if (newPosition == null) { // oldPosition != null
 			// remove 3: 1 2 3 4 5 do: 4-- 5--
 			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 "

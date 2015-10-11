@@ -185,7 +185,7 @@ class EpisodePlayer {
 
 		PlayerStatus status = PlayerStatus.getCurrentState(_context);
 		if (!status.isEpisodeDownloaded())
-			UpdateService.downloadEpisode(_context, status.getEpisodeId());
+			EpisodeDownloadService.downloadEpisode(_context, status.getEpisodeId());
 
 		_player.resume();
 		if (_mp3PlayerThread.getState() == Thread.State.NEW)

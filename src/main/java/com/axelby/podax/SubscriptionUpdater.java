@@ -157,7 +157,7 @@ class SubscriptionUpdater {
 		} finally {
 			if (subscription != null)
 				subscription.closeCursor();
-			UpdateService.downloadEpisodesSilently(_context);
+			EpisodeDownloadService.downloadEpisodesSilently(_context);
 		}
 	}
 

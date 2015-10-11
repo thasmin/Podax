@@ -118,6 +118,7 @@
             android:theme="@android:style/Theme.Dialog" />
 
         <service android:name=".UpdateService" android:enabled="true" android:exported="false" />
+        <service android:name=".EpisodeDownloadService" android:enabled="true" android:exported="false" />
         <service android:name=".PlayerService" android:enabled="true" android:exported="false" />
         <service android:name=".RSSUrlFinderService" android:enabled="true" android:exported="false" />
         <service android:name=".ToplistService" android:enabled="true" android:exported="false" />
