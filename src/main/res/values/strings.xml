@@ -287,5 +287,21 @@ limitations under the License.</p>
     <string name="shortage">Shortage</string>
     <string name="itunes_top_podcasts">iTunes Top Podcasts</string>
     <string name="npr_podcasts">NPR Podcasts</string>
+    <string name="itunes_arts_podcasts">iTunes Arts Podcasts</string>
+    <string name="itunes_business_podcasts">iTunes Business Podcasts</string>
+    <string name="itunes_comedy_podcasts">iTunes Comedy Podcasts</string>
+    <string name="itunes_education_podcasts">iTunes Education Podcasts</string>
+    <string name="itunes_games_hobbies_podcasts"><![CDATA[iTunes Games & Hobbies Podcasts]]></string>
+    <string name="itunes_government_organizations_podcasts">iTunes Government Organization Podcasts</string>
+    <string name="itunes_health_podcasts">iTunes Health Podcasts</string>
+    <string name="itunes_kids_podcasts">iTunes Kids Podcasts</string>
+    <string name="itunes_music_podcasts">iTunes Music Podcasts</string>
+    <string name="itunes_news_politics_podcasts"><![CDATA[iTunes News & Politics Podcasts]]></string>
+    <string name="itunes_religion_spirituality_podcasts"><![CDATA[iTunes Religion & Spirituality Podcasts]]></string>
+    <string name="itunes_science_medicine_podcasts"><![CDATA[iTunes Science & Medicine Podcasts]]></string>
+    <string name="itunes_society_culture_podcasts"><![CDATA[iTunes Society & Culture Podcasts]]></string>
+    <string name="itunes_sports_recreation_podcasts"><![CDATA[iTunes Sports & Recreation Podcasts]]></string>
+    <string name="itunes_tv_film_podcasts"><![CDATA[iTunes TV & Film Podcasts]]></string>
+    <string name="itunes_technology_podcasts">iTunes Technology Podcasts</string>
 
 </resources>

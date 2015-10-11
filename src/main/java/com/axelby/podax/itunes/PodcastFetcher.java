@@ -34,8 +34,28 @@ public class PodcastFetcher {
 			_category = category;
 		}
 
+		public boolean isTodayCached() {
+			SQLiteDatabase db = new DBAdapter(_context).getReadableDatabase();
+			String[] projection = new String[]{
+				"_id", "date", "category", "position",
+				"name", "summary", "imageUrl", "idUrl"
+			};
+			String selection = "category = ? AND date = ?";
+			String[] selectionArgs = {Long.toString(_category), Long.toString(LocalDate.now().toDate().getTime())};
+			Cursor c = db.query("itunes", projection, selection, selectionArgs, null, null, "position");
+			if (c == null) {
+				db.close();
+				return false;
+			}
+
+			boolean isCached = c.getCount() > 0;
+			c.close();
+			db.close();
+			return isCached;
+		}
+
 		public Observable<List<Podcast>> getPodcasts() {
-			return loadFromDB(_category)
+			return loadFromDB()
 				.subscribeOn(Schedulers.io())
 				.concatWith(
 					Observable.just(_category)
@@ -46,7 +66,7 @@ public class PodcastFetcher {
 				).first();
 		}
 
-		private Observable<List<Podcast>> loadFromDB(long category) {
+		private Observable<List<Podcast>> loadFromDB() {
 			return Observable.create(subscriber -> {
 				SQLiteDatabase db = new DBAdapter(_context).getReadableDatabase();
 				String[] projection = new String[]{
@@ -54,9 +74,10 @@ public class PodcastFetcher {
 					"name", "summary", "imageUrl", "idUrl"
 				};
 				String selection = "category = ? AND date = ?";
-				String[] selectionArgs = {Long.toString(category), Long.toString(LocalDate.now().toDate().getTime())};
+				String[] selectionArgs = {Long.toString(_category), Long.toString(LocalDate.now().toDate().getTime())};
 				Cursor c = db.query("itunes", projection, selection, selectionArgs, null, null, "position");
 				if (c == null) {
+					db.close();
 					subscriber.onCompleted();
 					return;
 				}
@@ -75,6 +96,7 @@ public class PodcastFetcher {
 					podcasts.add(p);
 				}
 				c.close();
+				db.close();
 
 				if (podcasts.size() > 0)
 					subscriber.onNext(podcasts);
@@ -150,6 +172,7 @@ public class PodcastFetcher {
 				db.insert("itunes", "_id", values);
 			}
 
+			db.close();
 			return podcasts;
 		}
 

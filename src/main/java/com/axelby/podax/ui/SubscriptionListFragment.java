@@ -166,7 +166,9 @@ public class SubscriptionListFragment extends RxFragment
 		private final int TYPE_ITUNES = 2;
 		private final int TYPE_PODAXAPP = 3;
 
-		private boolean[] expanded = { true, false, false };
+		private boolean[] _expanded = { true, false, false,
+			false, false, false, false, false, false, false, false,
+			false, false, false, false, false, false, false, false  };
 
 		public class TitleHolder extends RecyclerView.ViewHolder {
 			public final TextView title;
@@ -179,10 +181,10 @@ public class SubscriptionListFragment extends RxFragment
 				expand = (ImageView) view.findViewById(R.id.expand);
 
 				expand.setOnClickListener(image -> {
-					if (expanded[position / 2])
+					if (_expanded[position / 2])
 						return;
 
-					expanded[position / 2] = true;
+					_expanded[position / 2] = true;
 					_adapter.notifyItemChanged(position + 1);
 					expand.setImageResource(R.drawable.ic_action_expand);
 				});
@@ -215,40 +217,69 @@ public class SubscriptionListFragment extends RxFragment
 			return new ListHolder(rv);
 		}
 
+		private final int[] _titles = {
+			R.string.subscriptions,
+			R.string.itunes_top_podcasts,
+			R.string.npr_podcasts,
+			R.string.itunes_arts_podcasts,
+			R.string.itunes_business_podcasts,
+			R.string.itunes_comedy_podcasts,
+			R.string.itunes_education_podcasts,
+			R.string.itunes_games_hobbies_podcasts,
+			R.string.itunes_government_organizations_podcasts,
+			R.string.itunes_health_podcasts,
+			R.string.itunes_kids_podcasts,
+			R.string.itunes_music_podcasts,
+			R.string.itunes_news_politics_podcasts,
+			R.string.itunes_religion_spirituality_podcasts,
+			R.string.itunes_science_medicine_podcasts,
+			R.string.itunes_society_culture_podcasts,
+			R.string.itunes_sports_recreation_podcasts,
+			R.string.itunes_tv_film_podcasts,
+			R.string.itunes_technology_podcasts,
+		};
+
+		private final int[] _categoryIds = {
+			1301, 1321, 1303, 1304, 1323, 1325, 1307, 1305,
+			1310, 1311, 1314, 1315, 1324, 1316, 1309, 1318,
+		};
+
 		@Override
 		public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 			if (getItemViewType(position) == TYPE_TITLE) {
 				TitleHolder th = (TitleHolder) holder;
 				th.position = position;
-				switch (position) {
-					case 0:
-						th.title.setText(R.string.subscriptions);
-						break;
-					case 2:
-						th.title.setText(R.string.itunes_top_podcasts);
-						break;
-					case 4:
-						th.title.setText(R.string.npr_podcasts);
-						break;
-				}
+				th.title.setText(_titles[position / 2]);
 				return;
 			}
 
-			if (!expanded[position / 2])
-				return;
+			// itunes toplists start expanded if they're cached
+			if (position == 3 || position >= 7 && !_expanded[position / 2]) {
+				int categoryId = 0;
+				if (position >= 7)
+					categoryId = _categoryIds[(position - 7) / 2];
+				if (new PodcastFetcher(getActivity(), categoryId).isTodayCached())
+					_expanded[position / 2] = true;
+			}
+
+
+			if (!_expanded[position / 2])
+					return;
 
 			ListHolder lh = (ListHolder) holder;
 			if (position == 1)
 				lh.list.setAdapter(_subscriptionAdapter);
 			else if (position == 3)
-				lh.list.setAdapter(new iTunesAdapter(getActivity()));
-			else
+				lh.list.setAdapter(new iTunesAdapter(getActivity(), 0));
+			else if (position == 5)
 				lh.list.setAdapter(new PodaxAppAdapter(getActivity(), "npr"));
+			else
+				lh.list.setAdapter(new iTunesAdapter(getActivity(), _categoryIds[(position - 7) / 2]));
 		}
 
 		@Override
 		public int getItemCount() {
-			return 6;
+			return _titles.length * 2;
 		}
 
 		@Override
@@ -257,20 +288,15 @@ public class SubscriptionListFragment extends RxFragment
 				return TYPE_TITLE;
 			else if (position == 1)
 				return TYPE_SUBSCRIPTIONS;
-			else if (position == 3)
-				return TYPE_ITUNES;
-			else
+			else if (position == 5)
 				return TYPE_PODAXAPP;
+			else
+				return TYPE_ITUNES;
 		}
 
 		@Override
 		public long getItemId(int position) {
 			return position;
-		}
-
-		@Override
-		public void setHasStableIds(boolean hasStableIds) {
-			super.setHasStableIds(hasStableIds);
 		}
 	}
 
@@ -321,10 +347,6 @@ public class SubscriptionListFragment extends RxFragment
 	private class iTunesAdapter extends RecyclerView.Adapter<SubscriptionListViewHolder> {
 		private final ArrayList<Podcast> _podcasts = new ArrayList<>(100);
 
-		public iTunesAdapter(Context context) {
-			this(context, 0);
-		}
-
 		public iTunesAdapter(Context context, int category) {
 			setHasStableIds(true);
 
@@ -370,12 +392,10 @@ public class SubscriptionListFragment extends RxFragment
 			holder.holder.setTag(p);
 			holder.title.setText(p.name);
 
-			DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-			int px = (int)((128 * displayMetrics.density) + 0.5);
 			Picasso.with(holder.thumbnail.getContext())
-					.load(p.imageUrl)
-					.resize(px, px)
-					.into(holder.thumbnail);
+				.load(p.imageUrl)
+				.fit()
+				.into(holder.thumbnail);
 		}
 
 		@Override
