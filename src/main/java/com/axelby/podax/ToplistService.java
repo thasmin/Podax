@@ -6,8 +6,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.axelby.podax.itunes.PodcastFetcher;
-import com.axelby.podax.podaxapp.PodaxAppAPI;
-import com.axelby.podax.podaxapp.PodaxAppClient;
 
 import java.util.TreeMap;
 
