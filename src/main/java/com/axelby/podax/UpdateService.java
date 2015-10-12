@@ -70,32 +70,38 @@ public class UpdateService extends IntentService {
 				String[] projection = new String[]{SubscriptionProvider.COLUMN_ID};
 				String selection = SubscriptionProvider.COLUMN_SINGLE_USE + " = 0";
 				Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, selection, null, null);
-				if (c != null) {
-					while (c.moveToNext())
-						handleIntent(createUpdateSubscriptionIntent(this, c.getLong(0)));
-					c.close();
-				}
+				if (c == null)
+					break;
+
+				while (c.moveToNext())
+					updateSubscription(c.getLong(0));
+				c.close();
+
 				break;
 			}
 			case Constants.ACTION_REFRESH_SUBSCRIPTION:
 				long subscriptionId = intent.getLongExtra(Constants.EXTRA_SUBSCRIPTION_ID, -1);
-				_updatingSubscriptionId = subscriptionId;
-				if (subscriptionId == -1)
-					return;
-
-				LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
-				Intent localIntent = new Intent(Constants.ACTION_UPDATE_SUBSCRIPTION, SubscriptionProvider.getContentUri(subscriptionId));
-				localBroadcastManager.sendBroadcast(localIntent);
-
-				new SubscriptionUpdater(this).update(subscriptionId);
-
-				_updatingSubscriptionId = -1000;
-				localIntent = new Intent(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION, SubscriptionProvider.getContentUri(subscriptionId));
-				localBroadcastManager.sendBroadcast(localIntent);
+				updateSubscription(subscriptionId);
 				break;
 		}
 
 		removeNotification();
+	}
+
+	private void updateSubscription(long subscriptionId) {
+		if (subscriptionId == -1)
+			return;
+
+		_updatingSubscriptionId = subscriptionId;
+		LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
+		Intent localIntent = new Intent(Constants.ACTION_UPDATE_SUBSCRIPTION, SubscriptionProvider.getContentUri(subscriptionId));
+		localBroadcastManager.sendBroadcast(localIntent);
+
+		new SubscriptionUpdater(this).update(subscriptionId);
+
+		_updatingSubscriptionId = -1000;
+		localIntent = new Intent(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION, SubscriptionProvider.getContentUri(subscriptionId));
+		localBroadcastManager.sendBroadcast(localIntent);
 	}
 
 	private void removeNotification() {
