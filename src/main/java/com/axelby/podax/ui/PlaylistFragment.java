@@ -8,7 +8,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -71,65 +70,84 @@ public class PlaylistFragment extends RxFragment {
 			View itemView = rv.findChildViewUnder(e.getX(), e.getY());
 			if (itemView == null)
 				return false;
+
 			if (containsDragHandle(itemView, e)) {
-				_isDragging = true;
-
-				// keep track of the mouse location, top of item, and episode id
-				_dragStartMouseY = e.getY();
-				_dragStartTop = itemView.getTop();
-				_dragEpisodeId = rv.getChildItemId(itemView);
-
-				// remove the episode from the list and show the overlay
-				_overlay.setImageBitmap(viewToBitmap(itemView));
-				_overlay.setPadding(0, _dragStartTop, 0, 0);
-				_overlay.setVisibility(View.VISIBLE);
-				itemView.setVisibility(View.INVISIBLE);
-
+				onTouchEvent(rv, e);
 				return true;
 			}
+
 			return false;
 		}
 
 		@Override
 		public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-			if (e.getAction() == MotionEvent.ACTION_UP) {
-				_isDragging = false;
-				_overlay.setVisibility(View.GONE);
+			switch (e.getAction() & MotionEvent.ACTION_MASK) {
+				case MotionEvent.ACTION_DOWN:
+					_isDragging = true;
 
-				int position = _adapter.getPositionForId(_dragEpisodeId);
-				View draggedView = rv.getChildAt(position);
-				if (draggedView != null)
-					draggedView.setVisibility(View.VISIBLE);
-			} else if (e.getAction() == MotionEvent.ACTION_CANCEL) {
-				_isDragging = false;
-				_overlay.setVisibility(View.GONE);
+					View itemView = rv.findChildViewUnder(e.getX(), e.getY());
+Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(itemView) + " which is id " + _dragEpisodeId);
 
-				int position = _adapter.getPositionForId(_dragEpisodeId);
-				View draggedView = rv.getChildAt(position);
-				draggedView.setVisibility(View.VISIBLE);
-			} else if (e.getAction() == MotionEvent.ACTION_MOVE) {
-				float deltaY = e.getY() - _dragStartMouseY;
-				if (_overlay.getPaddingTop() < 0 && deltaY < -5) {
-					rv.scrollBy(0, -10);
-				}
+					// keep track of the mouse location, top of item, and episode id
+					_dragStartMouseY = e.getY();
+					_dragStartTop = itemView.getTop();
+					_dragEpisodeId = rv.getChildItemId(itemView);
 
-				// switch if the overlay isn't on top of the original view
-				View underView = rv.findChildViewUnder(0, (int) e.getY());
-				if (underView != null && rv.getChildItemId(underView) != _dragEpisodeId) {
-					int newPosition = rv.getChildLayoutPosition(underView);
-					_adapter.moveItem(_dragEpisodeId, newPosition);
-					if (newPosition == 0)
-						rv.scrollToPosition(0);
-				}
+					// remove the episode from the list and show the overlay
+					_overlay.setImageBitmap(viewToBitmap(itemView));
+					_overlay.setPadding(0, _dragStartTop, 0, 0);
+					_overlay.setVisibility(View.VISIBLE);
+					itemView.setVisibility(View.INVISIBLE);
+					break;
+				case MotionEvent.ACTION_UP:
+				case MotionEvent.ACTION_CANCEL:
+					_isDragging = false;
+					_overlay.setVisibility(View.GONE);
 
-				// scroll down if overlay is below bottom
-				int overlayPaddingTop = (int) (_dragStartTop + deltaY);
-				int maxPadding = rv.getHeight() - (_overlay.getHeight() - _overlay.getPaddingTop());
-				if (overlayPaddingTop > maxPadding) {
-					rv.scrollBy(0, overlayPaddingTop - maxPadding);
-					overlayPaddingTop = maxPadding;
-				}
-				_overlay.setPadding(0, overlayPaddingTop, 0, 0);
+					int position = _adapter.getPositionForId(_dragEpisodeId);
+					View draggedView = rv.getChildAt(position);
+					if (draggedView != null)
+						draggedView.setVisibility(View.VISIBLE);
+					break;
+				case MotionEvent.ACTION_MOVE:
+					if (_listView.getItemAnimator().isRunning())
+						break;
+
+					float deltaY = e.getY() - _dragStartMouseY;
+					if (_overlay.getPaddingTop() < 0 && deltaY < -5)
+						rv.scrollBy(0, -10);
+
+					// switch if the overlay isn't on top of the original view
+					View underView = null;
+					for (int i = 0; i < rv.getChildCount(); ++i) {
+						View childAt = rv.getChildAt(i);
+						if (childAt.getTop() < e.getY() && childAt.getBottom() > e.getY()) {
+							underView = childAt;
+							break;
+						}
+					}
+					if (underView == null)
+						Log.d("PlaylistFragment", "now under null child");
+					else
+						Log.d("PlaylistFragment", "now under child at " + rv.getChildAdapterPosition(underView) + " id " + rv.getChildItemId(underView));
+
+					if (underView != null && rv.getChildItemId(underView) != _dragEpisodeId) {
+						int newPosition = rv.getChildLayoutPosition(underView);
+						_adapter.moveItem(_dragEpisodeId, newPosition);
+						if (newPosition == 0)
+							rv.smoothScrollToPosition(0);
+					}
+
+					// scroll down if overlay is below bottom
+					int overlayPaddingTop = (int) (_dragStartTop + deltaY);
+					int maxPadding = rv.getHeight() - (_overlay.getHeight() - _overlay.getPaddingTop());
+					if (overlayPaddingTop > maxPadding) {
+						rv.scrollBy(0, overlayPaddingTop - maxPadding);
+						overlayPaddingTop = maxPadding;
+					}
+					_overlay.setPadding(0, overlayPaddingTop, 0, 0);
+
+					break;
 			}
 		}
 
@@ -166,7 +184,6 @@ public class PlaylistFragment extends RxFragment {
 
 		_listView = (RecyclerView) view.findViewById(R.id.list);
 		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
-		_listView.setItemAnimator(new DefaultItemAnimator());
 
 		_overlay = (ImageView) getActivity().findViewById(R.id.overlay);
 	}
@@ -349,6 +366,12 @@ public class PlaylistFragment extends RxFragment {
 			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, newPosition);
 			Uri podcastUri = EpisodeProvider.getContentUri(id);
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
+
+			int oldPosition = getPositionForId(id);
+			EpisodeData ep = _episodes.get(newPosition);
+			_episodes.set(newPosition, _episodes.get(oldPosition));
+			_episodes.set(oldPosition, ep);
+
 			notifyItemMoved(getPositionForId(id), newPosition);
 		}
 	}
