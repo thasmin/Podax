@@ -303,5 +303,6 @@ limitations under the License.</p>
     <string name="itunes_sports_recreation_podcasts"><![CDATA[iTunes Sports & Recreation Podcasts]]></string>
     <string name="itunes_tv_film_podcasts"><![CDATA[iTunes TV & Film Podcasts]]></string>
     <string name="itunes_technology_podcasts">iTunes Technology Podcasts</string>
+    <string name="playlist">Playlist</string>
 
 </resources>

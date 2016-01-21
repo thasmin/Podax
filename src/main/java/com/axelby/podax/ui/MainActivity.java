@@ -18,9 +18,9 @@ import android.database.Cursor;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -35,7 +35,6 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.axelby.gpodder.AuthenticatorActivity;
-import com.axelby.podax.BootReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.GPodderProvider;
@@ -50,7 +49,6 @@ public class MainActivity extends RxAppCompatActivity {
 
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
-	private TabLayout _tabs;
 
 	private View _progressbg;
 	private View _progressline;
@@ -142,37 +140,7 @@ public class MainActivity extends RxAppCompatActivity {
 		setSupportActionBar(toolbar);
 
 		NavigationView navMenu = (NavigationView) findViewById(R.id.navmenu);
-		navMenu.setNavigationItemSelectedListener(menuItem -> {
-			_drawerLayout.closeDrawer(GravityCompat.START);
-
-			switch (menuItem.getItemId()) {
-				case R.id.latest_activity:
-					startFragmentActivity(LatestActivityFragment.class);
-					return true;
-				case R.id.weekly_planner:
-					startFragmentActivity(WeeklyPlannerFragment.class);
-					return true;
-				case R.id.finished_episodes:
-					startFragmentActivity(FinishedEpisodeFragment.class);
-					return true;
-				case R.id.gpodder:
-					handleGPodder();
-					return true;
-				case R.id.stats:
-					startFragmentActivity(StatsFragment.class);
-					return true;
-				case R.id.preferences:
-					startFragmentActivity(PodaxPreferenceFragment.class);
-					return true;
-				case R.id.about:
-					startFragmentActivity(AboutFragment.class);
-					return true;
-				case R.id.log_viewer:
-					startFragmentActivity(LogViewerFragment.class);
-					return true;
-			}
-			return false;
-		});
+		navMenu.setNavigationItemSelectedListener(_handleDrawerItem);
 
 		if (!PodaxLog.isDebuggable(this))
 			navMenu.findViewById(R.id.log_viewer).setVisibility(View.GONE);
@@ -184,29 +152,7 @@ public class MainActivity extends RxAppCompatActivity {
 				R.string.open_drawer, R.string.close_drawer);
 		_drawerLayout.setDrawerListener(_drawerToggle);
 
-		// main section
-		_tabs = (TabLayout) findViewById(R.id.tabs);
-		_tabs.addTab(_tabs.newTab().setText(R.string.playlist_caps));
-		_tabs.addTab(_tabs.newTab().setText(R.string.podcasts));
-		_tabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-			@Override
-			public void onTabSelected(TabLayout.Tab tab) {
-				if (tab.getPosition() == 0) {
-					getFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
-				} else {
-					getFragmentManager().beginTransaction().replace(R.id.fragment, new SubscriptionListFragment()).commit();
-				}
-			}
-
-			@Override
-			public void onTabUnselected(TabLayout.Tab tab) {
-			}
-
-			@Override
-			public void onTabReselected(TabLayout.Tab tab) {
-			}
-		});
-		getFragmentManager().beginTransaction().replace(R.id.fragment, new PlaylistFragment()).commit();
+		_handleDrawerItem.onNavigationItemSelected(navMenu.getMenu().getItem(0));
 
 		// bottom bar controls
 		_progressbg = findViewById(R.id.progressbg);
@@ -224,8 +170,57 @@ public class MainActivity extends RxAppCompatActivity {
 			);
 	}
 
-	private void startFragmentActivity(Class<? extends Fragment> fragmentClass) {
-		startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, fragmentClass, null));
+	@NonNull
+	private NavigationView.OnNavigationItemSelectedListener _handleDrawerItem = new NavigationView.OnNavigationItemSelectedListener() {
+		@Override
+		public boolean onNavigationItemSelected(MenuItem menuItem) {
+			_drawerLayout.closeDrawer(GravityCompat.START);
+
+			Class<? extends Fragment> fragmentClass;
+			switch (menuItem.getItemId()) {
+				case R.id.playlist:
+					fragmentClass = PlaylistFragment.class;
+					break;
+				case R.id.subscriptions:
+					fragmentClass = SubscriptionListFragment.class;
+					break;
+				case R.id.latest_activity:
+					fragmentClass = LatestActivityFragment.class;
+					break;
+				case R.id.weekly_planner:
+					fragmentClass = WeeklyPlannerFragment.class;
+					break;
+				case R.id.finished_episodes:
+					fragmentClass = FinishedEpisodeFragment.class;
+					break;
+				case R.id.gpodder:
+					handleGPodder();
+					return true;
+				case R.id.stats:
+					fragmentClass = StatsFragment.class;
+					break;
+				case R.id.preferences:
+					fragmentClass = PodaxPreferenceFragment.class;
+					break;
+				case R.id.about:
+					fragmentClass = AboutFragment.class;
+					break;
+				case R.id.log_viewer:
+					fragmentClass = LogViewerFragment.class;
+					break;
+				default:
+					return false;
+			}
+			showFragment(menuItem.getTitle(), fragmentClass);
+			return true;
+		}
+	};
+
+	private void showFragment(CharSequence title, Class<? extends Fragment> fragmentClass) {
+		Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
+		if (getSupportActionBar() != null)
+			getSupportActionBar().setTitle(title);
+		getFragmentManager().beginTransaction().replace(R.id.fragment, fragment).commit();
 	}
 
 	private void initializeBottom(PlayerStatus playerState) {
@@ -287,24 +282,6 @@ public class MainActivity extends RxAppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-		Cursor cursor = getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
-		if (cursor == null)
-			return;
-
-		int count = cursor.getCount();
-		cursor.close();
-
-		if (count == 0) {
-			TabLayout.Tab tabAt = _tabs.getTabAt(1);
-			if (tabAt != null)
-				tabAt.select();
-		}
-    }
-
-    @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         _drawerToggle.onConfigurationChanged(newConfig);
@@ -317,20 +294,6 @@ public class MainActivity extends RxAppCompatActivity {
     }
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putInt("selectedTab", _tabs.getSelectedTabPosition());
-	}
-
-	@Override
-	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-		TabLayout.Tab selectedTab = _tabs.getTabAt(savedInstanceState.getInt("selectedTab"));
-		if (selectedTab != null)
-			selectedTab.select();
-	}
-
-	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
 		return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
 	}
@@ -338,7 +301,7 @@ public class MainActivity extends RxAppCompatActivity {
 	private void handleGPodder() {
 		AccountManager am = AccountManager.get(this);
 		Account[] gpodder_accounts = am.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
-		if (gpodder_accounts == null || gpodder_accounts.length == 0) {
+		if (gpodder_accounts.length == 0) {
 			startActivity(new Intent(this, AuthenticatorActivity.class));
 		} else {
 			Snackbar.make(findViewById(R.id.main), "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Snackbar.LENGTH_SHORT).show();

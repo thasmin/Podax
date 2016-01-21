@@ -4,20 +4,13 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="@string/finished_episodes"
-        android:textSize="24sp"
-        android:textColor="@color/orange500"
-        />
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         />
+
     <TextView
         android:id="@+id/empty"
         android:layout_width="match_parent"

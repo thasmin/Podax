@@ -9,14 +9,6 @@
 	<TextView
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:textColor="?attr/colorPrimary"
-		android:text="@string/weekly_planner"
-		android:gravity="center_horizontal"
-		android:textSize="18sp" />
-
-	<TextView
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
 		android:text="Last week's stats" />
 	<View
 		android:layout_width="match_parent"

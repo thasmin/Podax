@@ -2,6 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:id="@+id/group_top">
+        <item android:id="@+id/playlist"
+              android:icon="@drawable/ic_menu_podax"
+              android:title="@string/playlist" />
+        <item android:id="@+id/subscriptions"
+              android:icon="@drawable/ic_menu_podax"
+              android:title="@string/subscriptions" />
+    </group>
+
+    <group android:id="@+id/group_second">
         <item android:id="@+id/latest_activity"
               android:icon="@drawable/ic_menu_alarm"
               android:title="@string/latest_activity" />
