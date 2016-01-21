@@ -1,6 +1,7 @@
 package com.axelby.podax.ui;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -25,6 +26,7 @@ public class PodaxPreferenceFragment extends PreferenceFragment implements Prefe
 		if (sdcard != null) {
 			CharSequence[] entries = sdcard.getEntries();
 			CharSequence[] values = sdcard.getEntryValues();
+			values[0] = Environment.getExternalStorageDirectory().getAbsolutePath();
 			ArrayList<String> validEntries = new ArrayList<>(entries.length);
 			ArrayList<String> validValues = new ArrayList<>(values.length);
 			for (int i = 0; i < values.length; ++i) {
@@ -35,6 +37,7 @@ public class PodaxPreferenceFragment extends PreferenceFragment implements Prefe
 			}
 
 			if (validValues.size() == 1) {
+				sdcard.setValueIndex(0);
 				sdcard.setEntries(new CharSequence[]{entries[0]});
 				sdcard.setEntryValues(new CharSequence[]{values[0]});
 				sdcard.setEnabled(false);

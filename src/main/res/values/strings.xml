@@ -138,7 +138,7 @@ limitations under the License.</p>
     <string name="pref_sdcard_title">SD Card</string>
 
     <string-array name="pref_sdcard_values">
-        <item>/storage/sdcard0</item>
+        <item>/storage/emulated/0</item>
         <item>/storage/extSdCard</item>
         <item>/mnt/shared/sdcard0</item>
     </string-array>
