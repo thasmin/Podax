@@ -208,6 +208,8 @@ public class EpisodeListFragment extends RxFragment {
 			return;
 		}
 
+		// called 3 times: on initial load with just title, then when loaded from db, then when update intent received
+		parent.removeAllViews();
 		for (T child : children)
 			addBoundChild(parent, layoutId, child, -1);
 
@@ -313,7 +315,8 @@ public class EpisodeListFragment extends RxFragment {
 		private Integer _playlistPosition = null;
 		private final boolean _isDownloaded;
 
-		public PodcastModel(EpisodeCursor episode) {
+		public PodcastModel(Cursor cursor) {
+			EpisodeCursor episode = new EpisodeCursor(cursor);
 			_id = episode.getId();
 			_title = episode.getTitle();
 			_releaseDate = episode.getPubDate();
@@ -406,26 +409,11 @@ public class EpisodeListFragment extends RxFragment {
 	};
 
 	private void showPodcasts(Cursor cursor) {
-		if (_listView == null)
-			return;
-		_listView.removeAllViews();
+		ArrayList<PodcastModel> models = new ArrayList<>(cursor.getCount());
+		while (cursor.moveToNext())
+			models.add(new PodcastModel(cursor));
 
 		_model.podcasts.clear();
-		if (!cursor.moveToFirst())
-			return;
-
-		ArrayList<PodcastModel> models = new ArrayList<>(cursor.getCount());
-		do {
-			EpisodeCursor episode = new EpisodeCursor(cursor);
-			PodcastModel podcastModel = new PodcastModel(episode);
-			models.add(podcastModel);
-
-			EpisodelistItemBinding x = EpisodelistItemBinding.inflate(LayoutInflater.from(getActivity()), _listView, false);
-			x.setPodcast(podcastModel);
-
-			_listView.addView(x.getRoot());
-		} while (cursor.moveToNext());
-
 		_model.podcasts.addAll(models);
 		cursor.close();
 	}
