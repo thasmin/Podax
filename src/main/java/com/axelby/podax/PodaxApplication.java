@@ -37,6 +37,7 @@ public class PodaxApplication extends Application {
 
 			Stetho.initializeWithDefaults(this);
 
+			/*
 			Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
 				PodaxLog.log(this, "error: " + ex.getMessage());
 				for (StackTraceElement ste : ex.getStackTrace())
@@ -44,6 +45,7 @@ public class PodaxApplication extends Application {
 				Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
 				System.exit(1);
 			});
+			*/
 		}
 
 		JodaTimeAndroid.init(this);

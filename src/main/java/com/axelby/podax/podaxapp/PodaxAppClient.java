@@ -15,7 +15,7 @@ public class PodaxAppClient {
 					request.addHeader("User-Agent", "podax/" + context.getString(R.string.app_version))
 				)
 				.setEndpoint("https://www.podaxapp.com")
-				.setLogLevel(RestAdapter.LogLevel.FULL)
+				//.setLogLevel(RestAdapter.LogLevel.FULL)
 				.build();
 		return restAdapter.create(PodaxAppAPI.class);
 	}

@@ -8,6 +8,9 @@
         <item android:id="@+id/subscriptions"
               android:icon="@drawable/ic_menu_podax"
               android:title="@string/subscriptions" />
+        <item android:id="@+id/discover"
+              android:icon="@drawable/ic_menu_podax"
+              android:title="@string/discover" />
     </group>
 
     <group android:id="@+id/group_second">

@@ -184,6 +184,9 @@ public class MainActivity extends RxAppCompatActivity {
 				case R.id.subscriptions:
 					fragmentClass = SubscriptionListFragment.class;
 					break;
+				case R.id.discover:
+					fragmentClass = DiscoverFragment.class;
+					break;
 				case R.id.latest_activity:
 					fragmentClass = LatestActivityFragment.class;
 					break;
