@@ -10,8 +10,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Xml;
+import android.view.WindowManager;
 
 import com.axelby.podax.ui.MainActivity;
 import com.axelby.riasel.FeedParser;
@@ -200,8 +202,16 @@ class SubscriptionUpdater {
 			BufferedInputStream input = new BufferedInputStream(conn.getInputStream());
 			Bitmap original = BitmapFactory.decodeStream(input);
 			input.close();
-			Bitmap scaled = Bitmap.createScaledBitmap(original, 256, 256, true);
-			SubscriptionCursor.saveThumbnailImage(_context, subscriptionId, scaled);
+
+			// rescale to height is not larger than screen
+			WindowManager wm = (WindowManager) _context.getSystemService(Context.WINDOW_SERVICE);
+			DisplayMetrics metrics = new DisplayMetrics();
+			wm.getDefaultDisplay().getMetrics(metrics);
+			if (original.getHeight() > metrics.heightPixels) {
+				int newWidth = original.getWidth() / original.getHeight() * metrics.heightPixels;
+				original = Bitmap.createScaledBitmap(original, newWidth, metrics.heightPixels, true);
+			}
+			SubscriptionCursor.saveThumbnailImage(_context, subscriptionId, original);
 		} catch (MalformedURLException e) {
 			Log.e("Podax", "subscription bitmap has malformed url: " + thumbnailUrl);
 		} catch (IOException e) {
