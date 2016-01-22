@@ -5,6 +5,8 @@ import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.ComponentName;
@@ -223,7 +225,23 @@ public class MainActivity extends RxAppCompatActivity {
 		Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
 		if (getSupportActionBar() != null)
 			getSupportActionBar().setTitle(title);
-		getFragmentManager().beginTransaction().replace(R.id.fragment, fragment).commit();
+
+		Log.d("backstack", "switching to " + title);
+		FragmentTransaction trans = getFragmentManager().beginTransaction();
+		trans.replace(R.id.fragment, fragment);
+		trans.addToBackStack(title.toString());
+		trans.commit();
+	}
+
+	@Override
+	public void onBackPressed() {
+		FragmentManager fm = getFragmentManager();
+		if (fm.popBackStackImmediate()) {
+			if (getSupportActionBar() != null)
+				getSupportActionBar().setTitle(fm.getBackStackEntryAt(fm.getBackStackEntryCount() - 1).getName());
+			return;
+		}
+		super.onBackPressed();
 	}
 
 	private void initializeBottom(PlayerStatus playerState) {

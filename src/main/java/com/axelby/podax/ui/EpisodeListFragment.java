@@ -127,7 +127,7 @@ public class EpisodeListFragment extends RxFragment {
 		Cursor c = getActivity().getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
 		if (c != null) {
 			try {
-				if (!c.moveToFirst() && c.isNull(0))
+				if (c.moveToFirst() && !c.isNull(0))
 					return Observable.just(c.getLong(0));
 			} finally {
 				c.close();
