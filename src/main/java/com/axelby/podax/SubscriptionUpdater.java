@@ -7,32 +7,33 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Xml;
-import android.view.WindowManager;
 
 import com.axelby.podax.ui.MainActivity;
 import com.axelby.riasel.FeedParser;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import okio.BufferedSink;
+import okio.Okio;
 
 class SubscriptionUpdater {
 	private final Context _context;
@@ -164,7 +165,8 @@ class SubscriptionUpdater {
 	}
 
 	private void ensureThumbnail(long subscriptionId, String thumbnailUrl) {
-		if (SubscriptionCursor.getThumbnailImage(_context, subscriptionId) != null)
+		String filename = SubscriptionCursor.getThumbnailFilename(_context, subscriptionId);
+		if (new File(filename).exists())
 			return;
 		downloadThumbnail(subscriptionId, thumbnailUrl);
 	}
@@ -190,34 +192,16 @@ class SubscriptionUpdater {
 		downloadThumbnail(subscriptionId, newThumbnailUrl);
 	}
 
-	private void downloadThumbnail(long subscriptionId, String thumbnailUrl) {
-		if (thumbnailUrl == null)
-			return;
-
+	private void downloadThumbnail(long subscriptionId, @NonNull String thumbnailUrl) {
 		try {
-			HttpURLConnection conn = (HttpURLConnection) new URL(thumbnailUrl).openConnection();
-			if (conn.getResponseCode() != HttpURLConnection.HTTP_OK)
-				return;
-
-			BufferedInputStream input = new BufferedInputStream(conn.getInputStream());
-			Bitmap original = BitmapFactory.decodeStream(input);
-			input.close();
-
-			// rescale to height is not larger than screen
-			WindowManager wm = (WindowManager) _context.getSystemService(Context.WINDOW_SERVICE);
-			DisplayMetrics metrics = new DisplayMetrics();
-			wm.getDefaultDisplay().getMetrics(metrics);
-			if (original.getHeight() > metrics.heightPixels) {
-				int newWidth = original.getWidth() / original.getHeight() * metrics.heightPixels;
-				original = Bitmap.createScaledBitmap(original, newWidth, metrics.heightPixels, true);
-			}
-			SubscriptionCursor.saveThumbnailImage(_context, subscriptionId, original);
-		} catch (MalformedURLException e) {
-			Log.e("Podax", "subscription bitmap has malformed url: " + thumbnailUrl);
+			Request request = new Request.Builder().url(thumbnailUrl).build();
+			Response response = new OkHttpClient().newCall(request).execute();
+			String filename = SubscriptionCursor.getThumbnailFilename(_context, subscriptionId);
+			BufferedSink sink = Okio.buffer(Okio.sink(new File(filename)));
+			sink.writeAll(response.body().source());
+			sink.close();
 		} catch (IOException e) {
-			Log.e("Podax", "ioexception on subscription bitmap: " + thumbnailUrl);
-		} catch (OutOfMemoryError e) {
-			Log.e("Podax", "subscription bitmap won't fit in memory: " + thumbnailUrl);
+			Log.e("Podax", "ioexception downloading subscription bitmap: " + thumbnailUrl);
 		}
 	}
 

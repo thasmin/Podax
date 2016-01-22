@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -218,7 +217,7 @@ public class LatestActivityFragment extends RxFragment {
 				_cursor.moveToPosition((Integer) _items.get(position));
 				EpisodeCursor episode = new EpisodeCursor(_cursor);
 
-				holder.subscription_img.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
+				SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()).into(holder.subscription_img);
 				holder.subscription_img.setTag(episode.getSubscriptionId());
 				holder.episode_title.setText(episode.getTitle());
 				holder.episode_title.setTag(episode.getId());

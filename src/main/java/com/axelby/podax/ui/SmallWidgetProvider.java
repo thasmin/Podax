@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
@@ -54,10 +53,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 		views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-		Bitmap thumbnail = SubscriptionCursor.getThumbnailImage(context, playerState.getSubscriptionId());
-		if (thumbnail != null) {
-			views.setImageViewBitmap(R.id.show_btn, thumbnail);
-		}
+		SubscriptionCursor.getThumbnailImage(context, playerState.getSubscriptionId()).into(views, R.id.show_btn, appWidgetIds);
 
 		appWidgetManager.updateAppWidget(appWidgetIds, views);
 

@@ -30,7 +30,6 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.BehaviorSubject;
 
 public class FinishedEpisodeFragment extends RxFragment {
@@ -200,7 +199,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 
 			holder.container.setTag(episode.getId());
 			holder.subscriptionTitle.setText(episode.getSubscriptionTitle());
-			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
+			SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()).into(holder.thumbnail);
             holder.title.setText(episode.getTitle());
             holder.date.setText(context.getString(R.string.finished_on, _finishedDateFormat.format(episode.getFinishedDate())));
             holder.play.setTag(episode.getId());

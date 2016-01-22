@@ -226,7 +226,6 @@ public class MainActivity extends RxAppCompatActivity {
 		if (getSupportActionBar() != null)
 			getSupportActionBar().setTitle(title);
 
-		Log.d("backstack", "switching to " + title);
 		FragmentTransaction trans = getFragmentManager().beginTransaction();
 		trans.replace(R.id.fragment, fragment);
 		trans.addToBackStack(title.toString());

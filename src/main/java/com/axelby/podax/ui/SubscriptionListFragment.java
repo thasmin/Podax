@@ -168,8 +168,8 @@ public class SubscriptionListFragment extends RxFragment
 			_cursor.moveToPosition(position);
 			SubscriptionCursor subscription = new SubscriptionCursor(_cursor);
 			holder.holder.setTag(subscription.getId());
-			holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(holder.thumbnail.getContext(), subscription.getId()));
 			holder.title.setText(subscription.getTitle());
+			SubscriptionCursor.getThumbnailImage(holder.thumbnail.getContext(), subscription.getId()).into(holder.thumbnail);
 		}
 
 		@Override

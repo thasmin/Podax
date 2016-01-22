@@ -321,7 +321,7 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 			holder.container.setTag(episode.getId());
 
             holder.title.setText(episode.getTitle());
-            holder.thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()));
+            SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()).into(holder.thumbnail);
 			holder.duration.setText(Helper.getTimeString(episode.getDuration()));
 
 			String episodeFilename = episode.getFilename(getActivity());

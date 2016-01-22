@@ -8,8 +8,10 @@ import android.graphics.Bitmap;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.WindowManager;
 
 public class MediaButtonIntentReceiver extends BroadcastReceiver {
 
@@ -153,7 +155,10 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		bob.putString(MediaMetadataCompat.METADATA_KEY_TITLE, status.getTitle());
 		bob.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, status.getDuration());
 
-		Bitmap thumbnail = SubscriptionCursor.getThumbnailImage(context, status.getSubscriptionId());
+		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		DisplayMetrics metrics = new DisplayMetrics();
+		wm.getDefaultDisplay().getMetrics(metrics);
+		Bitmap thumbnail = SubscriptionCursor.getThumbnailImageRaw(context, status.getSubscriptionId());
 		if (thumbnail != null) {
 			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, thumbnail);
 			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, thumbnail);

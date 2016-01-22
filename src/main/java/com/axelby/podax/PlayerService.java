@@ -19,6 +19,7 @@ import android.support.annotation.StringRes;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.NotificationCompat;
+import android.util.TypedValue;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
 import com.axelby.podax.ui.MainActivity;
@@ -277,9 +278,10 @@ public class PlayerService extends Service {
 			.setDeleteIntent(deletePI)
 			.setContentIntent(showPI);
 
-		Bitmap subscriptionBitmap = SubscriptionCursor.getThumbnailImage(this, playerStatus.getSubscriptionId());
-		if (subscriptionBitmap != null)
-			builder.setLargeIcon(subscriptionBitmap);
+		Bitmap bitmap = SubscriptionCursor.getThumbnailImageRaw(this, playerStatus.getSubscriptionId());
+		int largeIconPx = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, getResources().getDisplayMetrics());
+		Bitmap scaled = Bitmap.createScaledBitmap(bitmap, largeIconPx, largeIconPx, true);
+		builder.setLargeIcon(scaled);
 
 		builder
 			.addAction(makeAction(android.R.drawable.ic_media_previous, R.string.restart, Constants.ACTIVE_EPISODE_DATA_RESTART))

@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +23,6 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 
-import java.util.HashMap;
-
 public class SearchPodaxFragment extends Fragment
 		implements SearchActivity.QueryChangedHandler, LoaderManager.LoaderCallbacks<Cursor> {
 	private GridLayout _subscriptionList;
@@ -33,8 +30,6 @@ public class SearchPodaxFragment extends Fragment
 
 	private LinearLayout _episodeList;
 	private TextView _episodeEmpty;
-
-	private HashMap<Long, Bitmap> _thumbnails = new HashMap<>();
 
 	private View.OnClickListener _subscriptionClickHandler = view -> {
 		long id = (long) view.getTag();
@@ -69,14 +64,6 @@ public class SearchPodaxFragment extends Fragment
 		args.putString(SearchManager.QUERY, query);
 		getLoaderManager().restartLoader(0, args, this);
 		getLoaderManager().restartLoader(1, args, this);
-	}
-
-	private Bitmap getThumbnail(long subId) {
-		if (_thumbnails.containsKey(subId))
-			return _thumbnails.get(subId);
-		Bitmap thumb = SubscriptionCursor.getThumbnailImage(getActivity(), subId);
-		_thumbnails.put(subId, thumb);
-		return thumb;
 	}
 
 	@Override
@@ -116,7 +103,7 @@ public class SearchPodaxFragment extends Fragment
 
 				ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
 				thumbnail.setLayoutParams(new LinearLayout.LayoutParams(thumbSize, thumbSize));
-				thumbnail.setImageBitmap(getThumbnail(sub.getId()));
+				SubscriptionCursor.getThumbnailImage(getActivity(), sub.getId()).into(thumbnail);
 
 				TextView title = (TextView) view.findViewById(R.id.title);
 				title.setLayoutParams(new LinearLayout.LayoutParams(thumbSize, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -137,7 +124,7 @@ public class SearchPodaxFragment extends Fragment
 				view.setTag(ep.getId());
 
 				ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-				thumbnail.setImageBitmap(SubscriptionCursor.getThumbnailImage(context, ep.getSubscriptionId()));
+				SubscriptionCursor.getThumbnailImage(context, ep.getSubscriptionId()).into(thumbnail);
 
 				TextView title = (TextView) view.findViewById(R.id.title);
 				title.setText(ep.getTitle());

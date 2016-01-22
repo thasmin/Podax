@@ -8,6 +8,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
+import android.view.View;
+
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -126,10 +130,18 @@ public class SubscriptionCursor {
 		return storagePath + String.valueOf(subscriptionId) + "podcast.image";
 	}
 
-	public static Bitmap getThumbnailImage(Context context, long subscriptionId) {
+	public static RequestCreator getThumbnailImage(Context context, long subscriptionId) {
+		String filename = getThumbnailFilename(context, subscriptionId);
+		if (!new File(filename).exists())
+			return Picasso.with(context).load(R.drawable.ic_menu_podax);
+		return Picasso.with(context).load(new File(filename));
+	}
+
+	public static Bitmap getThumbnailImageRaw(Context context, long subscriptionId) {
 		String filename = getThumbnailFilename(context, subscriptionId);
 		if (!new File(filename).exists())
 			return null;
+
 		return BitmapFactory.decodeFile(filename);
 	}
 
@@ -138,18 +150,6 @@ public class SubscriptionCursor {
 		if (!thumbnail.exists())
 			return;
 		thumbnail.delete();
-	}
-
-	public static void saveThumbnailImage(Context context, long subscriptionId, Bitmap thumbnail) {
-		try {
-			String filename = getThumbnailFilename(context, subscriptionId);
-			new File(filename).delete();
-			BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename));
-			thumbnail.compress(Bitmap.CompressFormat.PNG, 95, outputStream);
-			outputStream.close();
-		} catch (IOException e) {
-			Log.e("Podax", "unable to save subscription thumbnail", e);
-		}
 	}
 
     public String getDescription() {

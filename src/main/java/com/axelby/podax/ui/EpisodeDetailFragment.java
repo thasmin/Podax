@@ -266,8 +266,7 @@ public class EpisodeDetailFragment extends RxFragment {
 
 		_titleView.setText(episode.getTitle());
 		_subscriptionTitleView.setText(episode.getSubscriptionTitle());
-		Bitmap subscriptionThumbnail = SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId());
-		_subscriptionImage.setImageBitmap(subscriptionThumbnail);
+		SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()).into(_subscriptionImage);
 
 		String description = episode.getDescription();
 		if (description != null) {
