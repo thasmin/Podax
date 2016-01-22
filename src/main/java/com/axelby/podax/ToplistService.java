@@ -19,8 +19,6 @@ public class ToplistService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		PodaxLog.log(this, "ToplistService running");
-
 		TreeMap<Integer, String> categoryNames = new TreeMap<>();
 		categoryNames.put(0, "All");
 		categoryNames.put(1301, "Arts");
@@ -48,13 +46,11 @@ public class ToplistService extends Service {
 		for (int cat : categories) {
 			try {
 				new PodcastFetcher(this, cat).getPodcasts().toBlocking().first();
-				PodaxLog.log(this, "ToplistService finished cat " + cat);
 			} catch (Exception e) {
 				Log.e("ToplistService", String.format("unable to retrieve category %1$d: %2$s", cat, categoryNames.get(cat)), e);
 			}
 		}
 
-		PodaxLog.log(this, "ToplistService done");
 		return START_NOT_STICKY;
 	}
 }

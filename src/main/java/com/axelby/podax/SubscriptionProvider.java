@@ -308,7 +308,8 @@ public class SubscriptionProvider extends ContentProvider {
 		String in = "";
 		while (c.moveToNext()) {
 			in += ",?";
-			subIds.add(String.valueOf(c.getInt(0)));
+			subIds.add(String.valueOf(c.getLong(0)));
+			SubscriptionCursor.evictThumbnails(getContext(), c.getLong(0));
 		}
 		c.close();
 		if (!in.equals("")) {
