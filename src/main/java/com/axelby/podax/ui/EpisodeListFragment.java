@@ -43,7 +43,6 @@ import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
-import com.axelby.podax.databinding.EpisodelistItemBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
@@ -65,7 +64,6 @@ public class EpisodeListFragment extends RxFragment {
 	private LinearLayout _listView;
 
 	private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
-	private EpisodelistFragmentBinding _binding;
 	protected Model _model;
 
 	@Override
@@ -182,9 +180,9 @@ public class EpisodeListFragment extends RxFragment {
 
 	@Override
 	public View onCreateView(@Nonnull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		_binding = EpisodelistFragmentBinding.inflate(inflater, container, false);
-		_binding.setModel(_model);
-		return _binding.getRoot();
+		EpisodelistFragmentBinding binding = EpisodelistFragmentBinding.inflate(inflater, container, false);
+		binding.setModel(_model);
+		return binding.getRoot();
 	}
 
 	@Override
@@ -251,7 +249,6 @@ public class EpisodeListFragment extends RxFragment {
 				}
 			});
 		}
-
 	}
 
 	private static <T> void addBoundChild(ViewGroup parent, @LayoutRes int layoutId, T child, int position) {
@@ -268,6 +265,7 @@ public class EpisodeListFragment extends RxFragment {
 	public class Model extends BaseObservable {
 		private long _id;
 		public final ObservableField<String> title = new ObservableField<>("");
+		public final ObservableField<String> imageSrc = new ObservableField<>("");
 		public final ObservableBoolean isCurrentlyUpdating = new ObservableBoolean(false);
 		public final ObservableBoolean isSubscribed = new ObservableBoolean(false);
 		public final ObservableBoolean areNewEpisodesAddedToPlaylist = new ObservableBoolean(false);
@@ -277,15 +275,14 @@ public class EpisodeListFragment extends RxFragment {
 			title.set(name);
 		}
 
-		public Model(@Nonnull SubscriptionCursor sub) {
+		public void set(SubscriptionCursor sub) {
 			_id = sub.getId();
+			imageSrc.set("file://" + SubscriptionCursor.getThumbnailFilename(getActivity(), _id));
 			title.set(sub.getTitle());
 			isCurrentlyUpdating.set(false);
 			isSubscribed.set(!sub.isSingleUse());
 			areNewEpisodesAddedToPlaylist.set(sub.areNewEpisodesAddedToPlaylist());
 		}
-
-		public String getImageSrc() { return "file://" + SubscriptionCursor.getThumbnailFilename(getActivity(), _id); }
 
 		public CompoundButton.OnCheckedChangeListener subscribeChange = (button, isChecked) -> {
 			ContentValues values = new ContentValues(1);
@@ -382,8 +379,7 @@ public class EpisodeListFragment extends RxFragment {
 		if (subscriptionCursor == null)
 			return _subscriptionId;
 
-		_model = new Model(subscriptionCursor);
-		_binding.setModel(_model);
+		_model.set(subscriptionCursor);
 		subscriptionCursor.closeCursor();
 
 		return _subscriptionId;
@@ -413,8 +409,11 @@ public class EpisodeListFragment extends RxFragment {
 		while (cursor.moveToNext())
 			models.add(new PodcastModel(cursor));
 
-		_model.podcasts.clear();
-		_model.podcasts.addAll(models);
+		if (models.size() != _model.podcasts.size()) {
+			_model.podcasts.clear();
+			_model.podcasts.addAll(models);
+		}
+
 		cursor.close();
 	}
 
