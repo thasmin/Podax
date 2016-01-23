@@ -9,7 +9,7 @@
 	<TextView
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:text="Last week's stats" />
+		android:text="@string/last_weeks_stats" />
 	<View
 		android:layout_width="match_parent"
 		android:layout_height="2px"
@@ -26,15 +26,16 @@
 			android:layout_alignParentTop="true"
 			android:layout_alignParentLeft="true"
 			android:layout_alignParentStart="true"
-			android:text="Automatically added episodes" />
+			android:text="@string/automatically_added_episodes" />
 
 		<TextView
+			android:id="@+id/listen_label"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
 			android:layout_below="@id/autoadd_label"
 			android:layout_alignParentLeft="true"
 			android:layout_alignParentStart="true"
-			android:text="Listen hours" />
+			android:text="@string/listen_hours" />
 
 		<TextView
 			android:id="@+id/autoadd_time"
@@ -42,7 +43,10 @@
 			android:layout_height="wrap_content"
 			android:layout_alignParentRight="true"
 			android:layout_alignParentEnd="true"
-			android:text="4 hours 3 minutes" />
+			android:layout_toRightOf="@id/autoadd_label"
+			android:layout_toEndOf="@id/autoadd_label"
+			android:gravity="end"
+			tools:text="4 hours 3 minutes" />
 
 		<TextView
 			android:id="@+id/listen_time"
@@ -51,7 +55,10 @@
 			android:layout_height="wrap_content"
 			android:layout_alignParentRight="true"
 			android:layout_alignParentEnd="true"
-			android:text="3 hours 43 minutes" />
+			android:layout_toRightOf="@id/listen_label"
+			android:layout_toEndOf="@id/listen_label"
+			android:gravity="end"
+			tools:text="3 hours 43 minutes" />
 
 		<TextView
 			android:id="@+id/diff_time"
@@ -63,7 +70,7 @@
 			android:layout_alignParentEnd="true"
 			android:textColor="?attr/colorPrimary"
 			android:textSize="15sp"
-			android:text="20 minutes" />
+			tools:text="20 minutes" />
 
 		<TextView
 			android:id="@+id/diff_label"
@@ -77,7 +84,7 @@
 			android:layout_marginEnd="10dp"
 			android:textAllCaps="true"
 			android:textSize="15sp"
-			android:text="EXTRA" />
+			android:text="@string/extra" />
 
 	</RelativeLayout>
 
@@ -110,7 +117,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:textSize="12sp"
-				android:text="check means new episode are added to playlist" />
+				android:text="@string/check_means_new_episode_are_added_to_playlist" />
 
 			<TextView
 				android:id="@+id/subscription_empty"
@@ -118,12 +125,11 @@
 				android:layout_height="wrap_content"
 				android:textSize="12sp"
 				android:visibility="gone"
-				android:text="no_subscriptions" />
+				android:text="@string/no_subscriptions" />
 
 			<CheckBox
 				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:text="tmp" />
+				android:layout_height="wrap_content" />
 
 		</LinearLayout>
 	</ScrollView>

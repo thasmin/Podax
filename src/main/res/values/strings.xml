@@ -305,5 +305,10 @@ limitations under the License.</p>
     <string name="itunes_technology_podcasts">iTunes Technology Podcasts</string>
     <string name="playlist">Playlist</string>
     <string name="discover">Discover</string>
+    <string name="last_weeks_stats">Last week\'s stats</string>
+    <string name="automatically_added_episodes">Automatically added episodes</string>
+    <string name="listen_hours">Listen hours</string>
+    <string name="check_means_new_episode_are_added_to_playlist">check means new episode are added to playlist</string>
+    <string name="no_subscriptions">no_subscriptions</string>
 
 </resources>
