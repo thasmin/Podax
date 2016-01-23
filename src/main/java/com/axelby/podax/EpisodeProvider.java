@@ -524,7 +524,7 @@ public class EpisodeProvider extends ContentProvider {
 				String file = EpisodeCursor.getStoragePath(getContext()) +
 						String.valueOf(episodeId) + "." +
 						EpisodeCursor.getExtension(values.getAsString(COLUMN_MEDIA_URL));
-				// possible bug: file size shrinks for some reason -- don't use new one
+				// TODO: don't change filesize if file is downloaded
 				if (new File(file).length() > values.getAsInteger(COLUMN_FILE_SIZE))
 					values.remove(COLUMN_FILE_SIZE);
 			}
