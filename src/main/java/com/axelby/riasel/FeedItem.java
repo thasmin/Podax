@@ -1,8 +1,8 @@
 package com.axelby.riasel;
 
-import java.util.Date;
-
 import android.content.ContentValues;
+
+import java.util.Date;
 
 public class FeedItem {
 

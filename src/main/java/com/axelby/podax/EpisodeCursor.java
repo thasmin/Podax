@@ -13,10 +13,6 @@ import com.axelby.podax.player.AudioPlayerBase;
 import java.io.File;
 import java.util.Date;
 
-import rx.Observable;
-import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
-
 public class EpisodeCursor {
 
 	private final Cursor _cursor;
