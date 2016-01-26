@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -122,4 +123,15 @@ public class Helper {
         return listenText.toString();
     }
 
+	public static int getVersionCode(Context context) {
+		PackageManager packageManager = context.getPackageManager();
+		if (packageManager == null)
+			return -1;
+
+		try {
+			return packageManager.getPackageInfo(context.getPackageName(), 0).versionCode;
+		} catch (PackageManager.NameNotFoundException ignored) {
+			return -1;
+		}
+	}
 }

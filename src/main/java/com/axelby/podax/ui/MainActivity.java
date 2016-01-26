@@ -14,7 +14,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Point;
@@ -37,9 +36,11 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.axelby.gpodder.AuthenticatorActivity;
+import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.GPodderProvider;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;
@@ -76,33 +77,30 @@ public class MainActivity extends RxAppCompatActivity {
             PlayerStatus.updateState(this, PlayerStatus.PlayerStates.STOPPED);
 
         // release notes dialog
-        try {
-            PackageManager packageManager = getApplication().getPackageManager();
-            if (packageManager != null) {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                int lastReleaseNoteDialog = preferences.getInt("lastReleaseNoteDialog", 0);
-                int versionCode = packageManager.getPackageInfo(getPackageName(), 0).versionCode;
-                if (lastReleaseNoteDialog < versionCode) {
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.release_notes)
-                            .setMessage(R.string.release_notes_detailed)
-                            .setPositiveButton(R.string.view_release_notes, (dialogInterface, i) -> {
-								startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, AboutFragment.class, null));
-							})
-                            .setNegativeButton(R.string.no_thanks, (dialogInterface, i) -> {
-							})
-                            .create()
-                            .show();
-                    preferences.edit().putInt("lastReleaseNoteDialog", versionCode).apply();
-                }
-            }
-        } catch (PackageManager.NameNotFoundException ignored) {
-        }
+		int versionCode = Helper.getVersionCode(this);
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		int lastReleaseNoteDialog = preferences.getInt("lastReleaseNoteDialog", 0);
+		if (lastReleaseNoteDialog > 0 && lastReleaseNoteDialog < versionCode) {
+			showReleaseNotesDialog();
+			preferences.edit().putInt("lastReleaseNoteDialog", versionCode).apply();
+		}
 
 		showLatestActivityIfNewEpisodes();
 
 		setupUI();
     }
+
+	private void showReleaseNotesDialog() {
+		new AlertDialog.Builder(this)
+			.setTitle(R.string.release_notes)
+			.setMessage(R.string.release_notes_detailed)
+			.setPositiveButton(R.string.view_release_notes, (dialogInterface, i) -> {
+				AppFlow.get(this).onRequestViewReleaseNotes();
+			})
+			.setNegativeButton(R.string.no_thanks, (dialogInterface, i) -> { })
+			.create()
+			.show();
+	}
 
 	private void showLatestActivityIfNewEpisodes() {
 		SharedPreferences prefs = getSharedPreferences("latest_activity", Context.MODE_PRIVATE);
@@ -177,52 +175,11 @@ public class MainActivity extends RxAppCompatActivity {
 		@Override
 		public boolean onNavigationItemSelected(MenuItem menuItem) {
 			_drawerLayout.closeDrawer(GravityCompat.START);
-
-			Class<? extends Fragment> fragmentClass;
-			switch (menuItem.getItemId()) {
-				case R.id.playlist:
-					fragmentClass = PlaylistFragment.class;
-					break;
-				case R.id.subscriptions:
-					fragmentClass = SubscriptionListFragment.class;
-					break;
-				case R.id.discover:
-					fragmentClass = DiscoverFragment.class;
-					break;
-				case R.id.latest_activity:
-					fragmentClass = LatestActivityFragment.class;
-					break;
-				case R.id.weekly_planner:
-					fragmentClass = WeeklyPlannerFragment.class;
-					break;
-				case R.id.finished_episodes:
-					fragmentClass = FinishedEpisodeFragment.class;
-					break;
-				case R.id.gpodder:
-					handleGPodder();
-					return true;
-				case R.id.stats:
-					fragmentClass = StatsFragment.class;
-					break;
-				case R.id.preferences:
-					fragmentClass = PodaxPreferenceFragment.class;
-					break;
-				case R.id.about:
-					fragmentClass = AboutFragment.class;
-					break;
-				case R.id.log_viewer:
-					fragmentClass = LogViewerFragment.class;
-					break;
-				default:
-					return false;
-			}
-			showFragment(menuItem.getTitle(), fragmentClass);
-			return true;
+			return AppFlow.get(MainActivity.this).onMainMenuItem(menuItem.getItemId());
 		}
 	};
 
-	private void showFragment(CharSequence title, Class<? extends Fragment> fragmentClass) {
-		Fragment fragment = Fragment.instantiate(this, fragmentClass.getCanonicalName());
+	public void showMainFragment(CharSequence title, Fragment fragment) {
 		if (getSupportActionBar() != null)
 			getSupportActionBar().setTitle(title);
 
@@ -234,6 +191,7 @@ public class MainActivity extends RxAppCompatActivity {
 
 	@Override
 	public void onBackPressed() {
+		// TODO: use app flow for back button
 		FragmentManager fm = getFragmentManager();
 		if (fm.popBackStackImmediate()) {
 			if (getSupportActionBar() != null)
@@ -328,5 +286,4 @@ public class MainActivity extends RxAppCompatActivity {
 			ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
 		}
 	}
-
 }

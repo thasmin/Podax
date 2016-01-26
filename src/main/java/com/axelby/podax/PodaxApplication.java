@@ -22,8 +22,12 @@ import org.acra.annotation.ReportsCrashes;
 		resDialogOkToast = R.string.crash_dialog_ok_text)
 public class PodaxApplication extends Application {
 
+	private AppFlow _appFlow;
+
 	@Override
 	public void onCreate() {
+		_appFlow = new AppFlow(this);
+
         if (!PodaxLog.isDebuggable(this))
 			ACRA.init(this);
 
@@ -55,4 +59,7 @@ public class PodaxApplication extends Application {
 		BootReceiver.setupAlarms(getApplicationContext());
 	}
 
+	public AppFlow getFlow() {
+		return _appFlow;
+	}
 }
