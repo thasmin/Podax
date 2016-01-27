@@ -6,73 +6,27 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.MenuRes;
-import android.support.v7.view.menu.MenuBuilder;
 import android.util.Log;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import com.axelby.podax.ui.AboutFragment;
-import com.axelby.podax.ui.DiscoverFragment;
 import com.axelby.podax.ui.EpisodeDetailFragment;
-import com.axelby.podax.ui.FinishedEpisodeFragment;
-import com.axelby.podax.ui.LatestActivityFragment;
-import com.axelby.podax.ui.LogViewerFragment;
 import com.axelby.podax.ui.MainActivity;
-import com.axelby.podax.ui.PlaylistFragment;
 import com.axelby.podax.ui.PodaxFragmentActivity;
-import com.axelby.podax.ui.PodaxPreferenceFragment;
-import com.axelby.podax.ui.StatsFragment;
-import com.axelby.podax.ui.SubscriptionListFragment;
-import com.axelby.podax.ui.WeeklyPlannerFragment;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AppFlow {
 	// TODO: move static fields to another class
 
 	private static boolean _appSet = false;
+	private static AppFlowDrawerMenu _drawerMenu = null;
 	private static WeakReference<MainActivity> _mainActivity;
-	private static Map<Integer, ScreenChange> _mainMenuMap = new HashMap<>(12);
-
-	private static void addMainMenuFragment(int id, String description, Class<? extends Fragment> fragmentClass) {
-		ScreenChange sc = new ScreenChangeBuilder(id, description, Frame.MainFragment).fragment(fragmentClass).build();
-		_mainMenuMap.put(id, sc);
-	}
-
-	static {
-		addMainMenuFragment(R.id.playlist, "playlist", PlaylistFragment.class);
-		addMainMenuFragment(R.id.subscriptions, "subscriptions", SubscriptionListFragment.class);
-		addMainMenuFragment(R.id.discover, "discover", DiscoverFragment.class);
-		addMainMenuFragment(R.id.latest_activity, "latest-activity", LatestActivityFragment.class);
-		addMainMenuFragment(R.id.weekly_planner, "weekly-planner", WeeklyPlannerFragment.class);
-		addMainMenuFragment(R.id.finished_episodes, "finished-episodes", FinishedEpisodeFragment.class);
-		//addMainMenuActivity(R.id.gpodder, "gpodder-sync", GPodderActivity.class);
-		addMainMenuFragment(R.id.stats, "stats", StatsFragment.class);
-		addMainMenuFragment(R.id.preferences, "preferences", PodaxPreferenceFragment.class);
-		addMainMenuFragment(R.id.about, "about", AboutFragment.class);
-		addMainMenuFragment(R.id.log_viewer, "debug", LogViewerFragment.class);
-
-	}
 
 	public static void setApplication(PodaxApplication app) {
 		if (_appSet)
 			return;
 		app.registerActivityLifecycleCallbacks(new LifecycleCallbackHandler());
-
-		MenuInflater menuInflater = new MenuInflater(app);
-		MenuBuilder menu = new MenuBuilder(app);
-		menuInflater.inflate(R.menu.app, menu);
-		for (int i = 0; i < menu.size(); i++) {
-			MenuItem item = menu.getItem(i);
-			if (!_mainMenuMap.containsKey(item.getItemId())) {
-				Log.w("AppFlow", String.format("potentially unhandled menu item: %1$s (%2$d)", item.getTitle(), item.getItemId()));
-				continue;
-			}
-			_mainMenuMap.get(item.getItemId()).setTitle(item.getTitle());
-			//int groupId = item.getGroupId();
-		}
+		_drawerMenu = new AppFlowDrawerMenu(app);
 
 		_appSet = true;
 	}
@@ -84,13 +38,13 @@ public class AppFlow {
 	private final Context _context;
 
 	// 3 options: open in main fragment, open in detail fragment, or open new activity
-	enum Frame {
+	public enum Frame {
 		MainFragment,
 		DetailFragment,
 		Activity
 	}
 
-	static class ScreenChangeBuilder {
+	public static class ScreenChangeBuilder {
 		private int _id;
 		private String _description;
 		private Class<? extends Fragment> _fragmentClass = null;
@@ -119,7 +73,7 @@ public class AppFlow {
 
 	}
 
-	static class ScreenChange {
+	public static class ScreenChange {
 		private int _id;
 		private String _description;
 		private Class<? extends Fragment> _fragmentClass = null;
@@ -201,11 +155,11 @@ public class AppFlow {
 	}
 
 	public boolean onMainMenuItem(@MenuRes int itemId) {
-		if (!_mainMenuMap.containsKey(itemId)) {
+		if (!_drawerMenu.contains(itemId)) {
 			Log.e("AppFlow", "unhandled menu item: " + itemId);
 			return false;
 		}
-		ScreenChange change = _mainMenuMap.get(itemId);
+		ScreenChange change = _drawerMenu.get(itemId);
 
 		MainActivity mainActivity = _mainActivity.get();
 		if (mainActivity == null)
