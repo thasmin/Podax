@@ -16,7 +16,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -26,14 +25,10 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.SearchView;
-import android.widget.TextView;
 
 import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.AppFlow;
@@ -52,12 +47,6 @@ public class MainActivity extends RxAppCompatActivity {
 
     private ActionBarDrawerToggle _drawerToggle;
     private DrawerLayout _drawerLayout;
-
-	private View _progressbg;
-	private View _progressline;
-    private ImageButton _play;
-    private TextView _episodeTitle;
-    private ImageButton _expand;
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,22 +141,8 @@ public class MainActivity extends RxAppCompatActivity {
 				R.string.open_drawer, R.string.close_drawer);
 		_drawerLayout.setDrawerListener(_drawerToggle);
 
+		// start by acting on first item in nav menu
 		_handleDrawerItem.onNavigationItemSelected(navMenu.getMenu().getItem(0));
-
-		// bottom bar controls
-		_progressbg = findViewById(R.id.progressbg);
-		_progressline = findViewById(R.id.progressline);
-		_play = (ImageButton) findViewById(R.id.play);
-		_episodeTitle = (TextView) findViewById(R.id.episodeTitle);
-		_expand = (ImageButton) findViewById(R.id.expand);
-		initializeBottom(PlayerStatus.getCurrentState(this));
-
-		PlayerStatus.asObservable()
-			.compose(bindToLifecycle())
-			.subscribe(
-				this::initializeBottom,
-				e -> Log.d("MainActivity", "unable to update bottom bar", e)
-			);
 	}
 
 	@NonNull
@@ -200,56 +175,6 @@ public class MainActivity extends RxAppCompatActivity {
 		}
 		super.onBackPressed();
 	}
-
-	private void initializeBottom(PlayerStatus playerState) {
-        if (playerState.hasActiveEpisode()) {
-			Point screenSize = new Point();
-			getWindowManager().getDefaultDisplay().getSize(screenSize);
-			float progress = 1.0f * playerState.getPosition() / playerState.getDuration();
-			int widthPx = (int) (screenSize.x * progress);
-
-			_progressbg.setVisibility(View.VISIBLE);
-			ViewGroup.MarginLayoutParams bgParams = (ViewGroup.MarginLayoutParams) _progressbg.getLayoutParams();
-			bgParams.setMargins(widthPx, 0, 0, 0);
-			_progressbg.setLayoutParams(bgParams);
-
-			_progressline.setVisibility(View.VISIBLE);
-			ViewGroup.MarginLayoutParams lineParams = (ViewGroup.MarginLayoutParams) _progressline.getLayoutParams();
-			lineParams.setMargins(0, 0, screenSize.x - widthPx, 0);
-			_progressline.setLayoutParams(lineParams);
-
-           int playResource = playerState.isPlaying() ? R.drawable.ic_action_pause : R.drawable.ic_action_play;
-            _play.setImageResource(playResource);
-            _play.setOnClickListener(view -> {
-				Context context = MainActivity.this;
-				PlayerStatus playerState1 = PlayerStatus.getCurrentState(context);
-				if (playerState1.isPlaying()) {
-					_play.setImageResource(R.drawable.ic_action_play);
-					PlayerService.stop(context);
-				} else {
-					_play.setImageResource(R.drawable.ic_action_pause);
-					PlayerService.play(context);
-				}
-			});
-
-			View.OnClickListener displayCurrentEpisode =
-				view -> startActivity(PodaxFragmentActivity.createIntent(MainActivity.this, EpisodeDetailFragment.class, null));
-
-            _episodeTitle.setText(playerState.getTitle());
-			_episodeTitle.setOnClickListener(displayCurrentEpisode);
-
-            _expand.setImageResource(R.drawable.ic_action_collapse);
-			_expand.setOnClickListener(displayCurrentEpisode);
-        } else {
-			_progressbg.setVisibility(View.GONE);
-			_progressline.setVisibility(View.GONE);
-            _play.setImageDrawable(null);
-			_play.setOnClickListener(null);
-            _episodeTitle.setText(R.string.playlist_empty);
-            _expand.setImageDrawable(null);
-			_expand.setOnClickListener(null);
-        }
-    }
 
     private boolean isPlayerServiceRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);

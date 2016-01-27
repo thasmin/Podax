@@ -51,9 +51,21 @@ public class EpisodeCursor {
 	}
 
 	public static long getActiveEpisodeId(Context context) {
+		// first check shared pref, then db
 		final String PREF_ACTIVE = "active";
 		SharedPreferences prefs = context.getSharedPreferences("internals", Context.MODE_PRIVATE);
-		return prefs.getLong(PREF_ACTIVE, -1);
+		long activeId = prefs.getLong(PREF_ACTIVE, -1);
+		if (activeId != -1)
+			return activeId;
+
+		Cursor c = context.getContentResolver().query(EpisodeProvider.URI,
+			new String[] { EpisodeProvider.COLUMN_ID },
+			EpisodeProvider.COLUMN_PLAYLIST_POSITION + " = 0", null, null);
+		if (c == null || !c.moveToNext())
+			return -1;
+		activeId = c.getLong(0);
+		c.close();
+		return activeId;
 	}
 
 	private static Uri getContentUri(long id) {

@@ -133,7 +133,6 @@ public class EpisodeDetailFragment extends RxFragment {
 		if (_podcastId == -1) {
 			Log.w("EpisodeDetailFragment", "no active episode to show");
 		}
-
 	}
 
 	@Override
