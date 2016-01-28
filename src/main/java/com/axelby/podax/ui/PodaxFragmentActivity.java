@@ -9,14 +9,18 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 
+import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 
 public class PodaxFragmentActivity extends AppCompatActivity {
 
-    public static Intent createIntent(Context context, Class fragmentClass, String extraId, long id) {
+	private Fragment _fragment;
+
+	public static Intent createIntent(Context context, Class fragmentClass, String extraId, long id) {
         Intent intent = new Intent(context, PodaxFragmentActivity.class);
         intent.putExtra(Constants.EXTRA_FRAGMENT_CLASSNAME, fragmentClass.getCanonicalName());
         Bundle args = new Bundle(1);
@@ -45,10 +49,13 @@ public class PodaxFragmentActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 		String fragmentClassName = intent.getStringExtra(Constants.EXTRA_FRAGMENT_CLASSNAME);
-		if (fragmentClassName == null || fragmentClassName.equals(""))
+		if (fragmentClassName == null || fragmentClassName.equals("")) {
+			Log.e("PodaxFragmentActivity", "no fragment name in intent extras");
 			finish();
+			return;
+		}
 		Bundle bundle = intent.getBundleExtra(Constants.EXTRA_ARGS);
-		createFragment(fragmentClassName, bundle);
+		_fragment = createFragment(fragmentClassName, bundle);
 	}
 
 	@Override
@@ -62,12 +69,22 @@ public class PodaxFragmentActivity extends AppCompatActivity {
 		}
 	}
 
-    void createFragment(String fragmentClassName, Bundle arguments) {
+	@Override
+	public void onBackPressed() {
+		AppFlow.get(this).goBack();
+	}
+
+	private Fragment createFragment(String fragmentClassName, Bundle arguments) {
         Fragment fragment = Fragment.instantiate(this, fragmentClassName);
         fragment.setArguments(arguments);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         ft.replace(R.id.fragment, fragment);
         ft.commit();
+		return fragment;
     }
+
+	public Fragment getFragment() {
+		return _fragment;
+	}
 }

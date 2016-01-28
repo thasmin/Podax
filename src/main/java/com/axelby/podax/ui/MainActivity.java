@@ -5,7 +5,6 @@ import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.SearchManager;
@@ -74,9 +73,9 @@ public class MainActivity extends RxAppCompatActivity {
 			preferences.edit().putInt("lastReleaseNoteDialog", versionCode).apply();
 		}
 
-		showLatestActivityIfNewEpisodes();
-
 		setupUI();
+
+		showLatestActivityIfNewEpisodes();
     }
 
 	private void showReleaseNotesDialog() {
@@ -102,12 +101,11 @@ public class MainActivity extends RxAppCompatActivity {
 		Cursor c = getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI,
 				null, EpisodeProvider.COLUMN_PUB_DATE + ">?",
 				new String[] { String.valueOf(lastActivityCheck) }, null);
-		if (c != null) {
-			if (c.getCount() > 0) {
-				startActivity(PodaxFragmentActivity.createIntent(this, LatestActivityFragment.class, null));
-			}
-			c.close();
-		}
+		if (c == null)
+			return;
+		if (c.getCount() > 0)
+			AppFlow.get(this).displayLatestActivity();
+		c.close();
 	}
 
 	@Override
@@ -160,20 +158,19 @@ public class MainActivity extends RxAppCompatActivity {
 
 		FragmentTransaction trans = getFragmentManager().beginTransaction();
 		trans.replace(R.id.fragment, fragment);
-		trans.addToBackStack(title.toString());
+		trans.commit();
+	}
+
+	public void showDetailFragment(Fragment fragment) {
+		// TODO: determine whether the layout has a detail fragment and put the fragment there
+		FragmentTransaction trans = getFragmentManager().beginTransaction();
+		trans.replace(R.id.fragment, fragment);
 		trans.commit();
 	}
 
 	@Override
 	public void onBackPressed() {
-		// TODO: use app flow for back button
-		FragmentManager fm = getFragmentManager();
-		if (fm.popBackStackImmediate()) {
-			if (getSupportActionBar() != null)
-				getSupportActionBar().setTitle(fm.getBackStackEntryAt(fm.getBackStackEntryCount() - 1).getName());
-			return;
-		}
-		super.onBackPressed();
+		AppFlow.get(this).goBack();
 	}
 
     private boolean isPlayerServiceRunning() {
