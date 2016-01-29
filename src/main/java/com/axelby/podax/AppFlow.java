@@ -33,9 +33,10 @@ public class AppFlow {
 		_appSet = true;
 	}
 
-	public static Deque<ScreenChange> _backstack = new ArrayDeque<>(10);
-	public static Activity _currentActivity = null;
+	private static Deque<ScreenChange> _backstack = new ArrayDeque<>(10);
+	private static Activity _currentActivity = null;
 	private static WeakReference<MainActivity> _mainActivity = new WeakReference<>(null);
+	private static boolean _hasDetailFragment = true;
 
 	static {
 		// initial backstack should have mainactivity in it
@@ -60,9 +61,7 @@ public class AppFlow {
 		private Class<? extends Activity> _activityClass = null;
 		private Frame _destination;
 		private CharSequence _title;
-
-		// used for back stack
-		private WeakReference<Fragment> _fragment = new WeakReference<>(null);
+		private Bundle _args;
 
 		private ScreenChange() { }
 
@@ -78,53 +77,66 @@ public class AppFlow {
 		}
 
 		public static ScreenChange activity(Class<? extends Activity> activityClass) {
+			return ScreenChange.activity(activityClass, null);
+		}
+
+		public static ScreenChange activity(Class<? extends Activity> activityClass, Bundle args) {
 			ScreenChange sc = new ScreenChange();
-			sc._activityClass = activityClass;
 			sc._destination = Frame.Activity;
+			sc._activityClass = activityClass;
+			sc._args = args;
 			return sc;
 		}
 
 		public static ScreenChange mainFragment(CharSequence title, Class<? extends Fragment> fragmentClass) {
 			ScreenChange sc = new ScreenChange();
+			sc._destination = Frame.MainFragment;
 			sc._fragmentClass = fragmentClass;
 			sc._title = title;
-			sc._destination = Frame.MainFragment;
 			return sc;
 		}
 
 		public static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass) {
+			return ScreenChange.detailFragment(fragmentClass, null);
+		}
+
+		public static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass, Bundle args) {
 			ScreenChange sc = new ScreenChange();
-			sc._fragmentClass = fragmentClass;
 			sc._destination = Frame.DetailFragment;
+			sc._fragmentClass = fragmentClass;
+			sc._args = args;
 			return sc;
 		}
 
 		public static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass) {
+			return ScreenChange.fragmentActivity(fragmentClass, null);
+		}
+
+		public static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass, Bundle args) {
 			ScreenChange sc = new ScreenChange();
-			sc._fragmentClass = fragmentClass;
 			sc._destination = Frame.Activity;
+			sc._fragmentClass = fragmentClass;
+			sc._args = args;
 			return sc;
+		}
+
+		public boolean openedActivity() {
+			return _destination == Frame.FragmentActivity ||
+				_destination == Frame.Activity ||
+				(_destination == Frame.DetailFragment && !_hasDetailFragment);
 		}
 
 		public boolean apply(Context context) {
 			if (this._destination == Frame.Activity) {
 				Intent intent = new Intent(context, _activityClass);
-				context.startActivity(intent);
+				context.startActivity(intent, _args);
 				return true;
 			}
 
 			if (this._destination == Frame.FragmentActivity) {
 				Fragment fragment = Fragment.instantiate(context, _fragmentClass.getName());
-				context.startActivity(PodaxFragmentActivity.createIntent(context, _fragmentClass, null));
-				this._fragment = new WeakReference<>(fragment);
+				context.startActivity(PodaxFragmentActivity.createIntent(context, _fragmentClass, _args));
 				return true;
-			}
-
-			MainActivity mainActivity = _mainActivity.get();
-			if (mainActivity == null) {
-				// TODO: if this case is possible, start the main activity
-				Log.e("AppFlow", "Main activity isn't present");
-				return false;
 			}
 
 			Class<? extends Fragment> fragmentClass = this._fragmentClass;
@@ -134,19 +146,31 @@ public class AppFlow {
 			}
 
 			if (this._destination == Frame.MainFragment) {
+				MainActivity mainActivity = _mainActivity.get();
+				if (mainActivity == null) {
+					// TODO: if this case is possible, start the main activity
+					Log.e("AppFlow", "Main activity isn't present");
+					return false;
+				}
+
 				if (_title == null) {
 					Log.e("AppFlow", "title not set in main fragment screen change");
 					return false;
 				}
 
-				this._fragment = new WeakReference<>(Fragment.instantiate(mainActivity, fragmentClass.getName()));
-				mainActivity.showMainFragment(this._title, this._fragment.get());
+				Fragment fragment = Fragment.instantiate(context, fragmentClass.getName(), _args);
+				mainActivity.showMainFragment(this._title, fragment);
 				return true;
 			}
 
 			if (this._destination == Frame.DetailFragment) {
-				this._fragment = new WeakReference<>(Fragment.instantiate(mainActivity, fragmentClass.getName()));
-				mainActivity.showDetailFragment(this._fragment.get());
+				Fragment fragment = Fragment.instantiate(context, fragmentClass.getName(), _args);
+				MainActivity mainActivity = _mainActivity.get();
+				if (mainActivity != null && _hasDetailFragment)
+					mainActivity.showDetailFragment(fragment);
+				else
+					context.startActivity(PodaxFragmentActivity.createIntent(context, fragmentClass, _args));
+
 				return true;
 			}
 
@@ -163,19 +187,15 @@ public class AppFlow {
 				return false;
 			MainActivity mainActivity = _mainActivity.get();
 
-			Fragment fragment = _fragment.get();
-			if (fragment == null)
-				fragment = Fragment.instantiate(context, _fragmentClass.getName());
+			Fragment fragment = Fragment.instantiate(context, _fragmentClass.getName());
 
 			if (_destination == Frame.MainFragment) {
 				mainActivity.showMainFragment(_title, fragment);
-				_fragment = new WeakReference<>(fragment);
 				return true;
 			}
 
 			if (_destination == Frame.DetailFragment) {
 				mainActivity.showDetailFragment(fragment);
-				_fragment = new WeakReference<>(fragment);
 				return true;
 			}
 
@@ -194,10 +214,14 @@ public class AppFlow {
 		if (_backstack.size() == 2)
 			return;
 
-		ScreenChange sc = _backstack.removeFirst();
-		Log.d("AppFlow", "popping " + sc);
-		if (sc._destination == Frame.FragmentActivity || sc._destination == Frame.Activity)
+		ScreenChange ending = _backstack.removeFirst();
+		Log.d("AppFlow", "popping " + ending);
+
+		// finishing an activity restores the previous state
+		if (ending.openedActivity()) {
 			_currentActivity.finish();
+			return;
+		}
 
 		_backstack.peekFirst().restore(_context);
 		Log.d("AppFlow", "restoring " + _backstack.peekFirst());
@@ -244,6 +268,13 @@ public class AppFlow {
 		return true;
 	}
 
+	public boolean displayEpisode(long episodeId) {
+		Bundle args = new Bundle(1);
+		args.putLong(Constants.EXTRA_EPISODE_ID, episodeId);
+		switchTo(ScreenChange.detailFragment(EpisodeDetailFragment.class, args));
+		return true;
+	}
+
 	private void startActivityFragment(Class<? extends Fragment> fragmentClass) {
 		ScreenChange sc = ScreenChange.fragmentActivity(fragmentClass);
 		switchTo(sc);
@@ -255,21 +286,9 @@ public class AppFlow {
 			_currentActivity = activity;
 
 			// keep reference to main activity so we can change its fragment
-			if (activity instanceof MainActivity)
+			if (activity instanceof MainActivity) {
 				_mainActivity = new WeakReference<>((MainActivity) activity);
-
-			ScreenChange lastChange = _backstack.peekFirst();
-			if (lastChange._destination == Frame.FragmentActivity) {
-				if (!(activity instanceof PodaxFragmentActivity)) {
-					Log.e("AppFlow", "expecting a PodaxFragmentActivity");
-					return;
-				}
-				if (lastChange._fragment.get() != null) {
-					Log.e("AppFlow", "not expecting a new fragment activity");
-					return;
-				}
-
-				lastChange._fragment = new WeakReference<>(((PodaxFragmentActivity) activity).getFragment());
+				_hasDetailFragment = _mainActivity.get().hasDetailFragment();
 			}
 		}
 

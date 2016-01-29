@@ -22,7 +22,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.axelby.podax.Constants;
+import com.axelby.podax.AppFlow;
 import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeDownloadService;
 import com.axelby.podax.EpisodeProvider;
@@ -264,7 +264,7 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 
 		private final OnClickListener _clickHandler = view -> {
 			long episodeId = (Long) view.getTag();
-			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
+			AppFlow.get(getActivity()).displayEpisode(episodeId);
 		};
 
         private final OnClickListener _playHandler = view -> {

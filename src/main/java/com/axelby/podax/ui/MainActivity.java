@@ -161,6 +161,11 @@ public class MainActivity extends RxAppCompatActivity {
 		trans.commit();
 	}
 
+	public boolean hasDetailFragment() {
+		// TODO: determine whether the layout has a detail fragment
+		return false;
+	}
+
 	public void showDetailFragment(Fragment fragment) {
 		// TODO: determine whether the layout has a detail fragment and put the fragment there
 		FragmentTransaction trans = getFragmentManager().beginTransaction();
