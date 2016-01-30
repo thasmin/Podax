@@ -2,11 +2,20 @@ package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.databinding.BaseObservable;
+import android.databinding.BindingAdapter;
+import android.databinding.DataBindingUtil;
+import android.databinding.ObservableBoolean;
+import android.databinding.ObservableField;
+import android.databinding.ObservableInt;
+import android.databinding.ObservableLong;
+import android.databinding.ViewDataBinding;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,12 +26,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.axelby.podax.AppFlow;
+import com.axelby.podax.BR;
 import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeDownloadService;
 import com.axelby.podax.EpisodeProvider;
@@ -42,6 +50,7 @@ import javax.annotation.Nonnull;
 import rx.Subscriber;
 
 public class PlaylistFragment extends RxFragment {
+	private RecyclerView _listView;
 	private PlaylistListAdapter _adapter;
 
 	private ImageView _overlay;
@@ -86,7 +95,6 @@ public class PlaylistFragment extends RxFragment {
 					_isDragging = true;
 
 					View itemView = rv.findChildViewUnder(e.getX(), e.getY());
-Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(itemView) + " which is id " + _dragEpisodeId);
 
 					// keep track of the mouse location, top of item, and episode id
 					_dragStartMouseY = e.getY();
@@ -155,7 +163,6 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 		public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
 		}
 	};
-	private RecyclerView _listView;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -165,6 +172,7 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 
 		_adapter = new PlaylistListAdapter();
 		EpisodeData.getObservables(activity, EpisodeData.PLAYLIST)
+			.map(EpisodeModel::new)
 			.toList()
 			.compose(bindToLifecycle())
 			.subscribe(
@@ -218,9 +226,9 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 
 	private class PlaylistListAdapter extends RecyclerView.Adapter<PlaylistListAdapter.ViewHolder> {
 
-		private List<EpisodeData> _episodes = new ArrayList<>(0);
+		private List<EpisodeModel> _episodes = new ArrayList<>(0);
 		private TreeMap<Long, Integer> _ids = new TreeMap<>();
-		private final Subscriber<EpisodeData> _episodeSubscriber = new Subscriber<EpisodeData>() {
+		private final Subscriber<EpisodeModel> _episodeSubscriber = new Subscriber<EpisodeModel>() {
 			@Override public void onCompleted() { }
 
 			@Override
@@ -229,62 +237,25 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 			}
 
 			@Override
-			public void onNext(EpisodeData episodeData) {
+			public void onNext(EpisodeModel episodeData) {
 				updateEpisode(episodeData);
 			}
 		};
 
 		class ViewHolder extends RecyclerView.ViewHolder {
-			public final View container;
-            public final TextView title;
-            public final ImageView thumbnail;
-			public final TextView duration;
-            public final TextView downloaded;
-			public final View play;
-			public final View remove;
+			public final ViewDataBinding binding;
 
-            public ViewHolder(View view) {
+			public ViewHolder(View view) {
 				super(view);
-
-				container = view;
-				container.setOnClickListener(_clickHandler);
-
-                title = (TextView) view.findViewById(R.id.title);
-                thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-				duration = (TextView) view.findViewById(R.id.duration);
-                downloaded = (TextView) view.findViewById(R.id.downloaded);
-
-				play = view.findViewById(R.id.play);
-				play.setOnClickListener(_playHandler);
-
-				remove = view.findViewById(R.id.remove);
-				remove.setOnClickListener(_removeHandler);
+				binding = DataBindingUtil.bind(view);
             }
         }
-
-		private final OnClickListener _clickHandler = view -> {
-			long episodeId = (Long) view.getTag();
-			AppFlow.get(getActivity()).displayEpisode(episodeId);
-		};
-
-        private final OnClickListener _playHandler = view -> {
-			long episodeId = (Long) view.getTag();
-			PlayerService.play(getActivity(), episodeId);
-		};
-
-        private final OnClickListener _removeHandler = view -> {
-			long episodeId = (Long) view.getTag();
-
-			ContentValues values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-			getActivity().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
-		};
 
 		public PlaylistListAdapter() {
 			setHasStableIds(true);
 		}
 
-		public void setEpisodes(List<EpisodeData> episodes) {
+		public void setEpisodes(List<EpisodeModel> episodes) {
 			_episodes = episodes;
 			notifyDataSetChanged();
 
@@ -294,11 +265,12 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 
 			_episodeSubscriber.unsubscribe();
 			EpisodeData.getEpisodeWatcher()
+				.map(EpisodeModel::new)
 				.compose(bindToLifecycle())
 				.subscribe(_episodeSubscriber);
 		}
 
-		public void updateEpisode(EpisodeData episode) {
+		public void updateEpisode(EpisodeModel episode) {
 			Integer position = _ids.get(episode.getId());
 			if (position == null)
 				return;
@@ -308,40 +280,13 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 
 		@Override
 		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_list_item, parent, false);
-			return new ViewHolder(view);
+			LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+			return new ViewHolder(inflater.inflate(R.layout.playlist_list_item, parent, false));
 		}
 
         @Override
 		public void onBindViewHolder(ViewHolder holder, int position) {
-			EpisodeData episode = _episodes.get(position);
-
-			holder.play.setTag(episode.getId());
-			holder.remove.setTag(episode.getId());
-			holder.container.setTag(episode.getId());
-
-            holder.title.setText(episode.getTitle());
-            SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()).into(holder.thumbnail);
-			holder.duration.setText(Helper.getTimeString(episode.getDuration()));
-
-			String episodeFilename = episode.getFilename(getActivity());
-			float downloaded = new File(episodeFilename).length();
-            if (episode.getFileSize() == downloaded) {
-				holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
-				holder.downloaded.setText(R.string.downloaded);
-            } else if (EpisodeDownloadService.isDownloading(episodeFilename)) {
-				holder.downloaded.setTextColor(0xff669900); //android.R.color.holo_green_dark
-				holder.downloaded.setText(R.string.now_downloading);
-			} else {
-				holder.downloaded.setTextColor(0xffcc0000); //android.R.color.holo_red_dark
-				holder.downloaded.setText(R.string.not_downloaded);
-			}
-
-			// handle dragging status
-			if (!_isDragging || episode.getId() != _dragEpisodeId)
-				holder.container.setVisibility(View.VISIBLE);
-			else
-				holder.container.setVisibility(View.GONE);
+			holder.binding.setVariable(BR.model, _episodes.get(position));
 		}
 
 		@Override
@@ -368,11 +313,75 @@ Log.d("PlaylistFragment", "starting under item " + rv.getChildAdapterPosition(it
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
 
 			int oldPosition = getPositionForId(id);
-			EpisodeData ep = _episodes.get(newPosition);
+			EpisodeModel ep = _episodes.get(newPosition);
 			_episodes.set(newPosition, _episodes.get(oldPosition));
 			_episodes.set(oldPosition, ep);
 
 			notifyItemMoved(getPositionForId(id), newPosition);
 		}
+
 	}
+
+	@BindingAdapter({"app:subscriptionImageId"})
+	@SuppressWarnings("unused")
+	public static void loadSubscriptionImage(ImageView image, long subscriptionId) {
+		if (subscriptionId != -1)
+			SubscriptionCursor.getThumbnailImage(image.getContext(), subscriptionId).into(image);
+	}
+
+	@SuppressWarnings("unused")
+	public class EpisodeModel extends BaseObservable {
+		private final long _id;
+
+		// backup string: android.resource://com.axelby.podax/" + R.drawable.icon
+		public final ObservableLong subscriptionId = new ObservableLong(-1);
+		public final ObservableField<String> title = new ObservableField<>("");
+		public final ObservableField<String> downloadStatus = new ObservableField<>("downloaded");
+		public final ObservableInt downloadStatusColor = new ObservableInt(0xff669900);
+		public final ObservableField<String> duration = new ObservableField<>("");
+		public final ObservableBoolean isDragging = new ObservableBoolean(false);
+
+		public EpisodeModel(@NonNull EpisodeData episode) {
+			_id = episode.getId();
+			title.set(episode.getTitle());
+			subscriptionId.set(episode.getSubscriptionId());
+			duration.set(Helper.getTimeString(episode.getDuration()));
+
+			String episodeFilename = episode.getFilename(getActivity());
+			float downloaded = new File(episodeFilename).length();
+            if (episode.getFileSize() == downloaded) {
+				downloadStatusColor.set(0xff669900); //android.R.color.holo_green_dark
+				downloadStatus.set(getString(R.string.downloaded));
+            } else if (EpisodeDownloadService.isDownloading(episodeFilename)) {
+				downloadStatusColor.set(0xff669900); //android.R.color.holo_green_dark
+				downloadStatus.set(getString(R.string.now_downloading));
+			} else {
+				downloadStatusColor.set(0xffcc0000); //android.R.color.holo_red_dark
+				downloadStatus.set(getString(R.string.not_downloaded));
+			}
+		}
+
+		public long getId() {
+			return _id;
+		}
+
+		public void setIsDragging(boolean isDragging) {
+			this.isDragging.set(isDragging);
+		}
+
+		public void show(View view) {
+			AppFlow.get(getActivity()).displayEpisode(_id);
+		}
+
+		public void play(View view) {
+			PlayerService.play(getActivity(), _id);
+		}
+
+		public void remove(View view) {
+			ContentValues values = new ContentValues();
+			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
+			getActivity().getContentResolver().update(EpisodeProvider.getContentUri(_id), values, null, null);
+		}
+	}
+
 }
