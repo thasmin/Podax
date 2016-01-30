@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -268,15 +269,15 @@ public class EpisodeDetailFragment extends RxFragment {
 
 		String description = episode.getDescription();
 		if (description != null) {
-			int textColor = getResources().getColor(R.color.primary_text_default_material_dark);
+			int textColor = ContextCompat.getColor(getActivity(), R.color.primary_text_default_material_dark);
 			String textColorRgba = String.format(Locale.US, "rgba(%d, %d, %d, %d)",
 					Color.red(textColor), Color.green(textColor), Color.blue(textColor), Color.alpha(textColor));
 
-			int bgColor = getResources().getColor(R.color.primary_material_dark);
+			int bgColor = ContextCompat.getColor(getActivity(), R.color.primary_material_dark);
 			String bgColorRgba = String.format(Locale.US, "rgba(%d, %d, %d, %d)",
 					Color.red(bgColor), Color.green(bgColor), Color.blue(bgColor), Color.alpha(bgColor));
 
-			int linkColor = getResources().getColor(R.color.orange500);
+			int linkColor = ContextCompat.getColor(getActivity(), R.color.orange500);
 			String linkColorRgba = String.format(Locale.US, "rgba(%d, %d, %d, %d)",
 					Color.red(linkColor), Color.green(linkColor), Color.blue(linkColor), Color.alpha(linkColor));
 

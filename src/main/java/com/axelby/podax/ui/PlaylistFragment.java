@@ -370,7 +370,8 @@ public class PlaylistFragment extends RxFragment {
 		}
 
 		public void show(View view) {
-			AppFlow.get(getActivity()).displayEpisode(_id);
+			View thumbnail = ((View)view.getParent()).findViewById(R.id.thumbnail);
+			AppFlow.get(getActivity()).displayEpisode(_id, thumbnail);
 		}
 
 		public void play(View view) {

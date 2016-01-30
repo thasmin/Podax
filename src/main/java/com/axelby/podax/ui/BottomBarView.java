@@ -1,5 +1,6 @@
 package com.axelby.podax.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
@@ -12,6 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.axelby.podax.AppFlow;
+import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
@@ -65,11 +67,13 @@ public class BottomBarView extends RelativeLayout {
             _play.setImageResource(playResource);
             _play.setOnClickListener(view -> PlayerService.playpause(getContext()));
 
+			Activity activity = Helper.getActivityFromView(this);
+
             _episodeTitle.setText(playerState.getTitle());
-			_episodeTitle.setOnClickListener(view -> AppFlow.get(getContext()).displayActiveEpisode());
+			_episodeTitle.setOnClickListener(view -> AppFlow.get(activity).displayActiveEpisode());
 
             _expand.setImageResource(R.drawable.ic_action_collapse);
-			_expand.setOnClickListener(view -> AppFlow.get(getContext()).displayActiveEpisode());
+			_expand.setOnClickListener(view -> AppFlow.get(activity).displayActiveEpisode());
         } else {
 			_progressbg.setVisibility(View.GONE);
 			_progressline.setVisibility(View.GONE);

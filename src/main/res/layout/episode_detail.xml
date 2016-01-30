@@ -16,14 +16,16 @@
                 android:layout_marginBottom="10dp">
 
             <ImageView
-                    android:id="@+id/subscription_img"
-                    android:layout_width="175dp"
-                    android:layout_height="175dp"
-                    android:layout_gravity="center_horizontal"
-                    android:contentDescription="@string/subscription"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:scaleType="fitXY"/>
+                android:id="@+id/subscription_img"
+                android:layout_width="175dp"
+                android:layout_height="175dp"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/subscription"
+                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
+                android:scaleType="fitXY"
+                android:transitionName="subscriptionImage"
+                />
 
             <LinearLayout
                     android:id="@+id/mainlayout"

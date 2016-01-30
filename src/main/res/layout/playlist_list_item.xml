@@ -40,7 +40,8 @@
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_margin="10dp"
-                android:contentDescription="@string/thumbnail" />
+                android:contentDescription="@string/thumbnail"
+                android:transitionName="subscriptionImage" />
 
             <TextView
                 android:id="@+id/title"

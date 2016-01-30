@@ -1,11 +1,14 @@
 package com.axelby.podax;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.view.View;
 
 public class Helper {
 
@@ -133,5 +136,16 @@ public class Helper {
 		} catch (PackageManager.NameNotFoundException ignored) {
 			return -1;
 		}
+	}
+
+	public static Activity getActivityFromView(View view) {
+		Context context = view.getContext();
+		while (context instanceof ContextWrapper) {
+			if (context instanceof Activity) {
+				return (Activity)context;
+			}
+			context = ((ContextWrapper)context).getBaseContext();
+		}
+		return null;
 	}
 }

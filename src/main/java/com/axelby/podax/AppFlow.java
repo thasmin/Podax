@@ -1,13 +1,16 @@
 package com.axelby.podax;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.MenuRes;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.view.View;
 
 import com.axelby.podax.ui.AboutFragment;
 import com.axelby.podax.ui.EpisodeDetailFragment;
@@ -43,11 +46,11 @@ public class AppFlow {
 		_backstack.add(ScreenChange.activity(MainActivity.class));
 	}
 
-	public static AppFlow get(Context context) {
-		return new AppFlow(context);
+	public static AppFlow get(Activity activity) {
+		return new AppFlow(activity);
 	}
 
-	private final Context _context;
+	private final Activity _activity;
 
 	public enum Frame {
 		MainFragment,
@@ -62,6 +65,7 @@ public class AppFlow {
 		private Frame _destination;
 		private CharSequence _title;
 		private Bundle _args;
+		private Bundle _options;
 
 		private ScreenChange() { }
 
@@ -81,10 +85,15 @@ public class AppFlow {
 		}
 
 		public static ScreenChange activity(Class<? extends Activity> activityClass, Bundle args) {
+			return ScreenChange.activity(activityClass, args, null);
+		}
+
+		public static ScreenChange activity(Class<? extends Activity> activityClass, Bundle args, Bundle options) {
 			ScreenChange sc = new ScreenChange();
 			sc._destination = Frame.Activity;
 			sc._activityClass = activityClass;
 			sc._args = args;
+			sc._options = options;
 			return sc;
 		}
 
@@ -101,10 +110,15 @@ public class AppFlow {
 		}
 
 		public static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass, Bundle args) {
+			return ScreenChange.detailFragment(fragmentClass, args, null);
+		}
+
+		public static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass, Bundle args, Bundle options) {
 			ScreenChange sc = new ScreenChange();
 			sc._destination = Frame.DetailFragment;
 			sc._fragmentClass = fragmentClass;
 			sc._args = args;
+			sc._options = options;
 			return sc;
 		}
 
@@ -113,10 +127,15 @@ public class AppFlow {
 		}
 
 		public static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass, Bundle args) {
+			return ScreenChange.fragmentActivity(fragmentClass, args, null);
+		}
+
+		public static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass, Bundle args, Bundle options) {
 			ScreenChange sc = new ScreenChange();
 			sc._destination = Frame.Activity;
 			sc._fragmentClass = fragmentClass;
 			sc._args = args;
+			sc._options = options;
 			return sc;
 		}
 
@@ -126,16 +145,19 @@ public class AppFlow {
 				(_destination == Frame.DetailFragment && !_hasDetailFragment);
 		}
 
-		public boolean apply(Context context) {
+		public boolean apply(Activity activity) {
 			if (this._destination == Frame.Activity) {
-				Intent intent = new Intent(context, _activityClass);
-				context.startActivity(intent, _args);
+				Intent intent = new Intent(activity, _activityClass);
+				intent.replaceExtras(_args);
+				activity.startActivity(intent, _options);
 				return true;
 			}
 
 			if (this._destination == Frame.FragmentActivity) {
-				Fragment fragment = Fragment.instantiate(context, _fragmentClass.getName());
-				context.startActivity(PodaxFragmentActivity.createIntent(context, _fragmentClass, _args));
+				Intent intent = new Intent(activity, PodaxFragmentActivity.class);
+				intent.putExtra(Constants.EXTRA_FRAGMENT_CLASSNAME, _fragmentClass.getCanonicalName());
+				intent.putExtra(Constants.EXTRA_ARGS, _args);
+				activity.startActivity(intent, _options);
 				return true;
 			}
 
@@ -158,18 +180,22 @@ public class AppFlow {
 					return false;
 				}
 
-				Fragment fragment = Fragment.instantiate(context, fragmentClass.getName(), _args);
+				Fragment fragment = Fragment.instantiate(activity, fragmentClass.getName(), _args);
 				mainActivity.showMainFragment(this._title, fragment);
 				return true;
 			}
 
 			if (this._destination == Frame.DetailFragment) {
-				Fragment fragment = Fragment.instantiate(context, fragmentClass.getName(), _args);
+				Fragment fragment = Fragment.instantiate(activity, fragmentClass.getName(), _args);
 				MainActivity mainActivity = _mainActivity.get();
-				if (mainActivity != null && _hasDetailFragment)
+				if (mainActivity != null && _hasDetailFragment) {
 					mainActivity.showDetailFragment(fragment);
-				else
-					context.startActivity(PodaxFragmentActivity.createIntent(context, fragmentClass, _args));
+				} else {
+					Intent intent = new Intent(activity, PodaxFragmentActivity.class);
+					intent.putExtra(Constants.EXTRA_FRAGMENT_CLASSNAME, fragmentClass.getCanonicalName());
+					intent.putExtra(Constants.EXTRA_ARGS, _args);
+					activity.startActivity(intent, _options);
+				}
 
 				return true;
 			}
@@ -177,17 +203,17 @@ public class AppFlow {
 			return false;
 		}
 
-		public boolean restore(Context context) {
+		public boolean restore(Activity activity) {
 			// restore activities by restarting them
 			if (_destination == Frame.Activity || _destination == Frame.FragmentActivity)
-				return apply(context);
+				return apply(activity);
 
 			// changing fragment must be done on main activity
 			if (_mainActivity == null || _mainActivity.get() == null)
 				return false;
 			MainActivity mainActivity = _mainActivity.get();
 
-			Fragment fragment = Fragment.instantiate(context, _fragmentClass.getName());
+			Fragment fragment = Fragment.instantiate(activity, _fragmentClass.getName());
 
 			if (_destination == Frame.MainFragment) {
 				mainActivity.showMainFragment(_title, fragment);
@@ -205,7 +231,7 @@ public class AppFlow {
 
 	private void switchTo(ScreenChange sc) {
 		Log.d("AppFlow", "switching to " + sc);
-		if (sc.apply(_context))
+		if (sc.apply(_activity))
 			_backstack.addFirst(sc);
 	}
 
@@ -219,16 +245,16 @@ public class AppFlow {
 
 		// finishing an activity restores the previous state
 		if (ending.openedActivity()) {
-			_currentActivity.finish();
+			ActivityCompat.finishAfterTransition(_currentActivity);
 			return;
 		}
 
-		_backstack.peekFirst().restore(_context);
+		_backstack.peekFirst().restore(_activity);
 		Log.d("AppFlow", "restoring " + _backstack.peekFirst());
 	}
 
-	public AppFlow(Context context) {
-		_context = context;
+	public AppFlow(Activity activity) {
+		_activity = activity;
 
 		String[] toolbar = new String[]{
 			"search"
@@ -268,10 +294,18 @@ public class AppFlow {
 		return true;
 	}
 
-	public boolean displayEpisode(long episodeId) {
+	public boolean displayEpisode(long episodeId, View subscriptionImage) {
 		Bundle args = new Bundle(1);
 		args.putLong(Constants.EXTRA_EPISODE_ID, episodeId);
-		switchTo(ScreenChange.detailFragment(EpisodeDetailFragment.class, args));
+
+		Bundle options = null;
+		if (Build.VERSION.SDK_INT >= 21) {
+			subscriptionImage.setTransitionName("subscriptionImage");
+			ActivityOptions transition = ActivityOptions.makeSceneTransitionAnimation(_activity, subscriptionImage, "subscriptionImage");
+			options = transition.toBundle();
+		}
+
+		switchTo(ScreenChange.detailFragment(EpisodeDetailFragment.class, args, options));
 		return true;
 	}
 
