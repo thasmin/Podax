@@ -286,7 +286,7 @@ limitations under the License.</p>
     <string name="extra">Extra</string>
     <string name="shortage">Shortage</string>
     <string name="itunes_top_podcasts">iTunes Top Podcasts</string>
-    <string name="npr_podcasts">NPR Podcasts</string>
+    <string name="npr">NPR</string>
     <string name="itunes_arts_podcasts">iTunes Arts Podcasts</string>
     <string name="itunes_business_podcasts">iTunes Business Podcasts</string>
     <string name="itunes_comedy_podcasts">iTunes Comedy Podcasts</string>
@@ -310,5 +310,7 @@ limitations under the License.</p>
     <string name="listen_hours">Listen hours</string>
     <string name="check_means_new_episode_are_added_to_playlist">check means new episode are added to playlist</string>
     <string name="no_subscriptions">no_subscriptions</string>
+    <string name="networks">Networks</string>
+    <string name="podcastone">Podcast One</string>
 
 </resources>

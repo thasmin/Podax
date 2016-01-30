@@ -11,6 +11,7 @@ import com.axelby.podax.ui.DiscoverFragment;
 import com.axelby.podax.ui.FinishedEpisodeFragment;
 import com.axelby.podax.ui.LatestActivityFragment;
 import com.axelby.podax.ui.LogViewerFragment;
+import com.axelby.podax.ui.NetworksFragment;
 import com.axelby.podax.ui.PlaylistFragment;
 import com.axelby.podax.ui.PodaxPreferenceFragment;
 import com.axelby.podax.ui.StatsFragment;
@@ -29,6 +30,7 @@ public class AppFlowDrawerMenu {
 		_fragmentClasses.put(R.id.playlist, PlaylistFragment.class);
 		_fragmentClasses.put(R.id.subscriptions, SubscriptionListFragment.class);
 		_fragmentClasses.put(R.id.discover, DiscoverFragment.class);
+		_fragmentClasses.put(R.id.networks, NetworksFragment.class);
 		_fragmentClasses.put(R.id.latest_activity, LatestActivityFragment.class);
 		_fragmentClasses.put(R.id.weekly_planner, WeeklyPlannerFragment.class);
 		_fragmentClasses.put(R.id.finished_episodes, FinishedEpisodeFragment.class);
@@ -41,6 +43,7 @@ public class AppFlowDrawerMenu {
 		_fragmentClassLookup.put(PlaylistFragment.class, R.id.playlist);
 		_fragmentClassLookup.put(SubscriptionListFragment.class, R.id.subscriptions);
 		_fragmentClassLookup.put(DiscoverFragment.class, R.id.discover);
+		_fragmentClassLookup.put(NetworksFragment.class, R.id.networks);
 		_fragmentClassLookup.put(LatestActivityFragment.class, R.id.latest_activity);
 		_fragmentClassLookup.put(WeeklyPlannerFragment.class, R.id.weekly_planner);
 		_fragmentClassLookup.put(FinishedEpisodeFragment.class, R.id.finished_episodes);

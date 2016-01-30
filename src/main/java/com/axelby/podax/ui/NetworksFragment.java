@@ -18,45 +18,23 @@ import android.widget.TextView;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
-import com.axelby.podax.itunes.Podcast;
-import com.axelby.podax.itunes.PodcastFetcher;
 import com.axelby.podax.podaxapp.PodaxAppClient;
 import com.squareup.picasso.Picasso;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class DiscoverFragment extends RxFragment {
+public class NetworksFragment extends RxFragment {
 
-	private final int[] _categoryIds = {
-		1301, 1321, 1303, 1304, 1323, 1325, 1307, 1305,
-		1310, 1311, 1314, 1315, 1324, 1316, 1309, 1318,
+	private final String[] _categoryIds = {
+		"npr", "podcastone"
 	};
 
 	private final int[] _titles = {
-		R.string.itunes_top_podcasts,
-		R.string.itunes_arts_podcasts,
-		R.string.itunes_business_podcasts,
-		R.string.itunes_comedy_podcasts,
-		R.string.itunes_education_podcasts,
-		R.string.itunes_games_hobbies_podcasts,
-		R.string.itunes_government_organizations_podcasts,
-		R.string.itunes_health_podcasts,
-		R.string.itunes_kids_podcasts,
-		R.string.itunes_music_podcasts,
-		R.string.itunes_news_politics_podcasts,
-		R.string.itunes_religion_spirituality_podcasts,
-		R.string.itunes_science_medicine_podcasts,
-		R.string.itunes_society_culture_podcasts,
-		R.string.itunes_sports_recreation_podcasts,
-		R.string.itunes_tv_film_podcasts,
-		R.string.itunes_technology_podcasts,
+		R.string.npr,
+		R.string.podcastone,
 	};
 
 	private final RecyclerView[] _recyclerViews = new RecyclerView[_titles.length];
@@ -90,10 +68,7 @@ public class DiscoverFragment extends RxFragment {
 			RecyclerView list = new RecyclerView(container.getContext());
 			list.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 			list.setLayoutManager(new GridLayoutManager(container.getContext(), 3));
-			if (position == 0)
-				list.setAdapter(new iTunesAdapter(getActivity(), 0));
-			else
-				list.setAdapter(new iTunesAdapter(getActivity(), _categoryIds[position - 1]));
+			list.setAdapter(new PodaxAppAdapter(getActivity(), _categoryIds[position]));
 			_recyclerViews[position] = list;
 			container.addView(list);
 			return list;
@@ -135,43 +110,34 @@ public class DiscoverFragment extends RxFragment {
 		}
 	}
 
-	private class iTunesAdapter extends RecyclerView.Adapter<ViewHolder> {
-		private final ArrayList<Podcast> _podcasts = new ArrayList<>(100);
+	private class PodaxAppAdapter extends RecyclerView.Adapter<ViewHolder> {
+		com.axelby.podax.podaxapp.Podcast[] _podcasts = new com.axelby.podax.podaxapp.Podcast[0];
 
-		public iTunesAdapter(Context context, int category) {
+		public PodaxAppAdapter(Context context, String shortcode) {
 			setHasStableIds(true);
 
-			new PodcastFetcher(context, category).getPodcasts()
+			PodaxAppClient.get(context).getNetworkInfo(shortcode)
+				.subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
 				.compose(RxLifecycle.bindFragment(lifecycle()))
-				.subscribe(new Subscriber<List<Podcast>>() {
-					@Override
-					public void onError(Throwable e) {
-						Log.e("itunesloader", "error while loading itunes toplist", e);
-					}
-
-					@Override
-					public void onNext(List<Podcast> podcasts) {
-						_podcasts.clear();
-						_podcasts.addAll(podcasts);
-						notifyItemRangeInserted(0, podcasts.size());
-					}
-
-					@Override
-					public void onCompleted() {
+				.subscribe(
+					network -> {
+						_podcasts = network.podcasts;
 						notifyDataSetChanged();
-					}
-				});
+					},
+					e -> Log.e("podaxappadapter", "error while retrieving network", e)
+				);
+
 		}
 
 		@Override
 		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.subscription_list_item, parent, false);
 			view.setOnClickListener(v -> {
-				Podcast p = (Podcast) v.getTag();
+				com.axelby.podax.podaxapp.Podcast p = (com.axelby.podax.podaxapp.Podcast) v.getTag();
 				Bundle b = new Bundle(1);
-				b.putString(Constants.EXTRA_ITUNES_ID, p.idUrl);
-				b.putString(Constants.EXTRA_SUBSCRIPTION_NAME, p.name);
+				b.putString(Constants.EXTRA_RSSURL, p.rssUrl);
+				b.putString(Constants.EXTRA_SUBSCRIPTION_NAME, p.title);
 				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, b));
 			});
 			return new ViewHolder(view);
@@ -179,24 +145,26 @@ public class DiscoverFragment extends RxFragment {
 
 		@Override
 		public void onBindViewHolder(ViewHolder holder, int position) {
-			Podcast p = _podcasts.get(position);
+			com.axelby.podax.podaxapp.Podcast p = _podcasts[position];
 			holder.holder.setTag(p);
-			holder.title.setText(p.name);
+			holder.title.setText(p.title);
 
+			DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+			int px = (int)((128 * displayMetrics.density) + 0.5);
 			Picasso.with(holder.thumbnail.getContext())
-				.load(p.imageUrl)
-				.fit()
-				.into(holder.thumbnail);
+					.load(p.imageUrl)
+					.resize(px, px)
+					.into(holder.thumbnail);
 		}
 
 		@Override
 		public long getItemId(int position) {
-			return _podcasts.get(position).id;
+			return position;
 		}
 
 		@Override
 		public int getItemCount() {
-			return _podcasts.size();
+			return _podcasts.length;
 		}
 	}
 }
