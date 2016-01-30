@@ -7,7 +7,6 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,17 +19,17 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.itunes.Podcast;
 import com.axelby.podax.itunes.PodcastFetcher;
-import com.axelby.podax.podaxapp.PodaxAppClient;
 import com.squareup.picasso.Picasso;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class DiscoverFragment extends RxFragment {
 
@@ -59,7 +58,8 @@ public class DiscoverFragment extends RxFragment {
 		R.string.itunes_technology_podcasts,
 	};
 
-	private final RecyclerView[] _recyclerViews = new RecyclerView[_titles.length];
+	private final ArrayList<WeakReference<RecyclerView>> _recyclerViews =
+		new ArrayList<>(Collections.nCopies(_titles.length, new WeakReference<>(null)));
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -82,9 +82,9 @@ public class DiscoverFragment extends RxFragment {
 
 		@Override
 		public Object instantiateItem(ViewGroup container, int position) {
-			if (_recyclerViews[position] != null) {
-				container.addView(_recyclerViews[position]);
-				return _recyclerViews[position];
+			if (_recyclerViews.get(position).get() != null) {
+				container.addView(_recyclerViews.get(position).get());
+				return _recyclerViews.get(position).get();
 			}
 
 			RecyclerView list = new RecyclerView(container.getContext());
@@ -94,7 +94,7 @@ public class DiscoverFragment extends RxFragment {
 				list.setAdapter(new iTunesAdapter(getActivity(), 0));
 			else
 				list.setAdapter(new iTunesAdapter(getActivity(), _categoryIds[position - 1]));
-			_recyclerViews[position] = list;
+			_recyclerViews.set(position, new WeakReference<>(list));
 			container.addView(list);
 			return list;
 		}

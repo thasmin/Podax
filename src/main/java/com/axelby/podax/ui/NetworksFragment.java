@@ -23,6 +23,10 @@ import com.squareup.picasso.Picasso;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -37,7 +41,8 @@ public class NetworksFragment extends RxFragment {
 		R.string.podcastone,
 	};
 
-	private final RecyclerView[] _recyclerViews = new RecyclerView[_titles.length];
+	private final ArrayList<WeakReference<RecyclerView>> _recyclerViews =
+		new ArrayList<>(Collections.nCopies(_titles.length, new WeakReference<>(null)));
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -60,16 +65,16 @@ public class NetworksFragment extends RxFragment {
 
 		@Override
 		public Object instantiateItem(ViewGroup container, int position) {
-			if (_recyclerViews[position] != null) {
-				container.addView(_recyclerViews[position]);
-				return _recyclerViews[position];
+			if (_recyclerViews.get(position).get() != null) {
+				container.addView(_recyclerViews.get(position).get());
+				return _recyclerViews.get(position).get();
 			}
 
 			RecyclerView list = new RecyclerView(container.getContext());
 			list.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 			list.setLayoutManager(new GridLayoutManager(container.getContext(), 3));
 			list.setAdapter(new PodaxAppAdapter(getActivity(), _categoryIds[position]));
-			_recyclerViews[position] = list;
+			_recyclerViews.set(position, new WeakReference<>(list));
 			container.addView(list);
 			return list;
 		}
