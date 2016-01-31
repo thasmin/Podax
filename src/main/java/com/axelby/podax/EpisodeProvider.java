@@ -202,6 +202,7 @@ public class EpisodeProvider extends ContentProvider {
 				sqlBuilder.appendWhere("podcasts.needsGpodderUpdate != 0");
 				break;
 			case EPISODES_LATEST_ACTIVITY:
+				sqlBuilder.appendWhere("subscriptions.singleUse = 0");
 				sortOrder = "pubDate DESC";
 				limit = "10";
 				break;
