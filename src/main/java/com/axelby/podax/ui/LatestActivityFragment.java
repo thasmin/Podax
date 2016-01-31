@@ -34,6 +34,7 @@ import org.xml.sax.XMLReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
@@ -103,13 +104,13 @@ public class LatestActivityFragment extends RxFragment {
 			else if (timeDiff.getDays() == 1)
 				period = getString(R.string.yesterday);
 			else if (timeDiff.getDays() < 7)
-				period = String.format("%d %s ago", timeDiff.getDays(), getActivity().getResources().getQuantityString(R.plurals.days, timeDiff.getDays()));
+				period = String.format(Locale.getDefault(), "%d %s ago", timeDiff.getDays(), getActivity().getResources().getQuantityString(R.plurals.days, timeDiff.getDays()));
 			else if (timeDiff.getWeeks() < 4)
-				period = String.format("%d %s ago", timeDiff.getWeeks(), getActivity().getResources().getQuantityString(R.plurals.weeks, timeDiff.getWeeks()));
+				period = String.format(Locale.getDefault(), "%d %s ago", timeDiff.getWeeks(), getActivity().getResources().getQuantityString(R.plurals.weeks, timeDiff.getWeeks()));
 			else if (timeDiff.getMonths() < 12)
-				period = String.format("%d %s ago", timeDiff.getMonths(), getActivity().getResources().getQuantityString(R.plurals.months, timeDiff.getMonths()));
+				period = String.format(Locale.getDefault(), "%d %s ago", timeDiff.getMonths(), getActivity().getResources().getQuantityString(R.plurals.months, timeDiff.getMonths()));
 			else
-				period = String.format("%d %s ago", timeDiff.getYears(), getActivity().getResources().getQuantityString(R.plurals.years, timeDiff.getYears()));
+				period = String.format(Locale.getDefault(), "%d %s ago", timeDiff.getYears(), getActivity().getResources().getQuantityString(R.plurals.years, timeDiff.getYears()));
 			period = period.toUpperCase();
 
 			if (!period.equals(lastPeriod))
