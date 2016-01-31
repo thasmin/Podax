@@ -4,12 +4,10 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.databinding.BaseObservable;
 import android.databinding.BindingAdapter;
-import android.databinding.DataBindingUtil;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
 import android.databinding.ObservableInt;
 import android.databinding.ObservableLong;
-import android.databinding.ViewDataBinding;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -224,7 +222,7 @@ public class PlaylistFragment extends RxFragment {
 		return bitmap;
 	}
 
-	private class PlaylistListAdapter extends RecyclerView.Adapter<PlaylistListAdapter.ViewHolder> {
+	private class PlaylistListAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
 
 		private List<EpisodeModel> _episodes = new ArrayList<>(0);
 		private TreeMap<Long, Integer> _ids = new TreeMap<>();
@@ -241,15 +239,6 @@ public class PlaylistFragment extends RxFragment {
 				updateEpisode(episodeData);
 			}
 		};
-
-		class ViewHolder extends RecyclerView.ViewHolder {
-			public final ViewDataBinding binding;
-
-			public ViewHolder(View view) {
-				super(view);
-				binding = DataBindingUtil.bind(view);
-            }
-        }
 
 		public PlaylistListAdapter() {
 			setHasStableIds(true);
@@ -279,13 +268,13 @@ public class PlaylistFragment extends RxFragment {
 		}
 
 		@Override
-		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+		public DataBoundViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 			LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-			return new ViewHolder(inflater.inflate(R.layout.playlist_list_item, parent, false));
+			return new DataBoundViewHolder(inflater.inflate(R.layout.playlist_list_item, parent, false));
 		}
 
         @Override
-		public void onBindViewHolder(ViewHolder holder, int position) {
+		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
 			holder.binding.setVariable(BR.model, _episodes.get(position));
 		}
 
@@ -333,7 +322,6 @@ public class PlaylistFragment extends RxFragment {
 	public class EpisodeModel extends BaseObservable {
 		private final long _id;
 
-		// backup string: android.resource://com.axelby.podax/" + R.drawable.icon
 		public final ObservableLong subscriptionId = new ObservableLong(-1);
 		public final ObservableField<String> title = new ObservableField<>("");
 		public final ObservableField<String> downloadStatus = new ObservableField<>("downloaded");
@@ -370,7 +358,7 @@ public class PlaylistFragment extends RxFragment {
 		}
 
 		public void show(View view) {
-			View thumbnail = ((View)view.getParent()).findViewById(R.id.thumbnail);
+			View thumbnail = view.findViewById(R.id.thumbnail);
 			AppFlow.get(getActivity()).displayEpisode(_id, thumbnail);
 		}
 

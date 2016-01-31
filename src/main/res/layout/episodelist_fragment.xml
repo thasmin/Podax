@@ -27,7 +27,8 @@
                 android:contentDescription="@string/subscription_thumbnail"
                 android:adjustViewBounds="true"
                 android:src="@{model.imageSrc}"
-                tools:src="@drawable/icon" />
+                tools:src="@drawable/icon"
+                android:transitionName="subscriptionImage" />
 
             <TextView
                 android:id="@+id/subscription"

@@ -31,6 +31,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 
+import com.axelby.gpodder.dto.Subscription;
 import com.axelby.podax.BR;
 import com.axelby.podax.Constants;
 import com.axelby.podax.DBAdapter;
@@ -122,7 +123,9 @@ public class EpisodeListFragment extends RxFragment {
 
 	private Observable<Long> getSubscriptionIdFromRSSUrl(String rssUrl) {
 		String[] projection = new String[] { SubscriptionProvider.COLUMN_ID };
-		Cursor c = getActivity().getContentResolver().query(SubscriptionProvider.URI, projection, null, null, null);
+		String selection = SubscriptionProvider.COLUMN_URL + "=?";
+		String[] selectionArgs = new String[] { rssUrl };
+		Cursor c = getActivity().getContentResolver().query(SubscriptionProvider.URI, projection, selection, selectionArgs, null);
 		if (c != null) {
 			try {
 				if (c.moveToFirst() && !c.isNull(0))

@@ -14,9 +14,12 @@ import android.view.View;
 
 import com.axelby.podax.ui.AboutFragment;
 import com.axelby.podax.ui.EpisodeDetailFragment;
+import com.axelby.podax.ui.EpisodeListFragment;
 import com.axelby.podax.ui.LatestActivityFragment;
 import com.axelby.podax.ui.MainActivity;
 import com.axelby.podax.ui.PodaxFragmentActivity;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
@@ -103,10 +106,6 @@ public class AppFlow {
 			sc._fragmentClass = fragmentClass;
 			sc._title = title;
 			return sc;
-		}
-
-		public static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass) {
-			return ScreenChange.detailFragment(fragmentClass, null);
 		}
 
 		public static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass, Bundle args) {
@@ -297,16 +296,43 @@ public class AppFlow {
 	public boolean displayEpisode(long episodeId, View subscriptionImage) {
 		Bundle args = new Bundle(1);
 		args.putLong(Constants.EXTRA_EPISODE_ID, episodeId);
-
-		Bundle options = null;
-		if (Build.VERSION.SDK_INT >= 21) {
-			subscriptionImage.setTransitionName("subscriptionImage");
-			ActivityOptions transition = ActivityOptions.makeSceneTransitionAnimation(_activity, subscriptionImage, "subscriptionImage");
-			options = transition.toBundle();
-		}
-
+		Bundle options = getTransitionOptions(subscriptionImage, "subscriptionImage");
 		switchTo(ScreenChange.detailFragment(EpisodeDetailFragment.class, args, options));
 		return true;
+	}
+
+	public boolean displayPodcastViaRSSUrl(String title, String rssUrl, View subscriptionImage) {
+		Bundle args = new Bundle(1);
+		args.putString(Constants.EXTRA_RSSURL, rssUrl);
+		args.putString(Constants.EXTRA_SUBSCRIPTION_NAME, title);
+		Bundle options = getTransitionOptions(subscriptionImage, "subscriptionImage");
+		switchTo(ScreenChange.detailFragment(EpisodeListFragment.class, args, options));
+		return true;
+	}
+
+	public boolean displayPodcastViaITunes(String title, String itunesUrl, View subscriptionImage) {
+		Bundle args = new Bundle(1);
+		args.putString(Constants.EXTRA_ITUNES_ID, itunesUrl);
+		args.putString(Constants.EXTRA_SUBSCRIPTION_NAME, title);
+		Bundle options = getTransitionOptions(subscriptionImage, "subscriptionImage");
+		switchTo(ScreenChange.detailFragment(EpisodeListFragment.class, args, options));
+		return true;
+	}
+
+	public boolean displaySubscription(String title, long subscriptionId, View subscriptionImage) {
+		Bundle args = new Bundle(1);
+		args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
+		args.putString(Constants.EXTRA_SUBSCRIPTION_NAME, title);
+		Bundle options = getTransitionOptions(subscriptionImage, "subscriptionImage");
+		switchTo(ScreenChange.detailFragment(EpisodeListFragment.class, args, options));
+		return true;
+	}
+
+	@Nullable
+	private Bundle getTransitionOptions(View view, String name) {
+		if (Build.VERSION.SDK_INT >= 21)
+			return ActivityOptions.makeSceneTransitionAnimation(_activity, view, name).toBundle();
+		return null;
 	}
 
 	private void startActivityFragment(Class<? extends Fragment> fragmentClass) {

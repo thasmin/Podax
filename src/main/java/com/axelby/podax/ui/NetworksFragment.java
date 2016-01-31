@@ -7,26 +7,24 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.axelby.podax.Constants;
+import com.axelby.podax.BR;
 import com.axelby.podax.R;
 import com.axelby.podax.podaxapp.PodaxAppClient;
-import com.squareup.picasso.Picasso;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -55,6 +53,12 @@ public class NetworksFragment extends RxFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.discovery, container, false);
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
+		pager.setAdapter(new CategoryAdapter());
 	}
 
 	private class CategoryAdapter extends PagerAdapter {
@@ -95,71 +99,36 @@ public class NetworksFragment extends RxFragment {
 		}
 	}
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
-		pager.setAdapter(new CategoryAdapter());
-	}
-
-	public class ViewHolder extends RecyclerView.ViewHolder {
-		public final View holder;
-		public final ImageView thumbnail;
-		public final TextView title;
-
-		public ViewHolder(View v) {
-			super(v);
-
-			holder = v;
-			thumbnail = (ImageView) v.findViewById(R.id.thumbnail);
-			title = (TextView) v.findViewById(R.id.title);
-		}
-	}
-
-	private class PodaxAppAdapter extends RecyclerView.Adapter<ViewHolder> {
-		com.axelby.podax.podaxapp.Podcast[] _podcasts = new com.axelby.podax.podaxapp.Podcast[0];
+	private class PodaxAppAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
+		List<SubscriptionListFragment.ItemModel> _podcasts = new ArrayList<>(0);
 
 		public PodaxAppAdapter(Context context, String shortcode) {
 			setHasStableIds(true);
 
 			PodaxAppClient.get(context).getNetworkInfo(shortcode)
 				.subscribeOn(Schedulers.io())
+				.flatMap(network -> Observable.from(network.podcasts))
+				.map(podcast -> SubscriptionListFragment.ItemModel.fromRSS(podcast.title, podcast.imageUrl, podcast.rssUrl))
+				.toList()
 				.observeOn(AndroidSchedulers.mainThread())
 				.compose(RxLifecycle.bindFragment(lifecycle()))
 				.subscribe(
-					network -> {
-						_podcasts = network.podcasts;
+					podcasts -> {
+						_podcasts = podcasts;
 						notifyDataSetChanged();
 					},
 					e -> Log.e("podaxappadapter", "error while retrieving network", e)
 				);
-
 		}
 
 		@Override
-		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.subscription_list_item, parent, false);
-			view.setOnClickListener(v -> {
-				com.axelby.podax.podaxapp.Podcast p = (com.axelby.podax.podaxapp.Podcast) v.getTag();
-				Bundle b = new Bundle(1);
-				b.putString(Constants.EXTRA_RSSURL, p.rssUrl);
-				b.putString(Constants.EXTRA_SUBSCRIPTION_NAME, p.title);
-				startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, b));
-			});
-			return new ViewHolder(view);
+		public DataBoundViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			return DataBoundViewHolder.from(parent, R.layout.subscription_list_item);
 		}
 
 		@Override
-		public void onBindViewHolder(ViewHolder holder, int position) {
-			com.axelby.podax.podaxapp.Podcast p = _podcasts[position];
-			holder.holder.setTag(p);
-			holder.title.setText(p.title);
-
-			DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-			int px = (int)((128 * displayMetrics.density) + 0.5);
-			Picasso.with(holder.thumbnail.getContext())
-					.load(p.imageUrl)
-					.resize(px, px)
-					.into(holder.thumbnail);
+		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
+			holder.binding.setVariable(BR.model, _podcasts.get(position));
 		}
 
 		@Override
@@ -169,7 +138,7 @@ public class NetworksFragment extends RxFragment {
 
 		@Override
 		public int getItemCount() {
-			return _podcasts.length;
+			return _podcasts.size();
 		}
 	}
 }
