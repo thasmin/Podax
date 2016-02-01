@@ -23,18 +23,20 @@
             android:contentDescription="@string/subscription_thumbnail"
             tools:src="@drawable/icon"
             app:picassoImageUrl="@{model.imageUrl}"
+            android:transitionName="subscriptionImage"
             />
 
         <TextView
             android:id="@+id/title"
-            android:layout_width="128dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="Fitzdog Radio"
             android:text="@{model.title}"
             android:textSize="16sp"
             android:gravity="center_horizontal"
-            android:layout_gravity="center_horizontal"
-            android:maxLines="3" />
+            android:maxLines="3"
+            android:transitionName="subscriptionName"
+            />
 
     </LinearLayout>
 </layout>

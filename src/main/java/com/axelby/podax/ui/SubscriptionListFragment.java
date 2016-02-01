@@ -1,15 +1,13 @@
 package com.axelby.podax.ui;
 
 import android.app.DialogFragment;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
 import android.databinding.BindingAdapter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,22 +16,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.axelby.podax.AppFlow;
-import com.axelby.podax.Constants;
+import com.axelby.podax.BR;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.squareup.picasso.Picasso;
+import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
-public class SubscriptionListFragment extends RxFragment
-		implements LoaderManager.LoaderCallbacks<Cursor> {
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
+public class SubscriptionListFragment extends RxFragment {
 
 	private SubscriptionAdapter _adapter = null;
 
@@ -44,7 +48,6 @@ public class SubscriptionListFragment extends RxFragment
 		setHasOptionsMenu(true);
 		setRetainInstance(true);
 
-		getLoaderManager().initLoader(0, null, this);
 		_adapter = new SubscriptionAdapter();
 	}
 
@@ -109,84 +112,53 @@ public class SubscriptionListFragment extends RxFragment
         return false;
     }
 
-    @Override
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = {
-				SubscriptionProvider.COLUMN_ID,
-				SubscriptionProvider.COLUMN_TITLE,
-				SubscriptionProvider.COLUMN_URL,
-				SubscriptionProvider.COLUMN_THUMBNAIL,
-                SubscriptionProvider.COLUMN_DESCRIPTION,
-		};
-		return new CursorLoader(getActivity(), SubscriptionProvider.URI, projection, null, null, null);
-	}
+	private class SubscriptionAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
+		private List<ItemModel> _subscriptions = new ArrayList<>(0);
 
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		if (getActivity() == null)
-			return;
-		_adapter.changeCursor(cursor);
-	}
+		public SubscriptionAdapter() {
+			setHasStableIds(true);
 
-	@Override
-	public void onLoaderReset(Loader<Cursor> cursor) {
-		_adapter.changeCursor(null);
-	}
-
-	public class SubscriptionListViewHolder extends RecyclerView.ViewHolder {
-		public final View holder;
-		public final ImageView thumbnail;
-		public final TextView title;
-
-		public SubscriptionListViewHolder(View v) {
-			super(v);
-
-			holder = v;
-			thumbnail = (ImageView) v.findViewById(R.id.thumbnail);
-			title = (TextView) v.findViewById(R.id.title);
-		}
-	}
-
-	private class SubscriptionAdapter extends RecyclerView.Adapter<SubscriptionListViewHolder> {
-		private Cursor _cursor;
-
-		public void changeCursor(Cursor cursor) {
-			_cursor = cursor;
-			notifyDataSetChanged();
-		}
-
-		private final View.OnClickListener _subscriptionChoiceHandler = view -> {
-			long subId = (long) view.getTag();
-			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subId));
-		};
-
-		@Override
-		public SubscriptionListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.subscription_list_item, parent, false);
-			view.setOnClickListener(_subscriptionChoiceHandler);
-			return new SubscriptionListViewHolder(view);
+			Observable<SubscriptionCursor> ob = Observable.create(subscriber -> {
+				Cursor c = getActivity().getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
+				if (c != null) {
+					while (c.moveToNext())
+						subscriber.onNext(new SubscriptionCursor(c));
+					c.close();
+				}
+				subscriber.onCompleted();
+			});
+			ob.map(sub -> ItemModel.fromSubscriptionId(sub.getTitle(), sub.getThumbnail(), sub.getId()))
+				.toList()
+				.subscribeOn(Schedulers.io())
+				.observeOn(AndroidSchedulers.mainThread())
+				.compose(RxLifecycle.bindFragment(lifecycle()))
+				.subscribe(
+					subs -> {
+						_subscriptions = subs;
+						notifyDataSetChanged();
+					},
+					e -> Log.e("SubscriptionAdapter", "error while retrieving subscriptions", e)
+				);
 		}
 
 		@Override
-		public void onBindViewHolder(SubscriptionListViewHolder holder, int position) {
-			_cursor.moveToPosition(position);
-			SubscriptionCursor subscription = new SubscriptionCursor(_cursor);
-			holder.holder.setTag(subscription.getId());
-			holder.title.setText(subscription.getTitle());
-			SubscriptionCursor.getThumbnailImage(holder.thumbnail.getContext(), subscription.getId()).into(holder.thumbnail);
+		public DataBoundViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			return DataBoundViewHolder.from(parent, R.layout.subscription_list_item);
+		}
+
+		@Override
+		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
+			holder.binding.setVariable(BR.model, _subscriptions.get(position));
 		}
 
 		@Override
         public long getItemId(int position) {
-			_cursor.moveToPosition(position);
-            return new SubscriptionCursor(_cursor).getId();
+            return position;
         }
 
 		@Override
 		public int getItemCount() {
-			if (_cursor == null)
-				return 0;
-			return _cursor.getCount();
+			return _subscriptions.size();
 		}
 
 	}
@@ -240,15 +212,16 @@ public class SubscriptionListFragment extends RxFragment
 
 		public void show(View view) {
 			View thumbnail = view.findViewById(R.id.thumbnail);
+			View title = view.findViewById(R.id.title);
 			switch (_source) {
 				case RSS:
-					AppFlow.get(Helper.getActivityFromView(view)).displayPodcastViaRSSUrl(_title, _rssUrl, thumbnail);
+					AppFlow.get(Helper.getActivityFromView(view)).displayPodcastViaRSSUrl(_title, _rssUrl, thumbnail, title);
 					break;
 				case ITunes:
-					AppFlow.get(Helper.getActivityFromView(view)).displayPodcastViaITunes(_title, _rssUrl, thumbnail);
+					AppFlow.get(Helper.getActivityFromView(view)).displayPodcastViaITunes(_title, _rssUrl, thumbnail, title);
 					break;
 				case SubscriptionId:
-					AppFlow.get(Helper.getActivityFromView(view)).displaySubscription(_title, _subscriptionId, thumbnail);
+					AppFlow.get(Helper.getActivityFromView(view)).displaySubscription(_title, _subscriptionId, thumbnail, title);
 					break;
 			}
 		}

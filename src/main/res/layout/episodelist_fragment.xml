@@ -37,7 +37,8 @@
                 android:textSize="24sp"
                 android:gravity="center_horizontal"
                 android:text="@{model.title}"
-                tools:text="Subscription Name" />
+                tools:text="Subscription Name"
+                android:transitionName="subscriptionName" />
 
             <TextView
                 android:id="@+id/currently_updating"
