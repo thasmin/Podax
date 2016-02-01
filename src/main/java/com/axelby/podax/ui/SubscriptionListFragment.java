@@ -194,6 +194,8 @@ public class SubscriptionListFragment extends RxFragment
 	@BindingAdapter("app:picassoImageUrl")
 	@SuppressWarnings("unused")
 	public static void loadImageUrlViaPicasso(ImageView image, String url) {
+		if (url == null || url.length() == 0)
+			return;
 		Picasso.with(image.getContext()).load(url).fit().into(image);
 	}
 
