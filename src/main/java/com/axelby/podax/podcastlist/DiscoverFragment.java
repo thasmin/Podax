@@ -1,26 +1,18 @@
-package com.axelby.podax.ui;
+package com.axelby.podax.podcastlist;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.axelby.podax.BR;
 import com.axelby.podax.R;
 import com.axelby.podax.itunes.PodcastFetcher;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
 
 public class DiscoverFragment extends RxFragment {
 
@@ -67,49 +59,15 @@ public class DiscoverFragment extends RxFragment {
 
 		ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
 		pager.setAdapter(new CategoryAdapter(getActivity(), _titles,
-			position -> new iTunesAdapter(getActivity(), _categoryIds[position]))
+			position ->
+				new ListAdapter(
+					new PodcastFetcher(getActivity(), _categoryIds[position]).getPodcasts()
+					.flatMap(Observable::from)
+					.map(podcast -> ItemModel.fromITunes(podcast.name, podcast.imageUrl, podcast.idUrl))
+					.toList()
+					.compose(RxLifecycle.bindFragment(lifecycle()))
+				)
+			)
 		);
-	}
-
-	private class iTunesAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
-		private List<SubscriptionListFragment.ItemModel> _podcasts = new ArrayList<>(100);
-
-		public iTunesAdapter(Context context, int category) {
-			setHasStableIds(true);
-
-			new PodcastFetcher(context, category).getPodcasts()
-				.flatMap(Observable::from)
-				.map(podcast -> SubscriptionListFragment.ItemModel.fromITunes(podcast.name, podcast.imageUrl, podcast.idUrl))
-				.toList()
-				.observeOn(AndroidSchedulers.mainThread())
-				.compose(RxLifecycle.bindFragment(lifecycle()))
-				.subscribe(
-					podcasts -> {
-						_podcasts = podcasts;
-						notifyDataSetChanged();
-					},
-					e -> Log.e("itunesloader", "error while loading itunes toplist", e)
-				);
-		}
-
-		@Override
-		public DataBoundViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			return DataBoundViewHolder.from(parent, R.layout.subscription_list_item);
-		}
-
-		@Override
-		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
-			holder.binding.setVariable(BR.model, _podcasts.get(position));
-		}
-
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
-
-		@Override
-		public int getItemCount() {
-			return _podcasts.size();
-		}
 	}
 }

@@ -6,7 +6,7 @@
     <data>
         <variable
             name="model"
-            type="com.axelby.podax.ui.SubscriptionListFragment.ItemModel" />
+            type="com.axelby.podax.podcastlist.ItemModel" />
     </data>
 
     <LinearLayout

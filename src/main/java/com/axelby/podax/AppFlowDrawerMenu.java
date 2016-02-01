@@ -6,16 +6,16 @@ import android.support.v7.view.menu.MenuBuilder;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.axelby.podax.podcastlist.DiscoverFragment;
+import com.axelby.podax.podcastlist.NetworksFragment;
+import com.axelby.podax.podcastlist.SubscriptionListFragment;
 import com.axelby.podax.ui.AboutFragment;
-import com.axelby.podax.ui.DiscoverFragment;
 import com.axelby.podax.ui.FinishedEpisodeFragment;
 import com.axelby.podax.ui.LatestActivityFragment;
 import com.axelby.podax.ui.LogViewerFragment;
-import com.axelby.podax.ui.NetworksFragment;
 import com.axelby.podax.ui.PlaylistFragment;
 import com.axelby.podax.ui.PodaxPreferenceFragment;
 import com.axelby.podax.ui.StatsFragment;
-import com.axelby.podax.ui.SubscriptionListFragment;
 import com.axelby.podax.ui.WeeklyPlannerFragment;
 
 import java.util.HashMap;

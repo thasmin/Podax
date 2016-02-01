@@ -1,4 +1,4 @@
-package com.axelby.podax.ui;
+package com.axelby.podax.podcastlist;
 
 import android.content.Context;
 import android.support.annotation.StringRes;
@@ -8,6 +8,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import com.axelby.podax.ui.DataBoundViewHolder;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
