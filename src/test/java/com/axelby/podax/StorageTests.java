@@ -1,21 +1,27 @@
-package com.axelby.podax.test;
+package com.axelby.podax;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
-import android.test.AndroidTestCase;
 
-import com.axelby.podax.EpisodeCursor;
-import com.axelby.podax.EpisodeProvider;
-import com.axelby.podax.SubscriptionProvider;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 import java.io.File;
 
-public class StorageTests extends AndroidTestCase {
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 21)
+public class StorageTests {
+
+	@Test
 	public void testDeletePodcast() throws Exception {
-		Context context = getContext();
+		Context context = RuntimeEnvironment.application;
 		ContentResolver resolver = context.getContentResolver();
 
 		ContentValues values = new ContentValues();
@@ -40,10 +46,11 @@ public class StorageTests extends AndroidTestCase {
 			if (!created)
 				throw new Exception("unable to create filename");
 			resolver.delete(ep.getContentUri(), null, null);
-			assertEquals(false, new File(filename).exists());
+			Assert.assertEquals(false, new File(filename).exists());
 		} finally {
 			if (filename != null)
 				new File(filename).delete();
 		}
 	}
 }
+

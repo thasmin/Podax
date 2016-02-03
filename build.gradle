@@ -48,6 +48,7 @@ dependencies {
     compile 'com.joanzapata.android:android-iconify:1.0.6'
 
     testCompile 'junit:junit:4.12'
+    testCompile "org.robolectric:robolectric:3.0"
 }
 
 Properties props = new Properties()
@@ -58,6 +59,10 @@ if (new File("signing.properties").exists()) {
 android {
     dataBinding {
         enabled = true
+    }
+
+    defaultConfig {
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     testOptions {

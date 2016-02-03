@@ -1,19 +1,25 @@
-package com.axelby.podax.test;
+package com.axelby.podax;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.test.AndroidTestCase;
 
-import com.axelby.podax.SubscriptionProvider;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
-public class DBTests extends AndroidTestCase {
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 21)
+public class DBTests {
+
+	@Test
 	public void testSubscriptionSearch() throws Exception {
-		Context context = getContext();
+		Context context = RuntimeEnvironment.application;
 		ContentResolver resolver = context.getContentResolver();
-
-		resolver.delete(SubscriptionProvider.URI, "url = ?", new String[] { "test"});
 
 		ContentValues values = new ContentValues();
 		values.put(SubscriptionProvider.COLUMN_TITLE, "Test Subscription");
@@ -23,10 +29,12 @@ public class DBTests extends AndroidTestCase {
 		String[] selectionArgs = {"test"};
 		Cursor c = resolver.query(SubscriptionProvider.SEARCH_URI, null, null, selectionArgs, null);
 		if (c == null) {
-			fail("unable to get cursor");
+			Assert.fail("unable to get cursor");
 			return;
 		}
-		assertEquals("search results", 1, c.getCount());
+		Assert.assertEquals("search results", 1, c.getCount());
 		c.close();
 	}
+
 }
+

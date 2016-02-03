@@ -151,11 +151,7 @@ public class EpisodeData {
 	}
 
 	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
-		Observable<EpisodeData> ob = Observable.create(o -> {
-			EpisodeData data = EpisodeData.create(context, episodeId);
-			o.onNext(data);
-			o.onCompleted();
-		});
+		Observable<EpisodeData> ob = Observable.just(EpisodeData.create(context, episodeId));
 		ob.subscribeOn(Schedulers.io());
 		ob.observeOn(AndroidSchedulers.mainThread());
 		return ob;

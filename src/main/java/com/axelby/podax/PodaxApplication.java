@@ -53,9 +53,14 @@ public class PodaxApplication extends Application {
 
 		PodaxLog.ensureRemoved(this);
 
-		MediaButtonIntentReceiver.initialize(this);
+		if (!isRoboUnitTest())
+			MediaButtonIntentReceiver.initialize(this);
 		BootReceiver.setupAlarms(getApplicationContext());
 
 		PlayerStatus.notify(this);
+	}
+
+	public static boolean isRoboUnitTest() {
+		return "robolectric".equals(Build.FINGERPRINT);
 	}
 }
