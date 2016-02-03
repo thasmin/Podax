@@ -128,8 +128,8 @@ public class SubscriptionCursor {
 	public static RequestCreator getThumbnailImage(Context context, long subscriptionId) {
 		String filename = getThumbnailFilename(context, subscriptionId);
 		if (!new File(filename).exists())
-			return Picasso.with(context).load(R.drawable.ic_menu_podax);
-		return Picasso.with(context).load(new File(filename));
+			return Picasso.with(context).load(R.drawable.ic_menu_podax).fit();
+		return Picasso.with(context).load(new File(filename)).fit();
 	}
 
 	public static Bitmap getThumbnailImageRaw(Context context, long subscriptionId) {

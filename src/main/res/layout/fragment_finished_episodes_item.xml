@@ -21,6 +21,8 @@
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
             android:layout_marginStart="10dp"
+            android:contentDescription="@string/subscription_thumbnail"
+            android:transitionName="subscriptionImage"
             />
 
         <TextView
@@ -34,6 +36,7 @@
             android:layout_toEndOf="@+id/thumbnail"
             android:textSize="18sp"
             tools:text="Episode Name that is VERY VERY LONG"
+            android:transitionName="subscriptionName"
             />
 
         <TextView

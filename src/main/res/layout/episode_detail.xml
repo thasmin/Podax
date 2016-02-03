@@ -44,7 +44,8 @@
                         android:gravity="center_horizontal"
                         android:textAppearance="?android:attr/textAppearanceMedium"
                         android:text="Episode Title"
-                        tools:ignore="HardcodedText"/>
+                        tools:ignore="HardcodedText"
+                        android:transitionName="subscriptionName" />
 
                 <TextView
                         android:id="@+id/subscription_title"

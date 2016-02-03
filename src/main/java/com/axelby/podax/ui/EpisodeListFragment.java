@@ -31,7 +31,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 
-import com.axelby.gpodder.dto.Subscription;
+import com.axelby.podax.AppFlow;
 import com.axelby.podax.BR;
 import com.axelby.podax.Constants;
 import com.axelby.podax.DBAdapter;
@@ -62,6 +62,7 @@ import rx.schedulers.Schedulers;
 public class EpisodeListFragment extends RxFragment {
 	private long _subscriptionId = -1;
 
+	private View _layout;
 	private LinearLayout _listView;
 
 	private final DateFormat _pubDateFormat = DateFormat.getDateInstance();
@@ -192,6 +193,7 @@ public class EpisodeListFragment extends RxFragment {
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
+		_layout = view;
 		_listView = (LinearLayout) view.findViewById(R.id.list);
 	}
 
@@ -351,7 +353,7 @@ public class EpisodeListFragment extends RxFragment {
 
 			setPlaylistPosition(0);
 
-			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, _id));
+			AppFlow.get(getActivity()).displayEpisode(_id);
 		};
 
 		public View.OnClickListener onPlaylist = button -> {
@@ -361,8 +363,10 @@ public class EpisodeListFragment extends RxFragment {
 			button.getContext().getContentResolver().update(EpisodeProvider.getContentUri(_id), values, null, null);
 		};
 
-		public View.OnClickListener onClick = button ->
-			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, _id));
+		public View.OnClickListener onClick = button -> {
+			View thumbnail = _layout.findViewById(R.id.thumbnail);
+			AppFlow.get(getActivity()).displayEpisode(_id, thumbnail);
+		};
 	}
 
 	private long setupHeader(long subscriptionId) {

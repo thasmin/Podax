@@ -38,6 +38,7 @@
             android:layout_margin="15dp"
             android:contentDescription="@string/subscription_logo"
             tools:src="@drawable/icon"
+            android:transitionName="subscriptionImage"
             />
 
         <TextView

@@ -359,7 +359,8 @@ public class PlaylistFragment extends RxFragment {
 
 		public void show(View view) {
 			View thumbnail = view.findViewById(R.id.thumbnail);
-			AppFlow.get(getActivity()).displayEpisode(_id, thumbnail);
+			View title = view.findViewById(R.id.title);
+			AppFlow.get(getActivity()).displayEpisode(_id, thumbnail, title);
 		}
 
 		public void play(View view) {

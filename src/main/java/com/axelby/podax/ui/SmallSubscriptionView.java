@@ -2,7 +2,6 @@ package com.axelby.podax.ui;
 
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -12,7 +11,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.axelby.podax.Constants;
+import com.axelby.podax.AppFlow;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.squareup.picasso.Picasso;
@@ -27,8 +27,7 @@ public class SmallSubscriptionView extends FrameLayout {
 		public void onClick(View view) {
 			Uri uri = SubscriptionProvider.addSingleUseSubscription(getContext(), _rssUrl);
 			long subscriptionId = ContentUris.parseId(uri);
-			Intent intent = PodaxFragmentActivity.createIntent(getContext(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
-			getContext().startActivity(intent);
+			AppFlow.get(Helper.getActivityFromView(view)).displaySubscription(_title.getText(), subscriptionId, _thumbnail, _title);
 		}
 	};
 
@@ -58,7 +57,7 @@ public class SmallSubscriptionView extends FrameLayout {
 
 	public void set(String title, String imageUrl, String rssUrl) {
 		_title.setText(title);
-		Picasso.with(getContext()).load(imageUrl).into(_thumbnail);
+		Picasso.with(getContext()).load(imageUrl).fit().into(_thumbnail);
 		_rssUrl = rssUrl;
 	}
 

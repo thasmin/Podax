@@ -16,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.axelby.podax.Constants;
+import com.axelby.podax.AppFlow;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.R;
@@ -33,12 +33,16 @@ public class SearchPodaxFragment extends Fragment
 
 	private View.OnClickListener _subscriptionClickHandler = view -> {
 		long id = (long) view.getTag();
-		startActivity(PodaxFragmentActivity.createIntent(view.getContext(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, id));
+		View thumbnail = view.findViewById(R.id.thumbnail);
+		TextView title = (TextView) view.findViewById(R.id.title);
+		AppFlow.get(getActivity()).displaySubscription(title.getText(), id, thumbnail, title);
 	};
 
 	private final View.OnClickListener _episodeClickHandler = view -> {
 		long id = (long) view.getTag();
-		startActivity(PodaxFragmentActivity.createIntent(view.getContext(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, id));
+		View thumbnail = view.findViewById(R.id.thumbnail);
+		View title = view.findViewById(R.id.title);
+		AppFlow.get(getActivity()).displayEpisode(id, thumbnail, title);
 	};
 
 	@Override

@@ -41,7 +41,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_margin="10dp"
                 android:contentDescription="@string/thumbnail"
-                android:tag="@{model.title}"
+                android:transitionName="subscriptionImage"
                 />
 
             <TextView
@@ -55,7 +55,9 @@
                 android:layout_alignTop="@id/thumbnail"
                 android:layout_toLeftOf="@id/drag"
                 android:layout_toStartOf="@id/drag"
-                android:textSize="17sp" />
+                android:textSize="17sp"
+                android:transitionName="subscriptionName"
+                />
 
             <TextView
                 android:id="@+id/downloaded"

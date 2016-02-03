@@ -295,10 +295,17 @@ public class AppFlow {
 		return true;
 	}
 
-	public boolean displayEpisode(long episodeId, View subscriptionImage) {
+	public boolean displayEpisode(long episodeId) {
 		Bundle args = new Bundle(1);
 		args.putLong(Constants.EXTRA_EPISODE_ID, episodeId);
-		Bundle options = getTransitionOptions(subscriptionImage);
+		switchTo(ScreenChange.detailFragment(EpisodeDetailFragment.class, args));
+		return true;
+	}
+
+	public boolean displayEpisode(long episodeId, View... transitionViews) {
+		Bundle args = new Bundle(1);
+		args.putLong(Constants.EXTRA_EPISODE_ID, episodeId);
+		Bundle options = getTransitionOptions(transitionViews);
 		switchTo(ScreenChange.detailFragment(EpisodeDetailFragment.class, args, options));
 		return true;
 	}
@@ -321,23 +328,35 @@ public class AppFlow {
 		return true;
 	}
 
-	public boolean displaySubscription(String title, long subscriptionId, View... transitions) {
+	public boolean displaySubscription(long subscriptionId, View... transitions) {
 		Bundle args = new Bundle(1);
 		args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
-		args.putString(Constants.EXTRA_SUBSCRIPTION_NAME, title);
+		Bundle options = getTransitionOptions(transitions);
+		switchTo(ScreenChange.detailFragment(EpisodeListFragment.class, args, options));
+		return true;
+	}
+
+	public boolean displaySubscription(CharSequence title, long subscriptionId, View... transitions) {
+		Bundle args = new Bundle(1);
+		args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
+		args.putString(Constants.EXTRA_SUBSCRIPTION_NAME, title.toString());
 		Bundle options = getTransitionOptions(transitions);
 		switchTo(ScreenChange.detailFragment(EpisodeListFragment.class, args, options));
 		return true;
 	}
 
 	@Nullable
+	@SuppressWarnings("unchecked")
 	private Bundle getTransitionOptions(View... views) {
 		if (views.length == 0)
 			return null;
 		if (Build.VERSION.SDK_INT >= 21) {
 			ArrayList<Pair<View, String>> pairs = new ArrayList<>(views.length);
-			for (View view : views)
+			for (View view : views) {
 				pairs.add(Pair.create(view, view.getTransitionName()));
+				if (view.getTransitionName() == null || view.getTransitionName().equals(""))
+					Log.e("AppFlow", "transitioning view has no transition name");
+			}
 			return ActivityOptions.makeSceneTransitionAnimation(_activity, pairs.toArray(new Pair[pairs.size()])).toBundle();
 		}
 		return null;

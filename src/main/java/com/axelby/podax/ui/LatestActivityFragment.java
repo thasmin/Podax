@@ -18,7 +18,7 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.axelby.podax.Constants;
+import com.axelby.podax.AppFlow;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.R;
@@ -157,10 +157,10 @@ public class LatestActivityFragment extends RxFragment {
 		}
 
 		private final View.OnClickListener _subscriptionClickHandler = view ->
-			getActivity().startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeListFragment.class, Constants.EXTRA_SUBSCRIPTION_ID, (long) view.getTag()));
+			AppFlow.get(getActivity()).displaySubscription((long) view.getTag(), view);
 
 		private final View.OnClickListener _episodeClickHandler = view ->
-			getActivity().startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, (long) view.getTag()));
+			AppFlow.get(getActivity()).displayEpisode((long) view.getTag());
 
 		public LatestActivityAdapter() {
 			setHasStableIds(true);

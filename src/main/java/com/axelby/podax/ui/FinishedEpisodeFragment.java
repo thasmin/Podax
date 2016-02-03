@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.axelby.podax.Constants;
+import com.axelby.podax.AppFlow;
 import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerService;
@@ -166,7 +166,9 @@ public class FinishedEpisodeFragment extends RxFragment {
 			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
 			view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
 
-			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
+			View thumbnail = ((View)view.getParent()).findViewById(R.id.thumbnail);
+			View name = ((View)view.getParent()).findViewById(R.id.title);
+			AppFlow.get(getActivity()).displayEpisode(episodeId, thumbnail, name);
 		};
 
         final View.OnClickListener _playlistHandler = view -> {
@@ -180,7 +182,9 @@ public class FinishedEpisodeFragment extends RxFragment {
 
 		final View.OnClickListener _clickHandler = view -> {
 			long episodeId = (Long) view.getTag();
-			startActivity(PodaxFragmentActivity.createIntent(getActivity(), EpisodeDetailFragment.class, Constants.EXTRA_EPISODE_ID, episodeId));
+			View thumbnail = ((View)view.getParent()).findViewById(R.id.thumbnail);
+			View name = ((View)view.getParent()).findViewById(R.id.title);
+			AppFlow.get(getActivity()).displayEpisode(episodeId, thumbnail, name);
 		};
 
 		@Override

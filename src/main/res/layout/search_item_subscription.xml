@@ -17,7 +17,9 @@
         android:layout_height="0dp"
         android:scaleType="fitCenter"
         android:contentDescription="@string/subscription_thumbnail"
-        tools:src="@drawable/ic_menu_podax" />
+        tools:src="@drawable/ic_menu_podax"
+        android:transitionName="subscriptionImage"
+        />
 
     <TextView
         android:id="@+id/title"
@@ -26,6 +28,7 @@
         android:gravity="center_horizontal"
         android:textSize="14sp"
         tools:text="Podax Example Podcast With A Long Title"
+        android:transitionName="subscriptionName"
         />
 
 </LinearLayout>
