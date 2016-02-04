@@ -151,7 +151,8 @@ public class EpisodeData {
 	}
 
 	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
-		Observable<EpisodeData> ob = Observable.just(EpisodeData.create(context, episodeId));
+		Observable<EpisodeData> ob = EpisodeData.getEpisodeWatcher(episodeId)
+			.startWith(EpisodeData.create(context, episodeId));
 		ob.subscribeOn(Schedulers.io());
 		ob.observeOn(AndroidSchedulers.mainThread());
 		return ob;
@@ -196,8 +197,17 @@ public class EpisodeData {
 	}
 
 	private static PublishSubject<EpisodeCursor> _changeSubject = PublishSubject.create();
-	public static void notifyChange(EpisodeCursor c) { _changeSubject.onNext(c); }
-	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new);
-	public static Observable<EpisodeData> getEpisodeWatcher() { return _changeWatcher.observeOn(AndroidSchedulers.mainThread()); }
-	public static Observable<EpisodeData> getEpisodeWatcher(long id) { return _changeWatcher.filter(d -> d.getId() == id).observeOn(AndroidSchedulers.mainThread()); }
+	public static void notifyChange(EpisodeCursor c) {
+		_changeSubject.onNext(c);
+	}
+
+	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new).share();
+	public static Observable<EpisodeData> getEpisodeWatcher() {
+		return _changeWatcher.observeOn(AndroidSchedulers.mainThread());
+	}
+	public static Observable<EpisodeData> getEpisodeWatcher(long id) {
+		return _changeWatcher
+			.filter(d -> d.getId() == id)
+			.observeOn(AndroidSchedulers.mainThread());
+	}
 }

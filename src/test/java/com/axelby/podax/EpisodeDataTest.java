@@ -7,6 +7,7 @@ import android.net.Uri;
 
 import junit.framework.Assert;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -18,6 +19,8 @@ import rx.observers.TestSubscriber;
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 21)
 public class EpisodeDataTest {
+	@Rule
+	public RxSchedulerSwitcher _rxSchedulerSwitcher = new RxSchedulerSwitcher();
 
 	@Test
 	public void testGetObservable() throws Exception {
@@ -41,12 +44,14 @@ public class EpisodeDataTest {
 		EpisodeData.getObservable(context, epId).subscribe(epSubscriber);
 		epSubscriber.assertNoErrors();
 		epSubscriber.assertValueCount(1);
+		Assert.assertEquals("original title is incorrect", "huh?", epSubscriber.getOnNextEvents().get(0).getTitle());
 
 		values = new ContentValues(1);
 		values.put(EpisodeProvider.COLUMN_TITLE, "oh i see");
 		context.getContentResolver().update(epUri, values, null, null);
 
 		epSubscriber.assertNoErrors();
-		epSubscriber.assertValueCount(1);
+		epSubscriber.assertValueCount(2);
+		Assert.assertEquals("original title is incorrect", "oh i see", epSubscriber.getOnNextEvents().get(1).getTitle());
 	}
 }
