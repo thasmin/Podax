@@ -2,16 +2,16 @@ package com.axelby.podax;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.annotation.IntDef;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
 public class EpisodeData {
@@ -158,15 +158,10 @@ public class EpisodeData {
 		return ob;
 	}
 
-	public static final int FINISHED = 0;
-	public static final int TO_DOWNLOAD = 1;
-	public static final int PLAYLIST = 2;
-	@IntDef({FINISHED, TO_DOWNLOAD, PLAYLIST})
-	@Retention(RetentionPolicy.SOURCE)
-	public @interface Filter {}
+	public enum Filter { FINISHED, TO_DOWNLOAD, PLAYLIST };
 
 	// by default, runs on io thread and is observed on main thread
-	public static Observable<EpisodeData> getObservables(Context context, @Filter int filter) {
+	public static Observable<EpisodeData> getObservables(Context context, Filter filter) {
 		Observable<EpisodeData> ob = Observable.create(o -> {
 			Cursor c = null;
 			switch (filter) {
@@ -196,12 +191,31 @@ public class EpisodeData {
 		return ob;
 	}
 
+	private static BehaviorSubject<List<EpisodeData>> _playlistSubject = BehaviorSubject.create();
+	public static void notifyPlaylistChange(Context context) {
+		Cursor c = context.getContentResolver().query(EpisodeProvider.PLAYLIST_URI, null, null, null, null);
+		if (c == null)
+			return;
+
+		List<EpisodeData> playlist = new ArrayList<>(c.getCount());
+		while (c.moveToNext())
+			playlist.add(new EpisodeData(new EpisodeCursor(c)));
+		c.close();
+
+		_playlistSubject.onNext(playlist);
+	}
+	public static Observable<List<EpisodeData>> getPlaylist(Context context) {
+		if (!_playlistSubject.hasValue())
+			notifyPlaylistChange(context);
+		return _playlistSubject;
+	}
+
 	private static PublishSubject<EpisodeCursor> _changeSubject = PublishSubject.create();
 	public static void notifyChange(EpisodeCursor c) {
 		_changeSubject.onNext(c);
 	}
 
-	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new).share();
+	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new);
 	public static Observable<EpisodeData> getEpisodeWatcher() {
 		return _changeWatcher.observeOn(AndroidSchedulers.mainThread());
 	}

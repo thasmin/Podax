@@ -46,7 +46,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
-		EpisodeData.getObservables(activity, EpisodeData.FINISHED)
+		EpisodeData.getObservables(activity, EpisodeData.Filter.FINISHED)
 			.concatWith(_timing)
 			.toList()
 			.compose(bindToLifecycle())

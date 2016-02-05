@@ -499,8 +499,10 @@ public class EpisodeProvider extends ContentProvider {
 		// update specified episode
 		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
 			new Object[]{newPosition, episodeId});
-		if (getContext() != null)
+		if (getContext() != null) {
 			getContext().getContentResolver().notifyChange(PLAYLIST_URI, null);
+			EpisodeData.notifyPlaylistChange(getContext());
+		}
 	}
 
 	@Override

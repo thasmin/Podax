@@ -169,7 +169,7 @@ public class PlaylistFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PlaylistListAdapter();
-		EpisodeData.getObservables(activity, EpisodeData.PLAYLIST)
+		EpisodeData.getObservables(activity, EpisodeData.Filter.PLAYLIST)
 			.map(EpisodeModel::new)
 			.toList()
 			.compose(bindToLifecycle())
