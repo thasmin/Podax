@@ -404,6 +404,11 @@ public class EpisodeProvider extends ContentProvider {
 			notifyActiveChange();
 			ActiveEpisodeReceiver.notifyExternal(getContext());
 		}
+
+		if (values.containsKey(COLUMN_FINISHED_TIME))
+			EpisodeData.notifyFinishedChange(getContext());
+
+
 		// if the current episode has updated the position but it's not from the player, tell the player to update
 		if (episodeId == activeEpisodeId && values.containsKey(COLUMN_LAST_POSITION))
 			getContext().getContentResolver().notifyChange(PLAYER_UPDATE_URI, null);

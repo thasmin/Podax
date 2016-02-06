@@ -158,16 +158,13 @@ public class EpisodeData {
 		return ob;
 	}
 
-	public enum Filter { FINISHED, TO_DOWNLOAD };
+	public enum Filter { TO_DOWNLOAD };
 
 	// by default, runs on io thread and is observed on main thread
 	public static Observable<EpisodeData> getObservables(Context context, Filter filter) {
 		Observable<EpisodeData> ob = Observable.create(o -> {
 			Cursor c = null;
 			switch (filter) {
-				case FINISHED:
-					c = context.getContentResolver().query(EpisodeProvider.FINISHED_URI, null, null, null, null);
-					break;
 				case TO_DOWNLOAD:
 					c = context.getContentResolver().query(EpisodeProvider.TO_DOWNLOAD_URI, null, null, null, null);
 					break;
@@ -186,6 +183,25 @@ public class EpisodeData {
 		ob.subscribeOn(Schedulers.io());
 		ob.observeOn(AndroidSchedulers.mainThread());
 		return ob;
+	}
+
+	private static BehaviorSubject<List<EpisodeData>> _finishedSubject = BehaviorSubject.create();
+	public static void notifyFinishedChange(Context context) {
+		Cursor c = context.getContentResolver().query(EpisodeProvider.FINISHED_URI, null, null, null, null);
+		if (c == null)
+			return;
+
+		List<EpisodeData> finished = new ArrayList<>(c.getCount());
+		while (c.moveToNext())
+			finished.add(new EpisodeData(new EpisodeCursor(c)));
+		c.close();
+
+		_finishedSubject.onNext(finished);
+	}
+	public static Observable<List<EpisodeData>> getFinished(Context context) {
+		if (!_finishedSubject.hasValue())
+			notifyFinishedChange(context);
+		return _finishedSubject;
 	}
 
 	private static BehaviorSubject<List<EpisodeData>> _playlistSubject = BehaviorSubject.create();
