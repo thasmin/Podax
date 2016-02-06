@@ -14,6 +14,7 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import java.util.Date;
 import java.util.List;
 
 import rx.observers.TestSubscriber;
@@ -96,5 +97,36 @@ public class EpisodeDataTest {
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
 		Assert.assertEquals("should be one items in playlist", 1, testSubscriber.getOnNextEvents().get(1).size());
+	}
+
+	@Test
+	public void testGetFinished() {
+		Context context = RuntimeEnvironment.application;
+
+		ContentValues values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
+		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
+		Assert.assertNotNull("subscription uri should not be null", subUri);
+
+		values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_TITLE, "one");
+		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
+		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+
+		TestSubscriber<List<EpisodeData>> testSubscriber = new TestSubscriber<>();
+		EpisodeData.getFinished(context).subscribe(testSubscriber);
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(1);
+		Assert.assertEquals("should be no finished episodes", 0, testSubscriber.getOnNextEvents().get(0).size());
+
+		values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_FINISHED_TIME, new Date().getTime() / 1000);
+		context.getContentResolver().update(ep1Uri, values, null, null);
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(2);
+		Assert.assertEquals("should be one finished episode", 1, testSubscriber.getOnNextEvents().get(1).size());
 	}
 }

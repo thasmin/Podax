@@ -30,14 +30,11 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 
 import rx.Subscriber;
-import rx.subjects.BehaviorSubject;
 
 public class FinishedEpisodeFragment extends RxFragment {
 	private PodcastAdapter _adapter = null;
 	private RecyclerView _listView;
 	private View _emptyView;
-
-	private BehaviorSubject<EpisodeData> _timing = BehaviorSubject.create();
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -46,9 +43,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
-		EpisodeData.getObservables(activity, EpisodeData.Filter.FINISHED)
-			.concatWith(_timing)
-			.toList()
+		EpisodeData.getFinished(activity)
 			.compose(bindToLifecycle())
 			.subscribe(
 				_adapter::setEpisodes,
@@ -70,8 +65,6 @@ public class FinishedEpisodeFragment extends RxFragment {
 		_listView.setItemAnimator(new DefaultItemAnimator());
 
 		_emptyView = view.findViewById(R.id.empty);
-
-		_timing.onCompleted();
 	}
 
 	@Override
