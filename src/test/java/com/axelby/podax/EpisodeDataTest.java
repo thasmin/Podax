@@ -25,7 +25,7 @@ public class EpisodeDataTest {
 	public RxSchedulerSwitcher _rxSchedulerSwitcher = new RxSchedulerSwitcher();
 
 	@Test
-	public void testGetEpisode() throws Exception {
+	public void testGetEpisode() {
 		Context context = RuntimeEnvironment.application;
 
 		ContentValues values = new ContentValues(2);

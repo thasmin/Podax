@@ -2,12 +2,7 @@ package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.databinding.BaseObservable;
 import android.databinding.BindingAdapter;
-import android.databinding.ObservableBoolean;
-import android.databinding.ObservableField;
-import android.databinding.ObservableInt;
-import android.databinding.ObservableLong;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -169,9 +164,7 @@ public class PlaylistFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PlaylistListAdapter();
-		EpisodeData.getObservables(activity, EpisodeData.Filter.PLAYLIST)
-			.map(EpisodeModel::new)
-			.toList()
+		EpisodeData.getPlaylist(activity)
 			.compose(bindToLifecycle())
 			.subscribe(
 				_adapter::setEpisodes,
@@ -244,8 +237,10 @@ public class PlaylistFragment extends RxFragment {
 			setHasStableIds(true);
 		}
 
-		public void setEpisodes(List<EpisodeModel> episodes) {
-			_episodes = episodes;
+		public void setEpisodes(List<EpisodeData> episodes) {
+			_episodes = new ArrayList<>(episodes.size());
+			for (EpisodeData ep : episodes)
+				_episodes.add(new EpisodeModel(ep));
 			notifyDataSetChanged();
 
 			_ids.clear();
@@ -254,6 +249,7 @@ public class PlaylistFragment extends RxFragment {
 
 			_episodeSubscriber.unsubscribe();
 			EpisodeData.getEpisodeWatcher()
+				.filter(ep -> _ids.containsKey(ep.getId()))
 				.map(EpisodeModel::new)
 				.compose(bindToLifecycle())
 				.subscribe(_episodeSubscriber);
@@ -319,42 +315,37 @@ public class PlaylistFragment extends RxFragment {
 	}
 
 	@SuppressWarnings("unused")
-	public class EpisodeModel extends BaseObservable {
+	public class EpisodeModel {
 		private final long _id;
 
-		public final ObservableLong subscriptionId = new ObservableLong(-1);
-		public final ObservableField<String> title = new ObservableField<>("");
-		public final ObservableField<String> downloadStatus = new ObservableField<>("downloaded");
-		public final ObservableInt downloadStatusColor = new ObservableInt(0xff669900);
-		public final ObservableField<String> duration = new ObservableField<>("");
-		public final ObservableBoolean isDragging = new ObservableBoolean(false);
+		public final long subscriptionId;
+		public final String title;
+		public final String downloadStatus;
+		public final int downloadStatusColor;
+		public final String duration;
 
 		public EpisodeModel(@NonNull EpisodeData episode) {
 			_id = episode.getId();
-			title.set(episode.getTitle());
-			subscriptionId.set(episode.getSubscriptionId());
-			duration.set(Helper.getTimeString(episode.getDuration()));
+			title = episode.getTitle();
+			subscriptionId = episode.getSubscriptionId();
+			duration = Helper.getTimeString(episode.getDuration());
 
 			String episodeFilename = episode.getFilename(getActivity());
 			float downloaded = new File(episodeFilename).length();
-            if (episode.getFileSize() == downloaded) {
-				downloadStatusColor.set(0xff669900); //android.R.color.holo_green_dark
-				downloadStatus.set(getString(R.string.downloaded));
-            } else if (EpisodeDownloadService.isDownloading(episodeFilename)) {
-				downloadStatusColor.set(0xff669900); //android.R.color.holo_green_dark
-				downloadStatus.set(getString(R.string.now_downloading));
+			if (episode.getFileSize() == downloaded) {
+				downloadStatusColor = android.R.color.holo_green_dark;
+				downloadStatus = getActivity().getString(R.string.downloaded);
+			} else if (EpisodeDownloadService.isDownloading(episodeFilename)) {
+				downloadStatusColor = android.R.color.holo_green_dark;
+				downloadStatus = getActivity().getString(R.string.now_downloading);
 			} else {
-				downloadStatusColor.set(0xffcc0000); //android.R.color.holo_red_dark
-				downloadStatus.set(getString(R.string.not_downloaded));
+				downloadStatusColor = android.R.color.holo_red_dark;
+				downloadStatus = getActivity().getString(R.string.not_downloaded);
 			}
 		}
 
 		public long getId() {
 			return _id;
-		}
-
-		public void setIsDragging(boolean isDragging) {
-			this.isDragging.set(isDragging);
 		}
 
 		public void show(View view) {
@@ -373,5 +364,4 @@ public class PlaylistFragment extends RxFragment {
 			getActivity().getContentResolver().update(EpisodeProvider.getContentUri(_id), values, null, null);
 		}
 	}
-
 }

@@ -158,7 +158,7 @@ public class EpisodeData {
 		return ob;
 	}
 
-	public enum Filter { FINISHED, TO_DOWNLOAD, PLAYLIST };
+	public enum Filter { FINISHED, TO_DOWNLOAD };
 
 	// by default, runs on io thread and is observed on main thread
 	public static Observable<EpisodeData> getObservables(Context context, Filter filter) {
@@ -170,9 +170,6 @@ public class EpisodeData {
 					break;
 				case TO_DOWNLOAD:
 					c = context.getContentResolver().query(EpisodeProvider.TO_DOWNLOAD_URI, null, null, null, null);
-					break;
-				case PLAYLIST:
-					c = context.getContentResolver().query(EpisodeProvider.PLAYLIST_URI, null, null, null, null);
 					break;
 			}
 			if (c == null) {
