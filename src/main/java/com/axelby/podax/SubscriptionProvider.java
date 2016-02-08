@@ -205,6 +205,14 @@ public class SubscriptionProvider extends ContentProvider {
 			if (!URI.equals(uri))
 				getContext().getContentResolver().notifyChange(uri, null);
 			getContext().getContentResolver().notifyChange(URI, null);
+
+			// tell every listener every subscription that changed
+			Cursor c = db.query("subscriptions", null, where, whereArgs, null, null, null);
+			if (c != null) {
+				while (c.moveToNext())
+					SubscriptionData.notifyChange(new SubscriptionCursor(c));
+				c.close();
+			}
 		}
 
 		// update the full text search virtual table

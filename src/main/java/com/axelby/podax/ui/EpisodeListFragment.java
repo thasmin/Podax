@@ -26,6 +26,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
@@ -449,6 +452,23 @@ public class EpisodeListFragment extends RxFragment {
 			intentFilter.addDataType(SubscriptionProvider.ITEM_TYPE);
 		} catch (IntentFilter.MalformedMimeTypeException ignored) { }
 		LocalBroadcastManager.getInstance(getView().getContext()).registerReceiver(_updateReceiver, intentFilter);
+
+		// refresh changes from subscription settings fragment
+		setupHeader(_subscriptionId);
 	}
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.episode_list, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.settings) {
+            AppFlow.get(getActivity()).displaySubscriptionSettings(_subscriptionId);
+            return true;
+        }
+        return false;
+    }
 }

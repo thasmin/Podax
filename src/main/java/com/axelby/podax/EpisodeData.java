@@ -151,11 +151,10 @@ public class EpisodeData {
 	}
 
 	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
-		Observable<EpisodeData> ob = EpisodeData.getEpisodeWatcher(episodeId)
-			.startWith(EpisodeData.create(context, episodeId));
-		ob.subscribeOn(Schedulers.io());
-		ob.observeOn(AndroidSchedulers.mainThread());
-		return ob;
+		return EpisodeData.getEpisodeWatcher(episodeId)
+			.startWith(EpisodeData.create(context, episodeId))
+			.subscribeOn(Schedulers.io())
+			.observeOn(AndroidSchedulers.mainThread());
 	}
 
 	private static BehaviorSubject<List<EpisodeData>> _finishedSubject = BehaviorSubject.create();

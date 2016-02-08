@@ -29,13 +29,13 @@ public class EpisodeDataTest {
 	public void testGetEpisode() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues(2);
+		ContentValues values = new ContentValues();
 		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
 		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
 		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
 		Assert.assertNotNull("subscription uri should not be null", subUri);
 
-		values = new ContentValues(3);
+		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "huh?");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
 		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
@@ -49,7 +49,7 @@ public class EpisodeDataTest {
 		epSubscriber.assertValueCount(1);
 		Assert.assertEquals("original title is incorrect", "huh?", epSubscriber.getOnNextEvents().get(0).getTitle());
 
-		values = new ContentValues(1);
+		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "oh i see");
 		context.getContentResolver().update(epUri, values, null, null);
 
@@ -62,13 +62,13 @@ public class EpisodeDataTest {
 	public void testGetPlaylist() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues(2);
+		ContentValues values = new ContentValues();
 		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
 		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
 		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
 		Assert.assertNotNull("subscription uri should not be null", subUri);
 
-		values = new ContentValues(4);
+		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
 		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
@@ -76,7 +76,7 @@ public class EpisodeDataTest {
 		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", ep1Uri);
 
-		values = new ContentValues(4);
+		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "two");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
 		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
@@ -90,7 +90,7 @@ public class EpisodeDataTest {
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be two items in playlist", 2, testSubscriber.getOnNextEvents().get(0).size());
 
-		values = new ContentValues(1);
+		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
 		context.getContentResolver().update(ep1Uri, values, null, null);
 

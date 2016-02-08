@@ -19,6 +19,7 @@ import com.axelby.podax.ui.EpisodeListFragment;
 import com.axelby.podax.ui.LatestActivityFragment;
 import com.axelby.podax.ui.MainActivity;
 import com.axelby.podax.ui.PodaxFragmentActivity;
+import com.axelby.podax.ui.SubscriptionSettingsFragment;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -187,9 +188,9 @@ public class AppFlow {
 			}
 
 			if (this._destination == Frame.DetailFragment) {
-				Fragment fragment = Fragment.instantiate(activity, fragmentClass.getName(), _args);
 				MainActivity mainActivity = _mainActivity.get();
 				if (mainActivity != null && _hasDetailFragment) {
+					Fragment fragment = Fragment.instantiate(activity, fragmentClass.getName(), _args);
 					mainActivity.showDetailFragment(fragment);
 				} else {
 					Intent intent = new Intent(activity, PodaxFragmentActivity.class);
@@ -337,11 +338,18 @@ public class AppFlow {
 	}
 
 	public boolean displaySubscription(CharSequence title, long subscriptionId, View... transitions) {
-		Bundle args = new Bundle(1);
+		Bundle args = new Bundle(2);
 		args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
 		args.putString(Constants.EXTRA_SUBSCRIPTION_NAME, title.toString());
 		Bundle options = getTransitionOptions(transitions);
 		switchTo(ScreenChange.detailFragment(EpisodeListFragment.class, args, options));
+		return true;
+	}
+
+	public boolean displaySubscriptionSettings(long subscriptionId) {
+		Bundle args = new Bundle(1);
+		args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
+		switchTo(ScreenChange.detailFragment(SubscriptionSettingsFragment.class, args));
 		return true;
 	}
 

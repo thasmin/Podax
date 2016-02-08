@@ -29,6 +29,7 @@ public class SubscriptionCursor {
 	private Integer _descriptionColumn = null;
 	private Integer _singleUseColumn = null;
 	private Integer _playlistNewColumn = null;
+	private Integer _expirationColumn = null;
 
 	public SubscriptionCursor(Cursor cursor) {
 		_cursor = cursor;
@@ -80,6 +81,18 @@ public class SubscriptionCursor {
 		return _cursor.getString(_titleColumn);
 	}
 
+	public String getRawTitle() {
+		if (_titleColumn == null)
+			_titleColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE);
+		return _cursor.getString(_titleColumn);
+	}
+
+	public String getTitleOverride() {
+		if (_titleOverrideColumn == null)
+			_titleOverrideColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
+		return _cursor.getString(_titleOverrideColumn);
+	}
+
 	public String getUrl() {
 		if (_urlColumn == null)
 			_urlColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_URL);
@@ -118,6 +131,14 @@ public class SubscriptionCursor {
 		if (_cursor.isNull(_thumbnailColumn))
 			return null;
 		return _cursor.getString(_thumbnailColumn);
+	}
+
+	public int getExpirationDays() {
+		if (_expirationColumn == null)
+			_expirationColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_EXPIRATION);
+		if (_cursor.isNull(_expirationColumn))
+			return -1;
+		return _cursor.getInt(_expirationColumn);
 	}
 
 	public static String getThumbnailFilename(Context context, long subscriptionId) {
