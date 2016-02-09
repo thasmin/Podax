@@ -206,6 +206,17 @@ public class EpisodeData {
 		return queryToObservable(context, EpisodeProvider.LATEST_ACTIVITY_URI, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC");
 	}
 
+	public static boolean isLastActivityAfter(Context context, long when) {
+		Cursor c = context.getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI,
+				null, EpisodeProvider.COLUMN_PUB_DATE + ">?",
+				new String[] { String.valueOf(when) }, null);
+		if (c == null)
+			return true;
+		boolean isAfter = c.getCount() > 0;
+		c.close();
+		return isAfter;
+	}
+
 	private static BehaviorSubject<List<EpisodeData>> _finishedSubject = BehaviorSubject.create();
 	public static void notifyFinishedChange(Context context) {
 		Cursor c = context.getContentResolver().query(EpisodeProvider.FINISHED_URI, null, null, null, null);

@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -32,7 +31,7 @@ import android.widget.SearchView;
 import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
-import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.EpisodeData;
 import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
@@ -94,18 +93,9 @@ public class MainActivity extends RxAppCompatActivity {
 		SharedPreferences prefs = getSharedPreferences("latest_activity", Context.MODE_PRIVATE);
 
 		boolean showAutomatically = prefs.getBoolean("automatic_show", true);
-		if (!showAutomatically)
-			return;
-
 		long lastActivityCheck = prefs.getLong("last_check", 0);
-		Cursor c = getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI,
-				null, EpisodeProvider.COLUMN_PUB_DATE + ">?",
-				new String[] { String.valueOf(lastActivityCheck) }, null);
-		if (c == null)
-			return;
-		if (c.getCount() > 0)
+		if (showAutomatically && EpisodeData.isLastActivityAfter(this, lastActivityCheck))
 			AppFlow.get(this).displayLatestActivity();
-		c.close();
 	}
 
 	@Override
