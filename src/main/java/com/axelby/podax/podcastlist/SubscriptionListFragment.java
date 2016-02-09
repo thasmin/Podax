@@ -1,7 +1,6 @@
 package com.axelby.podax.podcastlist;
 
 import android.app.DialogFragment;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionCursor;
+import com.axelby.podax.SubscriptionData;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.axelby.podax.ui.WrappingLinearLayoutManager;
@@ -80,18 +79,8 @@ public class SubscriptionListFragment extends RxFragment {
 		};
 		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
 
-		Observable<SubscriptionCursor> ob = Observable.create(subscriber -> {
-			Cursor c = getActivity().getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
-			if (c != null) {
-				while (c.moveToNext())
-					subscriber.onNext(new SubscriptionCursor(c));
-				c.close();
-			}
-			subscriber.onCompleted();
-		});
-		Observable<List<ItemModel>> models = ob.map(
-			sub -> ItemModel.fromSubscriptionId(sub.getTitle(), sub.getThumbnail(), sub.getId())
-		)
+		Observable<List<ItemModel>> models = SubscriptionData.getAll(getActivity())
+			.map(sub -> ItemModel.fromSubscriptionId(sub.getTitle(), sub.getThumbnail(), sub.getId()))
 			.toList()
 			.subscribeOn(Schedulers.io())
 			.compose(RxLifecycle.bindFragment(lifecycle()));

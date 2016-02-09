@@ -49,4 +49,34 @@ public class SubscriptionDataTests {
 		Assert.assertEquals("nevermind", testSubscriber.getOnNextEvents().get(1).getTitle());
 	}
 
+	@Test
+	public void testGetAll() {
+		Context context = RuntimeEnvironment.application;
+
+		ContentValues values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
+		Uri sub1Uri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
+		Assert.assertNotNull("subscription uri should not be null", sub1Uri);
+
+		values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionProvider.COLUMN_URL, "test://2");
+		Uri sub2Uri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
+		Assert.assertNotNull("subscription uri should not be null", sub2Uri);
+
+		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
+		SubscriptionData.getAll(context).subscribe(testSubscriber);
+
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(2);
+
+		values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE_OVERRIDE, "nevermind");
+		context.getContentResolver().update(sub1Uri, values, null, null);
+
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(2);
+	}
+
 }

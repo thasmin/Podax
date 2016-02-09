@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import android.content.Context;
+import android.database.Cursor;
 
 import java.util.Date;
 
@@ -93,5 +94,17 @@ public class SubscriptionData {
 			.startWith(SubscriptionData.create(context, id))
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread());
+	}
+
+	public static Observable<SubscriptionData> getAll(Context context) {
+		return Observable.create(subscriber -> {
+			Cursor c = context.getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
+			if (c != null) {
+				while (c.moveToNext())
+					subscriber.onNext(new SubscriptionData(new SubscriptionCursor(c)));
+				c.close();
+			}
+			subscriber.onCompleted();
+		});
 	}
 }
