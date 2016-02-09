@@ -7,6 +7,7 @@ import android.net.Uri;
 
 import junit.framework.Assert;
 
+import org.joda.time.LocalDateTime;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +22,7 @@ import rx.observers.TestSubscriber;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 21)
-public class EpisodeDataTest {
+public class EpisodeDataTests {
 	@Rule
 	public RxSchedulerSwitcher _rxSchedulerSwitcher = new RxSchedulerSwitcher();
 
@@ -129,4 +130,43 @@ public class EpisodeDataTest {
 		testSubscriber.assertValueCount(2);
 		Assert.assertEquals("should be one finished episode", 1, testSubscriber.getOnNextEvents().get(1).size());
 	}
+
+	@Test
+	public void getExpired() {
+		Context context = RuntimeEnvironment.application;
+
+		ContentValues values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
+		values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
+		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
+		Assert.assertNotNull("subscription uri should not be null", subUri);
+
+		LocalDateTime now = LocalDateTime.now();
+
+		values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_TITLE, "one");
+		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
+		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-1).toDate().getTime() / 1000);
+		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
+		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+
+		values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_TITLE, "two");
+		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
+		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-8).toDate().getTime() / 1000);
+		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
+		Assert.assertNotNull("episode uri should not be null", ep2Uri);
+
+		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
+		EpisodeData.getExpired(context).subscribe(testSubscriber);
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(1);
+		Assert.assertEquals("only second episode should be expired", "two", testSubscriber.getOnNextEvents().get(0).getTitle());
+	}
+
 }

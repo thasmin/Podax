@@ -193,19 +193,14 @@ public class EpisodeDetailFragment extends RxFragment {
 		_seekbar.setOnSeekBarChangeListener(seekBarChangeListener);
 
 		_playlistButton.setOnClickListener(v -> {
-			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
-			String[] projection = new String[]{EpisodeProvider.COLUMN_ID, EpisodeProvider.COLUMN_PLAYLIST_POSITION};
-			Cursor c = getActivity().getContentResolver().query(podcastUri, projection, null, null, null);
-			if (c == null)
+			EpisodeData episode = EpisodeData.create(v.getContext(), _podcastId);
+			if (episode == null)
 				return;
-			if (c.moveToNext()) {
-				EpisodeCursor episode = new EpisodeCursor(c);
-				if (episode.getPlaylistPosition() == null)
-					episode.addToPlaylist(getActivity());
-				else
-					episode.removeFromPlaylist(getActivity());
-			}
-			c.close();
+
+			if (episode.getPlaylistPosition() == null)
+				episode.addToPlaylist(v.getContext());
+			else
+				episode.removeFromPlaylist(v.getContext());
 		});
 
 		restartButton.setOnClickListener(v -> EpisodeProvider.restart(getActivity(), _podcastId));

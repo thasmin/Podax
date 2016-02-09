@@ -149,16 +149,10 @@ public class EpisodeDownloadService extends Service {
 	}
 
 	private void expireDownloadedFiles() {
-		String[] projection = new String[]{
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-		};
-		Cursor c = getContentResolver().query(EpisodeProvider.EXPIRED_URI, projection, null, null, null);
-		if (c == null)
-			return;
-		while (c.moveToNext())
-			new EpisodeCursor(c).removeFromPlaylist(this);
-		c.close();
+		EpisodeData.getExpired(this).subscribe(
+			ep -> ep.removeFromPlaylist(this),
+			e -> Log.e("EpisodeDownloadService", "unable to expire downloaded files")
+		);
 	}
 
 	private int getPlaylistNumDownloadedItems() {

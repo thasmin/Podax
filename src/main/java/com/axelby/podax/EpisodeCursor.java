@@ -251,18 +251,6 @@ public class EpisodeCursor {
 		return new Date(_cursor.getLong(_finishedDateColumn) * 1000);
 	}
 
-	public void removeFromPlaylist(Context context) {
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-		context.getContentResolver().update(getContentUri(), values, null, null);
-	}
-
-	public void addToPlaylist(Context context) {
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
-		context.getContentResolver().update(getContentUri(), values, null, null);
-	}
-
 	public int determineDuration(Context context) {
 		int duration = (int) (AudioPlayerBase.determineDuration(getFilename(context)) * 1000);
 		ContentValues values = new ContentValues();

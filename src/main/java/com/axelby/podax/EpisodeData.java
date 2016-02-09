@@ -1,7 +1,10 @@
 package com.axelby.podax;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -9,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import rx.Observable;
+import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
@@ -150,11 +154,52 @@ public class EpisodeData {
 		return file.exists() && file.length() == getFileSize() && getFileSize() != 0;
 	}
 
+	private Uri getContentUri() {
+		return ContentUris.withAppendedId(EpisodeProvider.URI, getId());
+	}
+
+	/* -------
+	   actions
+	   ------- */
+
+	public void removeFromPlaylist(Context context) {
+		ContentValues values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	public void addToPlaylist(Context context) {
+		ContentValues values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	/* --
+	   rx
+	   -- */
+
+	private static void cursorToObserver(Observer<? super EpisodeData> subscriber, Cursor c) {
+		if (c != null) {
+			while (c.moveToNext())
+				subscriber.onNext(new EpisodeData(new EpisodeCursor(c)));
+			c.close();
+		}
+		subscriber.onCompleted();
+	}
+
 	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
 		return EpisodeData.getEpisodeWatcher(episodeId)
 			.startWith(EpisodeData.create(context, episodeId))
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread());
+	}
+
+	// not attached to a subject because not attached to a timer
+	public static Observable<EpisodeData> getExpired(Context context) {
+		return Observable.create(subscriber -> {
+			Cursor cursor = context.getContentResolver().query(EpisodeProvider.EXPIRED_URI, null, null, null, null);
+			cursorToObserver(subscriber, cursor);
+		});
 	}
 
 	private static BehaviorSubject<List<EpisodeData>> _finishedSubject = BehaviorSubject.create();
