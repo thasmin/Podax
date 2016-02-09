@@ -1,9 +1,7 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.content.ContentUris;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -68,53 +66,40 @@ public class EpisodeDetailFragment extends RxFragment {
 	private AsyncTask<Long, Void, Void> _flattr_task = new AsyncTask<Long, Void, Void>() {
 		@Override
 		protected Void doInBackground(Long... params) {
-			Uri podcastUri = ContentUris.withAppendedId(EpisodeProvider.URI, _podcastId);
-			String[] projection = new String[]{
-					EpisodeProvider.COLUMN_ID,
-					EpisodeProvider.COLUMN_TITLE,
-					EpisodeProvider.COLUMN_PAYMENT,
-			};
 			Activity activity = getActivity();
-			Cursor c = activity.getContentResolver().query(podcastUri, projection, null, null, null);
-			if (c == null)
+			EpisodeData episode = EpisodeData.create(activity, _podcastId);
+			if (episode == null)
 				return null;
-			if (c.moveToNext()) {
-				EpisodeCursor episode = new EpisodeCursor(c);
-				String payment_url = episode.getPaymentUrl();
-				if (payment_url != null) {
-					AutoSubmission sub = FlattrHelper.parseAutoSubmissionLink(Uri.parse(payment_url));
-					if (sub != null) {
-						// it's a flattr link
-						try {
-							FlattrHelper.flattr(activity, sub);
-							String message = "You flattred " + episode.getTitle() + "!";
-							showToast(message);
-						} catch (ForbiddenException e) {
-							if (e.getCode().equals("flattr_once")) {
-								String message = "Podcast was already flattred";
-								showToast(message);
-							} else {
-								try {
-									FlattrHelper.obtainToken(activity);
-								} catch (NoAppSecretFlattrException e1) {
-									String message = "No flattr app secret in this build.";
-									showToast(message);
-								}
-							}
-						} catch (FlattrException e) {
-							String message = "Could not flattr: " + e.getMessage();
-							showToast(message);
-						}
 
-					} else {
-						// it's another kind of payment link
-						Intent intent = new Intent(Intent.ACTION_VIEW);
-						intent.setData(Uri.parse(episode.getPaymentUrl()));
-						startActivity(intent);
+			String payment_url = episode.getPaymentUrl();
+			if (payment_url == null)
+				return null;
+
+			AutoSubmission sub = FlattrHelper.parseAutoSubmissionLink(Uri.parse(payment_url));
+			if (sub == null) {
+				// it's not a flattr link
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				intent.setData(Uri.parse(episode.getPaymentUrl()));
+				startActivity(intent);
+				return null;
+			}
+
+			try {
+				FlattrHelper.flattr(activity, sub);
+				showToast("You flattred " + episode.getTitle() + "!");
+			} catch (ForbiddenException e) {
+				if (e.getCode().equals("flattr_once")) {
+					showToast("Podcast was already flattred");
+				} else {
+					try {
+						FlattrHelper.obtainToken(activity);
+					} catch (NoAppSecretFlattrException e1) {
+						showToast("No flattr app secret in this build.");
 					}
 				}
+			} catch (FlattrException e) {
+				showToast("Could not flattr: " + e.getMessage());
 			}
-			c.close();
 
 			return null;
 		}
