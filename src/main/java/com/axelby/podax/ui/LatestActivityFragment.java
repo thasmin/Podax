@@ -24,9 +24,12 @@ import com.axelby.podax.SubscriptionCursor;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.joda.time.Instant;
 import org.joda.time.LocalDate;
+import org.joda.time.Months;
 import org.joda.time.Period;
+import org.joda.time.Weeks;
 import org.xml.sax.XMLReader;
 
 import java.util.ArrayList;
@@ -96,17 +99,18 @@ public class LatestActivityFragment extends RxFragment {
 			Date date = episode.getPubDate();
 			LocalDate pubDay = new DateTime(date.getTime()).toLocalDate();
 			Period timeDiff = new Period(pubDay, today);
+			int daysBetween = Days.daysBetween(pubDay, today).getDays();
 
 			String period;
-			if (timeDiff.getDays() == 0)
+			if (daysBetween == 0)
 				period = getString(R.string.today);
-			else if (timeDiff.getDays() == 1)
+			else if (daysBetween == 1)
 				period = getString(R.string.yesterday);
-			else if (timeDiff.getDays() < 7)
+			else if (daysBetween < 7)
 				period = String.format(Locale.getDefault(), "%d %s ago", timeDiff.getDays(), getActivity().getResources().getQuantityString(R.plurals.days, timeDiff.getDays()));
-			else if (timeDiff.getWeeks() < 4)
+			else if (Weeks.weeksBetween(pubDay, today).getWeeks() < 4)
 				period = String.format(Locale.getDefault(), "%d %s ago", timeDiff.getWeeks(), getActivity().getResources().getQuantityString(R.plurals.weeks, timeDiff.getWeeks()));
-			else if (timeDiff.getMonths() < 12)
+			else if (Months.monthsBetween(pubDay, today).getMonths() < 12)
 				period = String.format(Locale.getDefault(), "%d %s ago", timeDiff.getMonths(), getActivity().getResources().getQuantityString(R.plurals.months, timeDiff.getMonths()));
 			else
 				period = String.format(Locale.getDefault(), "%d %s ago", timeDiff.getYears(), getActivity().getResources().getQuantityString(R.plurals.years, timeDiff.getYears()));
