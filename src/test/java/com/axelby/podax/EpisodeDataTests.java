@@ -169,4 +169,41 @@ public class EpisodeDataTests {
 		Assert.assertEquals("only second episode should be expired", "two", testSubscriber.getOnNextEvents().get(0).getTitle());
 	}
 
+	@Test
+	public void getLatestActivity() {
+		Context context = RuntimeEnvironment.application;
+
+		ContentValues values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
+		values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
+		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
+		Assert.assertNotNull("subscription uri should not be null", subUri);
+
+		LocalDateTime now = LocalDateTime.now();
+
+		values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_TITLE, "one");
+		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-1).toDate().getTime() / 1000);
+		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
+		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+
+		values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_TITLE, "two");
+		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-8).toDate().getTime() / 1000);
+		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
+		Assert.assertNotNull("episode uri should not be null", ep2Uri);
+
+		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
+		EpisodeData.getLatestActivity(context).subscribe(testSubscriber);
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(2);
+		Assert.assertEquals("one should be first", "one", testSubscriber.getOnNextEvents().get(0).getTitle());
+		Assert.assertEquals("two should be second", "two", testSubscriber.getOnNextEvents().get(1).getTitle());
+	}
+
 }

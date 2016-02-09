@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.List;
 
 import rx.Observable;
-import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
@@ -178,13 +177,17 @@ public class EpisodeData {
 	   rx
 	   -- */
 
-	private static void cursorToObserver(Observer<? super EpisodeData> subscriber, Cursor c) {
-		if (c != null) {
-			while (c.moveToNext())
-				subscriber.onNext(new EpisodeData(new EpisodeCursor(c)));
-			c.close();
-		}
-		subscriber.onCompleted();
+	private static Observable<EpisodeData> queryToObservable(Context context,
+			 Uri uri, String selection, String[] selectionArgs, String sortOrder) {
+		return Observable.create(subscriber -> {
+			Cursor cursor = context.getContentResolver().query(uri, null, selection, selectionArgs, sortOrder);
+			if (cursor != null) {
+				while (cursor.moveToNext())
+					subscriber.onNext(new EpisodeData(new EpisodeCursor(cursor)));
+				cursor.close();
+			}
+			subscriber.onCompleted();
+		});
 	}
 
 	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
@@ -196,10 +199,11 @@ public class EpisodeData {
 
 	// not attached to a subject because not attached to a timer
 	public static Observable<EpisodeData> getExpired(Context context) {
-		return Observable.create(subscriber -> {
-			Cursor cursor = context.getContentResolver().query(EpisodeProvider.EXPIRED_URI, null, null, null, null);
-			cursorToObserver(subscriber, cursor);
-		});
+		return queryToObservable(context, EpisodeProvider.EXPIRED_URI, null, null, null);
+	}
+
+	public static Observable<EpisodeData> getLatestActivity(Context context) {
+		return queryToObservable(context, EpisodeProvider.LATEST_ACTIVITY_URI, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC");
 	}
 
 	private static BehaviorSubject<List<EpisodeData>> _finishedSubject = BehaviorSubject.create();

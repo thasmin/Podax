@@ -2,7 +2,6 @@ package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,8 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.axelby.podax.AppFlow;
-import com.axelby.podax.EpisodeCursor;
-import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.EpisodeData;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.trello.rxlifecycle.components.RxFragment;
@@ -38,7 +36,6 @@ import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -52,12 +49,13 @@ public class LatestActivityFragment extends RxFragment {
 		super.onAttach(activity);
 
 		_adapter = new LatestActivityAdapter();
-		Observable.just(activity.getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI, null, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC"))
+		EpisodeData.getLatestActivity(activity)
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
+			.toList()
 			.compose(bindToLifecycle())
 			.subscribe(
-				this::setCursor,
+				this::setEpisodes,
 				e -> Log.e("LatestActivityFragment", "unable to load latest activity", e)
 			);
 	}
@@ -88,13 +86,14 @@ public class LatestActivityFragment extends RxFragment {
 		_listView.setAdapter(_adapter);
 	}
 
-	public void setCursor(Cursor cursor) {
+	public void setEpisodes(List<EpisodeData> episodes) {
 		// could really use algebraic data types here
-		List<Object> items = new ArrayList<>(cursor.getCount() * 2);
+		List<Object> items = new ArrayList<>(episodes.size() * 2);
 		String lastPeriod = null;
 		LocalDate today = Instant.now().toDateTime().toLocalDate();
-		while (cursor.moveToNext()) {
-			Date date = new EpisodeCursor(cursor).getPubDate();
+		for (int i = 0; i < episodes.size(); ++i) {
+			EpisodeData episode = episodes.get(i);
+			Date date = episode.getPubDate();
 			LocalDate pubDay = new DateTime(date.getTime()).toLocalDate();
 			Period timeDiff = new Period(pubDay, today);
 
@@ -115,10 +114,10 @@ public class LatestActivityFragment extends RxFragment {
 
 			if (!period.equals(lastPeriod))
 				items.add(period);
-			items.add(cursor.getPosition());
+			items.add(i);
 			lastPeriod = period;
 		}
-		_adapter.changeItems(items, cursor);
+		_adapter.changeItems(items, episodes);
 		_adapter.notifyDataSetChanged();
 
 		getActivity().getSharedPreferences("latest_activity", Context.MODE_PRIVATE)
@@ -126,7 +125,7 @@ public class LatestActivityFragment extends RxFragment {
 	}
 
 	private class LatestActivityAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-		private Cursor _cursor = null;
+		private List<EpisodeData> _episodes = null;
 		private List<Object> _items = null;
 
 		private final int TYPE_HEADER = 0;
@@ -166,25 +165,24 @@ public class LatestActivityFragment extends RxFragment {
 			setHasStableIds(true);
 		}
 
-		public void changeItems(List<Object> items, Cursor cursor) {
+		public void changeItems(List<Object> items, List<EpisodeData> episodes) {
 			_items = items;
-			_cursor = cursor;
+			_episodes = episodes;
 		}
 
-		public void clear() { _cursor = null; }
+		public void clear() { _episodes = null; }
 
 		@Override
 		public long getItemId(int position) {
 			if (_items.get(position) instanceof String) {
 				return _items.get(position).hashCode();
 			}
-			_cursor.moveToPosition((Integer) _items.get(position));
-			return new EpisodeCursor(_cursor).getId();
+			return _episodes.get((Integer) _items.get(position)).getId();
 		}
 
 		@Override
 		public int getItemCount() {
-			if (_cursor == null)
+			if (_episodes == null)
 				return 0;
 			return _items.size();
 		}
@@ -208,15 +206,14 @@ public class LatestActivityFragment extends RxFragment {
 
 		@Override
 		public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-			if (_cursor == null)
+			if (_episodes == null)
 				return;
 
 			int viewType = getItemViewType(position);
 			if (viewType == TYPE_ACTIVITY) {
 				ActivityHolder holder = (ActivityHolder) viewHolder;
 
-				_cursor.moveToPosition((Integer) _items.get(position));
-				EpisodeCursor episode = new EpisodeCursor(_cursor);
+				EpisodeData episode = _episodes.get((Integer) _items.get(position));
 
 				SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()).into(holder.subscription_img);
 				holder.subscription_img.setTag(episode.getSubscriptionId());
