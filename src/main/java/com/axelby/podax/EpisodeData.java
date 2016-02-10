@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.view.View;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -171,6 +172,48 @@ public class EpisodeData {
 		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
+	/* ------------
+	   data binding
+	   ------------ */
+
+	public void show(View view) {
+		View thumbnail = view.findViewById(R.id.thumbnail);
+		View title = view.findViewById(R.id.title);
+		AppFlow.get(view.getContext()).displayEpisode(_id, thumbnail, title);
+	}
+
+	public void play(View view) {
+		PlayerService.play(view.getContext(), _id);
+	}
+
+	public void removeFromPlaylist(View view) {
+		removeFromPlaylist(view.getContext());
+	}
+
+	public String getDurationText() {
+		return Helper.getTimeString(getDuration());
+	}
+
+	public String getDownloadStatus(Context context) {
+		String episodeFilename = getFilename(context);
+		float downloaded = new File(episodeFilename).length();
+		if (getFileSize() == downloaded)
+			return context.getString(R.string.downloaded);
+		else if (EpisodeDownloadService.isDownloading(episodeFilename))
+			return context.getString(R.string.now_downloading);
+		else
+			return context.getString(R.string.not_downloaded);
+	}
+
+	public int getDownloadStatusColor(Context context) {
+		String filename = getFilename(context);
+		float downloaded = new File(filename).length();
+		if (getFileSize() == downloaded || EpisodeDownloadService.isDownloading(filename))
+			return android.R.color.holo_green_dark;
+		else
+			return android.R.color.holo_red_dark;
 	}
 
 	/* --

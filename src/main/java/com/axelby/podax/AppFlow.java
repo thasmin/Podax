@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -54,6 +55,13 @@ public class AppFlow {
 
 	public static AppFlow get(Activity activity) {
 		return new AppFlow(activity);
+	}
+
+	// be sure to use an activity when using this method
+	public static AppFlow get(Context context) {
+		if (!(context instanceof Activity))
+			Log.e("AppFlow", "creating with a Context that is not an Activity");
+		return new AppFlow((Activity) context);
 	}
 
 	private final Activity _activity;

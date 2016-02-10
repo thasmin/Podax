@@ -4,9 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <variable
-            name="model"
-            type="com.axelby.podax.ui.PlaylistFragment.EpisodeModel" />
+        <variable name="episode" type="com.axelby.podax.EpisodeData" />
     </data>
 
     <android.support.v7.widget.CardView
@@ -16,7 +14,7 @@
         app:cardCornerRadius="5dp"
         app:cardElevation="8dp"
         app:cardUseCompatPadding="true"
-        android:onClick="@{model.show}">
+        android:onClick="@{episode.show}">
 
         <RelativeLayout
             android:layout_width="fill_parent"
@@ -36,7 +34,7 @@
                 android:layout_width="75dip"
                 android:layout_height="75dip"
                 tools:src="@drawable/icon"
-                app:subscriptionImageId="@{model.subscriptionId}"
+                app:subscriptionImageId="@{episode.subscriptionId}"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_margin="10dp"
@@ -49,7 +47,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 tools:text="Episode Name That Could Be Really Really Long"
-                android:text="@{model.title}"
+                android:text="@{episode.title}"
                 android:layout_toRightOf="@id/thumbnail"
                 android:layout_toEndOf="@id/thumbnail"
                 android:layout_alignTop="@id/thumbnail"
@@ -64,9 +62,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="downloaded"
-                android:text="@{model.downloadStatus}"
+                android:text="@{episode.getDownloadStatus(context)}"
                 tools:textColor="@android:color/holo_green_dark"
-                android:textColor="@{model.downloadStatusColor}"
+                android:textColor="@{episode.getDownloadStatusColor(context)}"
                 android:textAllCaps="true"
                 android:layout_alignBottom="@id/play"
                 android:layout_alignParentLeft="true"
@@ -81,7 +79,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="1:42:59"
-                android:text="@{model.duration}"
+                android:text="@{episode.durationText}"
                 android:textColor="#ff999999"
                 android:layout_above="@id/downloaded"
                 android:layout_alignLeft="@id/downloaded"
@@ -101,7 +99,7 @@
                 android:layout_below="@id/thumbnail"
                 android:layout_margin="20dp"
                 android:textColor="?attr/colorPrimary"
-                android:onClick="@{model.play}" />
+                android:onClick="@{episode.play}" />
 
             <TextView
                 android:id="@+id/remove"
@@ -115,7 +113,7 @@
                 android:layout_alignBaseline="@+id/play"
                 android:layout_margin="20dp"
                 android:textColor="?attr/colorPrimary"
-                android:onClick="@{model.remove}" />
+                android:onClick="@{episode.removeFromPlaylist}" />
 
         </RelativeLayout>
 

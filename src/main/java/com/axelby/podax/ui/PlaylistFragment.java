@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,18 +21,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.axelby.podax.AppFlow;
 import com.axelby.podax.BR;
 import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeDownloadService;
 import com.axelby.podax.EpisodeProvider;
-import com.axelby.podax.Helper;
-import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.trello.rxlifecycle.components.RxFragment;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -217,9 +212,9 @@ public class PlaylistFragment extends RxFragment {
 
 	private class PlaylistListAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
 
-		private List<EpisodeModel> _episodes = new ArrayList<>(0);
+		private List<EpisodeData> _episodes = new ArrayList<>(0);
 		private TreeMap<Long, Integer> _ids = new TreeMap<>();
-		private final Subscriber<EpisodeModel> _episodeSubscriber = new Subscriber<EpisodeModel>() {
+		private final Subscriber<EpisodeData> _episodeSubscriber = new Subscriber<EpisodeData>() {
 			@Override public void onCompleted() { }
 
 			@Override
@@ -228,7 +223,7 @@ public class PlaylistFragment extends RxFragment {
 			}
 
 			@Override
-			public void onNext(EpisodeModel episodeData) {
+			public void onNext(EpisodeData episodeData) {
 				updateEpisode(episodeData);
 			}
 		};
@@ -238,9 +233,7 @@ public class PlaylistFragment extends RxFragment {
 		}
 
 		public void setEpisodes(List<EpisodeData> episodes) {
-			_episodes = new ArrayList<>(episodes.size());
-			for (EpisodeData ep : episodes)
-				_episodes.add(new EpisodeModel(ep));
+			_episodes = episodes;
 			notifyDataSetChanged();
 
 			_ids.clear();
@@ -250,12 +243,11 @@ public class PlaylistFragment extends RxFragment {
 			_episodeSubscriber.unsubscribe();
 			EpisodeData.getEpisodeWatcher()
 				.filter(ep -> _ids.containsKey(ep.getId()))
-				.map(EpisodeModel::new)
 				.compose(bindToLifecycle())
 				.subscribe(_episodeSubscriber);
 		}
 
-		public void updateEpisode(EpisodeModel episode) {
+		public void updateEpisode(EpisodeData episode) {
 			Integer position = _ids.get(episode.getId());
 			if (position == null)
 				return;
@@ -271,7 +263,7 @@ public class PlaylistFragment extends RxFragment {
 
         @Override
 		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
-			holder.binding.setVariable(BR.model, _episodes.get(position));
+			holder.binding.setVariable(BR.episode, _episodes.get(position));
 		}
 
 		@Override
@@ -298,7 +290,7 @@ public class PlaylistFragment extends RxFragment {
 			getActivity().getContentResolver().update(podcastUri, values, null, null);
 
 			int oldPosition = getPositionForId(id);
-			EpisodeModel ep = _episodes.get(newPosition);
+			EpisodeData ep = _episodes.get(newPosition);
 			_episodes.set(newPosition, _episodes.get(oldPosition));
 			_episodes.set(oldPosition, ep);
 
@@ -312,56 +304,5 @@ public class PlaylistFragment extends RxFragment {
 	public static void loadSubscriptionImage(ImageView image, long subscriptionId) {
 		if (subscriptionId != -1)
 			SubscriptionCursor.getThumbnailImage(image.getContext(), subscriptionId).into(image);
-	}
-
-	@SuppressWarnings("unused")
-	public class EpisodeModel {
-		private final long _id;
-
-		public final long subscriptionId;
-		public final String title;
-		public final String downloadStatus;
-		public final int downloadStatusColor;
-		public final String duration;
-
-		public EpisodeModel(@NonNull EpisodeData episode) {
-			_id = episode.getId();
-			title = episode.getTitle();
-			subscriptionId = episode.getSubscriptionId();
-			duration = Helper.getTimeString(episode.getDuration());
-
-			String episodeFilename = episode.getFilename(getActivity());
-			float downloaded = new File(episodeFilename).length();
-			if (episode.getFileSize() == downloaded) {
-				downloadStatusColor = android.R.color.holo_green_dark;
-				downloadStatus = getActivity().getString(R.string.downloaded);
-			} else if (EpisodeDownloadService.isDownloading(episodeFilename)) {
-				downloadStatusColor = android.R.color.holo_green_dark;
-				downloadStatus = getActivity().getString(R.string.now_downloading);
-			} else {
-				downloadStatusColor = android.R.color.holo_red_dark;
-				downloadStatus = getActivity().getString(R.string.not_downloaded);
-			}
-		}
-
-		public long getId() {
-			return _id;
-		}
-
-		public void show(View view) {
-			View thumbnail = view.findViewById(R.id.thumbnail);
-			View title = view.findViewById(R.id.title);
-			AppFlow.get(getActivity()).displayEpisode(_id, thumbnail, title);
-		}
-
-		public void play(View view) {
-			PlayerService.play(getActivity(), _id);
-		}
-
-		public void remove(View view) {
-			ContentValues values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-			getActivity().getContentResolver().update(EpisodeProvider.getContentUri(_id), values, null, null);
-		}
 	}
 }
