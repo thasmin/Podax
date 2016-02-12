@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.view.View;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -192,8 +193,19 @@ public class EpisodeData {
 		removeFromPlaylist(view.getContext());
 	}
 
-	public String getDurationText() {
-		return Helper.getTimeString(getDuration());
+	public void togglePlaylist(View view) {
+		if (getPlaylistPosition() == null)
+			addToPlaylist(view.getContext());
+		else
+			removeFromPlaylist(view.getContext());
+	}
+
+	public boolean hasDuration() {
+		return getDuration() != 0;
+	}
+
+	public String getDurationAsWords(Context context) {
+		return Helper.getVerboseTimeString(context, getDuration() / 1000.0f, false) + " long";
 	}
 
 	public String getDownloadStatus(Context context) {
@@ -216,6 +228,10 @@ public class EpisodeData {
 			return android.R.color.holo_red_dark;
 	}
 
+	public String getReleaseDate(Context context) {
+		return context.getString(R.string.released_on) + " " + DateFormat.getInstance().format(getPubDate());
+	}
+
 	/* --
 	   rx
 	   -- */
@@ -233,11 +249,35 @@ public class EpisodeData {
 		});
 	}
 
+	private static Observable<List<EpisodeData>> queryToListObservable(Context context,
+			 Uri uri, String selection, String[] selectionArgs, String sortOrder) {
+		return Observable.create(subscriber -> {
+			Cursor cursor = context.getContentResolver().query(uri, null, selection, selectionArgs, sortOrder);
+			if (cursor == null) {
+				subscriber.onCompleted();
+				return;
+			}
+
+			ArrayList<EpisodeData> list = new ArrayList<>(cursor.getCount());
+			while (cursor.moveToNext())
+				list.add(new EpisodeData(new EpisodeCursor(cursor)));
+			cursor.close();
+
+			subscriber.onNext(list);
+			subscriber.onCompleted();
+		});
+	}
+
 	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
 		return EpisodeData.getEpisodeWatcher(episodeId)
 			.startWith(EpisodeData.create(context, episodeId))
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread());
+	}
+
+	public static Observable<List<EpisodeData>> getForSubscriptionId(Context context, String[] selectionArgs) {
+		String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + "=?";
+		return queryToListObservable(context, EpisodeProvider.URI, selection, selectionArgs, "pubDate DESC");
 	}
 
 	// not attached to a subject because not attached to a timer

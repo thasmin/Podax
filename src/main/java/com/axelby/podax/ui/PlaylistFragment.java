@@ -2,7 +2,6 @@ package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.databinding.BindingAdapter;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -26,7 +25,6 @@ import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeDownloadService;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionCursor;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.ArrayList;
@@ -296,13 +294,5 @@ public class PlaylistFragment extends RxFragment {
 
 			notifyItemMoved(getPositionForId(id), newPosition);
 		}
-
-	}
-
-	@BindingAdapter({"app:subscriptionImageId"})
-	@SuppressWarnings("unused")
-	public static void loadSubscriptionImage(ImageView image, long subscriptionId) {
-		if (subscriptionId != -1)
-			SubscriptionCursor.getThumbnailImage(image.getContext(), subscriptionId).into(image);
 	}
 }

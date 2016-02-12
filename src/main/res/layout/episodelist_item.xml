@@ -5,15 +5,15 @@
     <data>
         <import type="android.view.View" />
         <variable
-            name="podcast"
-            type="com.axelby.podax.ui.EpisodeListFragment.PodcastModel" />
+            name="episode"
+            type="com.axelby.podax.EpisodeData" />
     </data>
 
     <android.support.v7.widget.CardView
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:onClick="@{podcast.onClick}"
+        android:onClick="@{episode.show}"
         app:cardBackgroundColor="@color/cardBG"
         app:cardCornerRadius="5dp"
         app:cardElevation="8dp"
@@ -32,7 +32,7 @@
                 android:layout_marginStart="10dp"
                 android:textSize="24sp"
                 tools:text="Episode Name"
-                android:text="@{podcast.title}" />
+                android:text="@{episode.title}" />
 
             <TextView
                 android:id="@+id/date"
@@ -43,7 +43,7 @@
                 android:layout_below="@id/title"
                 android:layout_marginTop="4dp"
                 tools:text="Released on June 12, 2014"
-                android:text="@{podcast.releaseDate}" />
+                android:text="@{episode.getReleaseDate(context)}" />
 
             <TextView
                 android:id="@+id/duration"
@@ -54,8 +54,8 @@
                 android:layout_below="@id/date"
                 android:layout_marginTop="4dp"
                 tools:text="57 minutes long"
-                android:text="@{podcast.duration}"
-                android:visibility="@{podcast.hasDuration ? View.VISIBLE : View.GONE}" />
+                android:text="@{episode.getDurationAsWords(context)}"
+                android:visibility="@{episode.hasDuration ? View.VISIBLE : View.GONE}" />
 
             <View
                 android:id="@+id/divider"
@@ -70,9 +70,9 @@
                 android:id="@+id/playlist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{podcast.playlistPosition == null ? @string/add_to_playlist : @string/remove_from_playlist}"
+                android:text="@{episode.playlistPosition == null ? @string/add_to_playlist : @string/remove_from_playlist}"
                 android:textAllCaps="true"
-                android:onClick="@{podcast.onPlaylist}"
+                android:onClick="@{episode.togglePlaylist}"
                 android:layout_margin="10dp"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
@@ -85,8 +85,8 @@
                 android:id="@+id/play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{podcast.isDownloaded ? @string/play : @string/stream}"
-                android:onClick="@{podcast.onPlay}"
+                android:text="@{episode.isDownloaded(context) ? @string/play : @string/stream}"
+                android:onClick="@{episode.play}"
                 android:textAllCaps="true"
                 android:layout_alignBaseline="@id/playlist"
                 android:layout_toLeftOf="@id/playlist"

@@ -79,7 +79,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="1:42:59"
-                android:text="@{episode.durationText}"
+                android:text="@{episode.getDurationAsWords(context)}"
                 android:textColor="#ff999999"
                 android:layout_above="@id/downloaded"
                 android:layout_alignLeft="@id/downloaded"

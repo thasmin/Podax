@@ -12,16 +12,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
-import android.databinding.BindingAdapter;
-import android.databinding.DataBindingUtil;
 import android.databinding.ObservableArrayList;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
-import android.databinding.ObservableList;
-import android.databinding.ViewDataBinding;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -39,6 +34,7 @@ import com.axelby.podax.BR;
 import com.axelby.podax.Constants;
 import com.axelby.podax.DBAdapter;
 import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
@@ -52,9 +48,8 @@ import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -116,12 +111,12 @@ public class EpisodeListFragment extends RxFragment {
 			.observeOn(AndroidSchedulers.mainThread())
 			.map(this::setupHeader)
 			.observeOn(Schedulers.io())
-			.map(this::getPodcastsCursor)
+			.flatMap(this::getEpisodes)
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(RxLifecycle.bindFragment(lifecycle()))
 			.subscribe(
 				this::showPodcasts,
-				e -> Log.e("itunesloader", "error while getting rss url from itunes", e)
+				e -> Log.e("EpisodeListFragment", "error while retrieving episodes", e)
 			);
 	}
 
@@ -160,29 +155,9 @@ public class EpisodeListFragment extends RxFragment {
 		return new RSSUrlFetcher(getActivity(), iTunesUrl).getRSSUrl();
 	}
 
-	public Cursor getPodcastsCursor(long subId) {
+	public Observable<List<EpisodeData>> getEpisodes(long subId) {
 		_subscriptionId = subId;
-
-		Uri uri = ContentUris.withAppendedId(SubscriptionProvider.URI, _subscriptionId);
-		if (uri == null)
-			return null;
-
-		Uri podcastsUri = Uri.withAppendedPath(uri, "podcasts");
-		String[] projection = {
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_TITLE,
-				EpisodeProvider.COLUMN_PUB_DATE,
-				EpisodeProvider.COLUMN_DURATION,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-				EpisodeProvider.COLUMN_FILE_SIZE,
-				EpisodeProvider.COLUMN_PLAYLIST_POSITION,
-		};
-		Cursor c = getActivity().getContentResolver().query(podcastsUri, projection, null, null, null);
-		if (c == null)
-			return null;
-		if (c.getCount() == 0)
-			UpdateService.updateSubscription(getActivity(), uri);
-		return c;
+		return EpisodeData.getForSubscriptionId(getActivity(), new String[]{String.valueOf(subId)});
 	}
 
 	@Override
@@ -200,75 +175,6 @@ public class EpisodeListFragment extends RxFragment {
 		_listView = (LinearLayout) view.findViewById(R.id.list);
 	}
 
-	@BindingAdapter("android:onChange")
-	@SuppressWarnings("unused")
-	public static void setOnChangeListener(CompoundButton button, CompoundButton.OnCheckedChangeListener listener) {
-		button.setOnCheckedChangeListener(listener);
-	}
-
-	@BindingAdapter({"app:children", "app:childLayout"})
-	@SuppressWarnings("unused")
-	public static <T> void setChildren(ViewGroup parent, Collection<T> children, @LayoutRes int layoutId) {
-		if (children == null) {
-			parent.removeAllViews();
-			return;
-		}
-
-		// called 3 times: on initial load with just title, then when loaded from db, then when update intent received
-		parent.removeAllViews();
-		for (T child : children)
-			addBoundChild(parent, layoutId, child, -1);
-
-		if (children instanceof ObservableList<?>) {
-			ObservableList<T> observables = (ObservableList<T>) children;
-			observables.addOnListChangedCallback(new ObservableList.OnListChangedCallback<ObservableList<T>>() {
-				@Override
-				public void onChanged(ObservableList<T> sender) {
-					for (T child : sender)
-						addBoundChild(parent, layoutId, child, -1);
-				}
-
-				@Override
-				public void onItemRangeChanged(ObservableList<T> sender, int positionStart, int itemCount) {
-					for (int i = positionStart; i < positionStart + itemCount; ++i) {
-						parent.removeViewAt(i);
-						addBoundChild(parent, layoutId, sender.get(i), i);
-					}
-				}
-
-				@Override
-				public void onItemRangeInserted(ObservableList<T> sender, int positionStart, int itemCount) {
-					for (int i = positionStart; i < positionStart + itemCount; ++i)
-						addBoundChild(parent, layoutId, sender.get(i), i);
-				}
-
-				@Override
-				public void onItemRangeMoved(ObservableList<T> sender, int fromPosition, int toPosition, int itemCount) {
-					for (int i = fromPosition; i < fromPosition + itemCount; ++i)
-						parent.removeViewAt(i);
-					for (int i = toPosition; i < toPosition + itemCount; ++i)
-						addBoundChild(parent, layoutId, sender.get(i), i);
-				}
-
-				@Override
-				public void onItemRangeRemoved(ObservableList<T> sender, int positionStart, int itemCount) {
-					for (int i = positionStart; i < positionStart + itemCount; ++i)
-						parent.removeViewAt(i);
-				}
-			});
-		}
-	}
-
-	private static <T> void addBoundChild(ViewGroup parent, @LayoutRes int layoutId, T child, int position) {
-		ViewDataBinding v = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), layoutId, parent, false);
-		v.setVariable(BR.podcast, child);
-		v.executePendingBindings();
-		if (position == -1)
-			parent.addView(v.getRoot());
-		else
-			parent.addView(v.getRoot(), position);
-	}
-
 	@SuppressWarnings("unused")
 	public class Model extends BaseObservable {
 		private long _id;
@@ -277,7 +183,7 @@ public class EpisodeListFragment extends RxFragment {
 		public final ObservableBoolean isCurrentlyUpdating = new ObservableBoolean(false);
 		public final ObservableBoolean isSubscribed = new ObservableBoolean(false);
 		public final ObservableBoolean areNewEpisodesAddedToPlaylist = new ObservableBoolean(false);
-		public final ObservableArrayList<PodcastModel> podcasts = new ObservableArrayList<>();
+		public final ObservableArrayList<EpisodeData> podcasts = new ObservableArrayList<>();
 
 		public Model (String name) {
 			title.set(name);
@@ -405,26 +311,26 @@ public class EpisodeListFragment extends RxFragment {
 			}
 
 			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
-				setupHeader(_subscriptionId);
-				showPodcasts(getPodcastsCursor(_subscriptionId));
 				_model.isCurrentlyUpdating.set(false);
+				setupHeader(_subscriptionId);
+				getEpisodes(_subscriptionId)
+					.subscribeOn(Schedulers.io())
+					.observeOn(AndroidSchedulers.mainThread())
+					.subscribe(
+						EpisodeListFragment.this::showPodcasts,
+						e -> Log.e("EpisodeListFragment", "error while refreshing episodes after update", e)
+					);
 			} else {
 				_model.isCurrentlyUpdating.set(true);
 			}
 		}
 	};
 
-	private void showPodcasts(Cursor cursor) {
-		ArrayList<PodcastModel> models = new ArrayList<>(cursor.getCount());
-		while (cursor.moveToNext())
-			models.add(new PodcastModel(cursor));
-
-		if (models.size() != _model.podcasts.size()) {
+	private void showPodcasts(List<EpisodeData> episodes) {
+		if (episodes.size() != _model.podcasts.size()) {
 			_model.podcasts.clear();
-			_model.podcasts.addAll(models);
+			_model.podcasts.addAll(episodes);
 		}
-
-		cursor.close();
 	}
 
 	@Override

@@ -10,6 +10,14 @@ import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.view.View;
 
+import org.joda.time.Duration;
+import org.joda.time.Hours;
+import org.joda.time.Minutes;
+import org.joda.time.Period;
+import org.joda.time.format.PeriodFormat;
+import org.joda.time.format.PeriodFormatter;
+import org.joda.time.format.PeriodFormatterBuilder;
+
 public class Helper {
 
 	public static boolean isInvalidNetworkState(Context context) {
@@ -27,103 +35,55 @@ public class Helper {
 		return !netInfo.isConnected();
 	}
 
-	public static String getTimeString(int milliseconds) {
-		int seconds = milliseconds / 1000;
-		final int SECONDSPERHOUR = 60 * 60;
-		final int SECONDSPERMINUTE = 60;
-		int hours = seconds / SECONDSPERHOUR;
-		int minutes = seconds % SECONDSPERHOUR / SECONDSPERMINUTE;
-		seconds = seconds % SECONDSPERMINUTE;
-
-		StringBuilder builder = new StringBuilder();
-		if (hours > 0) {
-			builder.append(hours);
-			builder.append(":");
-			if (minutes < 10)
-				builder.append("0");
-		}
-		builder.append(minutes);
-		builder.append(":");
-		if (seconds < 10)
-			builder.append("0");
-		builder.append(seconds);
-		return builder.toString();
-	}
-
     public static boolean isTablet(Context context) {
 		return (context.getResources().getConfiguration().screenLayout
 				& Configuration.SCREENLAYOUT_SIZE_MASK)
 				>= Configuration.SCREENLAYOUT_SIZE_LARGE;
 	}
 
+	public static String getTimeString(int milliseconds) {
+		Period period = Duration.millis(milliseconds).minus(milliseconds % 1000).toPeriod();
+		if (Hours.standardHoursIn(period).getHours() > 0) {
+			PeriodFormatter formatter = new PeriodFormatterBuilder()
+				.appendHours().appendSeparator(":")
+				.appendMinutes().minimumPrintedDigits(2).appendSeparator(":")
+				.appendSeconds().minimumPrintedDigits(2).toFormatter();
+			return formatter.print(period);
+		}
+
+		PeriodFormatter formatter = new PeriodFormatterBuilder()
+			.appendMinutes().appendSeparator(":")
+			.appendSeconds().minimumPrintedDigits(2).toFormatter();
+		return formatter.print(period);
+	}
+
     public static String getVerboseTimeString(Context context, float seconds, boolean fullDetail) {
-        final int secondsPerMinute = 60;
-        final int secondsPerHour = secondsPerMinute * 60;
-        final int secondsPerDay = secondsPerHour * 24;
-		final int secondsPerMonth = secondsPerDay * 30;
-		final int secondsPerYear = secondsPerDay * 365;
+		Period period = Duration.millis((long)(seconds) * 1000).toPeriod();
+		if (fullDetail)
+			return PeriodFormat.getDefault().print(period);
 
-        StringBuilder listenText = new StringBuilder();
+		if (Hours.standardHoursIn(period).getHours() > 0) {
+			String hour = " " + context.getString(R.string.hour);
+			String hours = " " + context.getString(R.string.hours);
+			PeriodFormatter hoursFormatter = new PeriodFormatterBuilder()
+				.appendHours().appendSuffix(hour, hours)
+				.toFormatter();
+			return hoursFormatter.print(period);
+		}
 
-        if (seconds > secondsPerYear) {
-            int years = (int) Math.floor(seconds / secondsPerYear);
-            listenText.append(years);
-            listenText.append(" ");
-            listenText.append(context.getResources().getQuantityString(R.plurals.years, years));
-            seconds = seconds % secondsPerYear;
-			if (!fullDetail)
-				return listenText.toString();
-        }
+		if (Minutes.standardMinutesIn(period).getMinutes() > 0) {
+			String minute = " " + context.getString(R.string.minute);
+			String minutes = " " + context.getString(R.string.minutes);
+			PeriodFormatter minutesFormatter = new PeriodFormatterBuilder()
+				.appendMinutes().appendSuffix(minute, minutes)
+				.toFormatter();
+			return minutesFormatter.print(period);
+		}
 
-        if (seconds > secondsPerMonth) {
-            int months = (int) Math.floor(seconds / secondsPerMonth);
-			if (listenText.length() > 0)
-				listenText.append(" ");
-            listenText.append(months);
-            listenText.append(" ");
-            listenText.append(context.getResources().getQuantityString(R.plurals.months, months));
-            seconds = seconds % secondsPerMonth;
-			if (!fullDetail)
-				return listenText.toString();
-        }
-
-        if (seconds > secondsPerDay) {
-            int days = (int) Math.floor(seconds / secondsPerDay);
-			if (listenText.length() > 0)
-				listenText.append(" ");
-            listenText.append(days);
-            listenText.append(" ");
-            listenText.append(context.getResources().getQuantityString(R.plurals.days, days));
-            seconds = seconds % secondsPerDay;
-			if (!fullDetail)
-				return listenText.toString();
-        }
-
-        if (seconds > secondsPerHour) {
-            int hours = (int) Math.floor(seconds / secondsPerHour);
-            if (listenText.length() > 0)
-                listenText.append(" ");
-            listenText.append(hours);
-            listenText.append(" ");
-            listenText.append(context.getResources().getQuantityString(R.plurals.hours, hours));
-            seconds = seconds % secondsPerHour;
-			if (!fullDetail)
-				return listenText.toString();
-        }
-
-        if (seconds > secondsPerMinute) {
-            int minutes = (int) Math.floor(seconds / secondsPerMinute);
-            if (listenText.length() > 0)
-                listenText.append(" ");
-            listenText.append(minutes);
-            listenText.append(" ");
-            listenText.append(context.getResources().getQuantityString(R.plurals.minutes, minutes));
-			if (!fullDetail)
-				return listenText.toString();
-        }
-        if (listenText.length() == 0)
-            listenText.append(context.getString(R.string.none));
-        return listenText.toString();
+		String second = context.getString(R.string.second);
+		String secondsWord = context.getString(R.string.seconds);
+		PeriodFormatter secondsFormatter = new PeriodFormatterBuilder().appendSeconds().appendSuffix(second, secondsWord).toFormatter();
+		return secondsFormatter.print(period);
     }
 
 	public static int getVersionCode(Context context) {

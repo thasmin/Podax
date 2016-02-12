@@ -1,13 +1,10 @@
 package com.axelby.podax.podcastlist;
 
-import android.databinding.BindingAdapter;
 import android.view.View;
-import android.widget.ImageView;
 
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
-import com.squareup.picasso.Picasso;
 
 public class ItemModel {
 	public enum RSSSource {ITunes, RSS, SubscriptionId}
@@ -69,13 +66,4 @@ public class ItemModel {
 				break;
 		}
 	}
-
-	@BindingAdapter("app:picassoImageUrl")
-	@SuppressWarnings("unused")
-	public static void loadImageUrlViaPicasso(ImageView image, String url) {
-		if (url == null || url.length() == 0)
-			return;
-		Picasso.with(image.getContext()).load(url).fit().into(image);
-	}
-
 }
