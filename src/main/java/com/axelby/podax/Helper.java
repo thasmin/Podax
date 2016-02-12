@@ -11,10 +11,7 @@ import android.preference.PreferenceManager;
 import android.view.View;
 
 import org.joda.time.Duration;
-import org.joda.time.Hours;
-import org.joda.time.Minutes;
 import org.joda.time.Period;
-import org.joda.time.format.PeriodFormat;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 
@@ -41,49 +38,44 @@ public class Helper {
 				>= Configuration.SCREENLAYOUT_SIZE_LARGE;
 	}
 
-	public static String getTimeString(int milliseconds) {
-		Period period = Duration.millis(milliseconds).minus(milliseconds % 1000).toPeriod();
-		if (Hours.standardHoursIn(period).getHours() > 0) {
-			PeriodFormatter formatter = new PeriodFormatterBuilder()
-				.appendHours().appendSeparator(":")
-				.appendMinutes().minimumPrintedDigits(2).appendSeparator(":")
-				.appendSeconds().minimumPrintedDigits(2).toFormatter();
-			return formatter.print(period);
-		}
+	private static final PeriodFormatter _shortFormatter;
+	private static PeriodFormatter _verboseFormatter;
 
-		PeriodFormatter formatter = new PeriodFormatterBuilder()
+	static {
+		_shortFormatter = new PeriodFormatterBuilder()
+			.appendHours().appendSeparator(":")
+			.printZeroAlways().minimumPrintedDigits(2)
 			.appendMinutes().appendSeparator(":")
-			.appendSeconds().minimumPrintedDigits(2).toFormatter();
-		return formatter.print(period);
+			.appendSeconds().toFormatter();
+	}
+
+	// TODO: change milliseconds argument to seconds
+	public static String getTimeString(int milliseconds) {
+		if (milliseconds / 1000 == 0)
+			return "00:00";
+		Period period = Duration.millis(milliseconds).minus(milliseconds % 1000).toPeriod();
+		return _shortFormatter.print(period);
 	}
 
     public static String getVerboseTimeString(Context context, float seconds, boolean fullDetail) {
-		Period period = Duration.millis((long)(seconds) * 1000).toPeriod();
-		if (fullDetail)
-			return PeriodFormat.getDefault().print(period);
-
-		if (Hours.standardHoursIn(period).getHours() > 0) {
+		if (_verboseFormatter == null) {
 			String hour = " " + context.getString(R.string.hour);
 			String hours = " " + context.getString(R.string.hours);
-			PeriodFormatter hoursFormatter = new PeriodFormatterBuilder()
-				.appendHours().appendSuffix(hour, hours)
-				.toFormatter();
-			return hoursFormatter.print(period);
-		}
-
-		if (Minutes.standardMinutesIn(period).getMinutes() > 0) {
 			String minute = " " + context.getString(R.string.minute);
 			String minutes = " " + context.getString(R.string.minutes);
-			PeriodFormatter minutesFormatter = new PeriodFormatterBuilder()
-				.appendMinutes().appendSuffix(minute, minutes)
+			String second = " " + context.getString(R.string.second);
+			String secondsWord = " " + context.getString(R.string.seconds);
+			_verboseFormatter = new PeriodFormatterBuilder()
+				.appendHours().appendSuffix(hour, hours).appendSeparator(", ")
+				.appendMinutes().appendSuffix(minute, minutes).appendSeparator(", ")
+				.appendSeconds().appendSuffix(second, secondsWord)
 				.toFormatter();
-			return minutesFormatter.print(period);
 		}
 
-		String second = context.getString(R.string.second);
-		String secondsWord = context.getString(R.string.seconds);
-		PeriodFormatter secondsFormatter = new PeriodFormatterBuilder().appendSeconds().appendSuffix(second, secondsWord).toFormatter();
-		return secondsFormatter.print(period);
+		if (seconds > 60 && !fullDetail)
+			seconds -= seconds % 60;
+		Period period = Duration.millis((long)(seconds) * 1000).toPeriod();
+		return _verboseFormatter.print(period);
     }
 
 	public static int getVersionCode(Context context) {
