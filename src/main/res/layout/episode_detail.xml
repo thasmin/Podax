@@ -1,219 +1,246 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/scrollview"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout android:orientation="vertical"
-                  android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  android:descendantFocusability="blocksDescendants">
+    <data>
+        <import type="android.view.View" />
+        <import type="com.axelby.podax.Helper" />
+        <variable name="episode" type="com.axelby.podax.EpisodeData" />
+    </data>
 
-        <RelativeLayout
-                android:id="@+id/toprow"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_marginBottom="10dp">
+    <ScrollView android:id="@+id/scrollview"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
 
-            <ImageView
-                android:id="@+id/subscription_img"
-                android:layout_width="175dp"
-                android:layout_height="175dp"
-                android:layout_gravity="center_horizontal"
-                android:contentDescription="@string/subscription"
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"
-                android:scaleType="fitXY"
-                android:transitionName="subscriptionImage"
-                />
+        <LinearLayout android:orientation="vertical"
+                      android:layout_width="fill_parent"
+                      android:layout_height="wrap_content"
+                      android:descendantFocusability="blocksDescendants">
 
-            <LinearLayout
-                    android:id="@+id/mainlayout"
-                    android:layout_width="0px"
-                    android:layout_toRightOf="@id/subscription_img"
-                    android:layout_toEndOf="@id/subscription_img"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true"
+            <RelativeLayout
+                    android:id="@+id/toprow"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_width="match_parent"
+                    android:layout_marginBottom="10dp">
 
-                <TextView
-                        android:id="@+id/title"
-                        android:layout_width="fill_parent"
+                <ImageView
+                    android:id="@+id/subscription_img"
+                    android:layout_width="175dp"
+                    android:layout_height="175dp"
+                    android:layout_gravity="center_horizontal"
+                    app:subscriptionImageId="@{episode.subscriptionId}"
+                    android:contentDescription="@string/subscription"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:scaleType="fitXY"
+                    android:transitionName="subscriptionImage"
+                    />
+
+                <LinearLayout
+                        android:id="@+id/mainlayout"
+                        android:layout_width="0px"
+                        android:layout_toRightOf="@id/subscription_img"
+                        android:layout_toEndOf="@id/subscription_img"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
                         android:layout_height="wrap_content"
-                        android:gravity="center_horizontal"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:text="Episode Title"
-                        tools:ignore="HardcodedText"
-                        android:transitionName="subscriptionName" />
+                        android:orientation="vertical">
 
-                <TextView
-                        android:id="@+id/subscription_title"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_horizontal"
-                        android:text="Episode Title"
-                        tools:ignore="HardcodedText"/>
+                    <TextView
+                            android:id="@+id/title"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            tools:text="Episode Title"
+                            android:text='@{episode.title}'
+                            android:transitionName="subscriptionName" />
 
-                <Button
-                        android:id="@+id/payment"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/payment"
-                        android:text="@string/donate"
-                        android:layout_gravity="center_horizontal"/>
+                    <TextView
+                            android:id="@+id/subscription_title"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            tools:text="Episode Title"
+                            android:text="@{episode.subscriptionTitle}"
+                            />
 
-                <Button
-                        android:id="@+id/view_in_browser"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:contentDescription="@string/view_in_browser"
-                        android:text="@string/view_in_browser"
-                        android:layout_gravity="center_horizontal"/>
-
-                <View
-                        android:layout_height="20dp"
-                        android:layout_width="wrap_content"/>
-
-                <TextView
-                        android:id="@+id/playlist_position"
-                        android:text="#1 in playlist"
-                        android:layout_width="wrap_content"
-                        android:layout_height="fill_parent"
-                        android:gravity="center_vertical"
-                        android:layout_marginRight="5dp"
-                        android:layout_marginEnd="5dp"
-                        tools:ignore="HardcodedText"/>
-
-                <Button
-                        android:id="@+id/playlist_btn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/add"
+                    <Button
+                            android:id="@+id/payment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/payment"
+                            android:text="@{episode.hasFlattrPaymentUrl ? @string/flattr : @string/donate}"
+                            android:layout_gravity="center_horizontal"
+                            android:visibility="@{episode.paymentUrl != null ? View.VISIBLE : View.GONE}"
                         />
 
-            </LinearLayout>
-        </RelativeLayout>
+                    <Button
+                            android:id="@+id/view_in_browser"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/view_in_browser"
+                            android:text="@string/view_in_browser"
+                            android:visibility="@{episode.link != null ? View.VISIBLE : View.GONE}"
+                            android:onClick="@{episode.viewDescription}"
+                            android:layout_gravity="center_horizontal"/>
 
-        <LinearLayout
-                android:id="@+id/seekLayout"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                    <View
+                            android:layout_height="20dp"
+                            android:layout_width="wrap_content"/>
 
-            <TextView
-                    android:id="@+id/position"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_weight="0"
-                    android:textIsSelectable="true"/>
+                    <TextView
+                            android:id="@+id/playlist_position"
+                            tools:text="#1 in playlist"
+                            android:text="@{episode.playlistPosition != null ? @string/num_in_playlist(episode.playlistPosition+1) : @string/not_in_playlist}"
+                            android:layout_width="wrap_content"
+                            android:layout_height="fill_parent"
+                            android:gravity="center_vertical"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginEnd="5dp" />
 
-            <SeekBar
-                    android:id="@+id/seekbar"
+                    <Button
+                            android:id="@+id/playlist_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="@string/add"
+                            android:text="@{episode.playlistPosition == null ? @string/add : @string/remove}"
+                            android:onClick="@{episode.togglePlaylist}"
+                            />
+
+                </LinearLayout>
+            </RelativeLayout>
+
+            <LinearLayout
+                    android:id="@+id/seekLayout"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:progress="50"/>
+                    android:orientation="horizontal">
 
-            <TextView
-                    android:id="@+id/duration"
-                    android:layout_width="wrap_content"
+                <TextView
+                        android:id="@+id/position"
+                        android:text="@{Helper.getTimeString(episode.lastPosition)}"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_weight="0"
+                        />
+
+                <SeekBar
+                        android:id="@+id/seekbar"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:max="@{episode.duration}"
+                        android:progress="@{episode.lastPosition}"
+                        android:enabled="@{episode.hasDuration}"
+                        />
+
+                <TextView
+                        android:id="@+id/duration"
+                        android:text="@{episode.timeRemaining}"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_weight="0" />
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/play_layout"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_weight="0"
-                    android:textIsSelectable="true"/>
+                    android:orientation="horizontal"
+                    android:weightSum="9">
+
+                <ImageButton
+                        android:id="@+id/restart_btn"
+                        android:onClick="@{episode.restart}"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/restart"
+                        android:padding="10dp"
+                        android:scaleType="center"
+                        android:src="@android:drawable/ic_media_previous"
+                        android:tint="?attr/colorPrimary"
+                    />
+
+                <ImageButton
+                        android:id="@+id/rewind_btn"
+                        android:onClick="@{episode.rewind}"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/rewind"
+                        android:padding="10dp"
+                        android:scaleType="center"
+                        android:src="@android:drawable/ic_media_rew"
+                        android:tint="?attr/colorPrimary"
+                    />
+
+                <ImageButton
+                        android:id="@+id/play_btn"
+                        android:onClick="@{episode.playstop}"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="3"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/pause"
+                        android:padding="10dp"
+                        android:scaleType="center"
+                        android:src="@android:drawable/ic_media_play"
+                        android:tint="?attr/colorPrimary"
+                    />
+
+                <ImageButton
+                        android:id="@+id/forward_btn"
+                        android:onClick="@{episode.forward}"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/fast_forward"
+                        android:padding="10dp"
+                        android:scaleType="center"
+                        android:src="@android:drawable/ic_media_ff"
+                        android:tint="?attr/colorPrimary"
+                    />
+
+                <View
+                        android:layout_width="30dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"/>
+
+                <ImageButton
+                        android:id="@+id/skiptoend_btn"
+                        android:onClick="@{episode.skipToEnd}"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/skip_to_end"
+                        android:padding="10dp"
+                        android:scaleType="center"
+                        android:src="@android:drawable/ic_media_next"
+                        android:tint="?attr/colorPrimary"
+                    />
+            </LinearLayout>
+
+            <WebView
+                    android:id="@+id/description"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/background_material_light"
+                    android:textColorLink="?attr/colorPrimary" />
+
         </LinearLayout>
 
-        <LinearLayout
-                android:id="@+id/play_layout"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="9">
+    </ScrollView>
 
-            <ImageButton
-                    android:id="@+id/restart_btn"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/restart"
-                    android:padding="10dp"
-                    android:scaleType="center"
-                    android:src="@android:drawable/ic_media_previous"
-                    android:tint="?attr/colorPrimary"
-                />
-
-            <ImageButton
-                    android:id="@+id/rewind_btn"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/rewind"
-                    android:padding="10dp"
-                    android:scaleType="center"
-                    android:src="@android:drawable/ic_media_rew"
-                    android:tint="?attr/colorPrimary"
-                />
-
-            <ImageButton
-                    android:id="@+id/play_btn"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="3"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/pause"
-                    android:padding="10dp"
-                    android:scaleType="center"
-                    android:src="@android:drawable/ic_media_play"
-                    android:tint="?attr/colorPrimary"
-                />
-
-            <ImageButton
-                    android:id="@+id/forward_btn"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/fast_forward"
-                    android:padding="10dp"
-                    android:scaleType="center"
-                    android:src="@android:drawable/ic_media_ff"
-                    android:tint="?attr/colorPrimary"
-                />
-
-            <View
-                    android:layout_width="30dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"/>
-
-            <ImageButton
-                    android:id="@+id/skiptoend_btn"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/skip_to_end"
-                    android:padding="10dp"
-                    android:scaleType="center"
-                    android:src="@android:drawable/ic_media_next"
-                    android:tint="?attr/colorPrimary"
-                />
-        </LinearLayout>
-
-        <WebView
-                android:id="@+id/description"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/background_material_light"
-                android:textColorLink="?attr/colorPrimary" />
-
-    </LinearLayout>
-
-</ScrollView>
+</layout>

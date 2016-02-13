@@ -6,6 +6,7 @@ import android.databinding.ObservableList;
 import android.databinding.ViewDataBinding;
 import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -16,6 +17,11 @@ import java.util.Collection;
 
 @SuppressWarnings("unused")
 public class BindingAdapters {
+
+	@BindingAdapter("android:enabled")
+	public static void setEnabled(View view, boolean isEnabled) {
+		view.setEnabled(isEnabled);
+	}
 
 	@BindingAdapter("app:picassoImageUrl")
 	public static void loadImageUrlViaPicasso(ImageView image, String url) {

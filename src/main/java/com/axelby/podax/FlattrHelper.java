@@ -79,18 +79,10 @@ public class FlattrHelper {
 	}
 
 	public static AutoSubmission parseAutoSubmissionLink(Uri url) {
+		if (!isFlattrUri(url))
+			return null;
 		AutoSubmission sub = new AutoSubmission();
-		// make sure it's a valid flattr url
-		if (!url.getScheme().equals("https"))
-			return null;
-		if (!url.getHost().equals("flattr.com"))
-			return null;
-		if (!url.getPath().equals("/submit/auto"))
-			return null;
 
-		// some parameters are required
-		if (url.getQueryParameter("user_id") == null)
-			return null;
 		sub.setUser(User.withId(url.getQueryParameter("user_id")));
 
 		if (url.getQueryParameter("url") == null)
@@ -113,6 +105,18 @@ public class FlattrHelper {
 		if (url.getQueryParameter("category") != null)
 			sub.setCategory(Category.withId(url.getQueryParameter("category")));
 		return sub;
+	}
+
+	public static boolean isFlattrUri(Uri url) {
+		if (!url.getScheme().equals("https"))
+			return false;
+		if (!url.getHost().equals("flattr.com"))
+			return false;
+		if (!url.getPath().equals("/submit/auto"))
+			return false;
+
+		// some parameters are required
+		return url.getQueryParameter("user_id") != null;
 	}
 
 	public static void flattr(Context context, AutoSubmission sub) throws FlattrException {

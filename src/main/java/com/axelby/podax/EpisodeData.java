@@ -3,6 +3,7 @@ package com.axelby.podax;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.view.View;
@@ -21,7 +22,7 @@ import rx.subjects.PublishSubject;
 
 public class EpisodeData {
 
-	// TODO: change Date to LocalDateTime
+	// TODO: change Date to LocalDateTime and urls to URI
 	private final long _id;
 	private final String _title;
 	private final long _subscriptionId;
@@ -175,6 +176,31 @@ public class EpisodeData {
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
+	public void restart(View view) {
+		EpisodeProvider.restart(view.getContext(), getId());
+	}
+	public void rewind(View view) {
+		EpisodeProvider.movePositionBy(view.getContext(), getId(), -15);
+	}
+	public void playstop(View view) {
+		PlayerStatus status = PlayerStatus.getCurrentState(view.getContext());
+		if (status.hasActiveEpisode() && status.getEpisodeId() == getId() && status.isPlaying())
+			PlayerService.stop(view.getContext());
+		else
+			PlayerService.play(view.getContext(), getId());
+	}
+	public void forward(View view) {
+		EpisodeProvider.movePositionBy(view.getContext(), getId(), 30);
+	}
+	public void skipToEnd(View view) {
+		EpisodeProvider.skipToEnd(view.getContext(), getId());
+	}
+
+	public void viewDescription(View view) {
+		if (getLink() != null)
+			view.getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(getLink())));
+	}
+
 	/* ------------
 	   data binding
 	   ------------ */
@@ -208,6 +234,12 @@ public class EpisodeData {
 		return Helper.getVerboseTimeString(context, getDuration() / 1000.0f, false) + " long";
 	}
 
+	public String getTimeRemaining() {
+		if (!hasDuration())
+			return "";
+		return "-" + Helper.getTimeString(getDuration() - getLastPosition());
+	}
+
 	public String getDownloadStatus(Context context) {
 		String episodeFilename = getFilename(context);
 		float downloaded = new File(episodeFilename).length();
@@ -230,6 +262,10 @@ public class EpisodeData {
 
 	public String getReleaseDate(Context context) {
 		return context.getString(R.string.released_on) + " " + DateFormat.getInstance().format(getPubDate());
+	}
+
+	public boolean hasFlattrPaymentUrl() {
+		return getPaymentUrl() != null && FlattrHelper.isFlattrUri(Uri.parse(getPaymentUrl()));
 	}
 
 	/* --
