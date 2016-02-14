@@ -18,6 +18,9 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
 
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
 public class BottomBarView extends RelativeLayout {
 
 	private View _progressbg;
@@ -51,7 +54,10 @@ public class BottomBarView extends RelativeLayout {
 		_expand = (ImageButton) findViewById(R.id.expand);
 
 		// TODO: does this leak the activity?
-		PlayerStatus.asObservable().subscribe(this::update, this::onError);
+		PlayerStatus.asObservable()
+			.subscribeOn(Schedulers.io())
+			.observeOn(AndroidSchedulers.mainThread())
+			.subscribe(this::update, this::onError);
 	}
 
 	private void update(PlayerStatus playerState) {
