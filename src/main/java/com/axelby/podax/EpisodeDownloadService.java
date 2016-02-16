@@ -130,7 +130,7 @@ public class EpisodeDownloadService extends Service {
 			validMediaFilenames.add(new EpisodeCursor(c).getFilename(this));
 		c.close();
 
-		File dir = new File(EpisodeCursor.getStoragePath(this));
+		File dir = new File(Storage.getStoragePath(this));
 		File[] files = dir.listFiles();
 		// this is possible if the directory does not exist
 		if (files == null)

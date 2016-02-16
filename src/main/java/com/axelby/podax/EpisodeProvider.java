@@ -529,7 +529,7 @@ public class EpisodeProvider extends ContentProvider {
 
 		if (episodeId != null) {
 			if (values.containsKey(COLUMN_MEDIA_URL) && values.containsKey(COLUMN_FILE_SIZE)) {
-				String file = EpisodeCursor.getStoragePath(getContext()) +
+				String file = Storage.getStoragePath(getContext()) +
 						String.valueOf(episodeId) + "." +
 						EpisodeCursor.getExtension(values.getAsString(COLUMN_MEDIA_URL));
 				// TODO: don't change filesize if file is downloaded

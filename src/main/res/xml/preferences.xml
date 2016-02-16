@@ -41,8 +41,8 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Storage">
-        <ListPreference
-            android:defaultValue="/storage/emulated/0"
+        <com.axelby.podax.ui.StorageListPreference
+            android:defaultValue="/storage/sdcard0"
             android:key="storageCard"
             android:summary="@string/pref_sdcard"
             android:title="@string/pref_sdcard_title"

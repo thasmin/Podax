@@ -198,7 +198,7 @@ public class EpisodeCursor {
 		return getIndexFilename(context, getId());
 	}
 	public static String getIndexFilename(Context context, long episodeId) {
-		return Storage.getStorageDir(context) + String.valueOf(episodeId) + ".index";
+		return Storage.getStoragePath(context) + String.valueOf(episodeId) + ".index";
 	}
 
 	public boolean isDownloaded(Context context) {
@@ -224,15 +224,12 @@ public class EpisodeCursor {
 	}
 
 	public static String getPodcastStoragePath(Context context) {
-		String externalPath = Storage.getExternalStorageDirectory(context);
-		String podaxDir = externalPath + "/Android/data/com.axelby.podax/files/Podcasts/";
+		String externalPath = Storage.getStoragePath(context);
+		String podaxDir = externalPath + "/Podcasts/";
 		File podaxFile = new File(podaxDir);
 		if (!podaxFile.exists())
 			podaxFile.mkdirs();
 		return podaxDir;
-	}
-	public static String getStoragePath(Context context) {
-		return Storage.getExternalStorageDirectory(context) + "/Android/data/com.axelby.podax/files/";
 	}
 
 	public String getPaymentUrl() {
