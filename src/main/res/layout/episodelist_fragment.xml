@@ -7,8 +7,8 @@
     <data>
         <import type="android.view.View" />
         <variable
-            name="model"
-            type="com.axelby.podax.ui.EpisodeListFragment.Model" />
+            name="subscription"
+            type="com.axelby.podax.SubscriptionData" />
     </data>
 
     <ScrollView
@@ -26,7 +26,7 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/subscription_thumbnail"
                 android:adjustViewBounds="true"
-                app:picassoImageUrl="@{model.imageSrc}"
+                app:picassoImageUrl="@{subscription.thumbnail}"
                 tools:src="@drawable/icon"
                 android:transitionName="subscriptionImage" />
 
@@ -36,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="24sp"
                 android:gravity="center_horizontal"
-                android:text="@{model.title}"
+                android:text="@{subscription.title}"
                 tools:text="Subscription Name"
                 android:transitionName="subscriptionName" />
 
@@ -44,7 +44,7 @@
                 android:id="@+id/currently_updating"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="@{model.isCurrentlyUpdating ? View.VISIBLE : View.GONE}"
+                android:visibility="@{subscription.isCurrentlyUpdating ? View.VISIBLE : View.GONE}"
                 tools:visibility="visible"
                 android:gravity="center"
                 android:background="@color/orange500"
@@ -59,16 +59,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/subscribe"
-                android:checked="@{model.isSubscribed}"
-                android:onChange="@{model.subscribeChange}" />
+                android:checked="@{subscription.isSubscribed}"
+                android:onChange="@{subscription.subscribeChange}" />
 
             <CheckBox
                 android:id="@+id/add_new_episodes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/add_new_episodes_to_playlist"
-                android:checked="@{model.areNewEpisodesAddedToPlaylist}"
-                android:onChange="@{model.addNewToPlaylistChange}" />
+                android:checked="@{subscription.areNewEpisodesAddedToPlaylist}"
+                android:onChange="@{subscription.addNewToPlaylistChange}" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -89,7 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                app:children="@{model.podcasts}"
+                app:children="@{subscription.getEpisodes(context)}"
                 app:childLayout="@{@layout/episodelist_item}"
                 />
 

@@ -311,8 +311,9 @@ public class EpisodeData {
 			.observeOn(AndroidSchedulers.mainThread());
 	}
 
-	public static Observable<List<EpisodeData>> getForSubscriptionId(Context context, String[] selectionArgs) {
+	public static Observable<List<EpisodeData>> getForSubscriptionId(Context context, long subscriptionId) {
 		String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + "=?";
+		String[] selectionArgs = { String.valueOf(subscriptionId) };
 		return queryToListObservable(context, EpisodeProvider.URI, selection, selectionArgs, "pubDate DESC");
 	}
 
