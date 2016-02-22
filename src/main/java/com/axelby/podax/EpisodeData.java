@@ -160,6 +160,10 @@ public class EpisodeData {
 		return ContentUris.withAppendedId(EpisodeProvider.URI, getId());
 	}
 
+	public String getFinishedDate(Context context) {
+		return context.getString(R.string.finished_on, DateFormat.getInstance().format(getFinishedDate()));
+	}
+
 	/* -------
 	   actions
 	   ------- */
@@ -213,6 +217,11 @@ public class EpisodeData {
 
 	public void play(View view) {
 		PlayerService.play(view.getContext(), _id);
+	}
+
+	public void playAndShow(View view) {
+		play(view);
+		show(view);
 	}
 
 	public void removeFromPlaylist(View view) {

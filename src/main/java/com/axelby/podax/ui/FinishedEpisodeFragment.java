@@ -1,35 +1,28 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.content.ContentValues;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.axelby.podax.AppFlow;
+import com.axelby.podax.BR;
 import com.axelby.podax.EpisodeData;
-import com.axelby.podax.EpisodeProvider;
-import com.axelby.podax.PlayerService;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionCursor;
 import com.trello.rxlifecycle.components.RxFragment;
 
-import java.text.DateFormat;
 import java.util.List;
 import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
 import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class FinishedEpisodeFragment extends RxFragment {
 	private PodcastAdapter _adapter = null;
@@ -44,6 +37,8 @@ public class FinishedEpisodeFragment extends RxFragment {
 
 		_adapter = new PodcastAdapter();
 		EpisodeData.getFinished(activity)
+			.subscribeOn(Schedulers.io())
+			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(
 				_adapter::setEpisodes,
@@ -62,7 +57,6 @@ public class FinishedEpisodeFragment extends RxFragment {
 
 		_listView = (RecyclerView) view.findViewById(R.id.list);
 		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
-		_listView.setItemAnimator(new DefaultItemAnimator());
 
 		_emptyView = view.findViewById(R.id.empty);
 	}
@@ -74,51 +68,9 @@ public class FinishedEpisodeFragment extends RxFragment {
 		_listView.setAdapter(_adapter);
 	}
 
-	private class PodcastAdapter extends RecyclerView.Adapter<PodcastAdapter.ViewHolder> {
-
-        private final DateFormat _finishedDateFormat = DateFormat.getDateInstance();
+	private class PodcastAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
 
 		private List<EpisodeData> _episodes;
-		private TreeMap<Long, Integer> _ids = new TreeMap<>();
-		private final Subscriber<EpisodeData> _episodeSubscriber = new Subscriber<EpisodeData>() {
-			@Override public void onCompleted() { }
-
-			@Override
-			public void onError(Throwable e) {
-				Log.e("FinishedEpisodeFragment", "error while updating episode", e);
-			}
-
-			@Override
-			public void onNext(EpisodeData episodeData) {
-				updateEpisode(episodeData);
-			}
-		};
-
-		class ViewHolder extends RecyclerView.ViewHolder {
-			public final View container;
-			public final ImageView thumbnail;
-			public final TextView subscriptionTitle;
-            public final TextView title;
-            public final TextView date;
-            public final TextView play;
-            public final TextView playlist;
-
-            public ViewHolder (View view) {
-				super(view);
-
-				container = view;
-                title = (TextView) view.findViewById(R.id.title);
-                date = (TextView) view.findViewById(R.id.date);
-                play = (TextView) view.findViewById(R.id.play);
-                playlist = (TextView) view.findViewById(R.id.playlist);
-				thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-				subscriptionTitle = (TextView) view.findViewById(R.id.subscription_title);
-
-				play.setOnClickListener(_playHandler);
-				playlist.setOnClickListener(_playlistHandler);
-				view.setOnClickListener(_clickHandler);
-            }
-        }
 
 		public PodcastAdapter() {
 			setHasStableIds(true);
@@ -128,14 +80,14 @@ public class FinishedEpisodeFragment extends RxFragment {
 			_episodes = episodes;
 			notifyDataSetChanged();
 
-			_ids.clear();
-			for (int i = 0; i < _episodes.size(); ++i)
-				_ids.put(_episodes.get(i).getId(), i);
-
-			_episodeSubscriber.unsubscribe();
 			EpisodeData.getEpisodeWatcher()
+				.subscribeOn(Schedulers.io())
+				.observeOn(AndroidSchedulers.mainThread())
 				.compose(bindToLifecycle())
-				.subscribe(_episodeSubscriber);
+				.subscribe(
+					this::updateEpisode,
+					e -> Log.e("FinishedEpisodeFragment", "error while updating episode", e)
+				);
 
 			boolean isEmpty = episodes.size() == 0;
 			_emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
@@ -143,78 +95,23 @@ public class FinishedEpisodeFragment extends RxFragment {
 		}
 
 		public void updateEpisode(EpisodeData episode) {
-			Integer position = _ids.get(episode.getId());
-			if (position == null)
-				return;
-			_episodes.set(position, episode);
-			notifyItemChanged(position);
-		}
-
-        final View.OnClickListener _playHandler = view -> {
-			long episodeId = (Long) view.getTag();
-			PlayerService.play(view.getContext(), episodeId);
-
-			// put podcast on top of playlist
-			ContentValues values = new ContentValues(1);
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
-			view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
-
-			View thumbnail = ((View)view.getParent()).findViewById(R.id.thumbnail);
-			View name = ((View)view.getParent()).findViewById(R.id.title);
-			AppFlow.get(getActivity()).displayEpisode(episodeId, thumbnail, name);
-		};
-
-        final View.OnClickListener _playlistHandler = view -> {
-			long episodeId = (Long) view.getTag(R.id.episodeId);
-			Integer position = (Integer) view.getTag(R.id.playlist);
-
-			ContentValues values = new ContentValues(1);
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, position);
-			view.getContext().getContentResolver().update(EpisodeProvider.getContentUri(episodeId), values, null, null);
-		};
-
-		final View.OnClickListener _clickHandler = view -> {
-			long episodeId = (Long) view.getTag();
-			View thumbnail = ((View)view.getParent()).findViewById(R.id.thumbnail);
-			View name = ((View)view.getParent()).findViewById(R.id.title);
-			AppFlow.get(getActivity()).displayEpisode(episodeId, thumbnail, name);
-		};
-
-		@Override
-		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_finished_episodes_item, parent, false);
-			return new ViewHolder(view);
+			for (int i = 0; i <= _episodes.size(); ++i) {
+				if (_episodes.get(i).getId() == episode.getId()) {
+					_episodes.set(i, episode);
+					notifyItemChanged(i, episode);
+					return;
+				}
+			}
 		}
 
 		@Override
-		public void onBindViewHolder(ViewHolder holder, int position) {
-			if (_episodes == null)
-				return;
-			Context context = holder.container.getContext();
+		public DataBoundViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			return DataBoundViewHolder.from(parent, R.layout.fragment_finished_episodes_item);
+		}
 
-			EpisodeData episode = _episodes.get(position);
-
-			holder.container.setTag(episode.getId());
-			holder.subscriptionTitle.setText(episode.getSubscriptionTitle());
-			SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()).into(holder.thumbnail);
-            holder.title.setText(episode.getTitle());
-            holder.date.setText(context.getString(R.string.finished_on, _finishedDateFormat.format(episode.getFinishedDate())));
-            holder.play.setTag(episode.getId());
-            holder.playlist.setTag(R.id.episodeId, episode.getId());
-
-            Integer inPlaylist = episode.getPlaylistPosition();
-            if (inPlaylist == null) {
-                holder.playlist.setTag(R.id.playlist, Integer.MAX_VALUE);
-                holder.playlist.setText(R.string.add_to_playlist);
-            } else {
-                holder.playlist.setTag(R.id.playlist, null);
-                holder.playlist.setText(R.string.remove_from_playlist);
-            }
-
-			if (episode.isDownloaded(context))
-				holder.play.setText(R.string.play);
-			else
-				holder.play.setText(R.string.stream);
+		@Override
+		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
+			holder.binding.setVariable(BR.episode, _episodes.get(position));
 		}
 
 		@Override
