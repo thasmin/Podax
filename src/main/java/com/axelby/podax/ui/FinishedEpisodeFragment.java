@@ -16,11 +16,9 @@ import com.axelby.podax.R;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.List;
-import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
-import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
