@@ -210,7 +210,7 @@ public class SubscriptionProvider extends ContentProvider {
 			Cursor c = db.query("subscriptions", null, where, whereArgs, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
-					SubscriptionData.notifyChange(new SubscriptionCursor(c));
+					Subscriptions.notifyChange(new SubscriptionCursor(c));
 				c.close();
 			}
 		}

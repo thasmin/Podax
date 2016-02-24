@@ -22,6 +22,7 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionData;
 import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.Subscriptions;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.acra.ACRA;
@@ -55,7 +56,7 @@ public class SubscriptionSettingsFragment extends RxFragment {
         }
 		_subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
 
-		SubscriptionData.getObservable(activity, subscriptionId)
+		Subscriptions.getObservable(activity, subscriptionId)
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(

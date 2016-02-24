@@ -60,7 +60,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/subscribe"
                 android:checked="@{subscription.isSubscribed}"
-                android:onChange="@{subscription.subscribeChange}" />
+                android:onChange="@{subscription.changeSubscribe}" />
 
             <CheckBox
                 android:id="@+id/add_new_episodes"
@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/add_new_episodes_to_playlist"
                 android:checked="@{subscription.areNewEpisodesAddedToPlaylist}"
-                android:onChange="@{subscription.addNewToPlaylistChange}" />
+                android:onChange="@{subscription.changeAddNewToPlaylist}" />
 
             <TextView
                 android:layout_width="match_parent"

@@ -1,32 +1,29 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.axelby.podax.EpisodeCursor;
-import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.EpisodeData;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.Stats;
-import com.axelby.podax.SubscriptionCursor;
-import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.SubscriptionData;
+import com.axelby.podax.Subscriptions;
+import com.axelby.podax.databinding.SubscriptionCheckboxBinding;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.joda.time.LocalDate;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -39,21 +36,17 @@ public class WeeklyPlannerFragment extends RxFragment {
 	private ViewGroup _subList;
 	private View _subEmpty;
 
-	private CheckBox.OnCheckedChangeListener _subCheckHandler = (checkbox, checked) -> {
-		long subId = (long) checkbox.getTag();
-		ContentValues values = new ContentValues(1);
-		values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, checked);
-		ContentResolver contentResolver = checkbox.getContext().getContentResolver();
-		contentResolver.update(SubscriptionProvider.getContentUri(subId), values, null, null);
-	};
+	private List<Long> _subIds = null;
 
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 
-		Observable.just(activity.getContentResolver().query(SubscriptionProvider.URI, null, null, null, null))
+		Subscriptions.getAll(activity)
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
+			.toList()
+			.compose(bindToLifecycle())
 			.subscribe(
 				this::setSubscriptions,
 				e -> Log.e("WeeklyPlannerFragment", "unable to retrieve subscriptions", e)
@@ -81,60 +74,67 @@ public class WeeklyPlannerFragment extends RxFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
+		Subscriptions.getAll(getActivity())
+			.subscribeOn(Schedulers.io())
+			.filter(SubscriptionData::areNewEpisodesAddedToPlaylist)
+			.map(SubscriptionData::getId)
+			.toList()
+			.subscribe(
+				subIds -> {
+					_subIds = subIds;
+					getAutoAddedTimeAndUpdate();
+				},
+				e -> Log.e("WeeklyPlannerFragment", "unable to retrieve subscription added to playlist", e)
+			);
+
+		Subscriptions.getWatcher().subscribe(
+			sub -> {
+				if (_subIds == null)
+					return;
+				if (_subIds.contains(sub.getId()))
+					_subIds.remove(sub.getId());
+				else
+					_subIds.add(sub.getId());
+				getAutoAddedTimeAndUpdate();
+			},
+			e -> Log.e("WeeklyPlannerFragment", "error while updating for a subscription change", e)
+		);
+	}
+
+	private void getAutoAddedTimeAndUpdate() {
+		EpisodeData.getNewForSubscriptionIds(getActivity(), _subIds)
+			.observeOn(AndroidSchedulers.mainThread())
+			.reduce(0f, (carried, ep) -> carried += ep.getDuration() / 1000.0f)
+			.subscribe(
+				this::updateUI,
+				e -> Log.e("WeeklyPlannerFragment", "unable to retrieve newest episodes", e)
+			);
+	}
+
+	private void updateUI(float autoAddedTime) {
 		float weekListenTime = 0f;
 		for (LocalDate date = LocalDate.now().minusDays(1); date.compareTo(LocalDate.now().minusDays(8)) > 0; date = date.minusDays(1))
 			weekListenTime += Stats.getListenTime(getActivity(), date);
 		_listenTime.setText(Helper.getVerboseTimeString(getActivity(), weekListenTime, false));
 
-		ContentResolver contentResolver = getActivity().getContentResolver();
+		_autoAddTime.setText(Helper.getVerboseTimeString(getActivity(), autoAddedTime, false));
 
-		StringBuilder subIds = new StringBuilder(200);
-		String[] projection = { SubscriptionProvider.COLUMN_ID };
-		Cursor c = contentResolver.query(SubscriptionProvider.URI, projection, SubscriptionProvider.COLUMN_PLAYLIST_NEW + " = 1", null, null);
-		if (c != null) {
-			while (c.moveToNext())
-				subIds.append(c.getLong(0)).append(", ");
-			c.close();
-		}
-
-		float autoAdded = 0f;
-		if (subIds.length() > 0) {
-			String subIdStr = subIds.toString().substring(0, subIds.length() - 2);
-			String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + " IN (" + subIdStr + ")" +
-				" AND " + EpisodeProvider.COLUMN_PUB_DATE + " > " + (LocalDate.now().minusDays(7).toDate().getTime() / 1000);
-			c = contentResolver.query(EpisodeProvider.URI, null, selection, null, null);
-			if (c != null) {
-				while (c.moveToNext()) {
-					EpisodeCursor ep = new EpisodeCursor(c);
-					if (ep.getDuration() == 0)
-						ep.determineDuration(getActivity());
-					autoAdded += ep.getDuration() / 1000.0f;
-				}
-				c.close();
-			}
-		}
-		_autoAddTime.setText(Helper.getVerboseTimeString(getActivity(), autoAdded, false));
-
-		float diffTime = Math.abs(autoAdded - weekListenTime);
+		float diffTime = Math.abs(autoAddedTime - weekListenTime);
 		_diffTime.setText(Helper.getVerboseTimeString(getActivity(), diffTime, false));
-		_diffLabel.setText(autoAdded > weekListenTime ? R.string.extra : R.string.shortage);
+		_diffLabel.setText(autoAddedTime > weekListenTime ? R.string.extra : R.string.shortage);
 	}
 
-	public void setSubscriptions(Cursor cursor) {
-		boolean isEmpty = cursor.getCount() == 0;
+	public void setSubscriptions(List<SubscriptionData> subscriptions) {
+		boolean isEmpty = subscriptions.size() == 0;
 		while (_subList.getChildCount() > 3)
 			_subList.removeViewAt(3);
 		_subEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
 		LayoutInflater inflater = LayoutInflater.from(getActivity());
-		while (cursor.moveToNext()) {
-			SubscriptionCursor sub = new SubscriptionCursor(cursor);
-			CheckBox cb = (CheckBox) inflater.inflate(R.layout.checkbox, _subList, false);
-			cb.setText(sub.getTitle());
-			cb.setTag(sub.getId());
-			cb.setChecked(sub.areNewEpisodesAddedToPlaylist());
-			cb.setOnCheckedChangeListener(_subCheckHandler);
-			_subList.addView(cb);
+		for (SubscriptionData sub : subscriptions) {
+			SubscriptionCheckboxBinding view = SubscriptionCheckboxBinding.inflate(inflater, _subList, false);
+			view.setSubscription(sub);
+			_subList.addView(view.getRoot());
 		}
 	}
 }

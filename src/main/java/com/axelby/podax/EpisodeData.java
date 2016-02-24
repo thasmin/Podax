@@ -6,7 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.View;
+
+import org.joda.time.LocalDate;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -397,5 +400,14 @@ public class EpisodeData {
 		return _changeWatcher
 			.filter(d -> d.getId() == id)
 			.observeOn(AndroidSchedulers.mainThread());
+	}
+
+	public static Observable<EpisodeData> getNewForSubscriptionIds(Context context, List<Long> subIds) {
+		if (subIds.size() == 0)
+			return Observable.empty();
+
+		String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + " IN (" + TextUtils.join(",", subIds) + ")" +
+			" AND " + EpisodeProvider.COLUMN_PUB_DATE + " > " + (LocalDate.now().minusDays(7).toDate().getTime() / 1000);
+		return queryToObservable(context, EpisodeProvider.URI, selection, null, null);
 	}
 }

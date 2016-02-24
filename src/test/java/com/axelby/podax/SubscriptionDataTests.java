@@ -34,7 +34,7 @@ public class SubscriptionDataTests {
 
 		long subId = ContentUris.parseId(subUri);
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		SubscriptionData.getObservable(context, subId).subscribe(testSubscriber);
+		Subscriptions.getObservable(context, subId).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
@@ -66,7 +66,7 @@ public class SubscriptionDataTests {
 		Assert.assertNotNull("subscription uri should not be null", sub2Uri);
 
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		SubscriptionData.getAll(context).subscribe(testSubscriber);
+		Subscriptions.getAll(context).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);

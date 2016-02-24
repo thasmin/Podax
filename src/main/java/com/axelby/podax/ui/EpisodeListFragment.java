@@ -27,6 +27,7 @@ import com.axelby.podax.DBAdapter;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionData;
 import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.Subscriptions;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.trello.rxlifecycle.RxLifecycle;
@@ -68,7 +69,7 @@ public class EpisodeListFragment extends RxFragment {
 
 		Observable<SubscriptionData> subIdObservable;
 		if (subscriptionId != -1) {
-			subIdObservable = SubscriptionData.getObservable(getActivity(), subscriptionId);
+			subIdObservable = Subscriptions.getObservable(getActivity(), subscriptionId);
 		} else {
 			// get subscription id from either rss url or itunes id url
 			Observable<String> rssUrlObservable;
@@ -101,7 +102,7 @@ public class EpisodeListFragment extends RxFragment {
 
 		// use the first observable that creates a response
 		return Observable.concat(
-				SubscriptionData.getForRSSUrl(getActivity(), rssUrl),
+				Subscriptions.getForRSSUrl(getActivity(), rssUrl),
 				addSubscriptionObservable)
 			.first();
 	}
@@ -163,7 +164,7 @@ public class EpisodeListFragment extends RxFragment {
 		if (_subscription == null)
 			return;
 
-		SubscriptionData.getObservable(getActivity(), _subscription.getId())
+		Subscriptions.getObservable(getActivity(), _subscription.getId())
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.subscribe(
