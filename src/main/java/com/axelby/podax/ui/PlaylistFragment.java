@@ -1,11 +1,9 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,7 +21,6 @@ import android.widget.ImageView;
 import com.axelby.podax.BR;
 import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeDownloadService;
-import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.R;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -282,13 +279,9 @@ public class PlaylistFragment extends RxFragment {
 		}
 
 		public void moveItem(long id, int newPosition) {
-			ContentValues values = new ContentValues();
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, newPosition);
-			Uri podcastUri = EpisodeProvider.getContentUri(id);
-			getActivity().getContentResolver().update(podcastUri, values, null, null);
-
 			int oldPosition = getPositionForId(id);
 			EpisodeData ep = _episodes.get(newPosition);
+			ep.moveToPlaylistPosition(getActivity(), newPosition);
 			_episodes.set(newPosition, _episodes.get(oldPosition));
 			_episodes.set(oldPosition, ep);
 

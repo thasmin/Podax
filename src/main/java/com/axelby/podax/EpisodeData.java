@@ -183,6 +183,12 @@ public class EpisodeData {
 		context.getContentResolver().update(getContentUri(), values, null, null);
 	}
 
+	public void moveToPlaylistPosition(Context context, int newPosition) {
+		ContentValues values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, newPosition);
+		context.getContentResolver().update(getContentUri(), values, null, null);
+	}
+
 	public void restart(View view) {
 		EpisodeProvider.restart(view.getContext(), getId());
 	}
