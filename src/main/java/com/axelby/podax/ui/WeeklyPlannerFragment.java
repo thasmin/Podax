@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.axelby.podax.EpisodeData;
+import com.axelby.podax.Episodes;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.Stats;
@@ -102,7 +103,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 	}
 
 	private void getAutoAddedTimeAndUpdate() {
-		EpisodeData.getNewForSubscriptionIds(getActivity(), _subIds)
+		Episodes.getNewForSubscriptionIds(getActivity(), _subIds)
 			.observeOn(AndroidSchedulers.mainThread())
 			.reduce(0f, (carried, ep) -> carried += ep.getDuration() / 1000.0f)
 			.subscribe(

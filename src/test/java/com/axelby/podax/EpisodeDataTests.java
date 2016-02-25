@@ -45,7 +45,7 @@ public class EpisodeDataTests {
 
 		TestSubscriber<EpisodeData> epSubscriber = new TestSubscriber<>();
 		long epId = ContentUris.parseId(epUri);
-		EpisodeData.getObservable(context, epId).subscribe(epSubscriber);
+		Episodes.getObservable(context, epId).subscribe(epSubscriber);
 		epSubscriber.assertNoErrors();
 		epSubscriber.assertValueCount(1);
 		Assert.assertEquals("original title is incorrect", "huh?", epSubscriber.getOnNextEvents().get(0).getTitle());
@@ -86,7 +86,7 @@ public class EpisodeDataTests {
 		Assert.assertNotNull("episode uri should not be null", ep2Uri);
 
 		TestSubscriber<List<EpisodeData>> testSubscriber = new TestSubscriber<>();
-		EpisodeData.getPlaylist(context).subscribe(testSubscriber);
+		Episodes.getPlaylist(context).subscribe(testSubscriber);
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be two items in playlist", 2, testSubscriber.getOnNextEvents().get(0).size());
@@ -118,7 +118,7 @@ public class EpisodeDataTests {
 		Assert.assertNotNull("episode uri should not be null", ep1Uri);
 
 		TestSubscriber<List<EpisodeData>> testSubscriber = new TestSubscriber<>();
-		EpisodeData.getFinished(context).subscribe(testSubscriber);
+		Episodes.getFinished(context).subscribe(testSubscriber);
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be no finished episodes", 0, testSubscriber.getOnNextEvents().get(0).size());
@@ -163,7 +163,7 @@ public class EpisodeDataTests {
 		Assert.assertNotNull("episode uri should not be null", ep2Uri);
 
 		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
-		EpisodeData.getExpired(context).subscribe(testSubscriber);
+		Episodes.getExpired(context).subscribe(testSubscriber);
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("only second episode should be expired", "two", testSubscriber.getOnNextEvents().get(0).getTitle());
@@ -199,7 +199,7 @@ public class EpisodeDataTests {
 		Assert.assertNotNull("episode uri should not be null", ep2Uri);
 
 		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
-		EpisodeData.getLatestActivity(context).subscribe(testSubscriber);
+		Episodes.getLatestActivity(context).subscribe(testSubscriber);
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
 		Assert.assertEquals("one should be first", "one", testSubscriber.getOnNextEvents().get(0).getTitle());
@@ -226,7 +226,7 @@ public class EpisodeDataTests {
 		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", ep1Uri);
 
-		Assert.assertTrue("latest activity should be after when - 1", EpisodeData.isLastActivityAfter(context, when - 1));
-		Assert.assertFalse("latest activity should be after when + 1", EpisodeData.isLastActivityAfter(context, when + 1));
+		Assert.assertTrue("latest activity should be after when - 1", Episodes.isLastActivityAfter(context, when - 1));
+		Assert.assertFalse("latest activity should be after when + 1", Episodes.isLastActivityAfter(context, when + 1));
 	}
 }

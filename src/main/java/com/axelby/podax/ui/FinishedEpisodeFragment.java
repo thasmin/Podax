@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import com.axelby.podax.BR;
 import com.axelby.podax.EpisodeData;
+import com.axelby.podax.Episodes;
 import com.axelby.podax.R;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -34,7 +35,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
-		EpisodeData.getFinished(activity)
+		Episodes.getFinished(activity)
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
@@ -78,7 +79,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 			_episodes = episodes;
 			notifyDataSetChanged();
 
-			EpisodeData.getEpisodeWatcher()
+			Episodes.getEpisodeWatcher()
 				.subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
 				.compose(bindToLifecycle())

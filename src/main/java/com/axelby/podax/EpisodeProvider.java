@@ -290,7 +290,7 @@ public class EpisodeProvider extends ContentProvider {
 			Cursor c = db.query("podcasts", null, where, whereArgs, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
-					EpisodeData.notifyChange(new EpisodeCursor(c));
+					Episodes.notifyChange(new EpisodeCursor(c));
 				c.close();
 			}
 
@@ -406,7 +406,7 @@ public class EpisodeProvider extends ContentProvider {
 		}
 
 		if (values.containsKey(COLUMN_FINISHED_TIME))
-			EpisodeData.notifyFinishedChange(getContext());
+			Episodes.notifyFinishedChange(getContext());
 
 
 		// if the current episode has updated the position but it's not from the player, tell the player to update
@@ -423,7 +423,7 @@ public class EpisodeProvider extends ContentProvider {
 	private void notifyChange(long episodeId) {
 		EpisodeCursor episodeCursor = EpisodeCursor.getCursor(getContext(), episodeId);
 		if (episodeCursor != null) {
-			EpisodeData.notifyChange(episodeCursor);
+			Episodes.notifyChange(episodeCursor);
 			episodeCursor.closeCursor();
 		}
 	}
@@ -506,7 +506,7 @@ public class EpisodeProvider extends ContentProvider {
 			new Object[]{newPosition, episodeId});
 		if (getContext() != null) {
 			getContext().getContentResolver().notifyChange(PLAYLIST_URI, null);
-			EpisodeData.notifyPlaylistChange(getContext());
+			Episodes.notifyPlaylistChange(getContext());
 		}
 	}
 

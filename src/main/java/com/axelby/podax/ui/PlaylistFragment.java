@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import com.axelby.podax.BR;
 import com.axelby.podax.EpisodeData;
 import com.axelby.podax.EpisodeDownloadService;
+import com.axelby.podax.Episodes;
 import com.axelby.podax.R;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -154,7 +155,7 @@ public class PlaylistFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PlaylistListAdapter();
-		EpisodeData.getPlaylist(activity)
+		Episodes.getPlaylist(activity)
 			.compose(bindToLifecycle())
 			.subscribe(
 				_adapter::setEpisodes,
@@ -236,7 +237,7 @@ public class PlaylistFragment extends RxFragment {
 				_ids.put(_episodes.get(i).getId(), i);
 
 			_episodeSubscriber.unsubscribe();
-			EpisodeData.getEpisodeWatcher()
+			Episodes.getEpisodeWatcher()
 				.filter(ep -> _ids.containsKey(ep.getId()))
 				.compose(bindToLifecycle())
 				.subscribe(_episodeSubscriber);

@@ -149,7 +149,7 @@ public class EpisodeDownloadService extends Service {
 	}
 
 	private void expireDownloadedFiles() {
-		EpisodeData.getExpired(this).subscribe(
+		Episodes.getExpired(this).subscribe(
 			ep -> ep.removeFromPlaylist(this),
 			e -> Log.e("EpisodeDownloadService", "unable to expire downloaded files")
 		);

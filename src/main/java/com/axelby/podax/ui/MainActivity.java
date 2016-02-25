@@ -32,6 +32,7 @@ import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeData;
+import com.axelby.podax.Episodes;
 import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
@@ -94,7 +95,7 @@ public class MainActivity extends RxAppCompatActivity {
 
 		boolean showAutomatically = prefs.getBoolean("automatic_show", true);
 		long lastActivityCheck = prefs.getLong("last_check", 0);
-		if (showAutomatically && EpisodeData.isLastActivityAfter(this, lastActivityCheck))
+		if (showAutomatically && Episodes.isLastActivityAfter(this, lastActivityCheck))
 			AppFlow.get(this).displayLatestActivity();
 	}
 

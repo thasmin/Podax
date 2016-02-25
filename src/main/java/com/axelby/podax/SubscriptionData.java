@@ -79,7 +79,7 @@ public class SubscriptionData {
 	}
 
 	public List<EpisodeData> getEpisodes(Context context) {
-		return EpisodeData.getForSubscriptionId(context, getId()).toBlocking().first();
+		return Episodes.getForSubscriptionId(context, getId()).toBlocking().first();
 	}
 
 	public void changeSubscribe(CompoundButton button, boolean isChecked) {
