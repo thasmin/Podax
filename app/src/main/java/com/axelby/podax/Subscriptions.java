@@ -16,7 +16,7 @@ public class Subscriptions {
 		_changeSubject.onNext(c);
 	}
 
-	private static Observable<SubscriptionData> _changeWatcher = _changeSubject.map(SubscriptionData::new);
+	private static Observable<SubscriptionData> _changeWatcher = _changeSubject.map(SubscriptionData::from);
 	public static Observable<SubscriptionData> getWatcher() {
 		return _changeWatcher.observeOn(AndroidSchedulers.mainThread());
 	}
@@ -41,7 +41,7 @@ public class Subscriptions {
 			Cursor c = context.getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
-					subscriber.onNext(new SubscriptionData(new SubscriptionCursor(c)));
+					subscriber.onNext(SubscriptionData.from(new SubscriptionCursor(c)));
 				c.close();
 			}
 			subscriber.onCompleted();
@@ -58,7 +58,7 @@ public class Subscriptions {
 			Cursor cursor = context.getContentResolver().query(uri, null, selection, selectionArgs, sortOrder);
 			if (cursor != null) {
 				while (cursor.moveToNext())
-					subscriber.onNext(new SubscriptionData(new SubscriptionCursor(cursor)));
+					subscriber.onNext(SubscriptionData.from(new SubscriptionCursor(cursor)));
 				cursor.close();
 			}
 			subscriber.onCompleted();

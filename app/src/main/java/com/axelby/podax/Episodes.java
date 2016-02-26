@@ -23,7 +23,7 @@ public class Episodes {
 			Cursor cursor = context.getContentResolver().query(uri, null, selection, selectionArgs, sortOrder);
 			if (cursor != null) {
 				while (cursor.moveToNext())
-					subscriber.onNext(new EpisodeData(new EpisodeCursor(cursor)));
+					subscriber.onNext(EpisodeData.from(new EpisodeCursor(cursor)));
 				cursor.close();
 			}
 			subscriber.onCompleted();
@@ -41,7 +41,7 @@ public class Episodes {
 
 			ArrayList<EpisodeData> list = new ArrayList<>(cursor.getCount());
 			while (cursor.moveToNext())
-				list.add(new EpisodeData(new EpisodeCursor(cursor)));
+				list.add(EpisodeData.from(new EpisodeCursor(cursor)));
 			cursor.close();
 
 			subscriber.onNext(list);
@@ -90,7 +90,7 @@ public class Episodes {
 
 		List<EpisodeData> finished = new ArrayList<>(c.getCount());
 		while (c.moveToNext())
-			finished.add(new EpisodeData(new EpisodeCursor(c)));
+			finished.add(EpisodeData.from(new EpisodeCursor(c)));
 		c.close();
 
 		_finishedSubject.onNext(finished);
@@ -109,7 +109,7 @@ public class Episodes {
 
 		List<EpisodeData> playlist = new ArrayList<>(c.getCount());
 		while (c.moveToNext())
-			playlist.add(new EpisodeData(new EpisodeCursor(c)));
+			playlist.add(EpisodeData.from(new EpisodeCursor(c)));
 		c.close();
 
 		_playlistSubject.onNext(playlist);
@@ -125,7 +125,7 @@ public class Episodes {
 		_changeSubject.onNext(c);
 	}
 
-	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::new);
+	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::from);
 	public static Observable<EpisodeData> getEpisodeWatcher() {
 		return _changeWatcher.observeOn(AndroidSchedulers.mainThread());
 	}

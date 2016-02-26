@@ -56,6 +56,17 @@ public class PodaxApplication extends Application {
 		PlayerStatus.notify(this);
 	}
 
+	@Override
+	public void onTrimMemory(int level) {
+		super.onTrimMemory(level);
+
+		// got on the LRU list
+		if (level == TRIM_MEMORY_BACKGROUND) {
+			EpisodeData.evictCache();
+			SubscriptionData.evictCache();
+		}
+	}
+
 	public static boolean isRoboUnitTest() {
 		return "robolectric".equals(Build.FINGERPRINT);
 	}

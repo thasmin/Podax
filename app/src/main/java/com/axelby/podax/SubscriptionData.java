@@ -3,12 +3,16 @@ package com.axelby.podax;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
+import android.util.LruCache;
 import android.widget.CompoundButton;
 
+import java.lang.ref.SoftReference;
 import java.util.Date;
 import java.util.List;
 
 public class SubscriptionData {
+
+	private final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
 
 	private final long _id;
 	private final String _rawTitle;
@@ -23,7 +27,7 @@ public class SubscriptionData {
 	private final boolean _playlistNew;
 	private final int _expirationDays;
 
-	SubscriptionData(SubscriptionCursor sub) {
+	private SubscriptionData(SubscriptionCursor sub) {
 		_id = sub.getId();
 		_rawTitle = sub.getRawTitle();
 		_url = sub.getUrl();
@@ -38,17 +42,42 @@ public class SubscriptionData {
 		_expirationDays = sub.getExpirationDays();
 	}
 
+	public static SubscriptionData from(SubscriptionCursor c) {
+		synchronized (_cache) {
+			if (_cache.get(c.getId()) != null && _cache.get(c.getId()).get() != null)
+				return _cache.get(c.getId()).get();
+		}
+
+		SubscriptionData data = new SubscriptionData(c);
+		synchronized (_cache) {
+			_cache.put(c.getId(), new SoftReference<>(data));
+		}
+		return data;
+	}
+
 	public static SubscriptionData create(Context context, long id) {
+		synchronized (_cache) {
+			if (_cache.get(id) != null && _cache.get(id).get() != null)
+				return _cache.get(id).get();
+		}
+
 		if (id < 0)
 			return null;
 
-		SubscriptionCursor ep = SubscriptionCursor.getCursor(context, id);
-		if (ep == null)
+		SubscriptionCursor cursor = SubscriptionCursor.getCursor(context, id);
+		if (cursor == null)
 			return null;
 
-		SubscriptionData data = new SubscriptionData(ep);
-		ep.closeCursor();
+		SubscriptionData data = new SubscriptionData(cursor);
+		synchronized (_cache) {
+			_cache.put(id, new SoftReference<>(data));
+		}
+		cursor.closeCursor();
 		return data;
+	}
+
+	public static void evictCache() {
+		_cache.evictAll();
 	}
 
 	public long getId() { return _id; }

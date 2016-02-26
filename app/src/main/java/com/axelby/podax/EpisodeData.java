@@ -4,26 +4,18 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
-import android.text.TextUtils;
+import android.util.LruCache;
 import android.view.View;
 
-import org.joda.time.LocalDate;
-
 import java.io.File;
+import java.lang.ref.SoftReference;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
 
 public class EpisodeData {
+
+	private final static LruCache<Long, SoftReference<EpisodeData>> _cache = new LruCache<>(200);
 
 	// TODO: change Date to LocalDateTime and urls to URI
 	private final long _id;
@@ -45,7 +37,7 @@ public class EpisodeData {
 
 	private String _filename = null;
 
-	public EpisodeData(EpisodeCursor ep) {
+	private EpisodeData(EpisodeCursor ep) {
 		_id = ep.getId();
 		_title = ep.getTitle();
 		_subscriptionId = ep.getSubscriptionId();
@@ -64,7 +56,26 @@ public class EpisodeData {
 		_finishedDate = ep.getFinishedDate();
 	}
 
+	public static EpisodeData from(EpisodeCursor ep) {
+		long episodeId = ep.getId();
+		synchronized (_cache) {
+			if (_cache.get(episodeId) != null && _cache.get(episodeId).get() != null)
+				return _cache.get(episodeId).get();
+		}
+
+		EpisodeData episodeData = new EpisodeData(ep);
+		synchronized (_cache) {
+			_cache.put(episodeId, new SoftReference<>(episodeData));
+		}
+		return episodeData;
+	}
+
 	public static EpisodeData create(Context context, long episodeId) {
+		synchronized (_cache) {
+			if (_cache.get(episodeId) != null && _cache.get(episodeId).get() != null)
+				return _cache.get(episodeId).get();
+		}
+
 		if (episodeId < 0)
 			return null;
 
@@ -72,9 +83,16 @@ public class EpisodeData {
 		if (ep == null)
 			return null;
 
-		EpisodeData d = new EpisodeData(ep);
+		EpisodeData d = EpisodeData.from(ep);
+		synchronized (_cache) {
+			_cache.put(episodeId, new SoftReference<>(d));
+		}
 		ep.closeCursor();
 		return d;
+	}
+
+	public static void evictCache() {
+		_cache.evictAll();
 	}
 
 	public long getId() {
