@@ -133,11 +133,11 @@ public class SubscriptionCursor {
 		return _cursor.getString(_thumbnailColumn);
 	}
 
-	public int getExpirationDays() {
+	public Integer getExpirationDays() {
 		if (_expirationColumn == null)
 			_expirationColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_EXPIRATION);
 		if (_cursor.isNull(_expirationColumn))
-			return -1;
+			return null;
 		return _cursor.getInt(_expirationColumn);
 	}
 

@@ -1,10 +1,7 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Editable;
@@ -21,7 +18,7 @@ import android.widget.RadioGroup;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionData;
-import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.SubscriptionEditor;
 import com.axelby.podax.Subscriptions;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -31,8 +28,9 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public class SubscriptionSettingsFragment extends RxFragment {
 
+	private long _subscriptionId;
+
 	private boolean _initializedUI = false;
-	private Uri _subscriptionUri;
 	private String _feedTitle;
 	private EditText _name;
 	private CheckBox _autoName;
@@ -49,14 +47,13 @@ public class SubscriptionSettingsFragment extends RxFragment {
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 
-		long subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
-		if (subscriptionId == -1) {
+		_subscriptionId = getArguments().getLong(Constants.EXTRA_SUBSCRIPTION_ID, -1);
+		if (_subscriptionId == -1) {
             ACRA.getErrorReporter().handleSilentException(new Exception("subscription settings got a -1"));
             return;
         }
-		_subscriptionUri = ContentUris.withAppendedId(SubscriptionProvider.URI, subscriptionId);
 
-		Subscriptions.getObservable(activity, subscriptionId)
+		Subscriptions.getObservable(activity, _subscriptionId)
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(
@@ -78,15 +75,15 @@ public class SubscriptionSettingsFragment extends RxFragment {
 			@Override
 			public void afterTextChanged(Editable s) {
 				String newTitle = s.toString();
-				ContentValues values = new ContentValues();
+				SubscriptionEditor editor = new SubscriptionEditor(getActivity(), _subscriptionId);
 				if (newTitle.equals(_feedTitle)) {
-					values.putNull(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
+					editor.setTitleOverride(null);
 					_autoName.setChecked(true);
 				} else {
-					values.put(SubscriptionProvider.COLUMN_TITLE_OVERRIDE, newTitle);
+					editor.setTitleOverride(null);
 					_autoName.setChecked(false);
 				}
-				getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
+				editor.commit();
 			}
 
 			@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
@@ -135,12 +132,9 @@ public class SubscriptionSettingsFragment extends RxFragment {
 		_name.addTextChangedListener(_nameWatcher);
 
 		_autoName.setOnCheckedChangeListener((button, checked) -> {
-			ContentValues values = new ContentValues();
-			if (checked)
-				values.putNull(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
-			else
-				values.put(SubscriptionProvider.COLUMN_TITLE_OVERRIDE, _feedTitle);
-			getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
+			new SubscriptionEditor(getActivity(), _subscriptionId)
+				.setTitleOverride(checked ? null : _feedTitle)
+				.commit();
 
 			if (checked) {
 				_name.removeTextChangedListener(_nameWatcher);
@@ -149,26 +143,25 @@ public class SubscriptionSettingsFragment extends RxFragment {
 			}
 		});
 
-		_autoPlaylist.setOnCheckedChangeListener((group, checkedId) -> {
-			ContentValues values = new ContentValues();
-			values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, checkedId == R.id.autoPlaylistYes);
-			getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
-		});
+		_autoPlaylist.setOnCheckedChangeListener((group, checkedId) ->
+			new SubscriptionEditor(getActivity(), _subscriptionId)
+				.setPlaylistNew(checkedId == R.id.autoPlaylistYes)
+				.commit());
 
 		_expiration.setOnCheckedChangeListener((group, checkedId) -> {
-			ContentValues values = new ContentValues();
+			SubscriptionEditor editor = new SubscriptionEditor(getActivity(), _subscriptionId);
 			switch (checkedId) {
 				case R.id.expire0:
-					values.putNull(SubscriptionProvider.COLUMN_EXPIRATION);
+					editor.setExpirationDays(null);
 					break;
 				case R.id.expire7:
-					values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
+					editor.setExpirationDays(7);
 					break;
 				case R.id.expire14:
-					values.put(SubscriptionProvider.COLUMN_EXPIRATION, 14);
+					editor.setExpirationDays(14);
 					break;
 			}
-			getActivity().getContentResolver().update(_subscriptionUri, values, null, null);
+			editor.commit();
 		});
 	}
 

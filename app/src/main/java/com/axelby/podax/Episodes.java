@@ -120,17 +120,17 @@ public class Episodes {
 		return _playlistSubject;
 	}
 
-	private static PublishSubject<EpisodeCursor> _changeSubject = PublishSubject.create();
+	private static PublishSubject<EpisodeData> _changeSubject = PublishSubject.create();
 	public static void notifyChange(EpisodeCursor c) {
-		_changeSubject.onNext(c);
+		EpisodeData data = EpisodeData.cacheSwap(c);
+		_changeSubject.onNext(data);
 	}
 
-	private static Observable<EpisodeData> _changeWatcher = _changeSubject.map(EpisodeData::from);
 	public static Observable<EpisodeData> getEpisodeWatcher() {
-		return _changeWatcher.observeOn(AndroidSchedulers.mainThread());
+		return _changeSubject.observeOn(AndroidSchedulers.mainThread());
 	}
 	public static Observable<EpisodeData> getEpisodeWatcher(long id) {
-		return _changeWatcher
+		return _changeSubject
 			.filter(d -> d.getId() == id)
 			.observeOn(AndroidSchedulers.mainThread());
 	}
@@ -142,5 +142,12 @@ public class Episodes {
 		String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + " IN (" + TextUtils.join(",", subIds) + ")" +
 			" AND " + EpisodeProvider.COLUMN_PUB_DATE + " > " + (LocalDate.now().minusDays(7).toDate().getTime() / 1000);
 		return queryToObservable(context, EpisodeProvider.URI, selection, null, null);
+	}
+
+	public static void evictCache() {
+		_changeSubject = PublishSubject.create();
+		_finishedSubject = BehaviorSubject.create();
+		_playlistSubject = BehaviorSubject.create();
+		EpisodeData.evictCache();
 	}
 }

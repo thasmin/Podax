@@ -95,6 +95,14 @@ public class EpisodeData {
 		_cache.evictAll();
 	}
 
+	public static EpisodeData cacheSwap(EpisodeCursor c) {
+		EpisodeData data = new EpisodeData(c);
+		synchronized (_cache) {
+			_cache.put(c.getId(), new SoftReference<>(data));
+		}
+		return data;
+	}
+
 	public long getId() {
 		return _id;
 	}

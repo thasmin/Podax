@@ -53,7 +53,8 @@ public class PodaxApplication extends Application {
 			MediaButtonIntentReceiver.initialize(this);
 		BootReceiver.setupAlarms(getApplicationContext());
 
-		PlayerStatus.notify(this);
+		if (!isRoboUnitTest())
+			PlayerStatus.notify(this);
 	}
 
 	@Override

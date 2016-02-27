@@ -22,6 +22,9 @@ public class SubscriptionDataTests {
 	@Rule
 	public RxSchedulerSwitcher _rxSchedulerSwitcher = new RxSchedulerSwitcher();
 
+	@Rule
+	public DataCacheClearer _dataCacheClearer = new DataCacheClearer();
+
 	@Test
 	public void testGetSubscription() {
 		Context context = RuntimeEnvironment.application;

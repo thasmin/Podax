@@ -11,17 +11,17 @@ import rx.subjects.PublishSubject;
 
 public class Subscriptions {
 
-	private static PublishSubject<SubscriptionCursor> _changeSubject = PublishSubject.create();
+	private static PublishSubject<SubscriptionData> _changeSubject = PublishSubject.create();
 	public static void notifyChange(SubscriptionCursor c) {
-		_changeSubject.onNext(c);
+		SubscriptionData data = SubscriptionData.cacheSwap(c);
+		_changeSubject.onNext(data);
 	}
 
-	private static Observable<SubscriptionData> _changeWatcher = _changeSubject.map(SubscriptionData::from);
 	public static Observable<SubscriptionData> getWatcher() {
-		return _changeWatcher.observeOn(AndroidSchedulers.mainThread());
+		return _changeSubject.observeOn(AndroidSchedulers.mainThread());
 	}
 	public static Observable<SubscriptionData> getWatcher(long id) {
-		return _changeWatcher
+		return _changeSubject
 			.filter(d -> d.getId() == id)
 			.observeOn(AndroidSchedulers.mainThread());
 	}
@@ -69,5 +69,10 @@ public class Subscriptions {
 		String selection = SubscriptionProvider.COLUMN_URL + "=?";
 		String[] selectionArgs = new String[] { rssUrl };
 		return Subscriptions.queryToObservable(context, SubscriptionProvider.URI, selection, selectionArgs, null);
+	}
+
+	public static void evictCache() {
+		SubscriptionData.evictCache();
+		_changeSubject = PublishSubject.create();
 	}
 }

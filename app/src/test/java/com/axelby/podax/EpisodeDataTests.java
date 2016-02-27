@@ -26,6 +26,9 @@ public class EpisodeDataTests {
 	@Rule
 	public RxSchedulerSwitcher _rxSchedulerSwitcher = new RxSchedulerSwitcher();
 
+	@Rule
+	public DataCacheClearer _dataCacheClearer = new DataCacheClearer();
+
 	@Test
 	public void testGetEpisode() {
 		Context context = RuntimeEnvironment.application;
