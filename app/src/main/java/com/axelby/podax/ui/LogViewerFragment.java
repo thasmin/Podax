@@ -27,10 +27,6 @@ public class LogViewerFragment extends Fragment {
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		view.findViewById(R.id.clear_subscriptions).setOnClickListener(
-			(v) -> view.getContext().getContentResolver().delete(SubscriptionProvider.URI, null, null)
-		);
-
 		view.findViewById(R.id.clear_log).setOnClickListener((v) -> {
 			try {
 				File file = new File(getActivity().getExternalFilesDir(null), "podax.log");
