@@ -91,6 +91,13 @@ public class EpisodeData {
 		return d;
 	}
 
+	public static EpisodeData getActive(Context context) {
+		long activeEpisodeId = EpisodeProvider.getActiveEpisodeId(context);
+		if (activeEpisodeId == -1)
+			return null;
+		return EpisodeData.create(context, activeEpisodeId);
+	}
+
 	public static void evictCache() {
 		_cache.evictAll();
 	}

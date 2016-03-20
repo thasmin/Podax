@@ -2,7 +2,6 @@ package com.axelby.podax;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
@@ -14,35 +13,23 @@ public class PlayerStatus {
 	public static void notify(Context context) { _subject.onNext(getCurrentState(context)); }
 
 	public static PlayerStatus getCurrentState(Context context) {
-		String[] projection = {
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_TITLE,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_ID,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
-				EpisodeProvider.COLUMN_LAST_POSITION,
-				EpisodeProvider.COLUMN_DURATION,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-				EpisodeProvider.COLUMN_FILE_SIZE,
-		};
-		Cursor cursor = context.getContentResolver().query(EpisodeProvider.ACTIVE_EPISODE_URI, projection, null, null, null);
+		EpisodeData episode = EpisodeData.getActive(context);
 		PlayerStatus status = new PlayerStatus();
-		if (cursor == null) {
+		if (episode == null) {
 			status._state = PlayerStates.PLAYLISTEMPTY;
 			return status;
 		}
-		if (cursor.moveToNext()) {
-			EpisodeCursor episode = new EpisodeCursor(cursor);
-			SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
-			status._state = PlayerStates.fromInt(prefs.getInt("playingState", PlayerStates.STOPPED.toInt()));
-			status._episodeId = episode.getId();
-			status._subscriptionId = episode.getSubscriptionId();
-			status._title = episode.getTitle();
-			status._subscriptionTitle = episode.getSubscriptionTitle();
-			status._position = episode.getLastPosition();
-			status._duration = episode.getDuration();
-			status._isDownloaded = episode.isDownloaded(context);
-		}
-		cursor.close();
+
+		SharedPreferences prefs = context.getSharedPreferences("player", Context.MODE_PRIVATE);
+		status._state = PlayerStates.fromInt(prefs.getInt("playingState", PlayerStates.STOPPED.toInt()));
+		status._episodeId = episode.getId();
+		status._subscriptionId = episode.getSubscriptionId();
+		status._title = episode.getTitle();
+		status._subscriptionTitle = episode.getSubscriptionTitle();
+		status._position = episode.getLastPosition();
+		status._duration = episode.getDuration();
+		status._isDownloaded = episode.isDownloaded(context);
+
 		return status;
 	}
 

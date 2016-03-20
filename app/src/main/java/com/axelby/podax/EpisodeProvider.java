@@ -177,11 +177,11 @@ public class EpisodeProvider extends ContentProvider {
 							sqlBuilder.appendWhere("podcasts._id = " + activeId);
 						else {
 							prefs.edit().remove(PREF_ACTIVE).apply();
-							sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
+							sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId(getContext()));
 						}
 						c.close();
 					} else {
-						sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId());
+						sqlBuilder.appendWhere("podcasts._id = " + getFirstDownloadedId(getContext()));
 					}
 				}
 				break;
@@ -195,7 +195,7 @@ public class EpisodeProvider extends ContentProvider {
 				String inWhere = "SELECT podcasts._id FROM podcasts " +
 						"JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id " +
 						"WHERE expirationDays IS NOT NULL AND queuePosition IS NOT NULL AND " +
-						"date(pubDate, 'unixepoch', expirationDays || ' days') < date('now')";
+						"date(pubDate, 'unixepoch', expirationDays || ' days') <= date('now')";
 				sqlBuilder.appendWhere("podcasts._id IN (" + inWhere + ")");
 				break;
 			case EPISODES_NEED_GPODDER_UPDATE:
@@ -221,20 +221,20 @@ public class EpisodeProvider extends ContentProvider {
 		return c;
 	}
 
-	private long getFirstDownloadedId() {
+	private static long getFirstDownloadedId(Context context) {
 		String[] projection = {
 				EpisodeProvider.COLUMN_ID,
 				EpisodeProvider.COLUMN_FILE_SIZE,
 				EpisodeProvider.COLUMN_MEDIA_URL,
 		};
-		Cursor c = query(PLAYLIST_URI, projection, null, null, null);
+		Cursor c = context.getContentResolver().query(PLAYLIST_URI, projection, null, null, null);
 		if (c == null)
 			return -1;
 
 		long episodeId = -1;
 		while (c.moveToNext()) {
 			EpisodeCursor episode = new EpisodeCursor(c);
-			if (episode.isDownloaded(getContext())) {
+			if (episode.isDownloaded(context)) {
 				episodeId = episode.getId();
 				break;
 			}
@@ -265,6 +265,13 @@ public class EpisodeProvider extends ContentProvider {
 		if (playlistIds.length() > 0)
 			playlistIds = playlistIds.substring(0, playlistIds.length() - 1);
 		return playlistIds;
+	}
+
+	public static long getActiveEpisodeId(Context context) {
+		long epId = context.getSharedPreferences("internals", Context.MODE_PRIVATE).getLong(PREF_ACTIVE, -1);
+		if (epId != -1)
+			return epId;
+		return getFirstDownloadedId(context);
 	}
 
 	@Override
