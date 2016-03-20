@@ -87,7 +87,8 @@ public class EpisodeDownloadService extends Service {
 
 			// make sure we don't download too many episodes
 			float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
-			if (getPlaylistNumDownloadedItems() >= maxEpisodes)
+			Integer downloadedEpisodes = Episodes.getDownloaded(this).count().toBlocking().first();
+			if (downloadedEpisodes >= maxEpisodes)
 				return;
 
 			download(this, episodeId);
@@ -95,13 +96,10 @@ public class EpisodeDownloadService extends Service {
 			verifyDownloadedFiles();
 			expireDownloadedFiles();
 
-			String[] projection = {EpisodeProvider.COLUMN_ID};
-			Cursor c = getContentResolver().query(EpisodeProvider.TO_DOWNLOAD_URI, projection, null, null, null);
-			if (c != null) {
-				while (c.moveToNext())
-					handleIntent(createDownloadEpisodeIntent(this, c.getLong(0)));
-				c.close();
-			}
+			Episodes.getNeedsDownload(this).subscribe(
+				ep -> handleIntent(createDownloadEpisodeIntent(this, ep.getId())),
+				e -> Log.e("EpisodeDownloadService", "unable to get episodes that need to be downloaded", e)
+			);
 		}
 	}
 
@@ -152,27 +150,6 @@ public class EpisodeDownloadService extends Service {
 			ep -> ep.removeFromPlaylist(this),
 			e -> Log.e("EpisodeDownloadService", "unable to expire downloaded files")
 		);
-	}
-
-	private int getPlaylistNumDownloadedItems() {
-		String[] projection = {
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_TITLE,
-				EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-				EpisodeProvider.COLUMN_FILE_SIZE,
-		};
-		Cursor c = getContentResolver().query(EpisodeProvider.PLAYLIST_URI, projection, null, null, null);
-		if (c == null)
-			return 0;
-
-		int ret = 0;
-		while (c.moveToNext())
-			if (new EpisodeCursor(c).isDownloaded(this))
-				ret++;
-		c.close();
-
-		return ret;
 	}
 
 	public void download(Context context, long episodeId) {

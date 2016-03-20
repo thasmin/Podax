@@ -15,6 +15,8 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -231,5 +233,42 @@ public class EpisodeDataTests {
 
 		Assert.assertTrue("latest activity should be after when - 1", Episodes.isLastActivityAfter(context, when - 1));
 		Assert.assertFalse("latest activity should be after when + 1", Episodes.isLastActivityAfter(context, when + 1));
+	}
+
+	@Test
+	public void getNeedsDownload() throws IOException {
+		Context context = RuntimeEnvironment.application;
+
+		ContentValues values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
+		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
+		Assert.assertNotNull("subscription uri should not be null", subUri);
+
+		values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_TITLE, "one");
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1.mp3");
+		values.put(EpisodeProvider.COLUMN_FILE_SIZE, 5);
+		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
+		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
+		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+
+		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
+		Episodes.getNeedsDownload(context).subscribe(testSubscriber);
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(1);
+		testSubscriber.unsubscribe();
+
+		EpisodeData ep = testSubscriber.getOnNextEvents().get(0);
+		FileWriter fw = new FileWriter(ep.getFilename(context));
+		fw.write(new char[] { 32, 32, 32, 32, 32 });
+		fw.close();
+
+		testSubscriber = new TestSubscriber<>();
+		Episodes.getNeedsDownload(context).subscribe(testSubscriber);
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(0);
+		testSubscriber.unsubscribe();
 	}
 }

@@ -56,6 +56,20 @@ public class Episodes {
 			.observeOn(AndroidSchedulers.mainThread());
 	}
 
+	public static Observable<List<EpisodeData>> getAll(Context context) {
+		return queryToListObservable(context, EpisodeProvider.URI, null, null, null);
+	}
+
+	public static Observable<EpisodeData> getDownloaded(Context context) {
+		return queryToObservable(context, EpisodeProvider.URI, EpisodeProvider.COLUMN_FILE_SIZE + " > 0", null, null)
+			.filter(ep -> ep.isDownloaded(context));
+	}
+
+	public static Observable<EpisodeData> getNeedsDownload(Context context) {
+		return queryToObservable(context, EpisodeProvider.PLAYLIST_URI, null, null, null)
+			.filter(ep -> !ep.isDownloaded(context));
+	}
+
 	public static Observable<List<EpisodeData>> getForSubscriptionId(Context context, long subscriptionId) {
 		String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + "=?";
 		String[] selectionArgs = { String.valueOf(subscriptionId) };
