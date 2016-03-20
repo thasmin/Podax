@@ -224,12 +224,10 @@ public class EpisodeCursor {
 	}
 
 	public static String getPodcastStoragePath(Context context) {
-		String externalPath = Storage.getStoragePath(context);
-		String podaxDir = externalPath + "/Podcasts/";
-		File podaxFile = new File(podaxDir);
+		File podaxFile = new File(Storage.getStoragePath(context), "Podcasts");
 		if (!podaxFile.exists())
 			podaxFile.mkdirs();
-		return podaxDir;
+		return podaxFile.getAbsolutePath() + "/";
 	}
 
 	public String getPaymentUrl() {

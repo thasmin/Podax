@@ -6,8 +6,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -26,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import okio.BufferedSource;
 
@@ -93,7 +92,7 @@ public class EpisodeDownloadService extends Service {
 
 			download(this, episodeId);
 		} else if (action.equals(Constants.ACTION_DOWNLOAD_EPISODES)) {
-			verifyDownloadedFiles();
+			verifyDownloadedFiles(this);
 			expireDownloadedFiles();
 
 			Episodes.getNeedsDownload(this).subscribe(
@@ -111,23 +110,15 @@ public class EpisodeDownloadService extends Service {
 	}
 
 	// make sure all media files in the folder are for existing episodes
-	private void verifyDownloadedFiles() {
-		ArrayList<String> validMediaFilenames = new ArrayList<>();
-		String[] projection = new String[]{
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-		};
-		Uri playlistUri = Uri.withAppendedPath(EpisodeProvider.URI, "playlist");
-		if (playlistUri == null)
-			return;
-		Cursor c = getContentResolver().query(playlistUri, projection, null, null, null);
-		if (c == null)
-			return;
-		while (c.moveToNext())
-			validMediaFilenames.add(new EpisodeCursor(c).getFilename(this));
-		c.close();
+	public static void verifyDownloadedFiles(Context context) {
+		List<String> validMediaFilenames = Episodes.getPlaylist(context)
+			.first()
+			.flatMapIterable(eps -> eps)
+			.map(ep -> ep.getFilename(context))
+			.toList()
+			.toBlocking().first();
 
-		File dir = new File(Storage.getStoragePath(this));
+		File dir = new File(EpisodeCursor.getPodcastStoragePath(context));
 		File[] files = dir.listFiles();
 		// this is possible if the directory does not exist
 		if (files == null)
