@@ -37,7 +37,7 @@ public class SubscriptionDataTests {
 
 		long subId = ContentUris.parseId(subUri);
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.getObservable(context, subId).subscribe(testSubscriber);
+		Subscriptions.watch(context, subId).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
@@ -80,6 +80,31 @@ public class SubscriptionDataTests {
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
+	}
+
+	@Test
+	public void testGetFor() {
+		Context context = RuntimeEnvironment.application;
+
+		ContentValues values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
+		values.put(SubscriptionProvider.COLUMN_SINGLE_USE, 0);
+		Uri sub1Uri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
+		Assert.assertNotNull("subscription 1 uri should not be null", sub1Uri);
+
+		values = new ContentValues();
+		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionProvider.COLUMN_URL, "test://2");
+		values.put(SubscriptionProvider.COLUMN_SINGLE_USE, 1);
+		Uri sub2Uri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
+		Assert.assertNotNull("subscription 2 uri should not be null", sub2Uri);
+
+		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
+		Subscriptions.getFor(context, SubscriptionProvider.COLUMN_SINGLE_USE, 1).subscribe(testSubscriber);
+
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(1);
 	}
 
 }

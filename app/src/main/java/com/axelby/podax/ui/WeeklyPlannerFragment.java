@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.axelby.podax.EpisodeData;
 import com.axelby.podax.Episodes;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
@@ -88,7 +87,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 				e -> Log.e("WeeklyPlannerFragment", "unable to retrieve subscription added to playlist", e)
 			);
 
-		Subscriptions.getWatcher().subscribe(
+		Subscriptions.watchAll().subscribe(
 			sub -> {
 				if (_subIds == null)
 					return;

@@ -53,7 +53,7 @@ public class SubscriptionSettingsFragment extends RxFragment {
             return;
         }
 
-		Subscriptions.getObservable(activity, _subscriptionId)
+		Subscriptions.watch(activity, _subscriptionId)
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(

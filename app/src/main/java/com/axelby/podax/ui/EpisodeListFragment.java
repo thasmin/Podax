@@ -69,7 +69,7 @@ public class EpisodeListFragment extends RxFragment {
 
 		Observable<SubscriptionData> subIdObservable;
 		if (subscriptionId != -1) {
-			subIdObservable = Subscriptions.getObservable(getActivity(), subscriptionId);
+			subIdObservable = Subscriptions.watch(getActivity(), subscriptionId);
 		} else {
 			// get subscription id from either rss url or itunes id url
 			Observable<String> rssUrlObservable;
@@ -164,7 +164,7 @@ public class EpisodeListFragment extends RxFragment {
 		if (_subscription == null)
 			return;
 
-		Subscriptions.getObservable(getActivity(), _subscription.getId())
+		Subscriptions.watch(getActivity(), _subscription.getId())
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.subscribe(

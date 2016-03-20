@@ -17,23 +17,21 @@ public class Subscriptions {
 		_changeSubject.onNext(data);
 	}
 
-	public static Observable<SubscriptionData> getWatcher() {
-		return _changeSubject.observeOn(AndroidSchedulers.mainThread());
-	}
-	public static Observable<SubscriptionData> getWatcher(long id) {
+	public static Observable<SubscriptionData> watchAll() {
 		return _changeSubject
-			.filter(d -> d.getId() == id)
+			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread());
 	}
 
-	public static Observable<SubscriptionData> getObservable(Context context, long id) {
+	public static Observable<SubscriptionData> watch(Context context, long id) {
 		if (id < 0)
 			return Observable.empty();
 
-		return Subscriptions.getWatcher(id)
-			.startWith(SubscriptionData.create(context, id))
+		return _changeSubject
+			.filter(d -> d.getId() == id)
 			.subscribeOn(Schedulers.io())
-			.observeOn(AndroidSchedulers.mainThread());
+			.observeOn(AndroidSchedulers.mainThread())
+			.startWith(SubscriptionData.create(context, id));
 	}
 
 	public static Observable<SubscriptionData> getAll(Context context) {
@@ -63,6 +61,13 @@ public class Subscriptions {
 			}
 			subscriber.onCompleted();
 		});
+	}
+
+	public static Observable<SubscriptionData> getFor(Context context, String field, int value) {
+		String fieldName = SubscriptionProvider.getColumnMap().get(field);
+		String selection = fieldName + " = ?";
+		String[] selectionArgs = new String[] { String.valueOf(value) };
+		return queryToObservable(context, SubscriptionProvider.URI, selection, selectionArgs, null);
 	}
 
 	public static Observable<SubscriptionData> getForRSSUrl(Context context, String rssUrl) {

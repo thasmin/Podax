@@ -116,9 +116,9 @@
     <orderEntry type="library" exported="" scope="TEST" name="asm-commons-5.0.1" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="asm-5.0.1" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="shadows-core-3.0" level="project" />
-    <orderEntry type="library" exported="" name="antlr4-runtime-4.5" level="project" />
-    <orderEntry type="library" exported="" name="baseLibrary-2.0.0-beta6" level="project" />
+    <orderEntry type="library" exported="" name="baseLibrary-2.0.0-beta7" level="project" />
     <orderEntry type="library" exported="" name="antlr4-annotations-4.5" level="project" />
+    <orderEntry type="library" exported="" name="antlr4-runtime-4.5" level="project" />
     <orderEntry type="library" exported="" name="support-v4-23.2.0" level="project" />
     <orderEntry type="library" exported="" name="org.abego.treelayout.core-1.0.1" level="project" />
     <orderEntry type="library" exported="" name="library-1.0-rc5" level="project" />
@@ -135,7 +135,7 @@
     <orderEntry type="library" exported="" scope="TEST" name="asm-tree-5.0.1" level="project" />
     <orderEntry type="library" exported="" name="design-23.2.0" level="project" />
     <orderEntry type="library" exported="" name="commons-codec-1.10" level="project" />
-    <orderEntry type="library" exported="" name="compilerCommon-2.0.0-beta6" level="project" />
+    <orderEntry type="library" exported="" name="compilerCommon-2.0.0-beta7" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="robolectric-3.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="maven-ant-tasks-2.1.3" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="ant-1.8.0" level="project" />
@@ -144,8 +144,8 @@
     <orderEntry type="library" exported="" name="okhttp-2.4.0" level="project" />
     <orderEntry type="library" exported="" scope="TEST" name="ant-launcher-1.8.0" level="project" />
     <orderEntry type="library" exported="" name="jsr305-3.0.0" level="project" />
+    <orderEntry type="library" exported="" name="compiler-2.0.0-beta7" level="project" />
     <orderEntry type="library" exported="" name="retrofit-1.9.0" level="project" />
-    <orderEntry type="library" exported="" name="compiler-2.0.0-beta6" level="project" />
     <orderEntry type="library" exported="" name="recyclerview-v7-23.2.0" level="project" />
     <orderEntry type="library" exported="" name="antlr-runtime-3.5.2" level="project" />
     <orderEntry type="library" exported="" name="android.joda-2.8.2" level="project" />

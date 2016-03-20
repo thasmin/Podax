@@ -18,7 +18,7 @@ public class SubscriptionData {
 	private final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
 
 	static {
-		Subscriptions.getWatcher()
+		Subscriptions.watchAll()
 			.subscribeOn(Schedulers.io())
 			.subscribe(
 				sub -> {

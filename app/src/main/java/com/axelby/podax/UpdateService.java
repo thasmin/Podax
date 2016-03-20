@@ -5,11 +5,11 @@ import android.app.NotificationManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.widget.Toast;
 
 public class UpdateService extends IntentService {
@@ -67,16 +67,11 @@ public class UpdateService extends IntentService {
 
 		switch (action) {
 			case Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS: {
-				String[] projection = new String[]{SubscriptionProvider.COLUMN_ID};
-				String selection = SubscriptionProvider.COLUMN_SINGLE_USE + " = 0";
-				Cursor c = getContentResolver().query(SubscriptionProvider.URI, projection, selection, null, null);
-				if (c == null)
-					break;
-
-				while (c.moveToNext())
-					updateSubscription(c.getLong(0));
-				c.close();
-
+				Subscriptions.getFor(this, SubscriptionProvider.COLUMN_SINGLE_USE, 1)
+					.subscribe(
+						s -> updateSubscription(s.getId()),
+						e -> Log.e("UpdateService", "unable to get all subscriptions", e)
+					);
 				break;
 			}
 			case Constants.ACTION_REFRESH_SUBSCRIPTION:

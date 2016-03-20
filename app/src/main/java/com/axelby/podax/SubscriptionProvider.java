@@ -47,6 +47,11 @@ public class SubscriptionProvider extends ContentProvider {
 	private static final int FROM_GPODDER = 5;
 
 	private static final UriMatcher _uriMatcher;
+
+	public static HashMap<String, String> getColumnMap() {
+		return _columnMap;
+	}
+
 	private static final HashMap<String, String> _columnMap;
 
 	static {
@@ -162,7 +167,9 @@ public class SubscriptionProvider extends ContentProvider {
 
 		switch (uriMatch) {
 			case SUBSCRIPTIONS:
-				sqlBuilder.appendWhere("singleUse = 0");
+				// by default, only take not single use subscriptions
+				if (selection != null && !selection.contains("singleUse"))
+					sqlBuilder.appendWhere("singleUse = 0");
 				break;
 			case SUBSCRIPTION_ID:
 				sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
