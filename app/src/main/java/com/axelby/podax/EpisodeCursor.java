@@ -126,12 +126,12 @@ public class EpisodeCursor {
 		return _cursor.getString(_mediaUrlColumn);
 	}
 
-	public Integer getFileSize() {
+	public Long getFileSize() {
 		if (_fileSizeColumn == null)
 			_fileSizeColumn = _cursor.getColumnIndexOrThrow(EpisodeProvider.COLUMN_FILE_SIZE);
 		if (_cursor.isNull(_fileSizeColumn))
 			return null;
-		return _cursor.getInt(_fileSizeColumn);
+		return _cursor.getLong(_fileSizeColumn);
 	}
 
 	public Integer getPlaylistPosition() {

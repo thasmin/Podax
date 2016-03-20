@@ -25,7 +25,7 @@ public class EpisodeData {
 	private final String _subscriptionUrl;
 	private final Integer _playlistPosition;
 	private final String _mediaUrl;
-	private final Integer _fileSize;
+	private final Long _fileSize;
 	private final String _description;
 	private final String _link;
 	private final int _lastPosition;
@@ -131,7 +131,7 @@ public class EpisodeData {
 		return _mediaUrl;
 	}
 
-	public Integer getFileSize() {
+	public Long getFileSize() {
 		return _fileSize;
 	}
 

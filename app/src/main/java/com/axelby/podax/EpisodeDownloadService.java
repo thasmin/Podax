@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -232,9 +231,9 @@ public class EpisodeDownloadService extends Service {
 			long lastWhen = notificationWhen;
 			showNotification(context, episode, 0, (int) body.contentLength(), notificationWhen);
 
-			ContentValues values = new ContentValues(1);
-			values.put(EpisodeProvider.COLUMN_FILE_SIZE, body.contentLength());
-			context.getContentResolver().update(episode.getContentUri(), values, null, null);
+			new EpisodeEditor(context, episode.getId())
+				.setFileSize(body.contentLength())
+				.commit();
 
 			outStream = new FileOutputStream(mediaFile, true);
 			BufferedSource source = body.source();
