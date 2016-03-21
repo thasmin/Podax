@@ -114,10 +114,18 @@ public class SubscriptionEditor {
 			values.put(SubscriptionProvider.COLUMN_TITLE, _rawTitle);
 		if (_urlSet)
 			values.put(SubscriptionProvider.COLUMN_URL, _url);
-		if (_lastModifiedSet)
-			values.put(SubscriptionProvider.COLUMN_LAST_MODIFIED, _lastModified.getTime() / 1000);
-		if (_lastUpdateSet)
-			values.put(SubscriptionProvider.COLUMN_LAST_UPDATE, _lastUpdate.getTime() / 1000);
+		if (_lastModifiedSet) {
+			if (_lastModified != null)
+				values.put(SubscriptionProvider.COLUMN_LAST_MODIFIED, _lastModified.getTime() / 1000);
+			else
+				values.putNull(SubscriptionProvider.COLUMN_LAST_MODIFIED);
+		}
+		if (_lastUpdateSet) {
+			if (_lastUpdate != null)
+				values.put(SubscriptionProvider.COLUMN_LAST_UPDATE, _lastUpdate.getTime() / 1000);
+			else
+				values.putNull(SubscriptionProvider.COLUMN_LAST_UPDATE);
+		}
 		if (_etagSet)
 			values.put(SubscriptionProvider.COLUMN_ETAG, _etag);
 		if (_thumbnailSet)
@@ -135,7 +143,6 @@ public class SubscriptionEditor {
 
 		if (_subscriptionId != -1)
 			_context.getContentResolver().update(SubscriptionProvider.getContentUri(_subscriptionId), values, null, null);
-		else
-			_context.getContentResolver().insert(SubscriptionProvider.getContentUri(_subscriptionId), values);
+
 	}
 }

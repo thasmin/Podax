@@ -154,14 +154,26 @@ public class EpisodeEditor {
 			values.put(EpisodeProvider.COLUMN_LAST_POSITION, _lastPosition);
 		if (_durationSet)
 			values.put(EpisodeProvider.COLUMN_DURATION, _duration);
-		if (_pubDateSet)
-			values.put(EpisodeProvider.COLUMN_PUB_DATE, _pubDate.getTime() / 1000);
-		if (_gpodderUpdateTimestampSet)
-			values.put(EpisodeProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP, _gpodderUpdateTimestamp.getTime() / 1000);
+		if (_pubDateSet) {
+			if (_pubDate != null)
+				values.put(EpisodeProvider.COLUMN_PUB_DATE, _pubDate.getTime() / 1000);
+			else
+				values.putNull(EpisodeProvider.COLUMN_PUB_DATE);
+		}
+		if (_gpodderUpdateTimestampSet) {
+			if (_gpodderUpdateTimestamp != null)
+				values.put(EpisodeProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP, _gpodderUpdateTimestamp.getTime() / 1000);
+			else
+				values.putNull(EpisodeProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP);
+		}
 		if (_paymentSet)
 			values.put(EpisodeProvider.COLUMN_PAYMENT, _payment);
-		if (_finishedDateSet)
-			values.put(EpisodeProvider.COLUMN_FINISHED_TIME, _finishedDate.getTime() / 1000);
+		if (_finishedDateSet) {
+			if (_finishedDate != null)
+				values.put(EpisodeProvider.COLUMN_FINISHED_TIME, _finishedDate.getTime() / 1000);
+			else
+				values.putNull(EpisodeProvider.COLUMN_FINISHED_TIME);
+		}
 
 		if (_episodeId != -1)
 			_context.getContentResolver().update(EpisodeProvider.getContentUri(_episodeId), values, null, null);
