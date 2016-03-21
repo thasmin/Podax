@@ -319,4 +319,9 @@ public class EpisodeData {
 		return getPaymentUrl() != null && FlattrHelper.isFlattrUri(Uri.parse(getPaymentUrl()));
 	}
 
+	public static long parseId(Context context, Uri uri) {
+		if (uri.equals(EpisodeProvider.ACTIVE_EPISODE_URI))
+			return EpisodeProvider.getActiveEpisodeId(context);
+		return ContentUris.parseId(uri);
+	}
 }
