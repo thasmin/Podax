@@ -3,7 +3,7 @@ package com.axelby.podax.podcastlist;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,7 +17,6 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.Subscriptions;
 import com.axelby.podax.UpdateService;
-import com.axelby.podax.ui.WrappingLinearLayoutManager;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -86,7 +85,7 @@ public class SubscriptionListFragment extends RxFragment {
 			.compose(RxLifecycle.bindFragment(lifecycle()));
 
 		RecyclerView list = (RecyclerView) view.findViewById(R.id.list);
-		list.setLayoutManager(new WrappingLinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+		list.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 		list.setAdapter(new ListAdapter(models));
 	}
 
