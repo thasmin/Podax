@@ -253,23 +253,20 @@ class SubscriptionUpdater {
 
 			serializer.startTag(null, "body");
 
-			String[] projection = {
-					SubscriptionProvider.COLUMN_TITLE,
-					SubscriptionProvider.COLUMN_URL,
-			};
-			Cursor c = _context.getContentResolver().query(SubscriptionProvider.URI, projection, null, null, SubscriptionProvider.COLUMN_TITLE);
-			if (c != null) {
-				while (c.moveToNext()) {
-					SubscriptionCursor sub = new SubscriptionCursor(c);
-
-					serializer.startTag(null, "outline");
-					serializer.attribute(null, "type", "rss");
-					serializer.attribute(null, "title", sub.getTitle());
-					serializer.attribute(null, "xmlUrl", sub.getUrl());
-					serializer.endTag(null, "outline");
-				}
-				c.close();
-			}
+			Subscriptions.getAll(_context)
+				.subscribe(sub -> {
+					try {
+						serializer.startTag(null, "outline");
+						serializer.attribute(null, "type", "rss");
+						serializer.attribute(null, "title", sub.getTitle());
+						serializer.attribute(null, "xmlUrl", sub.getUrl());
+						serializer.endTag(null, "outline");
+					} catch (IOException e) {
+						Log.e("SubscriptionUpdater", "unable to write subscription in opml file", e);
+					}
+				},
+				e -> Log.e("SubscriptionUpdater", "unable to write opml file", e)
+			);
 
 			serializer.endTag(null, "body");
 			serializer.endTag(null, "opml");
