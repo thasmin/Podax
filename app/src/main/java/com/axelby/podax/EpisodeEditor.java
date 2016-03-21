@@ -38,8 +38,8 @@ public class EpisodeEditor {
 	private Date _finishedDate;
 	private boolean _finishedDateSet;
 
-	public static EpisodeEditor fromNew(Context context) {
-		return new EpisodeEditor(context, -1);
+	public static EpisodeEditor fromNew(Context context, long subscriptionId) {
+		return new EpisodeEditor(context, -1).setSubscriptionId(subscriptionId);
 	}
 
 	public EpisodeEditor(Context context, long episodeId) {
