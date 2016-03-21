@@ -70,6 +70,13 @@ public class Subscriptions {
 		return queryToObservable(context, SubscriptionProvider.URI, selection, selectionArgs, null);
 	}
 
+	public static Observable<SubscriptionData> getFor(Context context, String field, String value) {
+		String fieldName = SubscriptionProvider.getColumnMap().get(field);
+		String selection = fieldName + " = ?";
+		String[] selectionArgs = new String[] { value };
+		return queryToObservable(context, SubscriptionProvider.URI, selection, selectionArgs, null);
+	}
+
 	public static Observable<SubscriptionData> getForRSSUrl(Context context, String rssUrl) {
 		String selection = SubscriptionProvider.COLUMN_URL + "=?";
 		String[] selectionArgs = new String[] { rssUrl };

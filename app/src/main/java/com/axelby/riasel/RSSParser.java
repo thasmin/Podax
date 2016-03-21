@@ -60,6 +60,8 @@ class RSSParser {
 					feed.setTitle(parser.nextText());
                 } else if (name.equalsIgnoreCase("description") && namespace.equals("")) {
                     feed.setDescription(parser.nextText());
+				} else if (name.equalsIgnoreCase("link") && namespace.equals("")) {
+					feed.setLink(parser.nextText());
 				} else if (name.equalsIgnoreCase("thumbnail") && namespace.equals(NAMESPACE_MEDIA)) {
 					feed.setThumbnail(parser.getAttributeValue("", "url"));
 				} else if (name.equalsIgnoreCase("image") && namespace.equals(NAMESPACE_ITUNES)) {
@@ -92,9 +94,7 @@ class RSSParser {
                 if (item == null)
                     continue;
 
-                if (name.equalsIgnoreCase("guid")) {
-					item.setUniqueId(parser.nextText().trim());
-				} else if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
+				if (name.equalsIgnoreCase("title") && parser.getNamespace().equals("")) {
 					item.setTitle(parser.nextText().trim());
 				} else if (name.equalsIgnoreCase("link")) {
 					String rel = parser.getAttributeValue(null, "rel");

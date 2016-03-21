@@ -32,6 +32,10 @@ public class SubscriptionEditor {
 	private boolean _expirationDaysSet = false;
 	private Integer _expirationDays;
 
+	public SubscriptionEditor fromNew(Context context) {
+		return new SubscriptionEditor(context, -1);
+	}
+
 	public SubscriptionEditor(Context context, long subscriptionId) {
 		_context = context;
 		_subscriptionId = subscriptionId;
@@ -129,6 +133,9 @@ public class SubscriptionEditor {
 		if (_expirationDaysSet)
 			values.put(SubscriptionProvider.COLUMN_EXPIRATION, _expirationDays);
 
-		_context.getContentResolver().update(SubscriptionProvider.getContentUri(_subscriptionId), values, null, null);
+		if (_subscriptionId != -1)
+			_context.getContentResolver().update(SubscriptionProvider.getContentUri(_subscriptionId), values, null, null);
+		else
+			_context.getContentResolver().insert(SubscriptionProvider.getContentUri(_subscriptionId), values);
 	}
 }

@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-class Utils {
+public class Utils {
 	
 	private final static SimpleDateFormat[] dateFormats = new SimpleDateFormat[] {
 			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US),
@@ -44,7 +44,7 @@ class Utils {
 			new SimpleDateFormat("d MMM yyyy HH:mm:ss z", Locale.getDefault()),
 	};
 
-	static Date parseDate(String date) {
+	public static Date parseDate(String date) {
 		for (SimpleDateFormat format : dateFormats) {
 			format.setTimeZone(TimeZone.getTimeZone("UTC"));
 			try {

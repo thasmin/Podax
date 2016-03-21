@@ -48,9 +48,7 @@ class AtomParser {
                 if (item == null)
                     continue;
 
-				if (isAtomElement(parser, "id")) {
-					item.setUniqueId(parser.nextText());
-				} else if (isAtomElement(parser, "title")) {
+				if (isAtomElement(parser, "title")) {
 					item.setTitle(parser.nextText());
 				} else if (isAtomElement(parser, "link")) {
 					String rel = parser.getAttributeValue(null, "rel");

@@ -38,6 +38,10 @@ public class EpisodeEditor {
 	private Date _finishedDate;
 	private boolean _finishedDateSet;
 
+	public static EpisodeEditor fromNew(Context context) {
+		return new EpisodeEditor(context, -1);
+	}
+
 	public EpisodeEditor(Context context, long episodeId) {
 		_context = context;
 		_episodeId = episodeId;
@@ -159,6 +163,9 @@ public class EpisodeEditor {
 		if (_finishedDateSet)
 			values.put(EpisodeProvider.COLUMN_FINISHED_TIME, _finishedDate.getTime() / 1000);
 
-		_context.getContentResolver().update(EpisodeProvider.getContentUri(_episodeId), values, null, null);
+		if (_episodeId != -1)
+			_context.getContentResolver().update(EpisodeProvider.getContentUri(_episodeId), values, null, null);
+		else
+			_context.getContentResolver().insert(EpisodeProvider.URI, values);
 	}
 }

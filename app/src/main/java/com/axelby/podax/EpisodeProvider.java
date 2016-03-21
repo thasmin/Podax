@@ -69,6 +69,11 @@ public class EpisodeProvider extends ContentProvider {
 	private static final String PREF_ACTIVE = "active";
 
 	private static final UriMatcher uriMatcher;
+
+	public static HashMap<String, String> getColumnMap() {
+		return _columnMap;
+	}
+
 	private static final HashMap<String, String> _columnMap;
 
 	static {

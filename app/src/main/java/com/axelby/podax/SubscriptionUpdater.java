@@ -3,12 +3,11 @@ package com.axelby.podax;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
 
@@ -42,7 +41,7 @@ class SubscriptionUpdater {
 		_context = context;
 	}
 
-	public void update(final long subscriptionId) {
+	public void update(long subscriptionId) {
 		SubscriptionCursor subscription = null;
 		try {
 			if (Helper.isInvalidNetworkState(_context))
@@ -71,7 +70,8 @@ class SubscriptionUpdater {
 				return;
 			}
 
-			final ContentValues subscriptionValues = new ContentValues();
+			final String[] thumbnail = {null};
+			SubscriptionEditor subscriptionEditor = new SubscriptionEditor(_context, subscriptionId);
 
 			String eTag = connection.getHeaderField("ETag");
 			if (eTag != null) {
@@ -79,7 +79,7 @@ class SubscriptionUpdater {
 					ensureThumbnail(subscriptionId, subscription.getThumbnail());
 					return;
 				}
-				subscriptionValues.put(SubscriptionProvider.COLUMN_ETAG, eTag);
+				subscriptionEditor.setEtag(eTag);
 			}
 
 			String encoding = connection.getContentEncoding();
@@ -97,44 +97,39 @@ class SubscriptionUpdater {
 
 				FeedParser feedParser = new FeedParser();
 				feedParser.setOnFeedInfoHandler((feedParser1, feed) -> {
-					subscriptionValues.putAll(feed.getContentValues());
-					subscriptionValues.remove("pubDate");
-					changeKeyString(subscriptionValues, "lastBuildDate", SubscriptionProvider.COLUMN_LAST_UPDATE);
+					thumbnail[0] = feed.getThumbnail();
+					subscriptionEditor
+						.setRawTitle(feed.getTitle())
+						.setThumbnail(feed.getThumbnail())
+						.setDescription(feed.getDescription())
+						.setLastUpdate(feed.getLastBuildDate())
+						.setLastModified(feed.getPubDate());
 				});
 				feedParser.setOnFeedItemHandler((feedParser1, item) -> {
-					if (item.getMediaURL() == null || item.getMediaURL().length() == 0)
+					// mediaURL is required
+					if (TextUtils.isEmpty(item.getMediaURL()))
 						return;
 
-					ContentValues episodeValues = item.getContentValues();
-					episodeValues.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subscriptionId);
-
-					// translate Riasel keys to old Podax keys
-					changeKeyString(episodeValues, "mediaURL", EpisodeProvider.COLUMN_MEDIA_URL);
-					changeKeyString(episodeValues, "mediaSize", EpisodeProvider.COLUMN_FILE_SIZE);
-					changeKeyString(episodeValues, "paymentURL", EpisodeProvider.COLUMN_PAYMENT);
-					if (episodeValues.containsKey("publicationDate")) {
-						episodeValues.put(EpisodeProvider.COLUMN_PUB_DATE, episodeValues.getAsLong("publicationDate") / 1000);
-						episodeValues.remove("publicationDate");
+					// if already exists, stop processing
+					// this is for podcasts that keep every episode in their rss feed
+					boolean exists = Episodes.getFor(_context, EpisodeProvider.COLUMN_MEDIA_URL, item.getMediaURL())
+						.map(v -> true).firstOrDefault(false).toBlocking().single();
+					if (exists) {
+						feedParser1.stopProcessing();
+						return;
 					}
 
-					if (episodeValues.containsKey(EpisodeProvider.COLUMN_MEDIA_URL)) {
-						// stop parsing if this episode already existed
-						String selection = EpisodeProvider.COLUMN_MEDIA_URL + "=?";
-						String[] selectionArgs = {episodeValues.getAsString(EpisodeProvider.COLUMN_MEDIA_URL)};
-						Cursor c = _context.getContentResolver().query(EpisodeProvider.URI, null, selection, selectionArgs, null);
-						if (c != null) {
-							if (c.moveToNext())
-								feedParser1.stopProcessing();
-							c.close();
-						}
-
-						try {
-							_context.getContentResolver().insert(EpisodeProvider.URI, episodeValues);
-						} catch (IllegalArgumentException e) {
-							Log.w("Podax", "error while inserting episode: " + e.getMessage());
-						}
-					}
+					EpisodeEditor.fromNew(_context)
+						.setMediaUrl(item.getMediaURL())
+						.setTitle(item.getTitle())
+						.setLink(item.getLink())
+						.setDescription(item.getDescription())
+						.setPubDate(item.getPublicationDate())
+						.setFileSize(item.getMediaSize())
+						.setPayment(item.getPaymentURL())
+						.commit();
 				});
+
 				feedParser.parseFeed(parser);
 
 			} catch (XmlPullParserException e) {
@@ -147,11 +142,10 @@ class SubscriptionUpdater {
 			}
 
 			// finish grabbing subscription values and update
-			subscriptionValues.put(SubscriptionProvider.COLUMN_LAST_UPDATE, new Date().getTime() / 1000);
-			_context.getContentResolver().update(subscription.getContentUri(), subscriptionValues, null, null);
+			subscriptionEditor.setLastUpdate(new Date()).commit();
 
 			String oldThumbnail = subscription.getThumbnail();
-			String newThumbnail = subscriptionValues.getAsString(SubscriptionProvider.COLUMN_THUMBNAIL);
+			String newThumbnail = thumbnail[0];
 			downloadThumbnailImage(subscriptionId, oldThumbnail, newThumbnail);
 
 			writeSubscriptionOPML();
@@ -203,13 +197,6 @@ class SubscriptionUpdater {
 		} catch (IOException e) {
 			Log.e("Podax", "ioexception downloading subscription bitmap: " + thumbnailUrl);
 		}
-	}
-
-	private void changeKeyString(ContentValues values, String oldKey, String newKey) {
-		if (!values.containsKey(oldKey))
-			return;
-		values.put(newKey, values.getAsString(oldKey));
-		values.remove(oldKey);
 	}
 
 	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {

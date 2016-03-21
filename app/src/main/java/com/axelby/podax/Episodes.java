@@ -60,6 +60,20 @@ public class Episodes {
 		return queryToListObservable(context, EpisodeProvider.URI, null, null, null);
 	}
 
+	public static Observable<EpisodeData> getFor(Context context, String field, int value) {
+		String fieldName = EpisodeProvider.getColumnMap().get(field);
+		String selection = fieldName + " = ?";
+		String[] selectionArgs = new String[] { String.valueOf(value) };
+		return queryToObservable(context, EpisodeProvider.URI, selection, selectionArgs, null);
+	}
+
+	public static Observable<EpisodeData> getFor(Context context, String field, String value) {
+		String fieldName = EpisodeProvider.getColumnMap().get(field);
+		String selection = fieldName + " = ?";
+		String[] selectionArgs = new String[] { value };
+		return queryToObservable(context, EpisodeProvider.URI, selection, selectionArgs, null);
+	}
+
 	public static Observable<EpisodeData> getDownloaded(Context context) {
 		return queryToObservable(context, EpisodeProvider.URI, EpisodeProvider.COLUMN_FILE_SIZE + " > 0", null, null)
 			.filter(ep -> ep.isDownloaded(context));
