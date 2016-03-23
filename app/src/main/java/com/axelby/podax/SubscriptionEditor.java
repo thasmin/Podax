@@ -141,8 +141,11 @@ public class SubscriptionEditor {
 		if (_expirationDaysSet)
 			values.put(SubscriptionProvider.COLUMN_EXPIRATION, _expirationDays);
 
-		if (_subscriptionId != -1)
+		if (_subscriptionId != -1) {
 			_context.getContentResolver().update(SubscriptionProvider.getContentUri(_subscriptionId), values, null, null);
+			SubscriptionData.evictFromCache(_subscriptionId);
+		} else
+			_context.getContentResolver().insert(SubscriptionProvider.URI, values);
 
 	}
 }

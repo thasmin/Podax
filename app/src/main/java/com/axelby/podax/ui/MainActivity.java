@@ -31,12 +31,11 @@ import android.widget.SearchView;
 import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
-import com.axelby.podax.EpisodeData;
 import com.axelby.podax.Episodes;
-import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.PodaxApplication;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
@@ -128,7 +127,7 @@ public class MainActivity extends RxAppCompatActivity {
 
 		_drawerToggle = new ActionBarDrawerToggle(this, _drawerLayout, toolbar,
 				R.string.open_drawer, R.string.close_drawer);
-		_drawerLayout.setDrawerListener(_drawerToggle);
+		_drawerLayout.addDrawerListener(_drawerToggle);
 
 		// start by acting on first item in nav menu
 		_handleDrawerItem.onNavigationItemSelected(navMenu.getMenu().getItem(0));
@@ -201,7 +200,7 @@ public class MainActivity extends RxAppCompatActivity {
 			startActivity(new Intent(this, AuthenticatorActivity.class));
 		} else {
 			Snackbar.make(findViewById(R.id.main), "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Snackbar.LENGTH_SHORT).show();
-			ContentResolver.requestSync(gpodder_accounts[0], GPodderProvider.AUTHORITY, new Bundle());
+			ContentResolver.requestSync(gpodder_accounts[0], PodaxApplication.GPODDER_AUTHORITY, new Bundle());
 		}
 	}
 }

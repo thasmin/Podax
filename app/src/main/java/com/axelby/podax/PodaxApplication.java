@@ -20,6 +20,8 @@ import org.acra.annotation.ReportsCrashes;
 		resDialogOkToast = R.string.crash_dialog_ok_text)
 public class PodaxApplication extends Application {
 
+	public static final String GPODDER_AUTHORITY = "com.axelby.podax.gpodder_sync";
+
 	@Override
 	public void onCreate() {
 		AppFlow.setApplication(this);

@@ -98,6 +98,10 @@ public class SubscriptionData {
 		_cache.evictAll();
 	}
 
+	public static void evictFromCache(long subscriptionId) {
+		_cache.remove(subscriptionId);
+	}
+
 	public static SubscriptionData cacheSwap(SubscriptionCursor c) {
 		SubscriptionData data = new SubscriptionData(c);
 		synchronized (_cache) {

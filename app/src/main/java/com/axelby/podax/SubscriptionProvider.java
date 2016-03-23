@@ -283,7 +283,7 @@ public class SubscriptionProvider extends ContentProvider {
 		if (getContext() != null) {
 			// add during next gpodder sync
 			if (!from_gpodder)
-				getContext().getContentResolver().insert(GPodderProvider.URI, GPodderProvider.makeValuesToAdd(url));
+				PodaxDB.get(getContext()).gPodder().add(url);
 			getContext().getContentResolver().notifyChange(URI, null);
 		}
 
@@ -336,10 +336,8 @@ public class SubscriptionProvider extends ContentProvider {
 		// remove during next gpodder sync
 		if (!from_gpodder) {
 			c = db.query("subscriptions", new String[]{COLUMN_URL}, where, whereArgs, null, null, null);
-			while (c.moveToNext()) {
-				String url = c.getString(0);
-				getContext().getContentResolver().insert(GPodderProvider.URI, GPodderProvider.makeValuesToRemove(url));
-			}
+			while (c.moveToNext())
+				PodaxDB.get(getContext()).gPodder().remove(c.getString(0));
 			c.close();
 		}
 

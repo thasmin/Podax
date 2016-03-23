@@ -16,8 +16,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.GPodderProvider;
 import com.axelby.podax.Helper;
+import com.axelby.podax.PodaxApplication;
 import com.axelby.podax.R;
 import com.axelby.podax.ui.ProgressDialogFragment;
 
@@ -154,8 +154,8 @@ public class AuthenticatorActivity extends FragmentActivity {
 					.apply();
 
 			accountManager.addAccountExplicitly(account, _password, null);
-			ContentResolver.requestSync(account, GPodderProvider.AUTHORITY, new Bundle());
-			ContentResolver.setSyncAutomatically(account, GPodderProvider.AUTHORITY, true);
+			ContentResolver.requestSync(account, PodaxApplication.GPODDER_AUTHORITY, new Bundle());
+			ContentResolver.setSyncAutomatically(account, PodaxApplication.GPODDER_AUTHORITY, true);
 		} else {
 			accountManager.setPassword(account, _password);
 		}

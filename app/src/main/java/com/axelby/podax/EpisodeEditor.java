@@ -175,9 +175,10 @@ public class EpisodeEditor {
 				values.putNull(EpisodeProvider.COLUMN_FINISHED_TIME);
 		}
 
-		if (_episodeId != -1)
+		if (_episodeId != -1) {
 			_context.getContentResolver().update(EpisodeProvider.getContentUri(_episodeId), values, null, null);
-		else
+			EpisodeData.evictFromCache(_episodeId);
+		} else
 			_context.getContentResolver().insert(EpisodeProvider.URI, values);
 	}
 }

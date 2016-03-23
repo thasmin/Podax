@@ -102,6 +102,10 @@ public class EpisodeData {
 		_cache.evictAll();
 	}
 
+	public static void evictFromCache(long episodeId) {
+		_cache.remove(episodeId);
+	}
+
 	public static EpisodeData cacheSwap(EpisodeCursor c) {
 		EpisodeData data = new EpisodeData(c);
 		synchronized (_cache) {

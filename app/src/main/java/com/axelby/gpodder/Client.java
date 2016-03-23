@@ -1,7 +1,6 @@
 package com.axelby.gpodder;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.util.Base64;
 import android.util.Log;
 
@@ -15,10 +14,9 @@ import com.axelby.gpodder.dto.EpisodeUpdateResponse;
 import com.axelby.gpodder.dto.GPodderNet;
 import com.axelby.gpodder.dto.Podcast;
 import com.axelby.gpodder.dto.SubscriptionChanges;
-import com.axelby.podax.GPodderProvider;
+import com.axelby.podax.PodaxDB;
 import com.axelby.podax.R;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -196,21 +194,9 @@ public class Client {
 		if (!verifyCurrentConfig())
 			return;
 
-		ArrayList<String> toAdd = new ArrayList<>();
-		Cursor c = _context.getContentResolver().query(GPodderProvider.TO_ADD_URI, new String[]{"url"}, null, null, null);
-		if (c != null) {
-			while (c.moveToNext())
-				toAdd.add(c.getString(0));
-			c.close();
-		}
-
-		ArrayList<String> toRemove = new ArrayList<>();
-		c = _context.getContentResolver().query(GPodderProvider.TO_REMOVE_URI, new String[]{"url"}, null, null, null);
-		if (c != null) {
-			while (c.moveToNext())
-				toRemove.add(c.getString(0));
-			c.close();
-		}
+		PodaxDB.GPodder gPodderDB = PodaxDB.get(_context).gPodder();
+		List<String> toAdd = gPodderDB.getToAdd();
+		List<String> toRemove = gPodderDB.getToRemove();
 
 		if (toAdd.size() == 0 && toRemove.size() == 0)
 			return;
@@ -222,8 +208,7 @@ public class Client {
 			_errorMessage = _context.getString(R.string.gpodder_sync_error);
 		}
 
-		// clear out the pending tables
-		_context.getContentResolver().delete(GPodderProvider.URI, null, null);
+		gPodderDB.clear();
 	}
 
 	public EpisodeUpdateConfirmation updateEpisodes(List<EpisodeUpdate> updates) {
