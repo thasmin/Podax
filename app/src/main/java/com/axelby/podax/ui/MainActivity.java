@@ -1,7 +1,5 @@
 package com.axelby.podax.ui;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -9,7 +7,6 @@ import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,7 +15,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -28,14 +24,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
 
-import com.axelby.gpodder.AuthenticatorActivity;
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
 import com.axelby.podax.Episodes;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PodaxApplication;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
@@ -193,14 +187,4 @@ public class MainActivity extends RxAppCompatActivity {
 		return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
 	}
 
-	private void handleGPodder() {
-		AccountManager am = AccountManager.get(this);
-		Account[] gpodder_accounts = am.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
-		if (gpodder_accounts.length == 0) {
-			startActivity(new Intent(this, AuthenticatorActivity.class));
-		} else {
-			Snackbar.make(findViewById(R.id.main), "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Snackbar.LENGTH_SHORT).show();
-			ContentResolver.requestSync(gpodder_accounts[0], PodaxApplication.GPODDER_AUTHORITY, new Bundle());
-		}
-	}
 }

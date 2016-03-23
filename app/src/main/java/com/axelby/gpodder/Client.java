@@ -121,7 +121,7 @@ public class Client {
 			return false;
 
 		try {
-			Response response = _service.login(_username);
+			Response response = _service.login(_username, "hack");
 			if (response == null) {
 				_errorMessage = _context.getString(R.string.gpodder_sync_timeout);
 				return false;
@@ -158,7 +158,7 @@ public class Client {
 
 		try {
 			_sessionId = null;
-			_service.logout(_username);
+			_service.logout(_username, "hack");
 			return true;
 		} catch (RetrofitError e) {
 			Log.e("gpodder.client", e.getMessage());
@@ -194,7 +194,7 @@ public class Client {
 		if (!verifyCurrentConfig())
 			return;
 
-		PodaxDB.GPodder gPodderDB = PodaxDB.get(_context).gPodder();
+		PodaxDB.GPodderDB gPodderDB = new PodaxDB(_context).gPodder();
 		List<String> toAdd = gPodderDB.getToAdd();
 		List<String> toRemove = gPodderDB.getToRemove();
 

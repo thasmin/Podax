@@ -20,10 +20,10 @@ public interface GPodderNet {
 	List<Podcast> search(@Query("q") String query);
 
 	@POST("/api/2/auth/{username}/login.json")
-	Response login(@Path("username") String username);
+	Response login(@Path("username") String username, @Body String emptyBodyHack);
 
 	@POST("/api/2/auth/{username}/logout.json")
-	Response logout(@Path("username") String username);
+	Response logout(@Path("username") String username, @Body String emptyBodyHack);
 
 	@GET("/api/2/devices/{username}.json")
 	List<DeviceConfiguration> getDeviceList(@Path("username") String username);

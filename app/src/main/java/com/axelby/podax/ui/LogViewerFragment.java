@@ -1,14 +1,21 @@
 package com.axelby.podax.ui;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Fragment;
+import android.content.ContentResolver;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.axelby.gpodder.AuthenticatorActivity;
+import com.axelby.podax.Constants;
+import com.axelby.podax.PodaxApplication;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionProvider;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +41,8 @@ public class LogViewerFragment extends Fragment {
 				loadLog();
 			} catch (IOException ignored) { }
 		});
+
+		view.findViewById(R.id.gpodder).setOnClickListener((v) -> handleGPodder());
 
 		loadLog();
 	}
@@ -63,5 +72,16 @@ public class LogViewerFragment extends Fragment {
 
 		TextView tv = (TextView) getActivity().findViewById(R.id.textView);
 		tv.setText(text);
+	}
+
+	private void handleGPodder() {
+		AccountManager am = AccountManager.get(getActivity());
+		Account[] gpodder_accounts = am.getAccountsByType(Constants.GPODDER_ACCOUNT_TYPE);
+		if (gpodder_accounts.length == 0) {
+			startActivity(new Intent(getActivity(), AuthenticatorActivity.class));
+		} else {
+			Snackbar.make(getView(), "Refreshing from gpodder.net as " + gpodder_accounts[0].name, Snackbar.LENGTH_SHORT).show();
+			ContentResolver.requestSync(gpodder_accounts[0], PodaxApplication.GPODDER_AUTHORITY, new Bundle());
+		}
 	}
 }
