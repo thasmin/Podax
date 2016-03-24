@@ -18,8 +18,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.axelby.podax.AppFlow;
-import com.axelby.podax.EpisodeData;
-import com.axelby.podax.Episodes;
+import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.Episodes;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
 import com.trello.rxlifecycle.components.RxFragment;

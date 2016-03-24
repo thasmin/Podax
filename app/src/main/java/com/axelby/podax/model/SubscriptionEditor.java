@@ -1,7 +1,9 @@
-package com.axelby.podax;
+package com.axelby.podax.model;
 
 import android.content.ContentValues;
 import android.content.Context;
+
+import com.axelby.podax.SubscriptionProvider;
 
 import java.util.Date;
 

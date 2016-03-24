@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.model;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,6 +6,10 @@ import android.net.Uri;
 import android.util.Log;
 import android.util.LruCache;
 import android.widget.CompoundButton;
+
+import com.axelby.podax.SubscriptionCursor;
+import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 import java.lang.ref.SoftReference;
 import java.util.Date;

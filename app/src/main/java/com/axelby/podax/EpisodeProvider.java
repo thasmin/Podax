@@ -14,6 +14,9 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.axelby.podax.model.DBAdapter;
+import com.axelby.podax.model.Episodes;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Calendar;

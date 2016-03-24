@@ -9,12 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.axelby.podax.Episodes;
+import com.axelby.podax.model.Episodes;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.Stats;
-import com.axelby.podax.SubscriptionData;
-import com.axelby.podax.Subscriptions;
+import com.axelby.podax.model.SubscriptionData;
+import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.databinding.SubscriptionCheckboxBinding;
 import com.trello.rxlifecycle.components.RxFragment;
 

@@ -14,7 +14,7 @@ import com.axelby.gpodder.dto.EpisodeUpdateResponse;
 import com.axelby.gpodder.dto.GPodderNet;
 import com.axelby.gpodder.dto.Podcast;
 import com.axelby.gpodder.dto.SubscriptionChanges;
-import com.axelby.podax.PodaxDB;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.R;
 
 import java.util.Calendar;

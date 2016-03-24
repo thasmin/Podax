@@ -11,6 +11,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Xml;
 
+import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.SubscriptionEditor;
+import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.ui.MainActivity;
 import com.axelby.riasel.FeedParser;
 import com.squareup.okhttp.OkHttpClient;

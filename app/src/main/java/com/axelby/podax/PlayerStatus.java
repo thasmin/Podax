@@ -3,6 +3,8 @@ package com.axelby.podax;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.axelby.podax.model.EpisodeData;
+
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
 

@@ -6,7 +6,7 @@
         <import type="android.view.View" />
         <variable
             name="episode"
-            type="com.axelby.podax.EpisodeData" />
+            type="com.axelby.podax.model.EpisodeData" />
     </data>
 
     <android.support.v7.widget.CardView

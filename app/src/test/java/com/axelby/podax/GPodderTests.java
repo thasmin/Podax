@@ -1,5 +1,7 @@
 package com.axelby.podax;
 
+import com.axelby.podax.model.PodaxDB;
+
 import junit.framework.Assert;
 
 import org.junit.Rule;

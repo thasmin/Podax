@@ -13,6 +13,8 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.Episodes;
 import com.axelby.podax.ui.MainActivity;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;

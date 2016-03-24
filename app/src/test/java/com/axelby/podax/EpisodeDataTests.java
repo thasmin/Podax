@@ -5,6 +5,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 
+import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.Episodes;
+
 import junit.framework.Assert;
 
 import org.joda.time.LocalDateTime;

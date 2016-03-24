@@ -6,6 +6,9 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 
+import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.EpisodeEditor;
+
 import org.joda.time.LocalTime;
 
 import java.util.Date;

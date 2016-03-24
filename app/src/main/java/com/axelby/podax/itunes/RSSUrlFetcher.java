@@ -3,7 +3,7 @@ package com.axelby.podax.itunes;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.axelby.podax.DBAdapter;
+import com.axelby.podax.model.DBAdapter;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;

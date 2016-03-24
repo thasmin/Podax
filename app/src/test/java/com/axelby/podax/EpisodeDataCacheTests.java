@@ -6,6 +6,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.axelby.podax.model.EpisodeData;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;

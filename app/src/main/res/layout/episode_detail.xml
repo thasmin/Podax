@@ -5,7 +5,7 @@
     <data>
         <import type="android.view.View" />
         <import type="com.axelby.podax.Helper" />
-        <variable name="episode" type="com.axelby.podax.EpisodeData" />
+        <variable name="episode" type="com.axelby.podax.model.EpisodeData" />
     </data>
 
     <ScrollView android:id="@+id/scrollview"

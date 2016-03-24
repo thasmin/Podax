@@ -26,7 +26,7 @@ import android.widget.SearchView;
 
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
-import com.axelby.podax.Episodes;
+import com.axelby.podax.model.Episodes;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;

@@ -12,6 +12,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.axelby.podax.model.Subscriptions;
+
 public class UpdateService extends IntentService {
 	private final Handler _uiHandler = new Handler();
 

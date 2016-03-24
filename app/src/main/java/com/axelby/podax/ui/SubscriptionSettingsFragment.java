@@ -17,9 +17,9 @@ import android.widget.RadioGroup;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionData;
-import com.axelby.podax.SubscriptionEditor;
-import com.axelby.podax.Subscriptions;
+import com.axelby.podax.model.SubscriptionData;
+import com.axelby.podax.model.SubscriptionEditor;
+import com.axelby.podax.model.Subscriptions;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.acra.ACRA;

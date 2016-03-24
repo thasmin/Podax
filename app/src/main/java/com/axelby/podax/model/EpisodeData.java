@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.model;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -7,6 +7,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.LruCache;
 import android.view.View;
+
+import com.axelby.podax.AppFlow;
+import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeDownloadService;
+import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.FlattrHelper;
+import com.axelby.podax.Helper;
+import com.axelby.podax.PlayerService;
+import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.R;
 
 import java.io.File;
 import java.lang.ref.SoftReference;

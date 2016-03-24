@@ -15,7 +15,7 @@ import android.widget.EditText;
 
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.Subscriptions;
+import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.UpdateService;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;

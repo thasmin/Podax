@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
+import com.axelby.podax.model.EpisodeData;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

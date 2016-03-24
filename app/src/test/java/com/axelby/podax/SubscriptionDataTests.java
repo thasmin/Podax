@@ -5,6 +5,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 
+import com.axelby.podax.model.SubscriptionData;
+import com.axelby.podax.model.Subscriptions;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

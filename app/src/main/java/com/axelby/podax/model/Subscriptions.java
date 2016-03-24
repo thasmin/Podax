@@ -1,8 +1,11 @@
-package com.axelby.podax;
+package com.axelby.podax.model;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+
+import com.axelby.podax.SubscriptionCursor;
+import com.axelby.podax.SubscriptionProvider;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;

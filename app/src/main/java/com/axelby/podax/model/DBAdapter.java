@@ -1,4 +1,4 @@
-package com.axelby.podax;
+package com.axelby.podax.model;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

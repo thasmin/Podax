@@ -1,9 +1,12 @@
-package com.axelby.podax;
+package com.axelby.podax.model;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.text.TextUtils;
+
+import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.EpisodeProvider;
 
 import org.joda.time.LocalDate;
 
@@ -18,7 +21,7 @@ import rx.subjects.PublishSubject;
 
 public class Episodes {
 	private static Observable<EpisodeData> queryToObservable(Context context,
-			 Uri uri, String selection, String[] selectionArgs, String sortOrder) {
+															 Uri uri, String selection, String[] selectionArgs, String sortOrder) {
 		return Observable.create(subscriber -> {
 			Cursor cursor = context.getContentResolver().query(uri, null, selection, selectionArgs, sortOrder);
 			if (cursor != null) {

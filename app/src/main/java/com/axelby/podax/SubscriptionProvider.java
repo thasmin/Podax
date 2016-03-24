@@ -13,6 +13,10 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.database.DatabaseUtilsCompat;
 
+import com.axelby.podax.model.DBAdapter;
+import com.axelby.podax.model.PodaxDB;
+import com.axelby.podax.model.Subscriptions;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

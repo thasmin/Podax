@@ -4,6 +4,9 @@ import android.app.Application;
 import android.os.Build;
 import android.webkit.WebView;
 
+import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.SubscriptionData;
+
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.acra.ACRA;

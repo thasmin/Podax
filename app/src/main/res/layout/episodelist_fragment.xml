@@ -8,7 +8,7 @@
         <import type="android.view.View" />
         <variable
             name="subscription"
-            type="com.axelby.podax.SubscriptionData" />
+            type="com.axelby.podax.model.SubscriptionData" />
     </data>
 
     <ScrollView

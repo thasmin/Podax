@@ -23,11 +23,11 @@ import android.widget.LinearLayout;
 
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
-import com.axelby.podax.DBAdapter;
+import com.axelby.podax.model.DBAdapter;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionData;
+import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.Subscriptions;
+import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.trello.rxlifecycle.RxLifecycle;
