@@ -14,8 +14,8 @@ import com.axelby.gpodder.dto.EpisodeUpdateResponse;
 import com.axelby.gpodder.dto.GPodderNet;
 import com.axelby.gpodder.dto.Podcast;
 import com.axelby.gpodder.dto.SubscriptionChanges;
-import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.R;
+import com.axelby.podax.model.PodaxDB;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -194,9 +194,8 @@ public class Client {
 		if (!verifyCurrentConfig())
 			return;
 
-		PodaxDB.GPodderDB gPodderDB = new PodaxDB(_context).gPodder();
-		List<String> toAdd = gPodderDB.getToAdd();
-		List<String> toRemove = gPodderDB.getToRemove();
+		List<String> toAdd = PodaxDB.gPodder.getToAdd();
+		List<String> toRemove = PodaxDB.gPodder.getToRemove();
 
 		if (toAdd.size() == 0 && toRemove.size() == 0)
 			return;
@@ -208,7 +207,7 @@ public class Client {
 			_errorMessage = _context.getString(R.string.gpodder_sync_error);
 		}
 
-		gPodderDB.clear();
+		PodaxDB.gPodder.clear();
 	}
 
 	public EpisodeUpdateConfirmation updateEpisodes(List<EpisodeUpdate> updates) {

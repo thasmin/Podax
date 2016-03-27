@@ -8,7 +8,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.util.List;
@@ -24,20 +23,18 @@ public class GPodderTests {
 
 	@Test
 	public void testDB() {
-		PodaxDB.GPodderDB gpodderDB = new PodaxDB(RuntimeEnvironment.application).gPodder();
-
-		gpodderDB.add("http://www.axelby.com/podcast1.xml");
-		List<String> toAdd = gpodderDB.getToAdd();
+		PodaxDB.gPodder.add("http://www.axelby.com/podcast1.xml");
+		List<String> toAdd = PodaxDB.gPodder.getToAdd();
 		Assert.assertEquals(1, toAdd.size());
 		Assert.assertEquals("http://www.axelby.com/podcast1.xml", toAdd.get(0));
 
-		gpodderDB.remove("http://www.axelby.com/podcast2.xml");
-		List<String> toRemove = gpodderDB.getToAdd();
+		PodaxDB.gPodder.remove("http://www.axelby.com/podcast2.xml");
+		List<String> toRemove = PodaxDB.gPodder.getToAdd();
 		Assert.assertEquals(1, toRemove.size());
 		Assert.assertEquals("http://www.axelby.com/podcast1.xml", toRemove.get(0));
 
-		gpodderDB.clear();
-		Assert.assertEquals(0, gpodderDB.getToAdd().size());
-		Assert.assertEquals(0, gpodderDB.getToRemove().size());
+		PodaxDB.gPodder.clear();
+		Assert.assertEquals(0, PodaxDB.gPodder.getToAdd().size());
+		Assert.assertEquals(0, PodaxDB.gPodder.getToRemove().size());
 	}
 }

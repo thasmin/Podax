@@ -5,6 +5,7 @@ import android.os.Build;
 import android.webkit.WebView;
 
 import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 
 import net.danlew.android.joda.JodaTimeAndroid;
@@ -35,31 +36,18 @@ public class PodaxApplication extends Application {
 		super.onCreate();
 
 		if (PodaxLog.isDebuggable(this)) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-				WebView.setWebContentsDebuggingEnabled(true);
-			}
-
-			/*
-			Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
-				PodaxLog.log(this, "error: " + ex.getMessage());
-				for (StackTraceElement ste : ex.getStackTrace())
-					PodaxLog.log(this, "  " + ste.toString());
-				Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
-				System.exit(1);
-			});
-			*/
+			WebView.setWebContentsDebuggingEnabled(true);
 		}
 
-		JodaTimeAndroid.init(this);
-
-		PodaxLog.ensureRemoved(this);
-
-		if (!isRoboUnitTest())
+		if (!isRoboUnitTest()) {
 			MediaButtonIntentReceiver.initialize(this);
-		BootReceiver.setupAlarms(getApplicationContext());
-
-		if (!isRoboUnitTest())
 			PlayerStatus.notify(this);
+		}
+
+		PodaxDB.setContext(this);
+		JodaTimeAndroid.init(this);
+		PodaxLog.ensureRemoved(this);
+		BootReceiver.setupAlarms(getApplicationContext());
 	}
 
 	@Override
