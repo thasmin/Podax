@@ -64,6 +64,63 @@ public class SubscriptionData {
 		_expirationDays = sub.getExpirationDays();
 	}
 
+	private SubscriptionData(ContentValues values) {
+		_id = values.getAsLong(SubscriptionProvider.COLUMN_ID);
+		_url = values.getAsString(SubscriptionProvider.COLUMN_URL);
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_TITLE))
+			_rawTitle = values.getAsString(SubscriptionProvider.COLUMN_TITLE);
+		else
+			_rawTitle = null;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_LAST_MODIFIED)) {
+			long lastModifiedTimestamp = values.getAsLong(SubscriptionProvider.COLUMN_LAST_MODIFIED);
+			_lastModified = new Date(lastModifiedTimestamp * 1000);
+		} else
+			_lastModified = null;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_LAST_UPDATE)) {
+			long lastUpdateTimestamp = values.getAsLong(SubscriptionProvider.COLUMN_LAST_UPDATE);
+			_lastUpdate = new Date(lastUpdateTimestamp * 1000);
+		} else
+			_lastUpdate = null;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_ETAG))
+			_etag = values.getAsString(SubscriptionProvider.COLUMN_ETAG);
+		else
+			_etag = null;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_THUMBNAIL))
+			_thumbnail = values.getAsString(SubscriptionProvider.COLUMN_THUMBNAIL);
+		else
+		_thumbnail = null;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_TITLE_OVERRIDE))
+			_titleOverride = values.getAsString(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
+		else
+		_titleOverride = null;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_DESCRIPTION))
+			_description = values.getAsString(SubscriptionProvider.COLUMN_DESCRIPTION);
+		else
+		_description = null;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_SINGLE_USE))
+			_singleUse = values.getAsBoolean(SubscriptionProvider.COLUMN_SINGLE_USE);
+		else
+			_singleUse = false;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_PLAYLIST_NEW))
+			_playlistNew = values.getAsBoolean(SubscriptionProvider.COLUMN_PLAYLIST_NEW);
+		else
+			_playlistNew = true;
+
+		if (values.containsKey(SubscriptionProvider.COLUMN_EXPIRATION))
+			_expirationDays = values.getAsInteger(SubscriptionProvider.COLUMN_EXPIRATION);
+		else
+			_expirationDays = null;
+	}
+
 	public static SubscriptionData from(SubscriptionCursor c) {
 		synchronized (_cache) {
 			if (_cache.get(c.getId()) != null && _cache.get(c.getId()).get() != null)
@@ -75,6 +132,10 @@ public class SubscriptionData {
 			_cache.put(c.getId(), new SoftReference<>(data));
 		}
 		return data;
+	}
+
+	public static SubscriptionData from(ContentValues values) {
+		return new SubscriptionData(values);
 	}
 
 	public static SubscriptionData create(Context context, long id) {
@@ -110,6 +171,13 @@ public class SubscriptionData {
 		SubscriptionData data = new SubscriptionData(c);
 		synchronized (_cache) {
 			_cache.put(c.getId(), new SoftReference<>(data));
+		}
+		return data;
+	}
+
+	public static SubscriptionData cacheSwap(SubscriptionData data) {
+		synchronized (_cache) {
+			_cache.put(data.getId(), new SoftReference<>(data));
 		}
 		return data;
 	}

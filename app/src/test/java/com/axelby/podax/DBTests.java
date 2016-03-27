@@ -1,9 +1,10 @@
 package com.axelby.podax;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+
+import com.axelby.podax.model.SubscriptionEditor;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,10 +22,7 @@ public class DBTests {
 		Context context = RuntimeEnvironment.application;
 		ContentResolver resolver = context.getContentResolver();
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "Test Subscription");
-		values.put(SubscriptionProvider.COLUMN_URL, "test");
-		resolver.insert(SubscriptionProvider.URI, values);
+		SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 
 		String[] selectionArgs = {"test"};
 		Cursor c = resolver.query(SubscriptionProvider.SEARCH_URI, null, null, selectionArgs, null);

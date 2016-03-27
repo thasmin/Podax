@@ -53,7 +53,7 @@ public class SubscriptionSettingsFragment extends RxFragment {
             return;
         }
 
-		Subscriptions.watch(activity, _subscriptionId)
+		Subscriptions.watch(_subscriptionId)
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(
@@ -75,7 +75,7 @@ public class SubscriptionSettingsFragment extends RxFragment {
 			@Override
 			public void afterTextChanged(Editable s) {
 				String newTitle = s.toString();
-				SubscriptionEditor editor = new SubscriptionEditor(getActivity(), _subscriptionId);
+				SubscriptionEditor editor = new SubscriptionEditor(_subscriptionId);
 				if (newTitle.equals(_feedTitle)) {
 					editor.setTitleOverride(null);
 					_autoName.setChecked(true);
@@ -132,7 +132,7 @@ public class SubscriptionSettingsFragment extends RxFragment {
 		_name.addTextChangedListener(_nameWatcher);
 
 		_autoName.setOnCheckedChangeListener((button, checked) -> {
-			new SubscriptionEditor(getActivity(), _subscriptionId)
+			new SubscriptionEditor(_subscriptionId)
 				.setTitleOverride(checked ? null : _feedTitle)
 				.commit();
 
@@ -144,12 +144,12 @@ public class SubscriptionSettingsFragment extends RxFragment {
 		});
 
 		_autoPlaylist.setOnCheckedChangeListener((group, checkedId) ->
-			new SubscriptionEditor(getActivity(), _subscriptionId)
+			new SubscriptionEditor(_subscriptionId)
 				.setPlaylistNew(checkedId == R.id.autoPlaylistYes)
 				.commit());
 
 		_expiration.setOnCheckedChangeListener((group, checkedId) -> {
-			SubscriptionEditor editor = new SubscriptionEditor(getActivity(), _subscriptionId);
+			SubscriptionEditor editor = new SubscriptionEditor(_subscriptionId);
 			switch (checkedId) {
 				case R.id.expire0:
 					editor.setExpirationDays(null);

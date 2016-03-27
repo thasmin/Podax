@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.SubscriptionEditor;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -32,16 +33,21 @@ public class ActiveEpisodeTests {
 	public void activeEpisodePriority() throws IOException {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription uri should not be null", -1, subId);
 
-		values = new ContentValues();
+		/*
+		long ep1Id = EpisodeEditor.fromNew(context, subId)
+			.setTitle("one")
+			.setMediaUrl("test://1")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.setFileSize(5)
+			.commit();
+		 */
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		values.put(EpisodeProvider.COLUMN_FILE_SIZE, 5);
 		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
@@ -50,7 +56,7 @@ public class ActiveEpisodeTests {
 		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "two");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		values.put(EpisodeProvider.COLUMN_FILE_SIZE, 5);
 		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);

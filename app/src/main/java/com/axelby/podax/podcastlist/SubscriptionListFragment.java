@@ -78,7 +78,7 @@ public class SubscriptionListFragment extends RxFragment {
 		};
 		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
 
-		Observable<List<ItemModel>> models = Subscriptions.getAll(getActivity())
+		Observable<List<ItemModel>> models = Subscriptions.getAll()
 			.map(sub -> ItemModel.fromSubscriptionId(sub.getTitle(), sub.getThumbnail(), sub.getId()))
 			.toList()
 			.subscribeOn(Schedulers.io())

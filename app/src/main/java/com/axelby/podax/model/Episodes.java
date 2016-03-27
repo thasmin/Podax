@@ -54,8 +54,8 @@ public class Episodes {
 
 	public static Observable<EpisodeData> getObservable(Context context, long episodeId) {
 		return Episodes.getEpisodeWatcher(episodeId)
-			.startWith(EpisodeData.create(context, episodeId))
 			.subscribeOn(Schedulers.io())
+			.startWith(EpisodeData.create(context, episodeId))
 			.observeOn(AndroidSchedulers.mainThread());
 	}
 

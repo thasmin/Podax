@@ -15,6 +15,7 @@ import android.support.v4.database.DatabaseUtilsCompat;
 
 import com.axelby.podax.model.DBAdapter;
 import com.axelby.podax.model.PodaxDB;
+import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
 
 import java.util.ArrayList;
@@ -87,29 +88,19 @@ public class SubscriptionProvider extends ContentProvider {
 
 	private DBAdapter _dbAdapter;
 
-    public static Uri addNewSubscription(Context context, String url) {
-        ContentValues values = new ContentValues(1);
-        values.put(COLUMN_URL, url);
-        Uri uri = context.getContentResolver().insert(URI, values);
-		if (uri == null)
-			return null;
-
-		values = new ContentValues(1);
-		values.put(COLUMN_SINGLE_USE, 0);
-		context.getContentResolver().update(uri, values, null, null);
-
-        UpdateService.updateSubscription(context, uri);
-		return uri;
+    public static long addNewSubscription(Context context, String url) {
+		long id = SubscriptionEditor.create(url).setSingleUse(false).commit();
+        UpdateService.updateSubscription(context, id);
+		return id;
     }
 
-    public static Uri addSingleUseSubscription(Context context, String url) {
-        ContentValues values = new ContentValues(1);
-        values.put(COLUMN_URL, url);
-		values.put(COLUMN_SINGLE_USE, 1);
-		values.put(COLUMN_PLAYLIST_NEW, 0);
-        Uri uri = context.getContentResolver().insert(URI, values);
-        UpdateService.updateSubscription(context, uri);
-		return uri;
+    public static long addSingleUseSubscription(Context context, String url) {
+		long id = SubscriptionEditor.create(url)
+			.setSingleUse(true)
+			.setPlaylistNew(false)
+			.commit();
+		UpdateService.updateSubscription(context, id);
+		return id;
     }
 
     @Override
@@ -250,48 +241,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(@NonNull Uri uri, ContentValues values) {
-		// url is required
-		if (!values.containsKey(COLUMN_URL))
-			return null;
-
-		boolean from_gpodder = false;
-
-		switch (_uriMatcher.match(uri)) {
-			case SUBSCRIPTIONS:
-				break;
-			case FROM_GPODDER:
-				from_gpodder = true;
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown URI");
-		}
-
-		String url = values.getAsString(COLUMN_URL);
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-
-		// don't duplicate a url
-		Cursor c = db.rawQuery("SELECT _id FROM subscriptions WHERE url = ?", new String[]{url});
-		if (c.moveToNext()) {
-			long oldId = c.getLong(0);
-			c.close();
-			return ContentUris.withAppendedId(URI, oldId);
-		}
-		c.close();
-
-		long id = db.insert("subscriptions", null, values);
-
-		ContentValues ftsValues = extractFTSValues(values);
-		ftsValues.put(COLUMN_ID, id);
-		db.insert("fts_subscriptions", null, ftsValues);
-
-		if (getContext() != null) {
-			// add during next gpodder sync
-			if (!from_gpodder)
-				PodaxDB.gPodder.add(url);
-			getContext().getContentResolver().notifyChange(URI, null);
-		}
-
-		return ContentUris.withAppendedId(URI, id);
+		return null;
 	}
 
 	@Override

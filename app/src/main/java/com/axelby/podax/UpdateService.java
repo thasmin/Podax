@@ -2,10 +2,8 @@ package com.axelby.podax;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -31,8 +29,7 @@ public class UpdateService extends IntentService {
 		context.startService(intent);
 	}
 
-	public static void updateSubscription(Context context, Uri subscriptionUri) {
-		long subscriptionId = ContentUris.parseId(subscriptionUri);
+	public static void updateSubscription(Context context, long subscriptionId) {
 		Intent intent = createUpdateSubscriptionIntent(context, subscriptionId);
 		intent.putExtra(Constants.EXTRA_MANUAL_REFRESH, true);
 		context.startService(intent);
@@ -69,7 +66,7 @@ public class UpdateService extends IntentService {
 
 		switch (action) {
 			case Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS: {
-				Subscriptions.getFor(this, SubscriptionProvider.COLUMN_SINGLE_USE, 1)
+				Subscriptions.getFor(SubscriptionProvider.COLUMN_SINGLE_USE, 1)
 					.subscribe(
 						s -> updateSubscription(s.getId()),
 						e -> Log.e("UpdateService", "unable to get all subscriptions", e)

@@ -7,10 +7,10 @@ import android.net.Uri;
 
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.Episodes;
-
-import junit.framework.Assert;
+import com.axelby.podax.model.SubscriptionEditor;
 
 import org.joda.time.LocalDateTime;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,16 +38,13 @@ public class EpisodeDataTests {
 	public void testGetEpisode() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "huh?");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		Uri epUri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", epUri);
 
@@ -71,16 +68,13 @@ public class EpisodeDataTests {
 	public void testGetPlaylist() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", ep1Uri);
@@ -88,7 +82,7 @@ public class EpisodeDataTests {
 		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "two");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", ep2Uri);
@@ -112,16 +106,13 @@ public class EpisodeDataTests {
 	public void testGetFinished() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", ep1Uri);
 
@@ -143,19 +134,15 @@ public class EpisodeDataTests {
 	public void getExpired() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").setExpirationDays(7).commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
 		LocalDateTime now = LocalDateTime.now();
 
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-1).toDate().getTime() / 1000);
 		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
@@ -164,7 +151,7 @@ public class EpisodeDataTests {
 		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "two");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
 		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-8).toDate().getTime() / 1000);
 		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
@@ -181,19 +168,15 @@ public class EpisodeDataTests {
 	public void getLatestActivity() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		values.put(SubscriptionProvider.COLUMN_EXPIRATION, 7);
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
 		LocalDateTime now = LocalDateTime.now();
 
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-1).toDate().getTime() / 1000);
 		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", ep1Uri);
@@ -201,7 +184,7 @@ public class EpisodeDataTests {
 		values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "two");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-8).toDate().getTime() / 1000);
 		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", ep2Uri);
@@ -218,18 +201,15 @@ public class EpisodeDataTests {
 	public void getLastActivity() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
 		long when = LocalDateTime.now().plusDays(-1).toDate().getTime() / 1000;
 
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_PUB_DATE, when);
 		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
 		Assert.assertNotNull("episode uri should not be null", ep1Uri);
@@ -242,15 +222,12 @@ public class EpisodeDataTests {
 	public void getNeedsDownload() throws IOException {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1.mp3");
 		values.put(EpisodeProvider.COLUMN_FILE_SIZE, 5);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);

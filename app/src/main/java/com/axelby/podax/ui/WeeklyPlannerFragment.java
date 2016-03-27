@@ -42,7 +42,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 
-		Subscriptions.getAll(activity)
+		Subscriptions.getAll()
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.toList()
@@ -74,7 +74,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		Subscriptions.getAll(getActivity())
+		Subscriptions.getAll()
 			.subscribeOn(Schedulers.io())
 			.filter(SubscriptionData::areNewEpisodesAddedToPlaylist)
 			.map(SubscriptionData::getId)

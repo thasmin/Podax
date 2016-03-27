@@ -75,7 +75,7 @@ class SubscriptionUpdater {
 			}
 
 			final String[] thumbnail = {null};
-			SubscriptionEditor subscriptionEditor = new SubscriptionEditor(_context, subscriptionId);
+			SubscriptionEditor subscriptionEditor = new SubscriptionEditor(subscriptionId);
 
 			String eTag = connection.getHeaderField("ETag");
 			if (eTag != null) {
@@ -244,7 +244,7 @@ class SubscriptionUpdater {
 
 			serializer.startTag(null, "body");
 
-			Subscriptions.getAll(_context)
+			Subscriptions.getAll()
 				.subscribe(sub -> {
 					try {
 						serializer.startTag(null, "outline");

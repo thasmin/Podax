@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -23,13 +22,13 @@ import android.widget.LinearLayout;
 
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
-import com.axelby.podax.model.DBAdapter;
 import com.axelby.podax.R;
-import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.SubscriptionProvider;
-import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
+import com.axelby.podax.model.DBAdapter;
+import com.axelby.podax.model.SubscriptionData;
+import com.axelby.podax.model.Subscriptions;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -69,7 +68,7 @@ public class EpisodeListFragment extends RxFragment {
 
 		Observable<SubscriptionData> subIdObservable;
 		if (subscriptionId != -1) {
-			subIdObservable = Subscriptions.watch(getActivity(), subscriptionId);
+			subIdObservable = Subscriptions.watch(subscriptionId);
 		} else {
 			// get subscription id from either rss url or itunes id url
 			Observable<String> rssUrlObservable;
@@ -94,15 +93,14 @@ public class EpisodeListFragment extends RxFragment {
 
 	private Observable<SubscriptionData> getSubscriptionIdFromRSSUrl(String rssUrl) {
 		Observable<SubscriptionData> addSubscriptionObservable = Observable.create(subscriber -> {
-			Uri newUri = SubscriptionProvider.addSingleUseSubscription(getActivity(), rssUrl);
-			long subscriptionId = ContentUris.parseId(newUri);
+			long subscriptionId = SubscriptionProvider.addSingleUseSubscription(getActivity(), rssUrl);
 			subscriber.onNext(SubscriptionData.create(getActivity(), subscriptionId));
 			subscriber.onCompleted();
 		});
 
 		// use the first observable that creates a response
 		return Observable.concat(
-				Subscriptions.getForRSSUrl(getActivity(), rssUrl),
+				Subscriptions.getForRSSUrl(rssUrl),
 				addSubscriptionObservable)
 			.first();
 	}
@@ -164,7 +162,7 @@ public class EpisodeListFragment extends RxFragment {
 		if (_subscription == null)
 			return;
 
-		Subscriptions.watch(getActivity(), _subscription.getId())
+		Subscriptions.watch(_subscription.getId())
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.subscribe(

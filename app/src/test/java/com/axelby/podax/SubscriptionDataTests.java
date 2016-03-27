@@ -1,11 +1,7 @@
 package com.axelby.podax;
 
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
-import android.net.Uri;
-
 import com.axelby.podax.model.SubscriptionData;
+import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
 
 import org.junit.Assert;
@@ -13,8 +9,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+
+import java.util.List;
 
 import rx.observers.TestSubscriber;
 
@@ -30,25 +27,17 @@ public class SubscriptionDataTests {
 
 	@Test
 	public void testGetSubscription() {
-		Context context = RuntimeEnvironment.application;
+		long subId = SubscriptionEditor.create("test").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
-
-		long subId = ContentUris.parseId(subUri);
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.watch(context, subId).subscribe(testSubscriber);
+		Subscriptions.watch(subId).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("huh?", testSubscriber.getOnNextEvents().get(0).getTitle());
 
-		values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE_OVERRIDE, "nevermind");
-		context.getContentResolver().update(subUri, values, null, null);
+		new SubscriptionEditor(subId).setTitleOverride("nevermind").commit();
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
@@ -57,29 +46,23 @@ public class SubscriptionDataTests {
 
 	@Test
 	public void testGetAll() {
-		Context context = RuntimeEnvironment.application;
+		long sub1Id = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription uri should not be null", -1, sub1Id);
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri sub1Uri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", sub1Uri);
-
-		values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://2");
-		Uri sub2Uri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", sub2Uri);
+		long sub2Id = SubscriptionEditor.create("test://2").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription uri should not be null", -1, sub2Id);
 
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.getAll(context).subscribe(testSubscriber);
+		Subscriptions.getAll().subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
 
-		values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE_OVERRIDE, "nevermind");
-		context.getContentResolver().update(sub1Uri, values, null, null);
+		List<SubscriptionData> subs = testSubscriber.getOnNextEvents();
+		Assert.assertTrue("first sub not found", subs.get(0).getId() == sub1Id || subs.get(1).getId() == sub1Id);
+		Assert.assertTrue("second sub not found", subs.get(0).getId() == sub2Id || subs.get(1).getId() == sub2Id);
+
+		new SubscriptionEditor(sub1Id).setTitleOverride("nevermind").commit();
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
@@ -87,27 +70,18 @@ public class SubscriptionDataTests {
 
 	@Test
 	public void testGetFor() {
-		Context context = RuntimeEnvironment.application;
+		long sub1Id = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription uri should not be null", -1, sub1Id);
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		values.put(SubscriptionProvider.COLUMN_SINGLE_USE, 0);
-		Uri sub1Uri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription 1 uri should not be null", sub1Uri);
-
-		values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://2");
-		values.put(SubscriptionProvider.COLUMN_SINGLE_USE, 1);
-		Uri sub2Uri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription 2 uri should not be null", sub2Uri);
+		long sub2Id = SubscriptionEditor.create("test://2").setRawTitle("huh?").setSingleUse(true).commit();
+		Assert.assertNotEquals("subscription uri should not be null", -1, sub2Id);
 
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.getFor(context, SubscriptionProvider.COLUMN_SINGLE_USE, 1).subscribe(testSubscriber);
+		Subscriptions.getFor(SubscriptionProvider.COLUMN_SINGLE_USE, 1).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
+		Assert.assertEquals("should only have second subscription", testSubscriber.getOnNextEvents().get(0).getId(), sub2Id);
 	}
 
 }

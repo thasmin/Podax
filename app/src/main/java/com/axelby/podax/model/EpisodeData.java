@@ -94,9 +94,6 @@ public class EpisodeData {
 			return null;
 
 		EpisodeData d = EpisodeData.from(ep);
-		synchronized (_cache) {
-			_cache.put(episodeId, new SoftReference<>(d));
-		}
 		ep.closeCursor();
 		return d;
 	}

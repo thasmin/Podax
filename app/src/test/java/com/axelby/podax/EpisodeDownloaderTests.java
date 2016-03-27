@@ -6,6 +6,7 @@ import android.content.Context;
 import android.net.Uri;
 
 import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.SubscriptionEditor;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -33,16 +34,13 @@ public class EpisodeDownloaderTests {
 		Context context = RuntimeEnvironment.application;
 
 		// create subscription
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
 		// put one episode in queue
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1.mp3");
 		values.put(EpisodeProvider.COLUMN_FILE_SIZE, 5);
 		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);

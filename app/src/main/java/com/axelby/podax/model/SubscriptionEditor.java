@@ -1,15 +1,14 @@
 package com.axelby.podax.model;
 
 import android.content.ContentValues;
-import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.axelby.podax.SubscriptionProvider;
 
 import java.util.Date;
 
 public class SubscriptionEditor {
-	private final Context _context;
-	private final long _subscriptionId;
+	private long _subscriptionId;
 
 	private boolean _rawTitleSet = false;
 	private String _rawTitle;
@@ -34,12 +33,17 @@ public class SubscriptionEditor {
 	private boolean _expirationDaysSet = false;
 	private Integer _expirationDays;
 
-	public SubscriptionEditor fromNew(Context context) {
-		return new SubscriptionEditor(context, -1);
+	private boolean _fromGPodder = false;
+
+	public static SubscriptionEditor create(String url) {
+		return new SubscriptionEditor(-1).setUrl(url).setSingleUse(false);
 	}
 
-	public SubscriptionEditor(Context context, long subscriptionId) {
-		_context = context;
+	public static SubscriptionEditor createViaGPodder(String url) {
+		return new SubscriptionEditor(-1).setFromGPodder(true).setUrl(url).setSingleUse(false);
+	}
+
+	public SubscriptionEditor(long subscriptionId) {
 		_subscriptionId = subscriptionId;
 	}
 
@@ -109,9 +113,33 @@ public class SubscriptionEditor {
 		return this;
 	}
 
-	public void commit() {
-		ContentValues values = new ContentValues(16);
+	public SubscriptionEditor setFromGPodder(boolean fromGPodder) {
+		_fromGPodder = fromGPodder;
+		return this;
+	}
 
+	public long commit() {
+		ContentValues values = getContentValues();
+
+		if (_subscriptionId != -1) {
+			PodaxDB.subscriptions.update(_subscriptionId, values);
+			SubscriptionData.evictFromCache(_subscriptionId);
+		} else {
+			values.remove(SubscriptionProvider.COLUMN_ID);
+			_subscriptionId = PodaxDB.subscriptions.insert(values);
+			if (!_fromGPodder)
+				PodaxDB.gPodder.add(_url);
+		}
+
+		Subscriptions.notifyChange(SubscriptionData.from(getContentValues()));
+		return _subscriptionId;
+	}
+
+	@NonNull
+	private ContentValues getContentValues() {
+		ContentValues values = new ContentValues(17);
+
+		values.put(SubscriptionProvider.COLUMN_ID, _subscriptionId);
 		if (_rawTitleSet)
 			values.put(SubscriptionProvider.COLUMN_TITLE, _rawTitle);
 		if (_urlSet)
@@ -142,12 +170,6 @@ public class SubscriptionEditor {
 			values.put(SubscriptionProvider.COLUMN_PLAYLIST_NEW, _playlistNew);
 		if (_expirationDaysSet)
 			values.put(SubscriptionProvider.COLUMN_EXPIRATION, _expirationDays);
-
-		if (_subscriptionId != -1) {
-			_context.getContentResolver().update(SubscriptionProvider.getContentUri(_subscriptionId), values, null, null);
-			SubscriptionData.evictFromCache(_subscriptionId);
-		} else
-			_context.getContentResolver().insert(SubscriptionProvider.URI, values);
-
+		return values;
 	}
 }

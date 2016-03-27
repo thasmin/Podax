@@ -1,8 +1,6 @@
 package com.axelby.podax.model;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
@@ -14,9 +12,20 @@ import rx.subjects.PublishSubject;
 
 public class Subscriptions {
 
+	private static Context _context;
+
+	public static void setContext(Context context) {
+		_context = context;
+	}
+
 	private static PublishSubject<SubscriptionData> _changeSubject = PublishSubject.create();
 	public static void notifyChange(SubscriptionCursor c) {
 		SubscriptionData data = SubscriptionData.cacheSwap(c);
+		_changeSubject.onNext(data);
+	}
+
+	public static void notifyChange(SubscriptionData sub) {
+		SubscriptionData data = SubscriptionData.cacheSwap(sub);
 		_changeSubject.onNext(data);
 	}
 
@@ -26,7 +35,7 @@ public class Subscriptions {
 			.observeOn(AndroidSchedulers.mainThread());
 	}
 
-	public static Observable<SubscriptionData> watch(Context context, long id) {
+	public static Observable<SubscriptionData> watch(long id) {
 		if (id < 0)
 			return Observable.empty();
 
@@ -34,56 +43,27 @@ public class Subscriptions {
 			.filter(d -> d.getId() == id)
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
-			.startWith(SubscriptionData.create(context, id));
-	}
-
-	public static Observable<SubscriptionData> getAll(Context context) {
-		return Observable.create(subscriber -> {
-			Cursor c = context.getContentResolver().query(SubscriptionProvider.URI, null, null, null, null);
-			if (c != null) {
-				while (c.moveToNext())
-					subscriber.onNext(SubscriptionData.from(new SubscriptionCursor(c)));
-				c.close();
-			}
-			subscriber.onCompleted();
-		});
+			.startWith(SubscriptionData.create(_context, id));
 	}
 
 	/* -------
 	   helpers
 	   ------- */
 
-	private static Observable<SubscriptionData> queryToObservable(Context context,
-			  Uri uri, String selection, String[] selectionArgs, String sortOrder) {
-		return Observable.create(subscriber -> {
-			Cursor cursor = context.getContentResolver().query(uri, null, selection, selectionArgs, sortOrder);
-			if (cursor != null) {
-				while (cursor.moveToNext())
-					subscriber.onNext(SubscriptionData.from(new SubscriptionCursor(cursor)));
-				cursor.close();
-			}
-			subscriber.onCompleted();
-		});
+	public static Observable<SubscriptionData> getAll() {
+		return Observable.from(PodaxDB.subscriptions.getAll());
 	}
 
-	public static Observable<SubscriptionData> getFor(Context context, String field, int value) {
-		String fieldName = SubscriptionProvider.getColumnMap().get(field);
-		String selection = fieldName + " = ?";
-		String[] selectionArgs = new String[] { String.valueOf(value) };
-		return queryToObservable(context, SubscriptionProvider.URI, selection, selectionArgs, null);
+	public static Observable<SubscriptionData> getFor(String field, int value) {
+		return Observable.from(PodaxDB.subscriptions.getFor(field, value));
 	}
 
-	public static Observable<SubscriptionData> getFor(Context context, String field, String value) {
-		String fieldName = SubscriptionProvider.getColumnMap().get(field);
-		String selection = fieldName + " = ?";
-		String[] selectionArgs = new String[] { value };
-		return queryToObservable(context, SubscriptionProvider.URI, selection, selectionArgs, null);
+	public static Observable<SubscriptionData> getFor(String field, String value) {
+		return Observable.from(PodaxDB.subscriptions.getFor(field, value));
 	}
 
-	public static Observable<SubscriptionData> getForRSSUrl(Context context, String rssUrl) {
-		String selection = SubscriptionProvider.COLUMN_URL + "=?";
-		String[] selectionArgs = new String[] { rssUrl };
-		return Subscriptions.queryToObservable(context, SubscriptionProvider.URI, selection, selectionArgs, null);
+	public static Observable<SubscriptionData> getForRSSUrl(String rssUrl) {
+		return getFor(SubscriptionProvider.COLUMN_URL, rssUrl);
 	}
 
 	public static void evictCache() {

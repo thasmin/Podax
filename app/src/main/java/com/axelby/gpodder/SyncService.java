@@ -31,6 +31,7 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.ui.MainActivity;
 
 import java.util.ArrayList;
@@ -160,10 +161,8 @@ public class SyncService extends Service {
 				_context.getContentResolver().delete(SubscriptionProvider.FROM_GPODDER_URI, "url = ?", new String[]{removedUrl});
 
 			for (String addedUrl : changes.add) {
-				ContentValues values = new ContentValues();
-				values.put(SubscriptionProvider.COLUMN_URL, addedUrl);
-				Uri newUri = _context.getContentResolver().insert(SubscriptionProvider.FROM_GPODDER_URI, values);
-				UpdateService.updateSubscription(_context, newUri);
+				long id = SubscriptionEditor.createViaGPodder(addedUrl).commit();
+				UpdateService.updateSubscription(_context, id);
 			}
 
 			// remember when we last updated

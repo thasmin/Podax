@@ -6,6 +6,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 
+import com.axelby.podax.model.SubscriptionEditor;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,15 +26,13 @@ public class StorageTests {
 		Context context = RuntimeEnvironment.application;
 		ContentResolver resolver = context.getContentResolver();
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "Test Subscription");
-		values.put(SubscriptionProvider.COLUMN_URL, "test");
-		Uri subUri = resolver.insert(SubscriptionProvider.URI, values);
+		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		values = new ContentValues();
+		ContentValues values = new ContentValues();
 		values.put(EpisodeProvider.COLUMN_TITLE, "Test Episode");
 		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test.mp3");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
+		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
 		Uri epUri = resolver.insert(EpisodeProvider.URI, values);
 
 		long id = ContentUris.parseId(epUri);

@@ -1,9 +1,6 @@
 package com.axelby.podax;
 
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
@@ -30,18 +27,14 @@ public class SubscriptionDateUpdateTests {
 	public void testUpdateTitle() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long subId = ContentUris.parseId(subUri);
 		SubscriptionData sub = SubscriptionData.create(context, subId);
 		Assert.assertNotNull(sub);
 		Assert.assertEquals("huh?", sub.getTitle());
 
-		new SubscriptionEditor(context, subId)
+		new SubscriptionEditor(subId)
 			.setTitleOverride("oh i see")
 			.commit();
 
@@ -54,23 +47,19 @@ public class SubscriptionDateUpdateTests {
 	public void testUpdateExpiration() {
 		Context context = RuntimeEnvironment.application;
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionProvider.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionProvider.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long subId = ContentUris.parseId(subUri);
 		SubscriptionData sub = SubscriptionData.create(context, subId);
 		Assert.assertNotNull(sub);
 		Assert.assertEquals("huh?", sub.getTitle());
 
-		new SubscriptionEditor(context, subId).setExpirationDays(0).commit();
+		new SubscriptionEditor(subId).setExpirationDays(0).commit();
 		sub = SubscriptionData.create(context, subId);
 		Assert.assertNotNull(sub);
 		Assert.assertEquals((Integer) 0, sub.getExpirationDays());
 
-		new SubscriptionEditor(context, subId).setExpirationDays(null).commit();
+		new SubscriptionEditor(subId).setExpirationDays(null).commit();
 		sub = SubscriptionData.create(context, subId);
 		Assert.assertNotNull(sub);
 		Assert.assertNull(sub.getExpirationDays());

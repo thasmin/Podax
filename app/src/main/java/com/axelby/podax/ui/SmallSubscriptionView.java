@@ -1,8 +1,6 @@
 package com.axelby.podax.ui;
 
-import android.content.ContentUris;
 import android.content.Context;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -25,8 +23,7 @@ public class SmallSubscriptionView extends FrameLayout {
 	private OnClickListener _clickHandler = new OnClickListener() {
 		@Override
 		public void onClick(View view) {
-			Uri uri = SubscriptionProvider.addSingleUseSubscription(getContext(), _rssUrl);
-			long subscriptionId = ContentUris.parseId(uri);
+			long subscriptionId = SubscriptionProvider.addSingleUseSubscription(getContext(), _rssUrl);
 			AppFlow.get(Helper.getActivityFromView(view)).displaySubscription(_title.getText(), subscriptionId, _thumbnail, _title);
 		}
 	};
