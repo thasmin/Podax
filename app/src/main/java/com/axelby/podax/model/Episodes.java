@@ -107,6 +107,10 @@ public class Episodes {
 		return queryToObservable(EpisodeProvider.LATEST_ACTIVITY_URI, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC");
 	}
 
+	public static Observable<List<EpisodeData>> search(String query) {
+		return queryToListObservable(EpisodeProvider.SEARCH_URI, null, new String[] { query }, null);
+	}
+
 	public static boolean isLastActivityAfter(long when) {
 		Cursor c = _context.getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI,
 				null, EpisodeProvider.COLUMN_PUB_DATE + ">?",
