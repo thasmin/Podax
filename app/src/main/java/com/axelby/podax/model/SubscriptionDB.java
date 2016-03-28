@@ -1,29 +1,58 @@
 package com.axelby.podax.model;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import com.axelby.podax.SubscriptionCursor;
-import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SubscriptionDB {
+	public static final String COLUMN_ID = "_id";
+	public static final String COLUMN_TITLE = "title";
+	public static final String COLUMN_URL = "url";
+	public static final String COLUMN_LAST_MODIFIED = "lastModified";
+	public static final String COLUMN_LAST_UPDATE = "lastUpdate";
+	public static final String COLUMN_ETAG = "eTag";
+	public static final String COLUMN_THUMBNAIL = "thumbnail";
+	public static final String COLUMN_TITLE_OVERRIDE = "titleOverride";
+	public static final String COLUMN_PLAYLIST_NEW = "queueNew";
+	public static final String COLUMN_EXPIRATION = "expirationDays";
+	public static final String COLUMN_DESCRIPTION = "description";
+	public static final String COLUMN_SINGLE_USE = "singleUse";
+
 	private DBAdapter _dbAdapter;
 
 	public SubscriptionDB(DBAdapter dbAdapter) {
 		_dbAdapter = dbAdapter;
 	}
 
+	public static long addNewSubscription(Context context, String url) {
+		long id = SubscriptionEditor.create(url).setSingleUse(false).commit();
+		UpdateService.updateSubscription(context, id);
+		return id;
+	}
+
+	public static long addSingleUseSubscription(Context context, String url) {
+		long id = SubscriptionEditor.create(url)
+			.setSingleUse(true)
+			.setPlaylistNew(false)
+			.commit();
+		UpdateService.updateSubscription(context, id);
+		return id;
+    }
+
 	public long insert(ContentValues values) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// don't duplicate url
-		String url = values.getAsString(SubscriptionProvider.COLUMN_URL);
-		Subscriptions.getFor(SubscriptionProvider.COLUMN_URL, url);
+		String url = values.getAsString(COLUMN_URL);
+		Subscriptions.getFor(COLUMN_URL, url);
 		Cursor c = db.rawQuery("SELECT _id FROM subscriptions WHERE url = ?", new String[] { url });
 		if (c.moveToNext()) {
 			long oldId = c.getLong(0);
@@ -37,15 +66,23 @@ public class SubscriptionDB {
 
 		// insert into full text search
 		ContentValues ftsValues = extractFTSValues(values);
-		ftsValues.put(SubscriptionProvider.COLUMN_ID, id);
+		ftsValues.put(COLUMN_ID, id);
 		db.insert("fts_subscriptions", null, ftsValues);
 
 		return id;
 	}
 
 	public void update(long subscriptionId, ContentValues values) {
+		// url is not allowed to be changed - make a new subscription
+		if (values.containsKey(COLUMN_URL))
+			return;
+
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		db.update("subscriptions", values, "_id = ?", new String[] { String.valueOf(subscriptionId) });
+
+		// update the full text search virtual table
+		if (hasFTSValues(values))
+			db.update("fts_subscriptions", extractFTSValues(values), "_id = ?", new String[] { String.valueOf(subscriptionId) });
 	}
 
 	public void delete(long subscriptionId) {
@@ -59,8 +96,10 @@ public class SubscriptionDB {
 		Cursor cursor = db.query("subscriptions", null, "_id = ?", new String[] { String.valueOf(subscriptionId) }, null, null, null);
 		SubscriptionData data = null;
 		if (cursor != null) {
-			if (cursor.moveToNext())
+			if (cursor.moveToNext()) {
+				SubscriptionData.evictFromCache(subscriptionId);
 				data = SubscriptionData.from(new SubscriptionCursor(cursor));
+			}
 			cursor.close();
 		}
 		return data;
@@ -75,8 +114,7 @@ public class SubscriptionDB {
 	}
 
 	public List<SubscriptionData> getFor(String field, String value) {
-		String fieldName = SubscriptionProvider.getColumnMap().get(field);
-		String selection = fieldName + " = ?";
+		String selection = field + " = ?";
 		String[] selectionArgs = new String[] { value };
 		return getList(selection, selectionArgs);
 	}
@@ -91,7 +129,7 @@ public class SubscriptionDB {
 
 		ArrayList<SubscriptionData> subs = new ArrayList<>(cursor.getCount());
 		while (cursor.moveToNext())
-			subs.add(SubscriptionData.from(new SubscriptionCursor(cursor)));
+			subs.add(get(new SubscriptionCursor(cursor).getId()));
 		cursor.close();
 		return subs;
 	}
@@ -115,14 +153,20 @@ public class SubscriptionDB {
 		return subs;
 	}
 
+	private boolean hasFTSValues(ContentValues values) {
+		return values.containsKey(COLUMN_TITLE)
+			|| values.containsKey(COLUMN_TITLE_OVERRIDE)
+			|| values.containsKey(COLUMN_DESCRIPTION);
+	}
+
 	private static ContentValues extractFTSValues(ContentValues values) {
 		ContentValues ftsValues = new ContentValues(3);
-		if (values.containsKey(SubscriptionProvider.COLUMN_TITLE))
-			ftsValues.put(SubscriptionProvider.COLUMN_TITLE, values.getAsString(SubscriptionProvider.COLUMN_TITLE));
-		if (values.containsKey(SubscriptionProvider.COLUMN_TITLE_OVERRIDE))
-			ftsValues.put(SubscriptionProvider.COLUMN_TITLE_OVERRIDE, values.getAsString(SubscriptionProvider.COLUMN_TITLE_OVERRIDE));
-		if (values.containsKey(SubscriptionProvider.COLUMN_DESCRIPTION))
-			ftsValues.put(SubscriptionProvider.COLUMN_DESCRIPTION, values.getAsString(SubscriptionProvider.COLUMN_DESCRIPTION));
+		if (values.containsKey(COLUMN_TITLE))
+			ftsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
+		if (values.containsKey(COLUMN_TITLE_OVERRIDE))
+			ftsValues.put(COLUMN_TITLE_OVERRIDE, values.getAsString(COLUMN_TITLE_OVERRIDE));
+		if (values.containsKey(COLUMN_DESCRIPTION))
+			ftsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
 		return ftsValues;
 	}
 }

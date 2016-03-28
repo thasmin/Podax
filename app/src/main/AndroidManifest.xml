@@ -162,11 +162,6 @@
             android:authorities="com.axelby.podax.podcastprovider"
             android:exported="false"
             android:label="Episodes" />
-        <provider
-            android:name=".SubscriptionProvider"
-            android:authorities="com.axelby.podax.subscriptionprovider"
-            android:exported="false"
-            android:label="Podcast Subscriptions" />
 
         <!-- GPodder section -->
         <activity

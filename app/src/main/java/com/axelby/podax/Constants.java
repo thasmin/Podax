@@ -21,8 +21,6 @@ public class Constants {
 	public static final String ACTION_REFRESH_SUBSCRIPTION = "com.axelby.podax.REFRESH_SUBSCRIPTION";
 	public static final String ACTION_DOWNLOAD_EPISODE = "com.axelby.podax.DOWNLOAD_EPISODE";
 	public static final String ACTION_DOWNLOAD_EPISODES = "com.axelby.podax.DOWNLOAD_EPISODES";
-	public static final String ACTION_UPDATE_SUBSCRIPTION = "com.axelby.podax.ACTION_UPDATE_SUBSCRIPTION";
-	public static final String ACTION_DONE_UPDATING_SUBSCRIPTION = "com.axelby.podax.ACTION_DONE_UPDATING_SUBSCRIPTION";
 
 	public static final String EXTRA_EPISODE_ID = "com.axelby.podax.episodeId";
 	public static final String EXTRA_SUBSCRIPTION_ID = "com.axelby.podax.subscriptionId";

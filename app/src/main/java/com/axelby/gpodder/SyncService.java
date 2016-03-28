@@ -28,8 +28,8 @@ import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.ui.MainActivity;
@@ -140,7 +140,7 @@ public class SyncService extends Service {
 					return false;
 				}
 				for (Podcast sub : subs)
-                    SubscriptionProvider.addNewSubscription(_context, sub.url);
+                    SubscriptionDB.addNewSubscription(_context, sub.url);
 			}
 
 			// send subscription changes

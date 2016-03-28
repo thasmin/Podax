@@ -5,6 +5,7 @@ import android.content.Context;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
@@ -85,7 +86,7 @@ public class SubscriptionDataTests {
 		Assert.assertNotEquals("subscription uri should not be null", -1, sub2Id);
 
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.getFor(SubscriptionProvider.COLUMN_SINGLE_USE, 1).subscribe(testSubscriber);
+		Subscriptions.getFor(SubscriptionDB.COLUMN_SINGLE_USE, 1).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);

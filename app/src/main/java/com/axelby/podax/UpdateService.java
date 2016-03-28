@@ -10,7 +10,11 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.Subscriptions;
+
+import rx.Observable;
+import rx.subjects.PublishSubject;
 
 public class UpdateService extends IntentService {
 	private final Handler _uiHandler = new Handler();
@@ -66,7 +70,7 @@ public class UpdateService extends IntentService {
 
 		switch (action) {
 			case Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS: {
-				Subscriptions.getFor(SubscriptionProvider.COLUMN_SINGLE_USE, 1)
+				Subscriptions.getFor(SubscriptionDB.COLUMN_SINGLE_USE, 1)
 					.subscribe(
 						s -> updateSubscription(s.getId()),
 						e -> Log.e("UpdateService", "unable to get all subscriptions", e)
@@ -82,20 +86,18 @@ public class UpdateService extends IntentService {
 		removeNotification();
 	}
 
+	private static PublishSubject<Long> _updatingSubject = PublishSubject.create();
+	public static Observable<Long> getUpdatingObservable() {
+		return _updatingSubject;
+	}
+
 	private void updateSubscription(long subscriptionId) {
 		if (subscriptionId == -1)
 			return;
 
-		_updatingSubscriptionId = subscriptionId;
-		LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
-		Intent localIntent = new Intent(Constants.ACTION_UPDATE_SUBSCRIPTION, SubscriptionProvider.getContentUri(subscriptionId));
-		localBroadcastManager.sendBroadcast(localIntent);
-
+		_updatingSubject.onNext(subscriptionId);
 		new SubscriptionUpdater(this).update(subscriptionId);
-
-		_updatingSubscriptionId = -1000;
-		localIntent = new Intent(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION, SubscriptionProvider.getContentUri(subscriptionId));
-		localBroadcastManager.sendBroadcast(localIntent);
+		_updatingSubject.onNext(null);
 	}
 
 	private void removeNotification() {

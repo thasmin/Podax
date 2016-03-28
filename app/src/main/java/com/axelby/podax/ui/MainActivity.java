@@ -32,7 +32,7 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.model.SubscriptionDB;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
 public class MainActivity extends RxAppCompatActivity {
@@ -47,7 +47,7 @@ public class MainActivity extends RxAppCompatActivity {
         // check if this was opened by android to save an RSS feed
         Intent intent = getIntent();
         if (intent.getDataString() != null && intent.getData().getScheme().equals("http"))
-            SubscriptionProvider.addNewSubscription(this, intent.getDataString());
+            SubscriptionDB.addNewSubscription(this, intent.getDataString());
 
         // clear RSS error notification
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

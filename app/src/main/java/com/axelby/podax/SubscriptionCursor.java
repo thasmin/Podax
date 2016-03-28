@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 
+import com.axelby.podax.model.SubscriptionDB;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -54,7 +55,7 @@ public class SubscriptionCursor {
 
 	public Long getId() {
 		if (_idColumn == null)
-			_idColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_ID);
+			_idColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_ID);
 		if (_cursor.isNull(_idColumn))
 			return null;
 		return _cursor.getLong(_idColumn);
@@ -62,11 +63,11 @@ public class SubscriptionCursor {
 
 	public String getTitle() {
 		if (_titleOverrideColumn == null)
-			_titleOverrideColumn = _cursor.getColumnIndex(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
+			_titleOverrideColumn = _cursor.getColumnIndex(SubscriptionDB.COLUMN_TITLE_OVERRIDE);
 		if (_titleOverrideColumn != -1 && !_cursor.isNull(_titleOverrideColumn))
 			return _cursor.getString(_titleOverrideColumn);
 		if (_titleColumn == null)
-			_titleColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE);
+			_titleColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_TITLE);
 		if (_cursor.isNull(_titleColumn))
 			return getUrl();
 		return _cursor.getString(_titleColumn);
@@ -74,19 +75,19 @@ public class SubscriptionCursor {
 
 	public String getRawTitle() {
 		if (_titleColumn == null)
-			_titleColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE);
+			_titleColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_TITLE);
 		return _cursor.getString(_titleColumn);
 	}
 
 	public String getTitleOverride() {
 		if (_titleOverrideColumn == null)
-			_titleOverrideColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_TITLE_OVERRIDE);
+			_titleOverrideColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_TITLE_OVERRIDE);
 		return _cursor.getString(_titleOverrideColumn);
 	}
 
 	public String getUrl() {
 		if (_urlColumn == null)
-			_urlColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_URL);
+			_urlColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_URL);
 		if (_cursor.isNull(_urlColumn))
 			return null;
 		return _cursor.getString(_urlColumn);
@@ -94,7 +95,7 @@ public class SubscriptionCursor {
 
 	public Date getLastModified() {
 		if (_lastModifiedColumn == null)
-			_lastModifiedColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_LAST_MODIFIED);
+			_lastModifiedColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_LAST_MODIFIED);
 		if (_cursor.isNull(_lastModifiedColumn))
 			return null;
 		return new Date(_cursor.getLong(_lastModifiedColumn) * 1000);
@@ -102,7 +103,7 @@ public class SubscriptionCursor {
 
 	public Date getLastUpdate() {
 		if (_lastUpdateColumn == null)
-			_lastUpdateColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_LAST_UPDATE);
+			_lastUpdateColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_LAST_UPDATE);
 		if (_cursor.isNull(_lastUpdateColumn))
 			return null;
 		return new Date(_cursor.getLong(_lastUpdateColumn) * 1000);
@@ -110,7 +111,7 @@ public class SubscriptionCursor {
 
 	public String getETag() {
 		if (_etagColumn == null)
-			_etagColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_ETAG);
+			_etagColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_ETAG);
 		if (_cursor.isNull(_etagColumn))
 			return null;
 		return _cursor.getString(_etagColumn);
@@ -118,7 +119,7 @@ public class SubscriptionCursor {
 
 	public String getThumbnail() {
 		if (_thumbnailColumn == null)
-			_thumbnailColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_THUMBNAIL);
+			_thumbnailColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_THUMBNAIL);
 		if (_cursor.isNull(_thumbnailColumn))
 			return null;
 		return _cursor.getString(_thumbnailColumn);
@@ -126,7 +127,7 @@ public class SubscriptionCursor {
 
 	public Integer getExpirationDays() {
 		if (_expirationColumn == null)
-			_expirationColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_EXPIRATION);
+			_expirationColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_EXPIRATION);
 		if (_cursor.isNull(_expirationColumn))
 			return null;
 		return _cursor.getInt(_expirationColumn);
@@ -161,7 +162,7 @@ public class SubscriptionCursor {
 
     public String getDescription() {
         if (_descriptionColumn == null)
-            _descriptionColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_DESCRIPTION);
+            _descriptionColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_DESCRIPTION);
         if (_cursor.isNull(_descriptionColumn))
             return null;
         return _cursor.getString(_descriptionColumn);
@@ -169,7 +170,7 @@ public class SubscriptionCursor {
 
 	public boolean isSingleUse() {
 		if (_singleUseColumn == null)
-			_singleUseColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_SINGLE_USE);
+			_singleUseColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_SINGLE_USE);
 		if (_cursor.isNull(_singleUseColumn))
 			return false;
 		return _cursor.getInt(_singleUseColumn) != 0;
@@ -177,7 +178,7 @@ public class SubscriptionCursor {
 
 	public boolean areNewEpisodesAddedToPlaylist() {
 		if (_playlistNewColumn == null)
-			_playlistNewColumn = _cursor.getColumnIndexOrThrow(SubscriptionProvider.COLUMN_PLAYLIST_NEW);
+			_playlistNewColumn = _cursor.getColumnIndexOrThrow(SubscriptionDB.COLUMN_PLAYLIST_NEW);
 		if (_cursor.isNull(_playlistNewColumn))
 			return true;
 		return _cursor.getInt(_playlistNewColumn) != 0;

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.axelby.podax.SubscriptionCursor;
-import com.axelby.podax.SubscriptionProvider;
 
 import java.util.List;
 
@@ -62,7 +61,7 @@ public class Subscriptions {
 	}
 
 	public static SubscriptionData getForRSSUrl(String rssUrl) {
-		List<SubscriptionData> subs = PodaxDB.subscriptions.getFor(SubscriptionProvider.COLUMN_URL, rssUrl);
+		List<SubscriptionData> subs = PodaxDB.subscriptions.getFor(SubscriptionDB.COLUMN_URL, rssUrl);
 		if (subs.size() == 0)
 			return null;
 		return subs.get(0);

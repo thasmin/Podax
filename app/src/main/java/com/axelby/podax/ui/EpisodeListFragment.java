@@ -1,16 +1,10 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.ContentUris;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,10 +17,11 @@ import android.widget.LinearLayout;
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionProvider;
+import com.axelby.podax.UpdateService;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.axelby.podax.model.DBAdapter;
+import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.Subscriptions;
 import com.trello.rxlifecycle.RxLifecycle;
@@ -35,6 +30,7 @@ import com.trello.rxlifecycle.components.RxFragment;
 import javax.annotation.Nonnull;
 
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -96,13 +92,13 @@ public class EpisodeListFragment extends RxFragment {
 		if (sub != null)
 			return Observable.just(sub);
 
-		long subId = SubscriptionProvider.addSingleUseSubscription(getActivity(), rssUrl);
+		long subId = SubscriptionDB.addSingleUseSubscription(getActivity(), rssUrl);
 		return Observable.just(SubscriptionData.create(subId));
 	}
 
 	private Observable<String> getRSSUrlFromITunesUrl(String iTunesUrl) {
 		SQLiteDatabase db = new DBAdapter(getActivity()).getReadableDatabase();
-		Cursor c = db.rawQuery("SELECT " + SubscriptionProvider.COLUMN_URL + " FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
+		Cursor c = db.rawQuery("SELECT " + SubscriptionDB.COLUMN_URL + " FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
 		if (c != null) {
 			if (c.moveToFirst() && c.isNull(0)) {
 				String url = c.getString(0);
@@ -135,21 +131,21 @@ public class EpisodeListFragment extends RxFragment {
 		_binding.setSubscription(subscription);
 	}
 
-	private BroadcastReceiver _updateReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			long updatingId = ContentUris.parseId(intent.getData());
-			if (updatingId == -1 || updatingId != _subscription.getId()) {
+	private Subscriber<Long> _updateActivityObserver = new Subscriber<Long>() {
+		@Override public void onCompleted() { }
+		@Override public void onError(Throwable e) {
+			Log.e("EpisodeListFragment", "error listening for subscription updates", e);
+		}
+
+		@Override public void onNext(Long updatingId) {
+			if (updatingId == null || updatingId != _subscription.getId()) {
 				_binding.currentlyUpdating.setVisibility(View.GONE);
+				if (_binding.currentlyUpdating.getVisibility() == View.VISIBLE)
+					updateSubscription();
 				return;
 			}
 
-			if (intent.getAction().equals(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION)) {
-				_binding.currentlyUpdating.setVisibility(View.GONE);
-				updateSubscription();
-			} else {
-				_binding.currentlyUpdating.setVisibility(View.VISIBLE);
-			}
+			_binding.currentlyUpdating.setVisibility(View.VISIBLE);
 		}
 	};
 
@@ -172,7 +168,8 @@ public class EpisodeListFragment extends RxFragment {
 
 		if (getView() == null)
 			return;
-		LocalBroadcastManager.getInstance(getView().getContext()).unregisterReceiver(_updateReceiver);
+
+		_updateActivityObserver.unsubscribe();
 	}
 
 	@Override
@@ -184,13 +181,7 @@ public class EpisodeListFragment extends RxFragment {
 
 		if (getView() == null)
 			return;
-		IntentFilter intentFilter = new IntentFilter(Constants.ACTION_UPDATE_SUBSCRIPTION);
-		intentFilter.addAction(Constants.ACTION_DONE_UPDATING_SUBSCRIPTION);
-		intentFilter.addDataScheme("content");
-		try {
-			intentFilter.addDataType(SubscriptionProvider.ITEM_TYPE);
-		} catch (IntentFilter.MalformedMimeTypeException ignored) { }
-		LocalBroadcastManager.getInstance(getView().getContext()).registerReceiver(_updateReceiver, intentFilter);
+		UpdateService.getUpdatingObservable().subscribe(_updateActivityObserver);
 
 		// refresh changes from subscription settings fragment
 		updateSubscription();
