@@ -18,10 +18,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.axelby.podax.AppFlow;
+import com.axelby.podax.R;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.Episodes;
-import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionCursor;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.joda.time.DateTime;
@@ -220,7 +219,7 @@ public class LatestActivityFragment extends RxFragment {
 
 				EpisodeData episode = _episodes.get((Integer) _items.get(position));
 
-				SubscriptionCursor.getThumbnailImage(getActivity(), episode.getSubscriptionId()).into(holder.subscription_img);
+				episode.getSubscriptionImage(getActivity()).into(holder.subscription_img);
 				holder.subscription_img.setTag(episode.getSubscriptionId());
 				holder.episode_title.setText(episode.getTitle());
 				holder.episode_title.setTag(episode.getId());

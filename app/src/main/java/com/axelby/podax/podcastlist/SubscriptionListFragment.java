@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.axelby.podax.R;
-import com.axelby.podax.model.SubscriptionDB;
+import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.UpdateService;
 import com.trello.rxlifecycle.RxLifecycle;
@@ -55,14 +55,14 @@ public class SubscriptionListFragment extends RxFragment {
 		public void onViewCreated(View view, Bundle savedInstanceState) {
 			EditText url = (EditText) view.findViewById(R.id.url);
 			url.setOnEditorActionListener((url1, actionId, event) -> {
-				SubscriptionDB.addNewSubscription(url1.getContext(), url1.getText().toString());
+				SubscriptionEditor.addNewSubscription(url1.getContext(), url1.getText().toString());
 				dismiss();
 				return true;
 			});
 
 			view.findViewById(R.id.subscribe).setOnClickListener(button -> {
 				EditText url1 = (EditText) ((ViewGroup)button.getParent()).findViewById(R.id.url);
-				SubscriptionDB.addNewSubscription(button.getContext(), url1.getText().toString());
+				SubscriptionEditor.addNewSubscription(button.getContext(), url1.getText().toString());
 				dismiss();
 			});
 		}

@@ -30,12 +30,6 @@ public class BindingAdapters {
 		Picasso.with(image.getContext()).load(url).fit().into(image);
 	}
 
-	@BindingAdapter({"app:subscriptionImageId"})
-	public static void loadSubscriptionImage(ImageView image, long subscriptionId) {
-		if (subscriptionId != -1)
-			SubscriptionCursor.getThumbnailImage(image.getContext(), subscriptionId).into(image);
-	}
-
 	@BindingAdapter("android:onChange")
 	public static void setOnChangeListener(CompoundButton button, CompoundButton.OnCheckedChangeListener listener) {
 		button.setOnCheckedChangeListener(listener);

@@ -16,7 +16,6 @@ import android.support.annotation.NonNull;
 
 import com.axelby.podax.model.DBAdapter;
 import com.axelby.podax.model.Episodes;
-import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 
 import java.io.File;
@@ -566,7 +565,7 @@ public class EpisodeProvider extends ContentProvider {
 			db.insert("fts_podcasts", null, ftsValues);
 
 			// if the new episode is less than 5 days old for the right subscriptions, add it to the playlist
-			SubscriptionData sub = PodaxDB.subscriptions.get(values.getAsLong(COLUMN_SUBSCRIPTION_ID));
+			SubscriptionData sub = SubscriptionData.create(values.getAsLong(COLUMN_SUBSCRIPTION_ID));
 			if (sub != null) {
 				if (sub.areNewEpisodesAddedToPlaylist()
 						&& !sub.isSingleUse()

@@ -3,8 +3,6 @@ package com.axelby.podax.model;
 import android.content.Context;
 import android.util.Log;
 
-import com.axelby.podax.SubscriptionCursor;
-
 import java.util.List;
 
 import rx.Observable;
@@ -13,6 +11,18 @@ import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
 public class Subscriptions {
+	public static final String COLUMN_ID = "_id";
+	public static final String COLUMN_TITLE = "title";
+	public static final String COLUMN_URL = "url";
+	public static final String COLUMN_LAST_MODIFIED = "lastModified";
+	public static final String COLUMN_LAST_UPDATE = "lastUpdate";
+	public static final String COLUMN_ETAG = "eTag";
+	public static final String COLUMN_THUMBNAIL = "thumbnail";
+	public static final String COLUMN_TITLE_OVERRIDE = "titleOverride";
+	public static final String COLUMN_PLAYLIST_NEW = "queueNew";
+	public static final String COLUMN_EXPIRATION = "expirationDays";
+	public static final String COLUMN_DESCRIPTION = "description";
+	public static final String COLUMN_SINGLE_USE = "singleUse";
 
 	private static Context _context;
 
@@ -21,11 +31,6 @@ public class Subscriptions {
 	}
 
 	private static PublishSubject<SubscriptionData> _changeSubject = PublishSubject.create();
-	public static void notifyChange(SubscriptionCursor c) {
-		SubscriptionData data = SubscriptionData.cacheSwap(c);
-		_changeSubject.onNext(data);
-	}
-
 	public static void notifyChange(SubscriptionData sub) {
 		SubscriptionData data = SubscriptionData.cacheSwap(sub);
 		_changeSubject.onNext(data);
@@ -61,10 +66,14 @@ public class Subscriptions {
 	}
 
 	public static SubscriptionData getForRSSUrl(String rssUrl) {
-		List<SubscriptionData> subs = PodaxDB.subscriptions.getFor(SubscriptionDB.COLUMN_URL, rssUrl);
+		List<SubscriptionData> subs = PodaxDB.subscriptions.getFor(Subscriptions.COLUMN_URL, rssUrl);
 		if (subs.size() == 0)
 			return null;
 		return subs.get(0);
+	}
+
+	public static Observable<List<SubscriptionData>> search(String query) {
+		return Observable.just(PodaxDB.subscriptions.search(query));
 	}
 
 	public static void delete(long subscriptionId) {
@@ -88,7 +97,7 @@ public class Subscriptions {
 				e -> Log.e("Subscriptions", "unable to retrieve episodes to delete", e)
 			);
 
-		SubscriptionCursor.evictThumbnails(_context, subscriptionId);
+		SubscriptionData.evictThumbnails(_context, subscriptionId);
 		PodaxDB.subscriptions.delete(subscriptionId);
 
 		// TODO: notify everyone somehow

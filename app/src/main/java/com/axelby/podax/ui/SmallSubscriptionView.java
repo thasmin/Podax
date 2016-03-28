@@ -12,7 +12,7 @@ import android.widget.TextView;
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
-import com.axelby.podax.model.SubscriptionDB;
+import com.axelby.podax.model.SubscriptionEditor;
 import com.squareup.picasso.Picasso;
 
 public class SmallSubscriptionView extends FrameLayout {
@@ -23,7 +23,7 @@ public class SmallSubscriptionView extends FrameLayout {
 	private OnClickListener _clickHandler = new OnClickListener() {
 		@Override
 		public void onClick(View view) {
-			long subscriptionId = SubscriptionDB.addSingleUseSubscription(getContext(), _rssUrl);
+			long subscriptionId = SubscriptionEditor.addSingleUseSubscription(getContext(), _rssUrl);
 			AppFlow.get(Helper.getActivityFromView(view)).displaySubscription(_title.getText(), subscriptionId, _thumbnail, _title);
 		}
 	};

@@ -17,6 +17,7 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
+import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
 import java.lang.ref.SoftReference;
@@ -209,6 +210,14 @@ public class EpisodeData {
 
 	public String getFinishedDate(Context context) {
 		return context.getString(R.string.finished_on, DateFormat.getInstance().format(getFinishedDate()));
+	}
+
+	public String getSubscriptionImageFilename(Context context) {
+		return SubscriptionData.getThumbnailFilename(context, getSubscriptionId());
+	}
+
+	public RequestCreator getSubscriptionImage(Context context) {
+		return SubscriptionData.getThumbnailImage(context, getSubscriptionId());
 	}
 
 	/* -------

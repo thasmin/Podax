@@ -5,7 +5,6 @@ import android.content.Context;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.Episodes;
-import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
@@ -86,7 +85,7 @@ public class SubscriptionDataTests {
 		Assert.assertNotEquals("subscription uri should not be null", -1, sub2Id);
 
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.getFor(SubscriptionDB.COLUMN_SINGLE_USE, 1).subscribe(testSubscriber);
+		Subscriptions.getFor(Subscriptions.COLUMN_SINGLE_USE, 1).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
@@ -103,7 +102,7 @@ public class SubscriptionDataTests {
 		long epId = EpisodeEditor.fromNew(context, subId, "test://2").setTitle("ep title").commit();
 		Assert.assertNotEquals("episode id should not be -1", -1, epId);
 
-		String thumbFn = SubscriptionCursor.getThumbnailFilename(context, subId);
+		String thumbFn = SubscriptionData.getThumbnailFilename(context, subId);
 		new File(thumbFn).mkdirs();
 		new File(thumbFn).createNewFile();
 		Assert.assertTrue("subscription thumbnail should have been created", new File(thumbFn).exists());

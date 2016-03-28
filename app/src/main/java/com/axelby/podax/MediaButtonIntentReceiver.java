@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 
+import com.axelby.podax.model.SubscriptionData;
+
 public class MediaButtonIntentReceiver extends BroadcastReceiver {
 
 	@Override
@@ -158,7 +160,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		DisplayMetrics metrics = new DisplayMetrics();
 		wm.getDefaultDisplay().getMetrics(metrics);
-		Bitmap thumbnail = SubscriptionCursor.getThumbnailImageRaw(context, status.getSubscriptionId());
+		Bitmap thumbnail = SubscriptionData.getThumbnailImageRaw(context, status.getSubscriptionId());
 		if (thumbnail != null) {
 			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, thumbnail);
 			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, thumbnail);

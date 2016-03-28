@@ -13,7 +13,7 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
-import com.axelby.podax.SubscriptionCursor;
+import com.axelby.podax.model.SubscriptionData;
 
 public class SmallWidgetProvider extends AppWidgetProvider {
     private static void setActivePodcastClickIntent(Context context, RemoteViews views, int resourceId, Uri command) {
@@ -53,7 +53,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 		views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-		SubscriptionCursor.getThumbnailImage(context, playerState.getSubscriptionId()).into(views, R.id.show_btn, appWidgetIds);
+		SubscriptionData.getThumbnailImage(context, playerState.getSubscriptionId()).into(views, R.id.show_btn, appWidgetIds);
 
 		appWidgetManager.updateAppWidget(appWidgetIds, views);
 

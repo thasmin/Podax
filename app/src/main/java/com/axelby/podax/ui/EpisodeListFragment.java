@@ -21,8 +21,8 @@ import com.axelby.podax.UpdateService;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.axelby.podax.model.DBAdapter;
-import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
+import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
@@ -92,13 +92,14 @@ public class EpisodeListFragment extends RxFragment {
 		if (sub != null)
 			return Observable.just(sub);
 
-		long subId = SubscriptionDB.addSingleUseSubscription(getActivity(), rssUrl);
+		long subId = SubscriptionEditor.addSingleUseSubscription(getActivity(), rssUrl);
 		return Observable.just(SubscriptionData.create(subId));
 	}
 
 	private Observable<String> getRSSUrlFromITunesUrl(String iTunesUrl) {
+		// TODO: put in model
 		SQLiteDatabase db = new DBAdapter(getActivity()).getReadableDatabase();
-		Cursor c = db.rawQuery("SELECT " + SubscriptionDB.COLUMN_URL + " FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
+		Cursor c = db.rawQuery("SELECT " + Subscriptions.COLUMN_URL + " FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
 		if (c != null) {
 			if (c.moveToFirst() && c.isNull(0)) {
 				String url = c.getString(0);

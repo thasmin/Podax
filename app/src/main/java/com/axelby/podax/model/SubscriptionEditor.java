@@ -1,7 +1,10 @@
 package com.axelby.podax.model;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.support.annotation.NonNull;
+
+import com.axelby.podax.UpdateService;
 
 import java.util.Date;
 
@@ -39,6 +42,21 @@ public class SubscriptionEditor {
 
 	public static SubscriptionEditor createViaGPodder(String url) {
 		return new SubscriptionEditor(-1).setFromGPodder(true).setUrl(url).setSingleUse(false);
+	}
+
+	public static long addNewSubscription(Context context, String url) {
+		long id = SubscriptionEditor.create(url).setSingleUse(false).commit();
+		UpdateService.updateSubscription(context, id);
+		return id;
+	}
+
+	public static long addSingleUseSubscription(Context context, String url) {
+		long id = SubscriptionEditor.create(url)
+			.setSingleUse(true)
+			.setPlaylistNew(false)
+			.commit();
+		UpdateService.updateSubscription(context, id);
+		return id;
 	}
 
 	public SubscriptionEditor(long subscriptionId) {
@@ -123,7 +141,7 @@ public class SubscriptionEditor {
 			PodaxDB.subscriptions.update(_subscriptionId, values);
 			SubscriptionData.evictFromCache(_subscriptionId);
 		} else {
-			values.remove(SubscriptionDB.COLUMN_ID);
+			values.remove(Subscriptions.COLUMN_ID);
 			_subscriptionId = PodaxDB.subscriptions.insert(values);
 			if (!_fromGPodder)
 				PodaxDB.gPodder.add(_url);
@@ -137,37 +155,37 @@ public class SubscriptionEditor {
 	private ContentValues getContentValues() {
 		ContentValues values = new ContentValues(17);
 
-		values.put(SubscriptionDB.COLUMN_ID, _subscriptionId);
+		values.put(Subscriptions.COLUMN_ID, _subscriptionId);
 		if (_rawTitleSet)
-			values.put(SubscriptionDB.COLUMN_TITLE, _rawTitle);
+			values.put(Subscriptions.COLUMN_TITLE, _rawTitle);
 		if (_urlSet)
-			values.put(SubscriptionDB.COLUMN_URL, _url);
+			values.put(Subscriptions.COLUMN_URL, _url);
 		if (_lastModifiedSet) {
 			if (_lastModified != null)
-				values.put(SubscriptionDB.COLUMN_LAST_MODIFIED, _lastModified.getTime() / 1000);
+				values.put(Subscriptions.COLUMN_LAST_MODIFIED, _lastModified.getTime() / 1000);
 			else
-				values.putNull(SubscriptionDB.COLUMN_LAST_MODIFIED);
+				values.putNull(Subscriptions.COLUMN_LAST_MODIFIED);
 		}
 		if (_lastUpdateSet) {
 			if (_lastUpdate != null)
-				values.put(SubscriptionDB.COLUMN_LAST_UPDATE, _lastUpdate.getTime() / 1000);
+				values.put(Subscriptions.COLUMN_LAST_UPDATE, _lastUpdate.getTime() / 1000);
 			else
-				values.putNull(SubscriptionDB.COLUMN_LAST_UPDATE);
+				values.putNull(Subscriptions.COLUMN_LAST_UPDATE);
 		}
 		if (_etagSet)
-			values.put(SubscriptionDB.COLUMN_ETAG, _etag);
+			values.put(Subscriptions.COLUMN_ETAG, _etag);
 		if (_thumbnailSet)
-			values.put(SubscriptionDB.COLUMN_THUMBNAIL, _thumbnail);
+			values.put(Subscriptions.COLUMN_THUMBNAIL, _thumbnail);
 		if (_titleOverrideSet)
-			values.put(SubscriptionDB.COLUMN_TITLE_OVERRIDE, _titleOverride);
+			values.put(Subscriptions.COLUMN_TITLE_OVERRIDE, _titleOverride);
 		if (_descriptionSet)
-			values.put(SubscriptionDB.COLUMN_DESCRIPTION, _description);
+			values.put(Subscriptions.COLUMN_DESCRIPTION, _description);
 		if (_singleUseSet)
-			values.put(SubscriptionDB.COLUMN_SINGLE_USE, _singleUse);
+			values.put(Subscriptions.COLUMN_SINGLE_USE, _singleUse);
 		if (_playlistNewSet)
-			values.put(SubscriptionDB.COLUMN_PLAYLIST_NEW, _playlistNew);
+			values.put(Subscriptions.COLUMN_PLAYLIST_NEW, _playlistNew);
 		if (_expirationDaysSet)
-			values.put(SubscriptionDB.COLUMN_EXPIRATION, _expirationDays);
+			values.put(Subscriptions.COLUMN_EXPIRATION, _expirationDays);
 		return values;
 	}
 }

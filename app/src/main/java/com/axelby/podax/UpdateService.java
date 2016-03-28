@@ -6,11 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.Subscriptions;
 
 import rx.Observable;
@@ -22,9 +20,6 @@ public class UpdateService extends IntentService {
 	public UpdateService() {
 		super("UpdateService");
 	}
-
-	private static long _updatingSubscriptionId = -1000;
-	public static long getUpdatingSubscriptionId() { return _updatingSubscriptionId; }
 
 	public static void updateSubscriptions(Context context) {
 		Intent intent = new Intent(context, UpdateService.class);
@@ -70,7 +65,7 @@ public class UpdateService extends IntentService {
 
 		switch (action) {
 			case Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS: {
-				Subscriptions.getFor(SubscriptionDB.COLUMN_SINGLE_USE, 1)
+				Subscriptions.getFor(Subscriptions.COLUMN_SINGLE_USE, 1)
 					.subscribe(
 						s -> updateSubscription(s.getId()),
 						e -> Log.e("UpdateService", "unable to get all subscriptions", e)

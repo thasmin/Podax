@@ -13,7 +13,6 @@ import android.util.Xml;
 
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.Episodes;
-import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
@@ -52,7 +51,7 @@ class SubscriptionUpdater {
 			if (Helper.isInvalidNetworkState(_context))
 				return;
 
-			SubscriptionData subscription = PodaxDB.subscriptions.get(subscriptionId);
+			SubscriptionData subscription = SubscriptionData.create(subscriptionId);
 			if (subscription == null)
 				return;
 
@@ -161,7 +160,7 @@ class SubscriptionUpdater {
 	}
 
 	private void ensureThumbnail(long subscriptionId, String thumbnailUrl) {
-		String filename = SubscriptionCursor.getThumbnailFilename(_context, subscriptionId);
+		String filename = SubscriptionData.getThumbnailFilename(_context, subscriptionId);
 		if (new File(filename).exists())
 			return;
 		downloadThumbnail(subscriptionId, thumbnailUrl);
@@ -170,7 +169,7 @@ class SubscriptionUpdater {
 	private void downloadThumbnailImage(long subscriptionId, String oldThumbnailUrl, String newThumbnailUrl) {
 		// if the thumbnail was removed
 		if (newThumbnailUrl == null && oldThumbnailUrl != null) {
-			SubscriptionCursor.evictThumbnails(_context, subscriptionId);
+			SubscriptionData.evictThumbnails(_context, subscriptionId);
 		}
 		// there's no current thumbnail
 		if (newThumbnailUrl == null)
@@ -182,7 +181,7 @@ class SubscriptionUpdater {
 		}
 		// thumbnail exists
 		if (oldThumbnailUrl != null) {
-			SubscriptionCursor.evictThumbnails(_context, subscriptionId);
+			SubscriptionData.evictThumbnails(_context, subscriptionId);
 		}
 
 		downloadThumbnail(subscriptionId, newThumbnailUrl);
@@ -192,7 +191,7 @@ class SubscriptionUpdater {
 		try {
 			Request request = new Request.Builder().url(thumbnailUrl).build();
 			Response response = new OkHttpClient().newCall(request).execute();
-			String filename = SubscriptionCursor.getThumbnailFilename(_context, subscriptionId);
+			String filename = SubscriptionData.getThumbnailFilename(_context, subscriptionId);
 			BufferedSink sink = Okio.buffer(Okio.sink(new File(filename)));
 			sink.writeAll(response.body().source());
 			sink.close();

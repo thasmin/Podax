@@ -34,7 +34,7 @@
                 android:layout_width="75dip"
                 android:layout_height="75dip"
                 tools:src="@drawable/icon"
-                app:subscriptionImageId="@{episode.subscriptionId}"
+                android:src="@{episode.getSubscriptionImageFilename(context)}"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_margin="10dp"

@@ -22,6 +22,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.TypedValue;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
+import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.ui.MainActivity;
 
 // this class handles connects the app to the player
@@ -278,7 +279,7 @@ public class PlayerService extends Service {
 			.setDeleteIntent(deletePI)
 			.setContentIntent(showPI);
 
-		Bitmap bitmap = SubscriptionCursor.getThumbnailImageRaw(this, playerStatus.getSubscriptionId());
+		Bitmap bitmap = SubscriptionData.getThumbnailImageRaw(this, playerStatus.getSubscriptionId());
 		int largeIconPx = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, getResources().getDisplayMetrics());
 		Bitmap scaled = Bitmap.createScaledBitmap(bitmap, largeIconPx, largeIconPx, true);
 		builder.setLargeIcon(scaled);

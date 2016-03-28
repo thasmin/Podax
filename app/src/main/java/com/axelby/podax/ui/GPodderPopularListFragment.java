@@ -19,7 +19,7 @@ import android.widget.TextView;
 import com.axelby.gpodder.Client;
 import com.axelby.gpodder.dto.Podcast;
 import com.axelby.podax.R;
-import com.axelby.podax.model.SubscriptionDB;
+import com.axelby.podax.model.SubscriptionEditor;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -103,7 +103,7 @@ public class GPodderPopularListFragment extends ListFragment {
 		private final View.OnClickListener addPodcastHandler = view -> {
 			View listitem = (View) view.getParent().getParent();
 			Podcast podcast = (Podcast) listitem.getTag();
-			SubscriptionDB.addNewSubscription(getContext(), podcast.url);
+			SubscriptionEditor.addNewSubscription(getContext(), podcast.url);
 		};
 		private final View.OnClickListener viewWebsiteHandler = view -> {
 			View listitem = (View) view.getParent().getParent();
