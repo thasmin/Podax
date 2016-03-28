@@ -246,60 +246,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 	@Override
 	public int delete(@NonNull Uri uri, String where, String[] whereArgs) {
-		if (getContext() == null)
-			return 0;
-		ContentResolver contentResolver = getContext().getContentResolver();
-
-		boolean from_gpodder = false;
-
-		switch (_uriMatcher.match(uri)) {
-			case SUBSCRIPTIONS:
-				break;
-			case FROM_GPODDER:
-				from_gpodder = true;
-				break;
-			case SUBSCRIPTION_ID:
-				String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
-				if (where != null)
-					where = extraWhere + " AND " + where;
-				else
-					where = extraWhere;
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown URI");
-		}
-
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-
-		// go through subscriptions about to be deleted and remove podcasts
-		Cursor c = db.query("subscriptions", new String[]{COLUMN_ID}, where, whereArgs, null, null, null);
-		ArrayList<String> subIds = new ArrayList<>();
-		String in = "";
-		while (c.moveToNext()) {
-			in += ",?";
-			subIds.add(String.valueOf(c.getLong(0)));
-			SubscriptionCursor.evictThumbnails(getContext(), c.getLong(0));
-		}
-		c.close();
-		if (!in.equals("")) {
-			in = "(" + in.substring(1) + ")";
-			contentResolver.delete(EpisodeProvider.URI, "subscriptionId IN " + in, subIds.toArray(new String[subIds.size()]));
-			db.delete("fts_subscriptions", "_id IN " + in, null);
-		}
-
-		// remove during next gpodder sync
-		if (!from_gpodder) {
-			c = db.query("subscriptions", new String[]{COLUMN_URL}, where, whereArgs, null, null, null);
-			while (c.moveToNext())
-				PodaxDB.gPodder.remove(c.getString(0));
-			c.close();
-		}
-
-		// delete subscription
-		int count = db.delete("subscriptions", where, whereArgs);
-
-		contentResolver.notifyChange(URI, null);
-		return count;
+		return 0;
 	}
 
 }

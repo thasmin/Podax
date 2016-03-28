@@ -116,15 +116,14 @@ class SubscriptionUpdater {
 
 					// if already exists, stop processing
 					// this is for podcasts that keep every episode in their rss feed
-					boolean exists = Episodes.getFor(_context, EpisodeProvider.COLUMN_MEDIA_URL, item.getMediaURL())
+					boolean exists = Episodes.getFor(EpisodeProvider.COLUMN_MEDIA_URL, item.getMediaURL())
 						.map(v -> true).firstOrDefault(false).toBlocking().single();
 					if (exists) {
 						feedParser1.stopProcessing();
 						return;
 					}
 
-					EpisodeEditor.fromNew(_context, subscriptionId)
-						.setMediaUrl(item.getMediaURL())
+					EpisodeEditor.fromNew(_context, subscriptionId, item.getMediaURL())
 						.setTitle(item.getTitle())
 						.setLink(item.getLink())
 						.setDescription(item.getDescription())

@@ -48,6 +48,12 @@ public class SubscriptionDB {
 		db.update("subscriptions", values, "_id = ?", new String[] { String.valueOf(subscriptionId) });
 	}
 
+	public void delete(long subscriptionId) {
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+		db.delete("subscriptions", "_id = ?", new String[] { String.valueOf(subscriptionId) });
+		db.delete("fts_subscriptions", "_id = ?", new String[] { String.valueOf(subscriptionId) });
+	}
+
 	public List<SubscriptionData> getAll() {
 		return getList(null, null);
 	}

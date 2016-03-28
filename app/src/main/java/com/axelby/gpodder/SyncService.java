@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -32,6 +31,7 @@ import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionProvider;
 import com.axelby.podax.UpdateService;
 import com.axelby.podax.model.SubscriptionEditor;
+import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.ui.MainActivity;
 
 import java.util.ArrayList;
@@ -158,7 +158,7 @@ public class SyncService extends Service {
 			}
 
 			for (String removedUrl : changes.remove)
-				_context.getContentResolver().delete(SubscriptionProvider.FROM_GPODDER_URI, "url = ?", new String[]{removedUrl});
+				Subscriptions.deleteViaGPodder(removedUrl);
 
 			for (String addedUrl : changes.add) {
 				long id = SubscriptionEditor.createViaGPodder(addedUrl).commit();

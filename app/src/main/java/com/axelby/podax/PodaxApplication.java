@@ -5,6 +5,7 @@ import android.os.Build;
 import android.webkit.WebView;
 
 import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.Episodes;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.Subscriptions;
@@ -47,6 +48,7 @@ public class PodaxApplication extends Application {
 
 		PodaxDB.setContext(this);
 		Subscriptions.setContext(this);
+		Episodes.setContext(this);
 
 		JodaTimeAndroid.init(this);
 		PodaxLog.ensureRemoved(this);

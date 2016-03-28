@@ -89,7 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                app:children="@{subscription.getEpisodes(context)}"
+                app:children="@{subscription.episodes}"
                 app:childLayout="@{@layout/episodelist_item}"
                 />
 

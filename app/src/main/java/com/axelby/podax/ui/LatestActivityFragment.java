@@ -53,7 +53,7 @@ public class LatestActivityFragment extends RxFragment {
 		super.onAttach(activity);
 
 		_adapter = new LatestActivityAdapter();
-		Episodes.getLatestActivity(activity)
+		Episodes.getLatestActivity()
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.toList()

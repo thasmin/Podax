@@ -1,9 +1,12 @@
 package com.axelby.podax.model;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.axelby.podax.SubscriptionCursor;
 import com.axelby.podax.SubscriptionProvider;
+
+import java.util.List;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -46,10 +49,6 @@ public class Subscriptions {
 			.startWith(SubscriptionData.create(_context, id));
 	}
 
-	/* -------
-	   helpers
-	   ------- */
-
 	public static Observable<SubscriptionData> getAll() {
 		return Observable.from(PodaxDB.subscriptions.getAll());
 	}
@@ -62,8 +61,38 @@ public class Subscriptions {
 		return Observable.from(PodaxDB.subscriptions.getFor(field, value));
 	}
 
-	public static Observable<SubscriptionData> getForRSSUrl(String rssUrl) {
-		return getFor(SubscriptionProvider.COLUMN_URL, rssUrl);
+	public static SubscriptionData getForRSSUrl(String rssUrl) {
+		List<SubscriptionData> subs = PodaxDB.subscriptions.getFor(SubscriptionProvider.COLUMN_URL, rssUrl);
+		if (subs.size() == 0)
+			return null;
+		return subs.get(0);
+	}
+
+	public static void delete(long subscriptionId) {
+		SubscriptionData sub = SubscriptionData.create(_context, subscriptionId);
+		if (sub != null)
+			PodaxDB.gPodder.remove(sub.getUrl());
+		doDelete(subscriptionId);
+	}
+
+	public static void deleteViaGPodder(String url) {
+		SubscriptionData sub = Subscriptions.getForRSSUrl(url);
+		if (sub != null)
+			doDelete(sub.getId());
+	}
+
+	private static void doDelete(long subscriptionId) {
+		Episodes.getForSubscriptionId(subscriptionId)
+			.flatMapIterable(sub -> sub)
+			.subscribe(
+				s -> Episodes.delete(s.getId()),
+				e -> Log.e("Subscriptions", "unable to retrieve episodes to delete", e)
+			);
+
+		SubscriptionCursor.evictThumbnails(_context, subscriptionId);
+		PodaxDB.subscriptions.delete(subscriptionId);
+
+		// TODO: notify everyone somehow
 	}
 
 	public static void evictCache() {

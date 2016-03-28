@@ -92,17 +92,12 @@ public class EpisodeListFragment extends RxFragment {
 	}
 
 	private Observable<SubscriptionData> getSubscriptionIdFromRSSUrl(String rssUrl) {
-		Observable<SubscriptionData> addSubscriptionObservable = Observable.create(subscriber -> {
-			long subscriptionId = SubscriptionProvider.addSingleUseSubscription(getActivity(), rssUrl);
-			subscriber.onNext(SubscriptionData.create(getActivity(), subscriptionId));
-			subscriber.onCompleted();
-		});
+		SubscriptionData sub = Subscriptions.getForRSSUrl(rssUrl);
+		if (sub != null)
+			return Observable.just(sub);
 
-		// use the first observable that creates a response
-		return Observable.concat(
-				Subscriptions.getForRSSUrl(rssUrl),
-				addSubscriptionObservable)
-			.first();
+		long subId = SubscriptionProvider.addSingleUseSubscription(getActivity(), rssUrl);
+		return Observable.just(SubscriptionData.create(getActivity(), subId));
 	}
 
 	private Observable<String> getRSSUrlFromITunesUrl(String iTunesUrl) {

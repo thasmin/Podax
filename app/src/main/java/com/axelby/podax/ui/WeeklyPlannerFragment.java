@@ -102,7 +102,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 	}
 
 	private void getAutoAddedTimeAndUpdate() {
-		Episodes.getNewForSubscriptionIds(getActivity(), _subIds)
+		Episodes.getNewForSubscriptionIds(_subIds)
 			.observeOn(AndroidSchedulers.mainThread())
 			.reduce(0f, (carried, ep) -> carried += ep.getDuration() / 1000.0f)
 			.subscribe(

@@ -209,8 +209,8 @@ public class SubscriptionData {
 		return UpdateService.getUpdatingSubscriptionId() == getId();
 	}
 
-	public List<EpisodeData> getEpisodes(Context context) {
-		return Episodes.getForSubscriptionId(context, getId()).toBlocking().first();
+	public List<EpisodeData> getEpisodes() {
+		return Episodes.getForSubscriptionId(getId()).toBlocking().first();
 	}
 
 	public void changeSubscribe(CompoundButton button, boolean isChecked) {

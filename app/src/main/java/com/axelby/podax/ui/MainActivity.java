@@ -88,7 +88,7 @@ public class MainActivity extends RxAppCompatActivity {
 
 		boolean showAutomatically = prefs.getBoolean("automatic_show", true);
 		long lastActivityCheck = prefs.getLong("last_check", 0);
-		if (showAutomatically && Episodes.isLastActivityAfter(this, lastActivityCheck))
+		if (showAutomatically && Episodes.isLastActivityAfter(lastActivityCheck))
 			AppFlow.get(this).displayLatestActivity();
 	}
 

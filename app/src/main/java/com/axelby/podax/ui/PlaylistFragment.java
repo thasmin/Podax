@@ -155,7 +155,7 @@ public class PlaylistFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PlaylistListAdapter();
-		Episodes.getPlaylist(activity)
+		Episodes.getPlaylist()
 			.compose(bindToLifecycle())
 			.subscribe(
 				_adapter::setEpisodes,

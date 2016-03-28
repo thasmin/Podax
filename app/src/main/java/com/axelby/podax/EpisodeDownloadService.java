@@ -88,7 +88,7 @@ public class EpisodeDownloadService extends Service {
 
 			// make sure we don't download too many episodes
 			float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
-			Integer downloadedEpisodes = Episodes.getDownloaded(this).count().toBlocking().first();
+			Integer downloadedEpisodes = Episodes.getDownloaded().count().toBlocking().first();
 			if (downloadedEpisodes >= maxEpisodes)
 				return;
 
@@ -97,7 +97,7 @@ public class EpisodeDownloadService extends Service {
 			verifyDownloadedFiles(this);
 			expireDownloadedFiles();
 
-			Episodes.getNeedsDownload(this).subscribe(
+			Episodes.getNeedsDownload().subscribe(
 				ep -> handleIntent(createDownloadEpisodeIntent(this, ep.getId())),
 				e -> Log.e("EpisodeDownloadService", "unable to get episodes that need to be downloaded", e)
 			);
@@ -113,7 +113,7 @@ public class EpisodeDownloadService extends Service {
 
 	// make sure all media files in the folder are for existing episodes
 	public static void verifyDownloadedFiles(Context context) {
-		List<String> validMediaFilenames = Episodes.getPlaylist(context)
+		List<String> validMediaFilenames = Episodes.getPlaylist()
 			.first()
 			.flatMapIterable(eps -> eps)
 			.map(ep -> ep.getFilename(context))
@@ -139,7 +139,7 @@ public class EpisodeDownloadService extends Service {
 	}
 
 	private void expireDownloadedFiles() {
-		Episodes.getExpired(this).subscribe(
+		Episodes.getExpired().subscribe(
 			ep -> ep.removeFromPlaylist(this),
 			e -> Log.e("EpisodeDownloadService", "unable to expire downloaded files")
 		);

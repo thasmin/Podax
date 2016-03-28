@@ -35,7 +35,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
-		Episodes.getFinished(activity)
+		Episodes.getFinished()
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())

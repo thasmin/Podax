@@ -163,7 +163,7 @@ public class EpisodeDetailFragment extends RxFragment {
 			_episodeDataSubscriber.unsubscribe();
 		}
 
-		Episodes.getObservable(getActivity(), _podcastId)
+		Episodes.getObservable(_podcastId)
 			.compose(bindToLifecycle())
 			.subscribe(_episodeDataSubscriber);
 	}

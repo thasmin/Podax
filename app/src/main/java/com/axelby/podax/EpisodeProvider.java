@@ -421,7 +421,7 @@ public class EpisodeProvider extends ContentProvider {
 		}
 
 		if (values.containsKey(COLUMN_FINISHED_TIME))
-			Episodes.notifyFinishedChange(getContext());
+			Episodes.notifyFinishedChange();
 
 
 		// if the current episode has updated the position but it's not from the player, tell the player to update
@@ -521,7 +521,7 @@ public class EpisodeProvider extends ContentProvider {
 			new Object[]{newPosition, episodeId});
 		if (getContext() != null) {
 			getContext().getContentResolver().notifyChange(PLAYLIST_URI, null);
-			Episodes.notifyPlaylistChange(getContext());
+			Episodes.notifyPlaylistChange();
 		}
 	}
 
