@@ -30,7 +30,7 @@ public class SubscriptionDateUpdateTests {
 		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		SubscriptionData sub = SubscriptionData.create(context, subId);
+		SubscriptionData sub = SubscriptionData.create(subId);
 		Assert.assertNotNull(sub);
 		Assert.assertEquals("huh?", sub.getTitle());
 
@@ -38,7 +38,7 @@ public class SubscriptionDateUpdateTests {
 			.setTitleOverride("oh i see")
 			.commit();
 
-		sub = SubscriptionData.create(context, subId);
+		sub = SubscriptionData.create(subId);
 		Assert.assertNotNull(sub);
 		Assert.assertEquals("oh i see", sub.getTitle());
 	}
@@ -50,17 +50,17 @@ public class SubscriptionDateUpdateTests {
 		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		SubscriptionData sub = SubscriptionData.create(context, subId);
+		SubscriptionData sub = SubscriptionData.create(subId);
 		Assert.assertNotNull(sub);
 		Assert.assertEquals("huh?", sub.getTitle());
 
 		new SubscriptionEditor(subId).setExpirationDays(0).commit();
-		sub = SubscriptionData.create(context, subId);
+		sub = SubscriptionData.create(subId);
 		Assert.assertNotNull(sub);
 		Assert.assertEquals((Integer) 0, sub.getExpirationDays());
 
 		new SubscriptionEditor(subId).setExpirationDays(null).commit();
-		sub = SubscriptionData.create(context, subId);
+		sub = SubscriptionData.create(subId);
 		Assert.assertNotNull(sub);
 		Assert.assertNull(sub.getExpirationDays());
 	}

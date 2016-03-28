@@ -13,6 +13,8 @@ import android.util.Xml;
 
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.PodaxDB;
+import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.ui.MainActivity;
@@ -46,12 +48,11 @@ class SubscriptionUpdater {
 	}
 
 	public void update(long subscriptionId) {
-		SubscriptionCursor subscription = null;
 		try {
 			if (Helper.isInvalidNetworkState(_context))
 				return;
 
-			subscription = SubscriptionCursor.getCursor(_context, subscriptionId);
+			SubscriptionData subscription = PodaxDB.subscriptions.get(subscriptionId);
 			if (subscription == null)
 				return;
 
@@ -155,8 +156,6 @@ class SubscriptionUpdater {
 		} catch (Exception e) {
 			Log.e("Podax", "error while updating", e);
 		} finally {
-			if (subscription != null)
-				subscription.closeCursor();
 			EpisodeDownloadService.downloadEpisodesSilently(_context);
 		}
 	}
@@ -202,7 +201,7 @@ class SubscriptionUpdater {
 		}
 	}
 
-	private void showUpdateErrorNotification(SubscriptionCursor subscription, String reason) {
+	private void showUpdateErrorNotification(SubscriptionData subscription, String reason) {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 
@@ -268,7 +267,7 @@ class SubscriptionUpdater {
 		}
 	}
 
-	void showNotification(SubscriptionCursor subscription) {
+	void showNotification(SubscriptionData subscription) {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 

@@ -46,7 +46,7 @@ public class Subscriptions {
 			.filter(d -> d.getId() == id)
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
-			.startWith(SubscriptionData.create(_context, id));
+			.startWith(SubscriptionData.create(id));
 	}
 
 	public static Observable<SubscriptionData> getAll() {
@@ -69,7 +69,7 @@ public class Subscriptions {
 	}
 
 	public static void delete(long subscriptionId) {
-		SubscriptionData sub = SubscriptionData.create(_context, subscriptionId);
+		SubscriptionData sub = SubscriptionData.create(subscriptionId);
 		if (sub != null)
 			PodaxDB.gPodder.remove(sub.getUrl());
 		doDelete(subscriptionId);

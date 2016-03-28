@@ -1,7 +1,6 @@
 package com.axelby.podax.model;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import android.util.LruCache;
@@ -138,7 +137,7 @@ public class SubscriptionData {
 		return new SubscriptionData(values);
 	}
 
-	public static SubscriptionData create(Context context, long id) {
+	public static SubscriptionData create(long id) {
 		synchronized (_cache) {
 			if (_cache.get(id) != null && _cache.get(id).get() != null)
 				return _cache.get(id).get();
@@ -147,15 +146,10 @@ public class SubscriptionData {
 		if (id < 0)
 			return null;
 
-		SubscriptionCursor cursor = SubscriptionCursor.getCursor(context, id);
-		if (cursor == null)
-			return null;
-
-		SubscriptionData data = new SubscriptionData(cursor);
+		SubscriptionData data = PodaxDB.subscriptions.get(id);
 		synchronized (_cache) {
 			_cache.put(id, new SoftReference<>(data));
 		}
-		cursor.closeCursor();
 		return data;
 	}
 
@@ -187,7 +181,7 @@ public class SubscriptionData {
 	public String getUrl() { return _url; }
 	public Date getLastModified() { return _lastModified; }
 	public Date getLastUpdate() { return _lastUpdate; }
-	public String getEtag() { return _etag; }
+	public String getETag() { return _etag; }
 	public String getThumbnail() { return _thumbnail; }
 	public String getTitleOverride() { return _titleOverride; }
 	public String getDescription() { return _description; }

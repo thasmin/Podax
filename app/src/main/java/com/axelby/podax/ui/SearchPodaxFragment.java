@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -18,10 +17,8 @@ import android.widget.TextView;
 
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.EpisodeCursor;
-import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.R;
 import com.axelby.podax.SubscriptionCursor;
-import com.axelby.podax.SubscriptionProvider;
 
 public class SearchPodaxFragment extends Fragment
 		implements SearchActivity.QueryChangedHandler, LoaderManager.LoaderCallbacks<Cursor> {
@@ -72,11 +69,13 @@ public class SearchPodaxFragment extends Fragment
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int loader, Bundle bundle) {
+		/*
 		String query = bundle.getString(SearchManager.QUERY);
 		if (loader == 0)
 			return new CursorLoader(getActivity(), SubscriptionProvider.SEARCH_URI, null, null, new String[] { query }, null);
 		else if (loader == 1)
 			return new CursorLoader(getActivity(), EpisodeProvider.SEARCH_URI, null, null, new String[] { query }, null);
+		*/
 		return null;
 	}
 

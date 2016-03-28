@@ -1,6 +1,5 @@
 package com.axelby.podax;
 
-import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -37,14 +36,6 @@ public class SubscriptionCursor {
 			return;
 		if (_cursor.isBeforeFirst())
 			_cursor.moveToFirst();
-	}
-
-	public static SubscriptionCursor getCursor(Context context, long subscriptionId) {
-		@SuppressLint("Recycle")
-		Cursor c = context.getContentResolver().query(SubscriptionCursor.getContentUri(subscriptionId), null, null, null, null);
-		if (c == null)
-			return null;
-		return new SubscriptionCursor(c);
 	}
 
 	private static Uri getContentUri(long id) {

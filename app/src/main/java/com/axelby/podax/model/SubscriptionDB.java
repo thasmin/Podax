@@ -54,6 +54,18 @@ public class SubscriptionDB {
 		db.delete("fts_subscriptions", "_id = ?", new String[] { String.valueOf(subscriptionId) });
 	}
 
+	public SubscriptionData get(long subscriptionId) {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		Cursor cursor = db.query("subscriptions", null, "_id = ?", new String[] { String.valueOf(subscriptionId) }, null, null, null);
+		SubscriptionData data = null;
+		if (cursor != null) {
+			if (cursor.moveToNext())
+				data = SubscriptionData.from(new SubscriptionCursor(cursor));
+			cursor.close();
+		}
+		return data;
+	}
+
 	public List<SubscriptionData> getAll() {
 		return getList(null, null);
 	}
@@ -69,16 +81,32 @@ public class SubscriptionDB {
 		return getList(selection, selectionArgs);
 	}
 
+	public List<SubscriptionData> search(String query) {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		String table = "subscriptions s JOIN fts_subscriptions fts on s._id = fts._id";
+		String selection = "singleUse = 0 AND fts_subscriptions MATCH ?";
+		String sortOrder = "s.title IS NULL, COALESCE(s.titleOverride, s.title)";
+		String sql = "SELECT s.* FROM " + table + " WHERE " + selection + " ORDER BY " + sortOrder;
+		Cursor cursor = db.rawQuery(sql, new String[] { query });
+
+		ArrayList<SubscriptionData> subs = new ArrayList<>(cursor.getCount());
+		while (cursor.moveToNext())
+			subs.add(SubscriptionData.from(new SubscriptionCursor(cursor)));
+		cursor.close();
+		return subs;
+	}
+
 	@NonNull
 	private List<SubscriptionData> getList(String selection, String[] selectionArgs) {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		Cursor cursor = db.query("subscriptions", null, selection, selectionArgs, null, null, null);
+		String sortOrder = "subscriptions.title IS NULL, COALESCE(subscriptions.titleOverride, subscriptions.title)";
+		Cursor cursor = db.query("subscriptions", null, selection, selectionArgs, null, null, sortOrder);
 
-		int idIndex = cursor.getColumnIndex("_id");
+		//int idIndex = cursor.getColumnIndex("_id");
 
 		ArrayList<SubscriptionData> subs = new ArrayList<>(cursor.getCount());
 		while (cursor.moveToNext()) {
-			SubscriptionData.evictFromCache(cursor.getLong(idIndex));
+			//SubscriptionData.evictFromCache(cursor.getLong(idIndex));
 			subs.add(SubscriptionData.from(new SubscriptionCursor(cursor)));
 		}
 

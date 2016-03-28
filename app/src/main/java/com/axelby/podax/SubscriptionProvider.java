@@ -8,25 +8,19 @@ import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.database.DatabaseUtilsCompat;
 
 import com.axelby.podax.model.DBAdapter;
-import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class SubscriptionProvider extends ContentProvider {
 	private static final String AUTHORITY = "com.axelby.podax.subscriptionprovider";
 	public static final Uri URI = Uri.parse("content://" + AUTHORITY + "/subscriptions");
-	public static final Uri SEARCH_URI = Uri.withAppendedPath(URI, "search");
-	public static final Uri FROM_GPODDER_URI = Uri.withAppendedPath(URI, "from_gpodder");
 
 	public static final String ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.axelby.subscription";
 	public static final String DIR_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.axelby.subscription";
@@ -125,64 +119,7 @@ public class SubscriptionProvider extends ContentProvider {
 
 	@Override
 	public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-		int uriMatch = _uriMatcher.match(uri);
-
-		if (uriMatch == PODCASTS) {
-			if (getContext() == null)
-				return null;
-			return getContext().getContentResolver().query(EpisodeProvider.URI,
-					projection, "subscriptionId = ?",
-					new String[]{uri.getPathSegments().get(1)},
-					EpisodeProvider.COLUMN_PUB_DATE + " DESC");
-		}
-
-		// make sure that title_override is in the query set if title is in there
-		if (projection != null) {
-			boolean hasTitle = false, hasOverride = false;
-			for (String p : projection) {
-				if (p.equals(COLUMN_TITLE))
-					hasTitle = true;
-				if (p.equals(COLUMN_TITLE_OVERRIDE))
-					hasOverride = true;
-			}
-			if (hasTitle && !hasOverride) {
-				ArrayList<String> list = new ArrayList<>(Arrays.asList(projection));
-				list.add(COLUMN_TITLE_OVERRIDE);
-				projection = list.toArray(new String[list.size()]);
-			}
-		}
-
-		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
-		sqlBuilder.setProjectionMap(_columnMap);
-		sqlBuilder.setTables("subscriptions");
-
-		// default sort order is by title
-		if (sortOrder == null)
-			sortOrder = "subscriptions.title IS NULL, COALESCE(subscriptions.titleOverride, subscriptions.title)";
-
-		switch (uriMatch) {
-			case SUBSCRIPTIONS:
-				// by default, only take not single use subscriptions
-				if (selection != null && !selection.contains("singleUse"))
-					sqlBuilder.appendWhere("singleUse = 0");
-				break;
-			case SUBSCRIPTION_ID:
-				sqlBuilder.appendWhere("_id = " + uri.getLastPathSegment());
-				break;
-			case SUBSCRIPTIONS_SEARCH:
-				sqlBuilder.setTables(sqlBuilder.getTables() + " JOIN fts_subscriptions fts ON subscriptions._id = fts._id");
-				selection = "fts_subscriptions MATCH ?";
-				sqlBuilder.appendWhere("singleUse = 0");
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown URI: " + uri);
-		}
-
-		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		Cursor c = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
-		if (getContext() != null)
-			c.setNotificationUri(getContext().getContentResolver(), uri);
-		return c;
+		return null;
 	}
 
 	@Override
