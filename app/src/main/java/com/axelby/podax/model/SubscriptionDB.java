@@ -28,7 +28,7 @@ public class SubscriptionDB {
 
 	private DBAdapter _dbAdapter;
 
-	public SubscriptionDB(DBAdapter dbAdapter) {
+	SubscriptionDB(DBAdapter dbAdapter) {
 		_dbAdapter = dbAdapter;
 	}
 
@@ -122,10 +122,10 @@ public class SubscriptionDB {
 	}
 
 	private void doDelete(long subscriptionId) {
-		Episodes.getForSubscriptionId(subscriptionId)
+		EpisodeDB.getForSubscriptionId(subscriptionId)
 			.flatMapIterable(sub -> sub)
 			.subscribe(
-				s -> Episodes.delete(s.getId()),
+				s -> PodaxDB.episodes.delete(s.getId()),
 				e -> Log.e("Subscriptions", "unable to retrieve episodes to delete", e)
 			);
 

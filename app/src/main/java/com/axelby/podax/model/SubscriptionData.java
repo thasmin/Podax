@@ -260,7 +260,7 @@ public class SubscriptionData {
 	}
 
 	public List<EpisodeData> getEpisodes() {
-		return Episodes.getForSubscriptionId(getId()).toBlocking().first();
+		return EpisodeDB.getForSubscriptionId(getId()).toBlocking().first();
 	}
 
 	@SuppressWarnings("unused")

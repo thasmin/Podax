@@ -2,6 +2,7 @@ package com.axelby.podax.model;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -11,6 +12,7 @@ import com.axelby.podax.EpisodeProvider;
 
 import org.joda.time.LocalDate;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,11 +22,43 @@ import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
-public class Episodes {
+public class EpisodeDB {
 	private static Context _context;
 
 	public static void setContext(@NonNull Context context) {
 		_context = context;
+	}
+
+	private final DBAdapter _dbAdapter;
+
+	EpisodeDB(DBAdapter dbAdapter) {
+		_dbAdapter = dbAdapter;
+	}
+
+	public void delete(long episodeId) {
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+
+		// act on the podcasts about to be deleted
+		db.delete("podcasts", "_id = ?", new String[] { String.valueOf(episodeId) });
+		db.delete("fts_podcasts", "_id = ?", new String[] { String.valueOf(episodeId) });
+		deleteFiles(episodeId);
+
+		// keep the queue order monotonic
+		String monotonicSQL = "UPDATE podcasts SET queuePosition = " +
+			"(SELECT COUNT(queuePosition) FROM podcasts sub WHERE queuePosition IS NOT NULL AND sub.queuePosition < podcasts.queuePosition) " +
+			"WHERE queuePosition IS NOT NULL";
+		db.execSQL(monotonicSQL);
+
+		// TODO: let everyone know
+	}
+
+	private static void deleteFiles(long episodeId) {
+		File storage = new File(EpisodeCursor.getPodcastStoragePath(_context));
+		File[] files = storage.listFiles(pathname -> {
+			return pathname.getName().startsWith(String.valueOf(episodeId) + ".");
+		});
+		for (File f : files)
+			f.delete();
 	}
 
 	private static Observable<EpisodeData> queryToObservable(Uri uri, String selection, String[] selectionArgs, String sortOrder) {
@@ -58,7 +92,7 @@ public class Episodes {
 	}
 
 	public static Observable<EpisodeData> getObservable(long episodeId) {
-		return Episodes.getEpisodeWatcher(episodeId)
+		return EpisodeDB.getEpisodeWatcher(episodeId)
 			.subscribeOn(Schedulers.io())
 			.startWith(EpisodeData.create(_context, episodeId))
 			.observeOn(AndroidSchedulers.mainThread());
@@ -182,10 +216,6 @@ public class Episodes {
 		String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + " IN (" + TextUtils.join(",", subIds) + ")" +
 			" AND " + EpisodeProvider.COLUMN_PUB_DATE + " > " + (LocalDate.now().minusDays(7).toDate().getTime() / 1000);
 		return queryToObservable(EpisodeProvider.URI, selection, null, null);
-	}
-
-	public static void delete(long episodeId) {
-		_context.getContentResolver().delete(EpisodeProvider.URI, "_id = ?", new String[] { String.valueOf(episodeId) });
 	}
 
 	public static void evictCache() {

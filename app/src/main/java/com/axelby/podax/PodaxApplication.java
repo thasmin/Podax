@@ -5,7 +5,7 @@ import android.os.Build;
 import android.webkit.WebView;
 
 import com.axelby.podax.model.EpisodeData;
-import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 
@@ -31,7 +31,7 @@ public class PodaxApplication extends Application {
 	public void onCreate() {
 		AppFlow.setApplication(this);
 		PodaxDB.setContext(this);
-		Episodes.setContext(this);
+		EpisodeDB.setContext(this);
 		SubscriptionData.setContext(this);
 
         if (!PodaxLog.isDebuggable(this))

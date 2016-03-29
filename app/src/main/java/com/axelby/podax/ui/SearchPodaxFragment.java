@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.R;
 import com.axelby.podax.model.EpisodeData;
-import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 
@@ -73,7 +73,7 @@ public class SearchPodaxFragment extends Fragment implements SearchActivity.Quer
 				e -> Log.e("SearchPodaxFragment", "unable to run searches", e)
 			);
 
-		Episodes.search(query)
+		EpisodeDB.search(query)
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.subscribe(

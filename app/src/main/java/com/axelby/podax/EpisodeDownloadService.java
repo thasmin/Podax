@@ -14,7 +14,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.axelby.podax.model.EpisodeEditor;
-import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.ui.MainActivity;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -88,7 +88,7 @@ public class EpisodeDownloadService extends Service {
 
 			// make sure we don't download too many episodes
 			float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
-			Integer downloadedEpisodes = Episodes.getDownloaded().count().toBlocking().first();
+			Integer downloadedEpisodes = EpisodeDB.getDownloaded().count().toBlocking().first();
 			if (downloadedEpisodes >= maxEpisodes)
 				return;
 
@@ -97,7 +97,7 @@ public class EpisodeDownloadService extends Service {
 			verifyDownloadedFiles(this);
 			expireDownloadedFiles();
 
-			Episodes.getNeedsDownload().subscribe(
+			EpisodeDB.getNeedsDownload().subscribe(
 				ep -> handleIntent(createDownloadEpisodeIntent(this, ep.getId())),
 				e -> Log.e("EpisodeDownloadService", "unable to get episodes that need to be downloaded", e)
 			);
@@ -113,7 +113,7 @@ public class EpisodeDownloadService extends Service {
 
 	// make sure all media files in the folder are for existing episodes
 	public static void verifyDownloadedFiles(Context context) {
-		List<String> validMediaFilenames = Episodes.getPlaylist()
+		List<String> validMediaFilenames = EpisodeDB.getPlaylist()
 			.first()
 			.flatMapIterable(eps -> eps)
 			.map(ep -> ep.getFilename(context))
@@ -139,7 +139,7 @@ public class EpisodeDownloadService extends Service {
 	}
 
 	private void expireDownloadedFiles() {
-		Episodes.getExpired().subscribe(
+		EpisodeDB.getExpired().subscribe(
 			ep -> ep.removeFromPlaylist(this),
 			e -> Log.e("EpisodeDownloadService", "unable to expire downloaded files")
 		);
@@ -171,10 +171,6 @@ public class EpisodeDownloadService extends Service {
 
 			mediaFile = new File(episode.getFilename(context));
 			_currentlyDownloading.add(mediaFile.getAbsolutePath());
-
-			File indexFile = new File(episode.getIndexFilename(context));
-			if (indexFile.exists())
-				indexFile.delete();
 
 			OkHttpClient client = new OkHttpClient();
 			Request.Builder url = new Request.Builder().url(episode.getMediaUrl());

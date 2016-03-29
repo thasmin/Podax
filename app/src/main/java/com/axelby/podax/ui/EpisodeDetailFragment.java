@@ -19,7 +19,7 @@ import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.EpisodeProvider;
-import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
 import com.axelby.podax.Helper;
@@ -163,7 +163,7 @@ public class EpisodeDetailFragment extends RxFragment {
 			_episodeDataSubscriber.unsubscribe();
 		}
 
-		Episodes.getObservable(_podcastId)
+		EpisodeDB.getObservable(_podcastId)
 			.compose(bindToLifecycle())
 			.subscribe(_episodeDataSubscriber);
 	}

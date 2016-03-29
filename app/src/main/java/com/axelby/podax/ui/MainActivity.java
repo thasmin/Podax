@@ -31,7 +31,7 @@ import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PodaxLog;
 import com.axelby.podax.R;
-import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
@@ -88,7 +88,7 @@ public class MainActivity extends RxAppCompatActivity {
 
 		boolean showAutomatically = prefs.getBoolean("automatic_show", true);
 		long lastActivityCheck = prefs.getLong("last_check", 0);
-		if (showAutomatically && Episodes.isLastActivityAfter(lastActivityCheck))
+		if (showAutomatically && EpisodeDB.isLastActivityAfter(lastActivityCheck))
 			AppFlow.get(this).displayLatestActivity();
 	}
 

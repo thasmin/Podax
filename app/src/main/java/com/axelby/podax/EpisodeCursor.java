@@ -194,13 +194,6 @@ public class EpisodeCursor {
 		return EpisodeCursor.getPodcastStoragePath(context) + String.valueOf(getId()) + "." + EpisodeCursor.getExtension(getMediaUrl());
 	}
 
-	public String getIndexFilename(Context context) {
-		return getIndexFilename(context, getId());
-	}
-	public static String getIndexFilename(Context context, long episodeId) {
-		return Storage.getStoragePath(context) + String.valueOf(episodeId) + ".index";
-	}
-
 	public boolean isDownloaded(Context context) {
 		if (getFileSize() == null)
 			return false;

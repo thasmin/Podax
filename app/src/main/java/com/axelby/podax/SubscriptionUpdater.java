@@ -12,7 +12,7 @@ import android.util.Log;
 import android.util.Xml;
 
 import com.axelby.podax.model.EpisodeEditor;
-import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
@@ -117,7 +117,7 @@ class SubscriptionUpdater {
 
 					// if already exists, stop processing
 					// this is for podcasts that keep every episode in their rss feed
-					boolean exists = Episodes.getFor(EpisodeProvider.COLUMN_MEDIA_URL, item.getMediaURL())
+					boolean exists = EpisodeDB.getFor(EpisodeProvider.COLUMN_MEDIA_URL, item.getMediaURL())
 						.map(v -> true).firstOrDefault(false).toBlocking().single();
 					if (exists) {
 						feedParser1.stopProcessing();

@@ -15,7 +15,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.axelby.podax.model.DBAdapter;
-import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.SubscriptionData;
 
 import java.io.File;
@@ -306,7 +306,7 @@ public class EpisodeProvider extends ContentProvider {
 			Cursor c = db.query("podcasts", null, where, whereArgs, null, null, null);
 			if (c != null) {
 				while (c.moveToNext())
-					Episodes.notifyChange(new EpisodeCursor(c));
+					EpisodeDB.notifyChange(new EpisodeCursor(c));
 				c.close();
 			}
 
@@ -422,7 +422,7 @@ public class EpisodeProvider extends ContentProvider {
 		}
 
 		if (values.containsKey(COLUMN_FINISHED_TIME))
-			Episodes.notifyFinishedChange();
+			EpisodeDB.notifyFinishedChange();
 
 
 		// if the current episode has updated the position but it's not from the player, tell the player to update
@@ -439,7 +439,7 @@ public class EpisodeProvider extends ContentProvider {
 	private void notifyChange(long episodeId) {
 		EpisodeCursor episodeCursor = EpisodeCursor.getCursor(getContext(), episodeId);
 		if (episodeCursor != null) {
-			Episodes.notifyChange(episodeCursor);
+			EpisodeDB.notifyChange(episodeCursor);
 			episodeCursor.closeCursor();
 		}
 	}
@@ -522,7 +522,7 @@ public class EpisodeProvider extends ContentProvider {
 			new Object[]{newPosition, episodeId});
 		if (getContext() != null) {
 			getContext().getContentResolver().notifyChange(PLAYLIST_URI, null);
-			Episodes.notifyPlaylistChange();
+			EpisodeDB.notifyPlaylistChange();
 		}
 	}
 
@@ -586,48 +586,7 @@ public class EpisodeProvider extends ContentProvider {
 
 	@Override
 	public int delete(@NonNull Uri uri, String where, String[] whereArgs) {
-		switch (uriMatcher.match(uri)) {
-			case EPISODES:
-				break;
-			case EPISODE_ID:
-				String extraWhere = COLUMN_ID + " = " + uri.getLastPathSegment();
-				if (where != null)
-					where = extraWhere + " AND " + where;
-				else
-					where = extraWhere;
-				break;
-			default:
-				throw new IllegalArgumentException("Illegal URI for delete");
-		}
-
-		// find out what we're deleting and delete downloaded files
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-		String[] columns = new String[]{COLUMN_ID};
-
-		// act on the podcasts about to be deleted
-		Cursor c = db.query("podcasts", columns, where, whereArgs, null, null, null);
-		while (c.moveToNext()) {
-			deleteFiles(getContext(), c.getLong(0));
-			db.delete("fts_podcasts", "_id = ?", new String[] { Long.toString(c.getLong(0)) });
-		}
-		c.close();
-
-		// keep the queue order monotonic
-		String episodesWhere = "queuePosition IS NOT NULL";
-		if (where != null)
-			episodesWhere = where + " AND " + episodesWhere;
-		c = db.query("podcasts", columns, episodesWhere, whereArgs, null, null, null);
-		while (c.moveToNext())
-			updatePlaylistPosition(c.getLong(0), null);
-		c.close();
-
-		if (getContext() != null) {
-			if (!uri.equals(URI))
-				getContext().getContentResolver().notifyChange(URI, null);
-			getContext().getContentResolver().notifyChange(uri, null);
-		}
-
-		return db.delete("podcasts", where, whereArgs);
+		return 0;
 	}
 
 	private static void deleteFiles(Context context, final long episodeId) {
@@ -637,7 +596,6 @@ public class EpisodeProvider extends ContentProvider {
 		});
 		for (File f : files)
 			f.delete();
-		new File(EpisodeCursor.getIndexFilename(context, episodeId)).delete();
 	}
 
 	public static void restart(Context context, long episodeId) {

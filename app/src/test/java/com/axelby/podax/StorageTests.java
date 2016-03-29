@@ -1,11 +1,10 @@
 package com.axelby.podax;
 
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 
+import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionEditor;
 
 import org.junit.Assert;
@@ -24,28 +23,25 @@ public class StorageTests {
 	@Test
 	public void testDeletePodcast() throws Exception {
 		Context context = RuntimeEnvironment.application;
-		ContentResolver resolver = context.getContentResolver();
 
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "Test Episode");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test.mp3");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		Uri epUri = resolver.insert(EpisodeProvider.URI, values);
+		long epId = EpisodeEditor.fromNew(context, subId, "test://test.mp3")
+			.setTitle("Test Episode")
+			.commit();
+		Assert.assertNotEquals("episode id should not be -1", -1, epId);
 
-		long id = ContentUris.parseId(epUri);
-		EpisodeCursor ep = EpisodeCursor.getCursor(context, id);
+		EpisodeData ep = EpisodeData.create(context, epId);
 		if (ep == null)
-			throw new Exception("couldn't load episode cursor");
+			throw new Exception("couldn't load episode data");
 
 		String filename = ep.getFilename(context);
 		try {
 			boolean created = new File(filename).createNewFile();
 			if (!created)
 				throw new Exception("unable to create filename");
-			resolver.delete(ep.getContentUri(), null, null);
+			PodaxDB.episodes.delete(epId);
 			Assert.assertEquals(false, new File(filename).exists());
 		} finally {
 			if (filename != null)

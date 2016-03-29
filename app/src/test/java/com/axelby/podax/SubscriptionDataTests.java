@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
-import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
@@ -116,7 +116,7 @@ public class SubscriptionDataTests {
 		subSubscriber.assertValueCount(0);
 
 		TestSubscriber<List<EpisodeData>> epSubscriber = new TestSubscriber<>();
-		Episodes.getAll().subscribe(epSubscriber);
+		EpisodeDB.getAll().subscribe(epSubscriber);
 		epSubscriber.assertValueCount(1);
 		Assert.assertEquals(0, epSubscriber.getOnNextEvents().get(0).size());
 
