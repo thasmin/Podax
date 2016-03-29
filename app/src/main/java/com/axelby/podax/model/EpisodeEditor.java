@@ -184,8 +184,7 @@ public class EpisodeEditor {
 			EpisodeData.evictFromCache(_episodeId);
 			return _episodeId;
 		} else {
-			Uri uri = _context.getContentResolver().insert(EpisodeProvider.URI, values);
-			return ContentUris.parseId(uri);
+			return PodaxDB.episodes.insert(values);
 		}
 	}
 }

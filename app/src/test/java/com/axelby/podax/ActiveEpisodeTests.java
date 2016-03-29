@@ -2,7 +2,9 @@ package com.axelby.podax;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 
+import com.axelby.podax.model.DBAdapter;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.PodaxDB;
@@ -68,5 +70,56 @@ public class ActiveEpisodeTests {
 		PodaxDB.episodes.delete(ep2Id);
 		Assert.assertEquals("active episode id should be not be undownloaded episode",
 			-1, EpisodeProvider.getActiveEpisodeId(context));
+	}
+
+	@Test
+	public void monotonicQueue() {
+		Context context = RuntimeEnvironment.application;
+
+		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription uri should not be null", -1, subId);
+
+		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+			.setTitle("one")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.commit();
+		Assert.assertNotEquals("episode id should not be -1", -1, ep1Id);
+
+		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+			.setTitle("two")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.commit();
+		Assert.assertNotEquals("episode id should not be -1", -1, ep2Id);
+
+		long ep3Id = EpisodeEditor.fromNew(context, subId, "test://3")
+			.setTitle("two")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.commit();
+		Assert.assertNotEquals("episode id should not be -1", -1, ep3Id);
+
+		DBAdapter dbAdapter = new DBAdapter(context);
+		String sql = "SELECT queuePosition FROM podcasts ORDER BY queuePosition";
+
+		Cursor c = dbAdapter.getReadableDatabase().rawQuery(sql, null);
+		Assert.assertNotNull(c);
+		Assert.assertTrue(c.moveToNext());
+		Assert.assertEquals("first item in queue", 0, c.getInt(0));
+		Assert.assertTrue(c.moveToNext());
+		Assert.assertEquals("second item in queue", 1, c.getInt(0));
+		Assert.assertTrue(c.moveToNext());
+		Assert.assertEquals("third item in queue", 2, c.getInt(0));
+		Assert.assertFalse(c.moveToNext());
+		c.close();
+
+		PodaxDB.episodes.delete(ep2Id);
+
+		c = dbAdapter.getReadableDatabase().rawQuery(sql, null);
+		Assert.assertNotNull(c);
+		Assert.assertTrue(c.moveToNext());
+		Assert.assertEquals("first item in queue", 0, c.getInt(0));
+		Assert.assertTrue(c.moveToNext());
+		Assert.assertEquals("second item in queue", 1, c.getInt(0));
+		Assert.assertFalse(c.moveToNext());
+		c.close();
 	}
 }

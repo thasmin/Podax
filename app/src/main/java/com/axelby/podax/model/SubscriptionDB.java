@@ -69,14 +69,9 @@ public class SubscriptionDB {
 
 		// don't duplicate url
 		String url = values.getAsString(COLUMN_URL);
-		getFor(COLUMN_URL, url);
-		Cursor c = db.rawQuery("SELECT _id FROM subscriptions WHERE url = ?", new String[] { url });
-		if (c.moveToNext()) {
-			long oldId = c.getLong(0);
-			c.close();
-			return oldId;
-		}
-		c.close();
+		List<SubscriptionData> existing = getFor(COLUMN_URL, url);
+		if (existing.size() > 0)
+			return existing.get(0).getId();
 
 		// insert subscription
 		long id = db.insert("subscriptions", null, values);

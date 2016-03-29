@@ -1,11 +1,9 @@
 package com.axelby.podax;
 
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 
 import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.SubscriptionEditor;
 
 import org.junit.Assert;
@@ -37,17 +35,14 @@ public class EpisodeDownloaderTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		// put one episode in queue
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1.mp3");
-		values.put(EpisodeProvider.COLUMN_FILE_SIZE, 5);
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
-		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+		long epId = EpisodeEditor.fromNew(context, subId, "test://1.mp3")
+			.setTitle("one")
+			.setFileSize(5)
+			.setPlaylistPosition(0)
+			.commit();
+		Assert.assertNotEquals("unable to create episode", -1, epId);
 
-		EpisodeData ep = EpisodeData.create(context, ContentUris.parseId(ep1Uri));
+		EpisodeData ep = EpisodeData.create(context, epId);
 		Assert.assertNotNull("episode data should not be null", ep);
 		String epfile = ep.getFilename(context);
 		FileWriter fw = new FileWriter(epfile);

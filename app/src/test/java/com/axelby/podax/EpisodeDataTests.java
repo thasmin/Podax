@@ -1,12 +1,10 @@
 package com.axelby.podax;
 
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 
-import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeDB;
+import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.SubscriptionEditor;
 
 import org.joda.time.LocalDateTime;
@@ -41,23 +39,18 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "huh?");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		Uri epUri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", epUri);
+		long epId = EpisodeEditor.fromNew(context, subId, "test://1")
+			.setTitle("huh?")
+			.commit();
+		Assert.assertNotEquals("unable to create episode", -1, epId);
 
 		TestSubscriber<EpisodeData> epSubscriber = new TestSubscriber<>();
-		long epId = ContentUris.parseId(epUri);
 		EpisodeDB.getObservable(epId).subscribe(epSubscriber);
 		epSubscriber.assertNoErrors();
 		epSubscriber.assertValueCount(1);
 		Assert.assertEquals("original title is incorrect", "huh?", epSubscriber.getOnNextEvents().get(0).getTitle());
 
-		values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "oh i see");
-		context.getContentResolver().update(epUri, values, null, null);
+		new EpisodeEditor(context, epId).setTitle("oh i see").commit();
 
 		epSubscriber.assertNoErrors();
 		epSubscriber.assertValueCount(2);
@@ -71,21 +64,17 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
-		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+			.setTitle("one")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.commit();
+		Assert.assertNotEquals("unable to create episode 1", -1, ep1Id);
 
-		values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "two");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
-		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep2Uri);
+		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+			.setTitle("one")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.commit();
+		Assert.assertNotEquals("unable to create episode 2", -1, ep2Id);
 
 		TestSubscriber<List<EpisodeData>> testSubscriber = new TestSubscriber<>();
 		EpisodeDB.getPlaylist().subscribe(testSubscriber);
@@ -93,9 +82,7 @@ public class EpisodeDataTests {
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be two items in playlist", 2, testSubscriber.getOnNextEvents().get(0).size());
 
-		values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-		context.getContentResolver().update(ep1Uri, values, null, null);
+		new EpisodeEditor(context, ep1Id).setPlaylistPosition(null).commit();
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
@@ -109,12 +96,11 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+		long epId = EpisodeEditor.fromNew(context, subId, "test://1")
+			.setTitle("one")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.commit();
+		Assert.assertNotEquals("unable to create episode", -1, epId);
 
 		TestSubscriber<List<EpisodeData>> testSubscriber = new TestSubscriber<>();
 		EpisodeDB.getFinished().subscribe(testSubscriber);
@@ -122,9 +108,7 @@ public class EpisodeDataTests {
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be no finished episodes", 0, testSubscriber.getOnNextEvents().get(0).size());
 
-		values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_FINISHED_TIME, new Date().getTime() / 1000);
-		context.getContentResolver().update(ep1Uri, values, null, null);
+		new EpisodeEditor(context, epId).setFinishedDate(new Date(new Date().getTime() / 1000)).commit();
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
 		Assert.assertEquals("should be one finished episode", 1, testSubscriber.getOnNextEvents().get(1).size());
@@ -139,23 +123,19 @@ public class EpisodeDataTests {
 
 		LocalDateTime now = LocalDateTime.now();
 
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
-		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-1).toDate().getTime() / 1000);
-		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+			.setTitle("one")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.setPubDate(new Date(now.plusDays(-1).toDate().getTime()))
+			.commit();
+		Assert.assertNotEquals("unable to create episode 1", -1, ep1Id);
 
-		values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "two");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
-		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-8).toDate().getTime() / 1000);
-		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep2Uri);
+		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+			.setTitle("two")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.setPubDate(new Date(now.plusDays(-8).toDate().getTime()))
+			.commit();
+		Assert.assertNotEquals("unable to create episode 2", -1, ep2Id);
 
 		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
 		EpisodeDB.getExpired().subscribe(testSubscriber);
@@ -173,21 +153,17 @@ public class EpisodeDataTests {
 
 		LocalDateTime now = LocalDateTime.now();
 
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-1).toDate().getTime() / 1000);
-		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+			.setTitle("one")
+			.setPubDate(now.plusDays(-1).toDate())
+			.commit();
+		Assert.assertNotEquals("unable to create episode 1", -1, ep1Id);
 
-		values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "two");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://2");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_PUB_DATE, now.plusDays(-8).toDate().getTime() / 1000);
-		Uri ep2Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep2Uri);
+		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+			.setTitle("two")
+			.setPubDate(now.plusDays(-8).toDate())
+			.commit();
+		Assert.assertNotEquals("unable to create episode 2", -1, ep2Id);
 
 		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
 		EpisodeDB.getLatestActivity().subscribe(testSubscriber);
@@ -204,18 +180,16 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long when = LocalDateTime.now().plusDays(-1).toDate().getTime() / 1000;
+		long when = LocalDateTime.now().plusDays(-1).toDate().getTime();
 
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_PUB_DATE, when);
-		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+		long epId = EpisodeEditor.fromNew(context, subId, "test://1")
+			.setTitle("one")
+			.setPubDate(new Date(when))
+			.commit();
+		Assert.assertNotEquals("unable to create episode", -1, epId);
 
-		Assert.assertTrue("latest activity should be after when - 1", EpisodeDB.isLastActivityAfter(when - 1));
-		Assert.assertFalse("latest activity should be after when + 1", EpisodeDB.isLastActivityAfter(when + 1));
+		Assert.assertTrue("latest activity should be after when - 1", EpisodeDB.isLastActivityAfter(when / 1000 - 1));
+		Assert.assertFalse("latest activity should not be after when + 1", EpisodeDB.isLastActivityAfter(when / 1000 + 1));
 	}
 
 	@Test
@@ -225,14 +199,12 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "one");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, subId);
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1.mp3");
-		values.put(EpisodeProvider.COLUMN_FILE_SIZE, 5);
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
-		Uri ep1Uri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", ep1Uri);
+		long epId = EpisodeEditor.fromNew(context, subId, "test://1.mp3")
+			.setTitle("one")
+			.setPlaylistPosition(0)
+			.setFileSize(5)
+			.commit();
+		Assert.assertNotEquals("unable to create episode", -1, epId);
 
 		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
 		EpisodeDB.getNeedsDownload().subscribe(testSubscriber);

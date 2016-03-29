@@ -16,11 +16,9 @@ import android.support.annotation.NonNull;
 
 import com.axelby.podax.model.DBAdapter;
 import com.axelby.podax.model.EpisodeDB;
-import com.axelby.podax.model.SubscriptionData;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -528,60 +526,7 @@ public class EpisodeProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(@NonNull Uri uri, ContentValues values) {
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-
-		if (!(uriMatcher.match(uri) == EPISODES))
-			throw new IllegalArgumentException("Illegal URI for insert");
-		if (values.get(COLUMN_MEDIA_URL) == null)
-			throw new IllegalArgumentException("mediaUrl is required field for episode");
-
-		Cursor mediaUrlCursor = db.rawQuery(
-				"SELECT _id FROM podcasts WHERE mediaUrl = ?",
-				new String[]{values.getAsString(COLUMN_MEDIA_URL)});
-		Long episodeId = null;
-		if (mediaUrlCursor.moveToNext())
-			episodeId = mediaUrlCursor.getLong(0);
-		mediaUrlCursor.close();
-
-		if (episodeId != null) {
-			if (values.containsKey(COLUMN_MEDIA_URL) && values.containsKey(COLUMN_FILE_SIZE)) {
-				String file = Storage.getStoragePath(getContext()) +
-						String.valueOf(episodeId) + "." +
-						EpisodeCursor.getExtension(values.getAsString(COLUMN_MEDIA_URL));
-				// TODO: don't change filesize if file is downloaded
-				if (new File(file).length() > values.getAsInteger(COLUMN_FILE_SIZE))
-					values.remove(COLUMN_FILE_SIZE);
-			}
-
-			db.update("podcasts", values, COLUMN_ID + " = ?", new String[]{String.valueOf(episodeId)});
-			// insert into the full text search virtual table
-			if (hasFTSValues(values))
-				db.update("fts_podcasts", extractFTSValues(values), COLUMN_ID + " = ?", new String[]{String.valueOf(episodeId)});
-		} else {
-			episodeId = db.insert("podcasts", null, values);
-
-			ContentValues ftsValues = extractFTSValues(values);
-			ftsValues.put(COLUMN_ID, episodeId);
-			db.insert("fts_podcasts", null, ftsValues);
-
-			// if the new episode is less than 5 days old for the right subscriptions, add it to the playlist
-			SubscriptionData sub = SubscriptionData.create(values.getAsLong(COLUMN_SUBSCRIPTION_ID));
-			if (sub != null) {
-				if (sub.areNewEpisodesAddedToPlaylist()
-						&& !sub.isSingleUse()
-						&& values.containsKey(COLUMN_PUB_DATE)) {
-					Calendar c = Calendar.getInstance();
-					c.add(Calendar.DATE, -5);
-					if (new Date(values.getAsLong(COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {
-						updatePlaylistPosition(episodeId, Integer.MAX_VALUE);
-					}
-				}
-			}
-		}
-
-		if (getContext() != null)
-			getContext().getContentResolver().notifyChange(uri, null);
-		return EpisodeProvider.getContentUri(episodeId);
+		return null;
 	}
 
 	@Override

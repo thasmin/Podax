@@ -1,5 +1,6 @@
 package com.axelby.podax.model;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -14,6 +15,8 @@ import org.joda.time.LocalDate;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import rx.Observable;
@@ -35,6 +38,50 @@ public class EpisodeDB {
 		_dbAdapter = dbAdapter;
 	}
 
+	public long insert(ContentValues values) {
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+
+		// don't duplicate media url
+		String url = values.getAsString(EpisodeProvider.COLUMN_MEDIA_URL);
+		List<EpisodeData> existing = getList(EpisodeProvider.COLUMN_MEDIA_URL + " = ?", new String[] { url });
+		if (existing.size() > 0)
+			return existing.get(0).getId();
+
+		// if the new episode is less than 5 days old for the right subscriptions, add it to the playlist
+		SubscriptionData sub = SubscriptionData.create(values.getAsLong(EpisodeProvider.COLUMN_SUBSCRIPTION_ID));
+		if (sub != null) {
+			if (sub.areNewEpisodesAddedToPlaylist()
+					&& !sub.isSingleUse()
+					&& values.containsKey(EpisodeProvider.COLUMN_PUB_DATE)) {
+				Calendar c = Calendar.getInstance();
+				c.add(Calendar.DATE, -5);
+				if (new Date(values.getAsLong(EpisodeProvider.COLUMN_PUB_DATE) * 1000L).after(c.getTime())) {
+					values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
+				}
+			}
+		}
+
+		long id = db.insert("podcasts", null, values);
+
+		ContentValues ftsValues = extractFTSValues(values);
+		ftsValues.put(EpisodeProvider.COLUMN_ID, id);
+		db.insert("fts_podcasts", null, ftsValues);
+
+		ensureMonotonicQueue(db);
+
+		return id;
+	}
+
+	private ContentValues extractFTSValues(ContentValues values) {
+		ContentValues ftsValues = new ContentValues(2);
+		if (values.containsKey(EpisodeProvider.COLUMN_TITLE))
+			ftsValues.put(EpisodeProvider.COLUMN_TITLE, values.getAsString(EpisodeProvider.COLUMN_TITLE));
+		if (values.containsKey(EpisodeProvider.COLUMN_DESCRIPTION))
+			ftsValues.put(EpisodeProvider.COLUMN_DESCRIPTION, values.getAsString(EpisodeProvider.COLUMN_DESCRIPTION));
+		return ftsValues;
+	}
+
+
 	public void delete(long episodeId) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
@@ -43,13 +90,17 @@ public class EpisodeDB {
 		db.delete("fts_podcasts", "_id = ?", new String[] { String.valueOf(episodeId) });
 		deleteFiles(episodeId);
 
+		ensureMonotonicQueue(db);
+
+		// TODO: let everyone know
+	}
+
+	private void ensureMonotonicQueue(SQLiteDatabase db) {
 		// keep the queue order monotonic
 		String monotonicSQL = "UPDATE podcasts SET queuePosition = " +
 			"(SELECT COUNT(queuePosition) FROM podcasts sub WHERE queuePosition IS NOT NULL AND sub.queuePosition < podcasts.queuePosition) " +
 			"WHERE queuePosition IS NOT NULL";
 		db.execSQL(monotonicSQL);
-
-		// TODO: let everyone know
 	}
 
 	private static void deleteFiles(long episodeId) {
@@ -114,6 +165,20 @@ public class EpisodeDB {
 		String selection = fieldName + " = ?";
 		String[] selectionArgs = new String[] { value };
 		return queryToObservable(EpisodeProvider.URI, selection, selectionArgs, null);
+	}
+
+	@NonNull
+	private List<EpisodeData> getList(String selection, String[] selectionArgs) {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		Cursor cursor = db.query("podcasts", null, selection, selectionArgs, null, null, null);
+
+		ArrayList<EpisodeData> eps = new ArrayList<>(cursor.getCount());
+		while (cursor.moveToNext())
+			eps.add(EpisodeData.from(new EpisodeCursor(cursor)));
+
+		cursor.close();
+
+		return eps;
 	}
 
 	public static Observable<EpisodeData> getDownloaded() {
