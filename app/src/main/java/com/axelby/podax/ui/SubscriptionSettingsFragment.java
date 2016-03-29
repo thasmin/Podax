@@ -20,7 +20,6 @@ import com.axelby.podax.R;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
-import com.axelby.podax.model.Subscriptions;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.acra.ACRA;
