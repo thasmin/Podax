@@ -5,9 +5,10 @@ import android.content.Context;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.PodaxDB;
+import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
-import com.axelby.podax.model.Subscriptions;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import rx.Observable;
 import rx.observers.TestSubscriber;
 
 @RunWith(RobolectricGradleTestRunner.class)
@@ -39,7 +41,7 @@ public class SubscriptionDataTests {
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.watch(subId).subscribe(testSubscriber);
+		PodaxDB.subscriptions.watch(subId).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
@@ -61,7 +63,7 @@ public class SubscriptionDataTests {
 		Assert.assertNotEquals("subscription uri should not be null", -1, sub2Id);
 
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.getAll().subscribe(testSubscriber);
+		Observable.from(PodaxDB.subscriptions.getAll()).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
@@ -85,7 +87,7 @@ public class SubscriptionDataTests {
 		Assert.assertNotEquals("subscription uri should not be null", -1, sub2Id);
 
 		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
-		Subscriptions.getFor(Subscriptions.COLUMN_SINGLE_USE, 1).subscribe(testSubscriber);
+		Observable.from(PodaxDB.subscriptions.getFor(SubscriptionDB.COLUMN_SINGLE_USE, 1)).subscribe(testSubscriber);
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
@@ -102,15 +104,15 @@ public class SubscriptionDataTests {
 		long epId = EpisodeEditor.fromNew(context, subId, "test://2").setTitle("ep title").commit();
 		Assert.assertNotEquals("episode id should not be -1", -1, epId);
 
-		String thumbFn = SubscriptionData.getThumbnailFilename(context, subId);
+		String thumbFn = SubscriptionData.getThumbnailFilename(subId);
 		new File(thumbFn).mkdirs();
 		new File(thumbFn).createNewFile();
 		Assert.assertTrue("subscription thumbnail should have been created", new File(thumbFn).exists());
 
-		Subscriptions.delete(subId);
+		PodaxDB.subscriptions.delete(subId);
 
 		TestSubscriber<SubscriptionData> subSubscriber = new TestSubscriber<>();
-		Subscriptions.getAll().subscribe(subSubscriber);
+		Observable.from(PodaxDB.subscriptions.getAll()).subscribe(subSubscriber);
 		subSubscriber.assertValueCount(0);
 
 		TestSubscriber<List<EpisodeData>> epSubscriber = new TestSubscriber<>();

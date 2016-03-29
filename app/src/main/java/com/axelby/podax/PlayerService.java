@@ -279,7 +279,7 @@ public class PlayerService extends Service {
 			.setDeleteIntent(deletePI)
 			.setContentIntent(showPI);
 
-		Bitmap bitmap = SubscriptionData.getThumbnailImageRaw(this, playerStatus.getSubscriptionId());
+		Bitmap bitmap = SubscriptionData.getThumbnailImageRaw(playerStatus.getSubscriptionId());
 		int largeIconPx = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, getResources().getDisplayMetrics());
 		Bitmap scaled = Bitmap.createScaledBitmap(bitmap, largeIconPx, largeIconPx, true);
 		builder.setLargeIcon(scaled);

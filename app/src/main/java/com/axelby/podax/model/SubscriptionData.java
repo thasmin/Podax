@@ -27,7 +27,7 @@ public class SubscriptionData {
 	private final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
 
 	static {
-		Subscriptions.watchAll()
+		PodaxDB.subscriptions.watchAll()
 			.subscribeOn(Schedulers.io())
 			.subscribe(
 				sub -> {
@@ -39,6 +39,13 @@ public class SubscriptionData {
 				},
 				e -> Log.e("SubscriptionData", "unable to watch subscriptions for changes", e)
 			);
+	}
+
+
+	private static Context _context;
+
+	public static void setContext(Context context) {
+		_context = context;
 	}
 
 	private final long _id;
@@ -55,75 +62,75 @@ public class SubscriptionData {
 	private final Integer _expirationDays;
 
 	SubscriptionData(Cursor cursor) {
-		_id = cursor.getLong(cursor.getColumnIndex(Subscriptions.COLUMN_ID));
-		_rawTitle = cursor.getString(cursor.getColumnIndex(Subscriptions.COLUMN_TITLE));
-		_url = cursor.getString(cursor.getColumnIndex(Subscriptions.COLUMN_URL));
+		_id = cursor.getLong(cursor.getColumnIndex(SubscriptionDB.COLUMN_ID));
+		_rawTitle = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_TITLE));
+		_url = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_URL));
 
-		_lastModified = new Date(cursor.getLong(cursor.getColumnIndex(Subscriptions.COLUMN_LAST_MODIFIED)) * 1000);
-		_lastUpdate = new Date(cursor.getLong(cursor.getColumnIndex(Subscriptions.COLUMN_LAST_UPDATE)) * 1000);
+		_lastModified = new Date(cursor.getLong(cursor.getColumnIndex(SubscriptionDB.COLUMN_LAST_MODIFIED)) * 1000);
+		_lastUpdate = new Date(cursor.getLong(cursor.getColumnIndex(SubscriptionDB.COLUMN_LAST_UPDATE)) * 1000);
 
-		_etag = cursor.getString(cursor.getColumnIndex(Subscriptions.COLUMN_ETAG));
-		_thumbnail = cursor.getString(cursor.getColumnIndex(Subscriptions.COLUMN_THUMBNAIL));
-		_titleOverride = cursor.getString(cursor.getColumnIndex(Subscriptions.COLUMN_TITLE_OVERRIDE));
-		_description = cursor.getString(cursor.getColumnIndex(Subscriptions.COLUMN_DESCRIPTION));
-		_singleUse = cursor.getInt(cursor.getColumnIndex(Subscriptions.COLUMN_SINGLE_USE)) == 1;
-		_playlistNew = cursor.getInt(cursor.getColumnIndex(Subscriptions.COLUMN_PLAYLIST_NEW)) == 1;
-		_expirationDays = cursor.getInt(cursor.getColumnIndex(Subscriptions.COLUMN_EXPIRATION));
+		_etag = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_ETAG));
+		_thumbnail = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_THUMBNAIL));
+		_titleOverride = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_TITLE_OVERRIDE));
+		_description = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_DESCRIPTION));
+		_singleUse = cursor.getInt(cursor.getColumnIndex(SubscriptionDB.COLUMN_SINGLE_USE)) == 1;
+		_playlistNew = cursor.getInt(cursor.getColumnIndex(SubscriptionDB.COLUMN_PLAYLIST_NEW)) == 1;
+		_expirationDays = cursor.getInt(cursor.getColumnIndex(SubscriptionDB.COLUMN_EXPIRATION));
 	}
 
 	private SubscriptionData(ContentValues values) {
-		_id = values.getAsLong(Subscriptions.COLUMN_ID);
-		_url = values.getAsString(Subscriptions.COLUMN_URL);
+		_id = values.getAsLong(SubscriptionDB.COLUMN_ID);
+		_url = values.getAsString(SubscriptionDB.COLUMN_URL);
 
-		if (values.containsKey(Subscriptions.COLUMN_TITLE))
-			_rawTitle = values.getAsString(Subscriptions.COLUMN_TITLE);
+		if (values.containsKey(SubscriptionDB.COLUMN_TITLE))
+			_rawTitle = values.getAsString(SubscriptionDB.COLUMN_TITLE);
 		else
 			_rawTitle = null;
 
-		if (values.containsKey(Subscriptions.COLUMN_LAST_MODIFIED)) {
-			long lastModifiedTimestamp = values.getAsLong(Subscriptions.COLUMN_LAST_MODIFIED);
+		if (values.containsKey(SubscriptionDB.COLUMN_LAST_MODIFIED)) {
+			long lastModifiedTimestamp = values.getAsLong(SubscriptionDB.COLUMN_LAST_MODIFIED);
 			_lastModified = new Date(lastModifiedTimestamp * 1000);
 		} else
 			_lastModified = null;
 
-		if (values.containsKey(Subscriptions.COLUMN_LAST_UPDATE)) {
-			long lastUpdateTimestamp = values.getAsLong(Subscriptions.COLUMN_LAST_UPDATE);
+		if (values.containsKey(SubscriptionDB.COLUMN_LAST_UPDATE)) {
+			long lastUpdateTimestamp = values.getAsLong(SubscriptionDB.COLUMN_LAST_UPDATE);
 			_lastUpdate = new Date(lastUpdateTimestamp * 1000);
 		} else
 			_lastUpdate = null;
 
-		if (values.containsKey(Subscriptions.COLUMN_ETAG))
-			_etag = values.getAsString(Subscriptions.COLUMN_ETAG);
+		if (values.containsKey(SubscriptionDB.COLUMN_ETAG))
+			_etag = values.getAsString(SubscriptionDB.COLUMN_ETAG);
 		else
 			_etag = null;
 
-		if (values.containsKey(Subscriptions.COLUMN_THUMBNAIL))
-			_thumbnail = values.getAsString(Subscriptions.COLUMN_THUMBNAIL);
+		if (values.containsKey(SubscriptionDB.COLUMN_THUMBNAIL))
+			_thumbnail = values.getAsString(SubscriptionDB.COLUMN_THUMBNAIL);
 		else
 		_thumbnail = null;
 
-		if (values.containsKey(Subscriptions.COLUMN_TITLE_OVERRIDE))
-			_titleOverride = values.getAsString(Subscriptions.COLUMN_TITLE_OVERRIDE);
+		if (values.containsKey(SubscriptionDB.COLUMN_TITLE_OVERRIDE))
+			_titleOverride = values.getAsString(SubscriptionDB.COLUMN_TITLE_OVERRIDE);
 		else
 		_titleOverride = null;
 
-		if (values.containsKey(Subscriptions.COLUMN_DESCRIPTION))
-			_description = values.getAsString(Subscriptions.COLUMN_DESCRIPTION);
+		if (values.containsKey(SubscriptionDB.COLUMN_DESCRIPTION))
+			_description = values.getAsString(SubscriptionDB.COLUMN_DESCRIPTION);
 		else
 		_description = null;
 
-		if (values.containsKey(Subscriptions.COLUMN_SINGLE_USE))
-			_singleUse = values.getAsBoolean(Subscriptions.COLUMN_SINGLE_USE);
+		if (values.containsKey(SubscriptionDB.COLUMN_SINGLE_USE))
+			_singleUse = values.getAsBoolean(SubscriptionDB.COLUMN_SINGLE_USE);
 		else
 			_singleUse = false;
 
-		if (values.containsKey(Subscriptions.COLUMN_PLAYLIST_NEW))
-			_playlistNew = values.getAsBoolean(Subscriptions.COLUMN_PLAYLIST_NEW);
+		if (values.containsKey(SubscriptionDB.COLUMN_PLAYLIST_NEW))
+			_playlistNew = values.getAsBoolean(SubscriptionDB.COLUMN_PLAYLIST_NEW);
 		else
 			_playlistNew = true;
 
-		if (values.containsKey(Subscriptions.COLUMN_EXPIRATION))
-			_expirationDays = values.getAsInteger(Subscriptions.COLUMN_EXPIRATION);
+		if (values.containsKey(SubscriptionDB.COLUMN_EXPIRATION))
+			_expirationDays = values.getAsInteger(SubscriptionDB.COLUMN_EXPIRATION);
 		else
 			_expirationDays = null;
 	}
@@ -205,40 +212,40 @@ public class SubscriptionData {
 	   thumbnail
 	   --------- */
 
-	public static String getThumbnailFilename(Context context, long subscriptionId) {
-		String storagePath = Storage.getStoragePath(context);
+	public static String getThumbnailFilename(long subscriptionId) {
+		String storagePath = Storage.getStoragePath(_context);
 		return storagePath + String.valueOf(subscriptionId) + "podcast.image";
 	}
 
-	public String getThumbnailFilename(Context context) {
-		String storagePath = Storage.getStoragePath(context);
+	public String getThumbnailFilename() {
+		String storagePath = Storage.getStoragePath(_context);
 		return storagePath + String.valueOf(getId()) + "podcast.image";
 	}
 
-	public RequestCreator getThumbnailImage(Context context) {
-		String filename = getThumbnailFilename(context, getId());
+	public RequestCreator getThumbnailImage() {
+		String filename = getThumbnailFilename(getId());
 		if (!new File(filename).exists())
-			return Picasso.with(context).load(R.drawable.ic_menu_podax).fit();
-		return Picasso.with(context).load(new File(filename)).fit();
+			return Picasso.with(_context).load(R.drawable.ic_menu_podax).fit();
+		return Picasso.with(_context).load(new File(filename)).fit();
 	}
 
-	public static RequestCreator getThumbnailImage(Context context, long subscriptionId) {
-		String filename = getThumbnailFilename(context, subscriptionId);
+	public static RequestCreator getThumbnailImage(long subscriptionId) {
+		String filename = getThumbnailFilename(subscriptionId);
 		if (!new File(filename).exists())
-			return Picasso.with(context).load(R.drawable.ic_menu_podax).fit();
-		return Picasso.with(context).load(new File(filename)).fit();
+			return Picasso.with(_context).load(R.drawable.ic_menu_podax).fit();
+		return Picasso.with(_context).load(new File(filename)).fit();
 	}
 
-	public static Bitmap getThumbnailImageRaw(Context context, long subscriptionId) {
-		String filename = getThumbnailFilename(context, subscriptionId);
+	public static Bitmap getThumbnailImageRaw(long subscriptionId) {
+		String filename = getThumbnailFilename(subscriptionId);
 		if (!new File(filename).exists())
 			return null;
 
 		return BitmapFactory.decodeFile(filename);
 	}
 
-	public static void evictThumbnails(Context context, long subscriptionId) {
-		File thumbnail = new File(getThumbnailFilename(context, subscriptionId));
+	public static void evictThumbnails(long subscriptionId) {
+		File thumbnail = new File(getThumbnailFilename(subscriptionId));
 		if (!thumbnail.exists())
 			return;
 		thumbnail.delete();

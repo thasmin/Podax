@@ -14,9 +14,9 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.axelby.podax.R;
-import com.axelby.podax.model.SubscriptionEditor;
-import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.model.PodaxDB;
+import com.axelby.podax.model.SubscriptionEditor;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -78,10 +78,10 @@ public class SubscriptionListFragment extends RxFragment {
 		};
 		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
 
-		Observable<List<ItemModel>> models = Subscriptions.getAll()
+		Observable<List<ItemModel>> models = Observable.from(PodaxDB.subscriptions.getAll())
+			.subscribeOn(Schedulers.io())
 			.map(sub -> ItemModel.fromSubscriptionId(sub.getTitle(), sub.getThumbnail(), sub.getId()))
 			.toList()
-			.subscribeOn(Schedulers.io())
 			.compose(RxLifecycle.bindFragment(lifecycle()));
 
 		RecyclerView list = (RecyclerView) view.findViewById(R.id.list);

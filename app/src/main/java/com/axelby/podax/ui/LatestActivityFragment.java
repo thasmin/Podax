@@ -219,7 +219,7 @@ public class LatestActivityFragment extends RxFragment {
 
 				EpisodeData episode = _episodes.get((Integer) _items.get(position));
 
-				episode.getSubscriptionImage(getActivity()).into(holder.subscription_img);
+				episode.getSubscriptionImage().into(holder.subscription_img);
 				holder.subscription_img.setTag(episode.getSubscriptionId());
 				holder.episode_title.setText(episode.getTitle());
 				holder.episode_title.setTag(episode.getId());

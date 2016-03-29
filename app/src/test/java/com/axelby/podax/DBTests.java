@@ -1,8 +1,8 @@
 package com.axelby.podax;
 
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
-import com.axelby.podax.model.Subscriptions;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -11,8 +11,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.util.List;
-
+import rx.Observable;
 import rx.observers.TestSubscriber;
 
 @RunWith(RobolectricGradleTestRunner.class)
@@ -27,14 +26,14 @@ public class DBTests {
 
 	@Test
 	public void testSubscriptionSearch() throws Exception {
-		SubscriptionEditor.create("test://1").setRawTitle("Good Subscription").commit();
+		long subId = SubscriptionEditor.create("test://1").setRawTitle("Good Subscription").commit();
 		SubscriptionEditor.create("test://2").setRawTitle("Bad Subscription").commit();
 
-		TestSubscriber<List<SubscriptionData>> testSubscriber = new TestSubscriber<>();
-		Subscriptions.search("good").subscribe(testSubscriber);
+		TestSubscriber<SubscriptionData> testSubscriber = new TestSubscriber<>();
+		Observable.from(PodaxDB.subscriptions.search("good")).subscribe(testSubscriber);
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
-		Assert.assertEquals("search results", 1, testSubscriber.getOnNextEvents().get(0).size());
+		Assert.assertEquals("search results", subId, testSubscriber.getOnNextEvents().get(0).getId());
 	}
 
 }

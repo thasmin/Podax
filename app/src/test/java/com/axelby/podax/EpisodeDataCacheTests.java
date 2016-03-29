@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.axelby.podax.model.EpisodeData;
-import com.axelby.podax.model.Subscriptions;
+import com.axelby.podax.model.SubscriptionDB;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -30,8 +30,8 @@ public class EpisodeDataCacheTests {
 		Context context = RuntimeEnvironment.application;
 
 		ContentValues values = new ContentValues();
-		values.put(Subscriptions.COLUMN_TITLE, "huh?");
-		values.put(Subscriptions.COLUMN_URL, "test://1");
+		values.put(SubscriptionDB.COLUMN_TITLE, "huh?");
+		values.put(SubscriptionDB.COLUMN_URL, "test://1");
 		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
 		Assert.assertNotNull("subscription uri should not be null", subUri);
 

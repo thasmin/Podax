@@ -21,9 +21,10 @@ import com.axelby.podax.UpdateService;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.axelby.podax.model.DBAdapter;
+import com.axelby.podax.model.PodaxDB;
+import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
-import com.axelby.podax.model.Subscriptions;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -64,7 +65,7 @@ public class EpisodeListFragment extends RxFragment {
 
 		Observable<SubscriptionData> subIdObservable;
 		if (subscriptionId != -1) {
-			subIdObservable = Subscriptions.watch(subscriptionId);
+			subIdObservable = PodaxDB.subscriptions.watch(subscriptionId);
 		} else {
 			// get subscription id from either rss url or itunes id url
 			Observable<String> rssUrlObservable;
@@ -88,7 +89,7 @@ public class EpisodeListFragment extends RxFragment {
 	}
 
 	private Observable<SubscriptionData> getSubscriptionIdFromRSSUrl(String rssUrl) {
-		SubscriptionData sub = Subscriptions.getForRSSUrl(rssUrl);
+		SubscriptionData sub = PodaxDB.subscriptions.getForRSSUrl(rssUrl);
 		if (sub != null)
 			return Observable.just(sub);
 
@@ -99,7 +100,7 @@ public class EpisodeListFragment extends RxFragment {
 	private Observable<String> getRSSUrlFromITunesUrl(String iTunesUrl) {
 		// TODO: put in model
 		SQLiteDatabase db = new DBAdapter(getActivity()).getReadableDatabase();
-		Cursor c = db.rawQuery("SELECT " + Subscriptions.COLUMN_URL + " FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
+		Cursor c = db.rawQuery("SELECT " + SubscriptionDB.COLUMN_URL + " FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
 		if (c != null) {
 			if (c.moveToFirst() && c.isNull(0)) {
 				String url = c.getString(0);
@@ -154,7 +155,7 @@ public class EpisodeListFragment extends RxFragment {
 		if (_subscription == null)
 			return;
 
-		Subscriptions.watch(_subscription.getId())
+		PodaxDB.subscriptions.watch(_subscription.getId())
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.subscribe(

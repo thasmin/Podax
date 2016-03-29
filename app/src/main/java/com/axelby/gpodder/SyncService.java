@@ -29,6 +29,7 @@ import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.ui.MainActivity;
@@ -157,7 +158,7 @@ public class SyncService extends Service {
 			}
 
 			for (String removedUrl : changes.remove)
-				Subscriptions.deleteViaGPodder(removedUrl);
+				PodaxDB.subscriptions.deleteViaGPodder(removedUrl);
 
 			for (String addedUrl : changes.add) {
 				long id = SubscriptionEditor.createViaGPodder(addedUrl).commit();

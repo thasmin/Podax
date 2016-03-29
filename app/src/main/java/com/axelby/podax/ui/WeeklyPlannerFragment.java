@@ -9,13 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.axelby.podax.model.Episodes;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.Stats;
-import com.axelby.podax.model.SubscriptionData;
-import com.axelby.podax.model.Subscriptions;
 import com.axelby.podax.databinding.SubscriptionCheckboxBinding;
+import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.PodaxDB;
+import com.axelby.podax.model.SubscriptionData;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.joda.time.LocalDate;
@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -42,7 +43,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 
-		Subscriptions.getAll()
+		Observable.from(PodaxDB.subscriptions.getAll())
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.toList()
@@ -74,7 +75,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		Subscriptions.getAll()
+		Observable.from(PodaxDB.subscriptions.getAll())
 			.subscribeOn(Schedulers.io())
 			.filter(SubscriptionData::areNewEpisodesAddedToPlaylist)
 			.map(SubscriptionData::getId)
@@ -87,7 +88,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 				e -> Log.e("WeeklyPlannerFragment", "unable to retrieve subscription added to playlist", e)
 			);
 
-		Subscriptions.watchAll().subscribe(
+		PodaxDB.subscriptions.watchAll().subscribe(
 			sub -> {
 				if (_subIds == null)
 					return;

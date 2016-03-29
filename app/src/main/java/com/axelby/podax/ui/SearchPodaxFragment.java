@@ -16,11 +16,12 @@ import com.axelby.podax.AppFlow;
 import com.axelby.podax.R;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.Episodes;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
-import com.axelby.podax.model.Subscriptions;
 
 import java.util.List;
 
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -64,7 +65,7 @@ public class SearchPodaxFragment extends Fragment implements SearchActivity.Quer
 
 	@Override
 	public void onQueryChanged(String query) {
-		Subscriptions.search(query)
+		Observable.just(PodaxDB.subscriptions.search(query))
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.subscribe(
@@ -101,7 +102,7 @@ public class SearchPodaxFragment extends Fragment implements SearchActivity.Quer
 
 			ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
 			thumbnail.setLayoutParams(new LinearLayout.LayoutParams(thumbSize, thumbSize));
-			sub.getThumbnailImage(getActivity()).into(thumbnail);
+			sub.getThumbnailImage().into(thumbnail);
 
 			TextView title = (TextView) view.findViewById(R.id.title);
 			title.setLayoutParams(new LinearLayout.LayoutParams(thumbSize, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -123,7 +124,7 @@ public class SearchPodaxFragment extends Fragment implements SearchActivity.Quer
 			view.setTag(ep.getId());
 
 			ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-			ep.getSubscriptionImage(getActivity()).into(thumbnail);
+			ep.getSubscriptionImage().into(thumbnail);
 
 			TextView title = (TextView) view.findViewById(R.id.title);
 			title.setText(ep.getTitle());

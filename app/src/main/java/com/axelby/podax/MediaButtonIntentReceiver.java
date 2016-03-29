@@ -160,7 +160,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 		DisplayMetrics metrics = new DisplayMetrics();
 		wm.getDefaultDisplay().getMetrics(metrics);
-		Bitmap thumbnail = SubscriptionData.getThumbnailImageRaw(context, status.getSubscriptionId());
+		Bitmap thumbnail = SubscriptionData.getThumbnailImageRaw(status.getSubscriptionId());
 		if (thumbnail != null) {
 			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, thumbnail);
 			bob.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, thumbnail);

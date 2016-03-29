@@ -28,7 +28,7 @@
                     android:layout_width="175dp"
                     android:layout_height="175dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@{episode.getSubscriptionImageFilename(context)}"
+                    android:src="@{episode.subscriptionImageFilename}"
                     android:contentDescription="@string/subscription"
                     android:layout_marginRight="10dp"
                     android:layout_marginEnd="10dp"

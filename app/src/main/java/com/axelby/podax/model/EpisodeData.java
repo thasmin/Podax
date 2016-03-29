@@ -212,12 +212,12 @@ public class EpisodeData {
 		return context.getString(R.string.finished_on, DateFormat.getInstance().format(getFinishedDate()));
 	}
 
-	public String getSubscriptionImageFilename(Context context) {
-		return SubscriptionData.getThumbnailFilename(context, getSubscriptionId());
+	public String getSubscriptionImageFilename() {
+		return SubscriptionData.getThumbnailFilename(getSubscriptionId());
 	}
 
-	public RequestCreator getSubscriptionImage(Context context) {
-		return SubscriptionData.getThumbnailImage(context, getSubscriptionId());
+	public RequestCreator getSubscriptionImage() {
+		return SubscriptionData.getThumbnailImage(getSubscriptionId());
 	}
 
 	/* -------

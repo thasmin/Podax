@@ -4,11 +4,27 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class SubscriptionDB {
+import rx.Observable;
+import rx.subjects.PublishSubject;
+
+public class SubscriptionDB {
+	public static final String COLUMN_ID = "_id";
+	public static final String COLUMN_TITLE = "title";
+	public static final String COLUMN_URL = "url";
+	public static final String COLUMN_LAST_MODIFIED = "lastModified";
+	public static final String COLUMN_LAST_UPDATE = "lastUpdate";
+	public static final String COLUMN_ETAG = "eTag";
+	public static final String COLUMN_THUMBNAIL = "thumbnail";
+	public static final String COLUMN_TITLE_OVERRIDE = "titleOverride";
+	public static final String COLUMN_PLAYLIST_NEW = "queueNew";
+	public static final String COLUMN_EXPIRATION = "expirationDays";
+	public static final String COLUMN_DESCRIPTION = "description";
+	public static final String COLUMN_SINGLE_USE = "singleUse";
 
 	private DBAdapter _dbAdapter;
 
@@ -16,12 +32,44 @@ class SubscriptionDB {
 		_dbAdapter = dbAdapter;
 	}
 
+	/* -------
+	   watcher
+	   ------- */
+
+	private PublishSubject<SubscriptionData> _changeSubject = PublishSubject.create();
+	public void notifyChange(SubscriptionData sub) {
+		SubscriptionData data = SubscriptionData.cacheSwap(sub);
+		_changeSubject.onNext(data);
+	}
+
+	public Observable<SubscriptionData> watchAll() {
+		return _changeSubject;
+	}
+
+	public Observable<SubscriptionData> watch(long id) {
+		if (id < 0)
+			return Observable.empty();
+
+		return _changeSubject
+			.filter(d -> d.getId() == id)
+			.startWith(SubscriptionData.create(id));
+	}
+
+	public void evictCache() {
+		SubscriptionData.evictCache();
+		_changeSubject = PublishSubject.create();
+	}
+
+	/* -------------
+	   db operations
+	   ------------- */
+
 	public long insert(ContentValues values) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
 		// don't duplicate url
-		String url = values.getAsString(Subscriptions.COLUMN_URL);
-		Subscriptions.getFor(Subscriptions.COLUMN_URL, url);
+		String url = values.getAsString(COLUMN_URL);
+		getFor(COLUMN_URL, url);
 		Cursor c = db.rawQuery("SELECT _id FROM subscriptions WHERE url = ?", new String[] { url });
 		if (c.moveToNext()) {
 			long oldId = c.getLong(0);
@@ -32,18 +80,21 @@ class SubscriptionDB {
 
 		// insert subscription
 		long id = db.insert("subscriptions", null, values);
+		values.put(COLUMN_ID, id);
 
 		// insert into full text search
 		ContentValues ftsValues = extractFTSValues(values);
-		ftsValues.put(Subscriptions.COLUMN_ID, id);
+		ftsValues.put(COLUMN_ID, id);
 		db.insert("fts_subscriptions", null, ftsValues);
+
+		notifyChange(SubscriptionData.from(values));
 
 		return id;
 	}
 
 	public void update(long subscriptionId, ContentValues values) {
 		// url is not allowed to be changed - make a new subscription
-		if (values.containsKey(Subscriptions.COLUMN_URL))
+		if (values.containsKey(COLUMN_URL))
 			return;
 
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
@@ -52,13 +103,44 @@ class SubscriptionDB {
 		// update the full text search virtual table
 		if (hasFTSValues(values))
 			db.update("fts_subscriptions", extractFTSValues(values), "_id = ?", new String[] { String.valueOf(subscriptionId) });
+
+		SubscriptionData.evictFromCache(subscriptionId);
+		notifyChange(SubscriptionData.from(values));
 	}
 
 	public void delete(long subscriptionId) {
+		SubscriptionData sub = SubscriptionData.create(subscriptionId);
+		if (sub != null)
+			PodaxDB.gPodder.remove(sub.getUrl());
+		doDelete(subscriptionId);
+	}
+
+	public void deleteViaGPodder(String url) {
+		SubscriptionData sub = getForRSSUrl(url);
+		if (sub != null)
+			doDelete(sub.getId());
+	}
+
+	private void doDelete(long subscriptionId) {
+		Episodes.getForSubscriptionId(subscriptionId)
+			.flatMapIterable(sub -> sub)
+			.subscribe(
+				s -> Episodes.delete(s.getId()),
+				e -> Log.e("Subscriptions", "unable to retrieve episodes to delete", e)
+			);
+
+		SubscriptionData.evictThumbnails(subscriptionId);
+
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		db.delete("subscriptions", "_id = ?", new String[] { String.valueOf(subscriptionId) });
 		db.delete("fts_subscriptions", "_id = ?", new String[] { String.valueOf(subscriptionId) });
+
+		// TODO: notify everyone somehow
 	}
+
+	/* -------
+	   getters
+	   ------- */
 
 	public SubscriptionData get(long subscriptionId) {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
@@ -86,6 +168,13 @@ class SubscriptionDB {
 		String selection = field + " = ?";
 		String[] selectionArgs = new String[] { value };
 		return getList(selection, selectionArgs);
+	}
+
+	public SubscriptionData getForRSSUrl(String rssUrl) {
+		List<SubscriptionData> subs = PodaxDB.subscriptions.getFor(COLUMN_URL, rssUrl);
+		if (subs.size() == 0)
+			return null;
+		return subs.get(0);
 	}
 
 	public List<SubscriptionData> search(String query) {
@@ -120,20 +209,20 @@ class SubscriptionDB {
 		return subs;
 	}
 
-	private boolean hasFTSValues(ContentValues values) {
-		return values.containsKey(Subscriptions.COLUMN_TITLE)
-			|| values.containsKey(Subscriptions.COLUMN_TITLE_OVERRIDE)
-			|| values.containsKey(Subscriptions.COLUMN_DESCRIPTION);
+	private static boolean hasFTSValues(ContentValues values) {
+		return values.containsKey(COLUMN_TITLE)
+			|| values.containsKey(COLUMN_TITLE_OVERRIDE)
+			|| values.containsKey(COLUMN_DESCRIPTION);
 	}
 
 	private static ContentValues extractFTSValues(ContentValues values) {
 		ContentValues ftsValues = new ContentValues(3);
-		if (values.containsKey(Subscriptions.COLUMN_TITLE))
-			ftsValues.put(Subscriptions.COLUMN_TITLE, values.getAsString(Subscriptions.COLUMN_TITLE));
-		if (values.containsKey(Subscriptions.COLUMN_TITLE_OVERRIDE))
-			ftsValues.put(Subscriptions.COLUMN_TITLE_OVERRIDE, values.getAsString(Subscriptions.COLUMN_TITLE_OVERRIDE));
-		if (values.containsKey(Subscriptions.COLUMN_DESCRIPTION))
-			ftsValues.put(Subscriptions.COLUMN_DESCRIPTION, values.getAsString(Subscriptions.COLUMN_DESCRIPTION));
+		if (values.containsKey(COLUMN_TITLE))
+			ftsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
+		if (values.containsKey(COLUMN_TITLE_OVERRIDE))
+			ftsValues.put(COLUMN_TITLE_OVERRIDE, values.getAsString(COLUMN_TITLE_OVERRIDE));
+		if (values.containsKey(COLUMN_DESCRIPTION))
+			ftsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
 		return ftsValues;
 	}
 }

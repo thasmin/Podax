@@ -8,7 +8,6 @@ import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.Episodes;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
-import com.axelby.podax.model.Subscriptions;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -31,6 +30,9 @@ public class PodaxApplication extends Application {
 	@Override
 	public void onCreate() {
 		AppFlow.setApplication(this);
+		PodaxDB.setContext(this);
+		Episodes.setContext(this);
+		SubscriptionData.setContext(this);
 
         if (!PodaxLog.isDebuggable(this))
 			ACRA.init(this);
@@ -45,10 +47,6 @@ public class PodaxApplication extends Application {
 			MediaButtonIntentReceiver.initialize(this);
 			PlayerStatus.notify(this);
 		}
-
-		PodaxDB.setContext(this);
-		Subscriptions.setContext(this);
-		Episodes.setContext(this);
 
 		JodaTimeAndroid.init(this);
 		PodaxLog.ensureRemoved(this);

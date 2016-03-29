@@ -53,7 +53,7 @@ public class SmallWidgetProvider extends AppWidgetProvider {
 		PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, 0);
 		views.setOnClickPendingIntent(R.id.show_btn, showPendingIntent);
 
-		SubscriptionData.getThumbnailImage(context, playerState.getSubscriptionId()).into(views, R.id.show_btn, appWidgetIds);
+		SubscriptionData.getThumbnailImage(playerState.getSubscriptionId()).into(views, R.id.show_btn, appWidgetIds);
 
 		appWidgetManager.updateAppWidget(appWidgetIds, views);
 

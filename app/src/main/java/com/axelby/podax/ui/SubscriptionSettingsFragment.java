@@ -17,6 +17,7 @@ import android.widget.RadioGroup;
 
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.model.Subscriptions;
@@ -53,7 +54,7 @@ public class SubscriptionSettingsFragment extends RxFragment {
             return;
         }
 
-		Subscriptions.watch(_subscriptionId)
+		PodaxDB.subscriptions.watch(_subscriptionId)
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(
