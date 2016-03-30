@@ -282,7 +282,7 @@ public class PlaylistFragment extends RxFragment {
 		public void moveItem(long id, int newPosition) {
 			int oldPosition = getPositionForId(id);
 			EpisodeData ep = _episodes.get(newPosition);
-			ep.moveToPlaylistPosition(getActivity(), newPosition);
+			ep.moveToPlaylistPosition(newPosition);
 			_episodes.set(newPosition, _episodes.get(oldPosition));
 			_episodes.set(oldPosition, ep);
 

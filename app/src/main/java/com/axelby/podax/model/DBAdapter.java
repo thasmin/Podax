@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 18;
+	private static final int DATABASE_VERSION = 19;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -50,9 +50,6 @@ public class DBAdapter extends SQLiteOpenHelper {
 		db.execSQL("CREATE UNIQUE INDEX podcasts_mediaUrl ON podcasts(mediaUrl)");
 		db.execSQL("CREATE INDEX podcasts_queuePosition ON podcasts(queuePosition)");
 
-		db.execSQL("CREATE TABLE podax(lastPodcastId INTEGER, activeDownloadId INTEGER)");
-		db.execSQL("INSERT INTO podax(lastPodcastId, activeDownloadId) VALUES(NULL, NULL)");
-
 		db.execSQL("CREATE TABLE gpodder_sync(" +
 				"_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 				"url VARCHAR, " +
@@ -81,6 +78,8 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"idUrl VARCHAR)");
 		db.execSQL("CREATE INDEX itunes_category_position_idx ON itunes(category, position)");
 		db.execSQL("CREATE INDEX itunes_subscriptionId_idx ON itunes(subscriptionId)");
+
+		createPodcastsView(db);
 	}
 
 	@SuppressWarnings("ConstantConditions")
@@ -135,6 +134,9 @@ public class DBAdapter extends SQLiteOpenHelper {
 
 		if (oldVersion < 18)
 			updateV17toV18(db);
+
+		if (oldVersion < 19)
+			createPodcastsView(db);
     }
 
 	private void upgradeV1toV2(SQLiteDatabase db) {
@@ -274,5 +276,11 @@ public class DBAdapter extends SQLiteOpenHelper {
 	private void updateV17toV18(SQLiteDatabase db) {
 		db.execSQL("ALTER TABLE itunes ADD COLUMN subscriptionId INTEGER");
 		db.execSQL("CREATE INDEX itunes_subscriptionId_idx ON itunes(subscriptionId)");
+	}
+
+	private void createPodcastsView(SQLiteDatabase db) {
+		db.execSQL("CREATE VIEW podcasts_view AS " +
+			"SELECT p.*, s.title subscriptionTitle, s.url subscriptionUrl " +
+			"FROM podcasts p JOIN subscriptions s on p.subscriptionId = s._id");
 	}
 }

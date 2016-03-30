@@ -1,7 +1,6 @@
 package com.axelby.podax.model;
 
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -16,6 +15,7 @@ import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.PodaxApplication;
 import com.axelby.podax.R;
 import com.squareup.picasso.RequestCreator;
 
@@ -81,7 +81,7 @@ public class EpisodeData {
 		return episodeData;
 	}
 
-	public static EpisodeData create(Context context, long episodeId) {
+	public static EpisodeData create(long episodeId) {
 		synchronized (_cache) {
 			if (_cache.get(episodeId) != null && _cache.get(episodeId).get() != null)
 				return _cache.get(episodeId).get();
@@ -90,20 +90,14 @@ public class EpisodeData {
 		if (episodeId < 0)
 			return null;
 
-		EpisodeCursor ep = EpisodeCursor.getCursor(context, episodeId);
-		if (ep == null)
-			return null;
-
-		EpisodeData d = EpisodeData.from(ep);
-		ep.closeCursor();
-		return d;
+		return PodaxDB.episodes.get(episodeId);
 	}
 
 	public static EpisodeData getActive(Context context) {
 		long activeEpisodeId = EpisodeProvider.getActiveEpisodeId(context);
 		if (activeEpisodeId == -1)
 			return null;
-		return EpisodeData.create(context, activeEpisodeId);
+		return EpisodeData.create(activeEpisodeId);
 	}
 
 	public static void evictCache() {
@@ -118,6 +112,13 @@ public class EpisodeData {
 		EpisodeData data = new EpisodeData(c);
 		synchronized (_cache) {
 			_cache.put(c.getId(), new SoftReference<>(data));
+		}
+		return data;
+	}
+
+	public static EpisodeData cacheSwap(EpisodeData data) {
+		synchronized (_cache) {
+			_cache.put(data.getId(), new SoftReference<>(data));
 		}
 		return data;
 	}
@@ -204,10 +205,6 @@ public class EpisodeData {
 		return file.exists() && file.length() == getFileSize() && getFileSize() != 0;
 	}
 
-	private Uri getContentUri() {
-		return ContentUris.withAppendedId(EpisodeProvider.URI, getId());
-	}
-
 	public String getFinishedDate(Context context) {
 		return context.getString(R.string.finished_on, DateFormat.getInstance().format(getFinishedDate()));
 	}
@@ -224,29 +221,23 @@ public class EpisodeData {
 	   actions
 	   ------- */
 
-	public void removeFromPlaylist(Context context) {
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, (Integer) null);
-		context.getContentResolver().update(getContentUri(), values, null, null);
+	public void removeFromPlaylist() {
+		new EpisodeEditor(getId()).setPlaylistPosition(null).commit();
 	}
 
-	public void addToPlaylist(Context context) {
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, Integer.MAX_VALUE);
-		context.getContentResolver().update(getContentUri(), values, null, null);
+	public void addToPlaylist() {
+		new EpisodeEditor(getId()).setPlaylistPosition(Integer.MAX_VALUE).commit();
 	}
 
-	public void moveToPlaylistPosition(Context context, int newPosition) {
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, newPosition);
-		context.getContentResolver().update(getContentUri(), values, null, null);
+	public void moveToPlaylistPosition(int newPosition) {
+		new EpisodeEditor(getId()).setPlaylistPosition(newPosition).commit();
 	}
 
 	public void restart(View view) {
-		EpisodeProvider.restart(view.getContext(), getId());
+		EpisodeProvider.restart(getId());
 	}
 	public void rewind(View view) {
-		EpisodeProvider.movePositionBy(view.getContext(), getId(), -15);
+		EpisodeProvider.movePositionBy(getId(), -15);
 	}
 	public void playstop(View view) {
 		PlayerStatus status = PlayerStatus.getCurrentState(view.getContext());
@@ -256,10 +247,10 @@ public class EpisodeData {
 			PlayerService.play(view.getContext(), getId());
 	}
 	public void forward(View view) {
-		EpisodeProvider.movePositionBy(view.getContext(), getId(), 30);
+		EpisodeProvider.movePositionBy(getId(), 30);
 	}
 	public void skipToEnd(View view) {
-		EpisodeProvider.skipToEnd(view.getContext(), getId());
+		EpisodeProvider.skipToEnd(getId());
 	}
 
 	public void viewDescription(View view) {
@@ -287,14 +278,14 @@ public class EpisodeData {
 	}
 
 	public void removeFromPlaylist(View view) {
-		removeFromPlaylist(view.getContext());
+		removeFromPlaylist();
 	}
 
 	public void togglePlaylist(View view) {
 		if (getPlaylistPosition() == null)
-			addToPlaylist(view.getContext());
+			addToPlaylist();
 		else
-			removeFromPlaylist(view.getContext());
+			removeFromPlaylist();
 	}
 
 	public boolean hasDuration() {

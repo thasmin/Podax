@@ -39,7 +39,7 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long epId = EpisodeEditor.fromNew(context, subId, "test://1")
+		long epId = EpisodeEditor.fromNew(subId, "test://1")
 			.setTitle("huh?")
 			.commit();
 		Assert.assertNotEquals("unable to create episode", -1, epId);
@@ -50,7 +50,7 @@ public class EpisodeDataTests {
 		epSubscriber.assertValueCount(1);
 		Assert.assertEquals("original title is incorrect", "huh?", epSubscriber.getOnNextEvents().get(0).getTitle());
 
-		new EpisodeEditor(context, epId).setTitle("oh i see").commit();
+		new EpisodeEditor(epId).setTitle("oh i see").commit();
 
 		epSubscriber.assertNoErrors();
 		epSubscriber.assertValueCount(2);
@@ -64,13 +64,13 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+		long ep1Id = EpisodeEditor.fromNew(subId, "test://1")
 			.setTitle("one")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.commit();
 		Assert.assertNotEquals("unable to create episode 1", -1, ep1Id);
 
-		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+		long ep2Id = EpisodeEditor.fromNew(subId, "test://2")
 			.setTitle("one")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.commit();
@@ -82,7 +82,7 @@ public class EpisodeDataTests {
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be two items in playlist", 2, testSubscriber.getOnNextEvents().get(0).size());
 
-		new EpisodeEditor(context, ep1Id).setPlaylistPosition(null).commit();
+		new EpisodeEditor(ep1Id).setPlaylistPosition(null).commit();
 
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
@@ -96,7 +96,7 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long epId = EpisodeEditor.fromNew(context, subId, "test://1")
+		long epId = EpisodeEditor.fromNew(subId, "test://1")
 			.setTitle("one")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.commit();
@@ -108,7 +108,7 @@ public class EpisodeDataTests {
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be no finished episodes", 0, testSubscriber.getOnNextEvents().get(0).size());
 
-		new EpisodeEditor(context, epId).setFinishedDate(new Date(new Date().getTime() / 1000)).commit();
+		new EpisodeEditor(epId).setFinishedDate(new Date(new Date().getTime() / 1000)).commit();
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(2);
 		Assert.assertEquals("should be one finished episode", 1, testSubscriber.getOnNextEvents().get(1).size());
@@ -123,14 +123,14 @@ public class EpisodeDataTests {
 
 		LocalDateTime now = LocalDateTime.now();
 
-		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+		long ep1Id = EpisodeEditor.fromNew(subId, "test://1")
 			.setTitle("one")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.setPubDate(new Date(now.plusDays(-1).toDate().getTime()))
 			.commit();
 		Assert.assertNotEquals("unable to create episode 1", -1, ep1Id);
 
-		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+		long ep2Id = EpisodeEditor.fromNew(subId, "test://2")
 			.setTitle("two")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.setPubDate(new Date(now.plusDays(-8).toDate().getTime()))
@@ -153,13 +153,13 @@ public class EpisodeDataTests {
 
 		LocalDateTime now = LocalDateTime.now();
 
-		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+		long ep1Id = EpisodeEditor.fromNew(subId, "test://1")
 			.setTitle("one")
 			.setPubDate(now.plusDays(-1).toDate())
 			.commit();
 		Assert.assertNotEquals("unable to create episode 1", -1, ep1Id);
 
-		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+		long ep2Id = EpisodeEditor.fromNew(subId, "test://2")
 			.setTitle("two")
 			.setPubDate(now.plusDays(-8).toDate())
 			.commit();
@@ -182,7 +182,7 @@ public class EpisodeDataTests {
 
 		long when = LocalDateTime.now().plusDays(-1).toDate().getTime();
 
-		long epId = EpisodeEditor.fromNew(context, subId, "test://1")
+		long epId = EpisodeEditor.fromNew(subId, "test://1")
 			.setTitle("one")
 			.setPubDate(new Date(when))
 			.commit();
@@ -199,7 +199,7 @@ public class EpisodeDataTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long epId = EpisodeEditor.fromNew(context, subId, "test://1.mp3")
+		long epId = EpisodeEditor.fromNew(subId, "test://1.mp3")
 			.setTitle("one")
 			.setPlaylistPosition(0)
 			.setFileSize(5)

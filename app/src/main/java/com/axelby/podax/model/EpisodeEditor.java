@@ -1,16 +1,12 @@
 package com.axelby.podax.model;
 
-import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
-import android.net.Uri;
 
 import com.axelby.podax.EpisodeProvider;
 
 import java.util.Date;
 
 public class EpisodeEditor {
-	private final Context _context;
 	private final long _episodeId;
 
 	private long _id;
@@ -42,12 +38,11 @@ public class EpisodeEditor {
 	private Date _finishedDate;
 	private boolean _finishedDateSet;
 
-	public static EpisodeEditor fromNew(Context context, long subscriptionId, String mediaUrl) {
-		return new EpisodeEditor(context, -1).setSubscriptionId(subscriptionId).setMediaUrl(mediaUrl);
+	public static EpisodeEditor fromNew(long subscriptionId, String mediaUrl) {
+		return new EpisodeEditor(-1).setSubscriptionId(subscriptionId).setMediaUrl(mediaUrl);
 	}
 
-	public EpisodeEditor(Context context, long episodeId) {
-		_context = context;
+	public EpisodeEditor(long episodeId) {
 		_episodeId = episodeId;
 	}
 
@@ -180,8 +175,7 @@ public class EpisodeEditor {
 		}
 
 		if (_episodeId != -1) {
-			_context.getContentResolver().update(EpisodeProvider.getContentUri(_episodeId), values, null, null);
-			EpisodeData.evictFromCache(_episodeId);
+			PodaxDB.episodes.update(_episodeId, values);
 			return _episodeId;
 		} else {
 			return PodaxDB.episodes.insert(values);

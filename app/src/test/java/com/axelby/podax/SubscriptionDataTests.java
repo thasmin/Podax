@@ -101,7 +101,7 @@ public class SubscriptionDataTests {
 		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long epId = EpisodeEditor.fromNew(context, subId, "test://2").setTitle("ep title").commit();
+		long epId = EpisodeEditor.fromNew(subId, "test://2").setTitle("ep title").commit();
 		Assert.assertNotEquals("episode id should not be -1", -1, epId);
 
 		String thumbFn = SubscriptionData.getThumbnailFilename(subId);

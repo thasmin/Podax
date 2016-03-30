@@ -37,21 +37,21 @@ public class ActiveEpisodeTests {
 		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription uri should not be null", -1, subId);
 
-		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+		long ep1Id = EpisodeEditor.fromNew(subId, "test://1")
 			.setTitle("one")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.setFileSize(5)
 			.commit();
 		Assert.assertNotEquals("episode id should not be -1", -1, ep1Id);
 
-		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+		long ep2Id = EpisodeEditor.fromNew(subId, "test://2")
 			.setTitle("two")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.setFileSize(5)
 			.commit();
 		Assert.assertNotEquals("episode id should not be -1", -1, ep2Id);
 
-		EpisodeData ep = EpisodeData.create(context, ep2Id);
+		EpisodeData ep = EpisodeData.create(ep2Id);
 		Assert.assertNotNull("episode data should not be null", ep);
 		String epfile = ep.getFilename(context);
 		FileWriter fw = new FileWriter(epfile);
@@ -79,19 +79,19 @@ public class ActiveEpisodeTests {
 		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription uri should not be null", -1, subId);
 
-		long ep1Id = EpisodeEditor.fromNew(context, subId, "test://1")
+		long ep1Id = EpisodeEditor.fromNew(subId, "test://1")
 			.setTitle("one")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.commit();
 		Assert.assertNotEquals("episode id should not be -1", -1, ep1Id);
 
-		long ep2Id = EpisodeEditor.fromNew(context, subId, "test://2")
+		long ep2Id = EpisodeEditor.fromNew(subId, "test://2")
 			.setTitle("two")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.commit();
 		Assert.assertNotEquals("episode id should not be -1", -1, ep2Id);
 
-		long ep3Id = EpisodeEditor.fromNew(context, subId, "test://3")
+		long ep3Id = EpisodeEditor.fromNew(subId, "test://3")
 			.setTitle("two")
 			.setPlaylistPosition(Integer.MAX_VALUE)
 			.commit();

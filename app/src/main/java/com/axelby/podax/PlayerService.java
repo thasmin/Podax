@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,6 +21,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.TypedValue;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.ui.MainActivity;
 
@@ -63,7 +63,7 @@ public class PlayerService extends Service {
 	}
 
 	public static void play(Context context, long episodeId) {
-		PlaylistManager.changeActiveEpisode(context, episodeId);
+		PlaylistManager.changeActiveEpisode(episodeId);
 		PlayerService.sendCommand(context, Constants.PLAYER_COMMAND_PLAY);
 	}
 
@@ -158,7 +158,7 @@ public class PlayerService extends Service {
 			_currentEpisodeId = status.getEpisodeId();
 			if (status.getState() == PlayerStates.PLAYING)
 				_player.play();
-			PlaylistManager.changeActiveEpisode(PlayerService.this, status.getEpisodeId());
+			PlaylistManager.changeActiveEpisode(status.getEpisodeId());
 			showNotification();
 
 			if (status.getDuration() == 0) {
@@ -318,16 +318,12 @@ public class PlayerService extends Service {
 	}
 
 	private void updateActiveEpisode() {
-		ContentValues values = new ContentValues(1);
-		values.put(EpisodeProvider.COLUMN_ID, _currentEpisodeId);
-		getContentResolver().update(EpisodeProvider.ACTIVE_EPISODE_URI, values, null, null);
+		PodaxDB.episodes.setActiveEpisode(_currentEpisodeId);
 		MediaButtonIntentReceiver.updateMetadata(this);
 	}
 
 	private void updateActiveEpisodePosition(float positionInSeconds) {
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_LAST_POSITION, (int)(positionInSeconds * 1000));
-		getContentResolver().update(EpisodeProvider.PLAYER_UPDATE_URI, values, null, null);
+		PodaxDB.episodes.updateActiveEpisodePosition((int)(positionInSeconds * 1000));
 	}
 
 }

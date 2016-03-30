@@ -32,6 +32,7 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
         if (event == null || event.getAction() != KeyEvent.ACTION_DOWN)
             return false;
 
+		long activeEpisodeId = EpisodeCursor.getActiveEpisodeId(context);
 		switch (event.getKeyCode()) {
 			// Simple headsets only send KEYCODE_HEADSETHOOK
 			case KeyEvent.KEYCODE_HEADSETHOOK:
@@ -51,11 +52,11 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 				break;
 			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
 			case KeyEvent.KEYCODE_MEDIA_NEXT:
-				EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, 30);
+				EpisodeProvider.movePositionBy(activeEpisodeId, 30);
 				break;
 			case KeyEvent.KEYCODE_MEDIA_REWIND:
 			case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-				EpisodeProvider.movePositionBy(context, EpisodeProvider.ACTIVE_EPISODE_URI, -15);
+				EpisodeProvider.movePositionBy(activeEpisodeId, -15);
 				break;
 			default:
 				Log.e("Podax", "No matched event: " + event.getKeyCode());
@@ -96,26 +97,26 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 
 		@Override public void onSkipToNext() {
 			super.onSkipToNext();
-			EpisodeProvider.skipToEnd(_context, EpisodeProvider.ACTIVE_EPISODE_URI);
+			EpisodeProvider.skipToEnd(EpisodeCursor.getActiveEpisodeId(_context));
 		}
 
 		@Override public void onSkipToPrevious() {
 			super.onSkipToPrevious();
-			EpisodeProvider.restart(_context, EpisodeProvider.ACTIVE_EPISODE_URI);
+			EpisodeProvider.restart(EpisodeCursor.getActiveEpisodeId(_context));
 		}
 
 		@Override public void onFastForward() {
 			super.onFastForward();
-			EpisodeProvider.movePositionBy(_context, EpisodeProvider.ACTIVE_EPISODE_URI, 30);
+			EpisodeProvider.movePositionBy(EpisodeCursor.getActiveEpisodeId(_context), 30);
 		}
 		@Override public void onRewind() {
 			super.onRewind();
-			EpisodeProvider.movePositionBy(_context, EpisodeProvider.ACTIVE_EPISODE_URI, -15);
+			EpisodeProvider.movePositionBy(EpisodeCursor.getActiveEpisodeId(_context), -15);
 		}
 
 		@Override public void onSeekTo(long pos) {
 			super.onSeekTo(pos);
-			EpisodeProvider.movePositionTo(_context, EpisodeProvider.ACTIVE_EPISODE_URI, (int) pos);
+			EpisodeProvider.movePositionTo(EpisodeCursor.getActiveEpisodeId(_context), (int) pos);
 		}
 	};
 

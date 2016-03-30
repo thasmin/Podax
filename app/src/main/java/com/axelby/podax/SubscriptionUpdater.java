@@ -124,7 +124,7 @@ class SubscriptionUpdater {
 						return;
 					}
 
-					EpisodeEditor.fromNew(_context, subscriptionId, item.getMediaURL())
+					EpisodeEditor.fromNew(subscriptionId, item.getMediaURL())
 						.setTitle(item.getTitle())
 						.setLink(item.getLink())
 						.setDescription(item.getDescription())

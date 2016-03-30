@@ -35,14 +35,14 @@ public class EpisodeDownloaderTests {
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
-		long epId = EpisodeEditor.fromNew(context, subId, "test://1.mp3")
+		long epId = EpisodeEditor.fromNew(subId, "test://1.mp3")
 			.setTitle("one")
 			.setFileSize(5)
 			.setPlaylistPosition(0)
 			.commit();
 		Assert.assertNotEquals("unable to create episode", -1, epId);
 
-		EpisodeData ep = EpisodeData.create(context, epId);
+		EpisodeData ep = EpisodeData.create(epId);
 		Assert.assertNotNull("episode data should not be null", ep);
 		String epfile = ep.getFilename(context);
 		FileWriter fw = new FileWriter(epfile);

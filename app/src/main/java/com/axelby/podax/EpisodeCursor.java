@@ -8,6 +8,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.player.AudioPlayerBase;
 
 import java.io.File;
@@ -241,9 +243,7 @@ public class EpisodeCursor {
 
 	public int determineDuration(Context context) {
 		int duration = (int) (AudioPlayerBase.determineDuration(getFilename(context)) * 1000);
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_DURATION, duration);
-		context.getContentResolver().update(getContentUri(), values, null, null);
+		new EpisodeEditor(getId()).setDuration(duration).commit();
 		return duration;
 	}
 }

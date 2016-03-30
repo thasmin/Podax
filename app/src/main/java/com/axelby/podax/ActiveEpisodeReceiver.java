@@ -17,15 +17,15 @@ public class ActiveEpisodeReceiver extends BroadcastReceiver {
 			return;
 
 		// only receives com.axelby.podax.activeepisode intents
-		Uri activeEpisodeUri = EpisodeProvider.ACTIVE_EPISODE_URI;
+		long activeEpisodeId = EpisodeCursor.getActiveEpisodeId(context);
 		if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_RESTART))
-			EpisodeProvider.restart(context, activeEpisodeUri);
+			EpisodeProvider.restart(activeEpisodeId);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_BACK))
-			EpisodeProvider.movePositionBy(context, activeEpisodeUri, -15);
+			EpisodeProvider.movePositionBy(activeEpisodeId, -15);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_FORWARD))
-			EpisodeProvider.movePositionBy(context, activeEpisodeUri, 30);
+			EpisodeProvider.movePositionBy(activeEpisodeId, 30);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_END))
-			EpisodeProvider.skipToEnd(context, activeEpisodeUri);
+			EpisodeProvider.skipToEnd(activeEpisodeId);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_PAUSE))
 			PlayerService.playpause(context);
 	}

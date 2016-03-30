@@ -8,7 +8,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,6 +28,8 @@ import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.UpdateService;
+import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.axelby.podax.ui.MainActivity;
@@ -200,17 +201,9 @@ public class SyncService extends Service {
 				if (update.episode == null || update.position == null)
 					continue;
 
-				String selection = EpisodeProvider.COLUMN_MEDIA_URL + " = ?";
-				String[] selectionArgs = {update.episode};
-				String[] projection = new String[] { EpisodeProvider.COLUMN_ID };
-				Cursor idCursor = _context.getContentResolver().query(EpisodeProvider.URI, projection, selection, selectionArgs, null);
-				if (idCursor != null && idCursor.moveToFirst()) {
-					long podcastId = idCursor.getLong(0);
-					idCursor.close();
-					ContentValues values = new ContentValues();
-					values.put(EpisodeProvider.COLUMN_LAST_POSITION, update.position * 1000);
-					_context.getContentResolver().update(EpisodeProvider.getContentUri(podcastId), values, selection, selectionArgs);
-				}
+				EpisodeData ep = PodaxDB.episodes.getForMediaUrl(update.episode);
+				if (ep != null)
+					new EpisodeEditor(ep.getId()).setLastPosition(update.position * 1000).commit();
 			}
 
 			// remember when we last updated
@@ -218,10 +211,8 @@ public class SyncService extends Service {
 			gpodderPrefsEditor.putLong("lastEpisodeTimestamp-" + account.name, updates.timestamp);
 			gpodderPrefsEditor.apply();
 
-			// update podcast so that gpodder has been synced
-			ContentValues clearGpodderValues = new ContentValues(1);
-			clearGpodderValues.put(EpisodeProvider.COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_NONE);
-			_context.getContentResolver().update(EpisodeProvider.URI, clearGpodderValues, null, null);
+			// tell db that gpodder has been synced
+			PodaxDB.episodes.resetGPodderUpdates();
 
 			return true;
 		}

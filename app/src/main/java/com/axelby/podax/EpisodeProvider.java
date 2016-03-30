@@ -2,11 +2,9 @@ package com.axelby.podax;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,11 +13,10 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.axelby.podax.model.DBAdapter;
-import com.axelby.podax.model.EpisodeDB;
+import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.EpisodeEditor;
 
-import java.io.File;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -110,10 +107,6 @@ public class EpisodeProvider extends ContentProvider {
 		_columnMap.put(COLUMN_GPODDER_UPDATE_TIMESTAMP, "gpodderUpdateTimestamp");
 		_columnMap.put(COLUMN_PAYMENT, "payment");
 		_columnMap.put(COLUMN_FINISHED_TIME, "finishedTime");
-	}
-
-	public static Uri getContentUri(long id) {
-		return ContentUris.withAppendedId(URI, id);
 	}
 
 	private DBAdapter _dbAdapter;
@@ -283,245 +276,7 @@ public class EpisodeProvider extends ContentProvider {
 
 	@Override
 	public int update(@NonNull Uri uri, ContentValues values, String where, String[] whereArgs) {
-		if (getContext() == null)
-			return 0;
-
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-		if (db == null)
-			return 0;
-
-		long episodeId;
-		SharedPreferences prefs = getContext().getSharedPreferences("internals", Context.MODE_PRIVATE);
-		Long activeEpisodeId = prefs.getLong(PREF_ACTIVE, -1);
-
-		int uriMatch = uriMatcher.match(uri);
-		if (uriMatch == EPISODES) {
-			int count = db.update("podcasts", values, where, whereArgs);
-			// only main uri is notified
-			getContext().getContentResolver().notifyChange(URI, null);
-
-			// tell every listener that every podcast changed
-			Cursor c = db.query("podcasts", null, where, whereArgs, null, null, null);
-			if (c != null) {
-				while (c.moveToNext())
-					EpisodeDB.notifyChange(new EpisodeCursor(c));
-				c.close();
-			}
-
-			return count;
-		}
-
-		// tell gpodder the new position
-		if (values.containsKey(COLUMN_LAST_POSITION)) {
-			values.put(COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_POSITION);
-			values.put(COLUMN_GPODDER_UPDATE_TIMESTAMP, new Date().getTime());
-		}
-
-		// process the player update separately
-		if (uriMatch == EPISODE_PLAYER_UPDATE) {
-			if (activeEpisodeId == -1)
-				return 0;
-
-			// saved the watched time to the stats
-			Cursor lastPositionCursor = db.rawQuery("SELECT " + COLUMN_LAST_POSITION + " FROM podcasts WHERE _id = ?", new String[] { String.valueOf(activeEpisodeId) });
-			if (!lastPositionCursor.moveToFirst())
-				return 0;
-			Stats.addListenTime(getContext(), (values.getAsInteger(COLUMN_LAST_POSITION) - lastPositionCursor.getInt(0)) / 1000.0f);
-			lastPositionCursor.close();
-
-			db.update("podcasts", values, "_id = ?", new String[]{String.valueOf(activeEpisodeId)});
-			getContext().getContentResolver().notifyChange(ACTIVE_EPISODE_URI, null);
-			notifyActiveChange();
-			getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, activeEpisodeId), null);
-			ActiveEpisodeReceiver.notifyExternal(getContext());
-
-			notifyChange(activeEpisodeId);
-
-			return 1;
-		}
-
-		switch (uriMatch) {
-			case EPISODE_ID:
-				episodeId = ContentUris.parseId(uri);
-				break;
-			case EPISODE_ACTIVE:
-				if (values.containsKey(COLUMN_ID)) {
-					activeEpisodeId = values.getAsLong(COLUMN_ID);
-					Editor editor = prefs.edit();
-					if (activeEpisodeId != null) {
-						editor.putLong(PREF_ACTIVE, activeEpisodeId);
-						notifyActiveChange();
-					} else {
-						editor.remove(PREF_ACTIVE);
-						notifyActiveChange();
-					}
-					editor.apply();
-
-					// if we're clearing the active podcast or updating just the ID, don't go to the DB
-					if (activeEpisodeId == null || values.size() == 1) {
-						getContext().getContentResolver().notifyChange(ACTIVE_EPISODE_URI, null);
-						return 0;
-					}
-				}
-
-				// if we don't have an active podcast, don't update it
-				if (activeEpisodeId == -1)
-					return 0;
-
-				episodeId = activeEpisodeId;
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown URI");
-		}
-
-		String extraWhere = COLUMN_ID + " = " + episodeId;
-		if (where != null)
-			where = extraWhere + " AND " + where;
-		else
-			where = extraWhere;
-
-		// don't try to update subscription values
-		values.remove(COLUMN_SUBSCRIPTION_TITLE);
-		values.remove(COLUMN_SUBSCRIPTION_URL);
-
-		// update queuePosition separately
-		if (values.containsKey(COLUMN_PLAYLIST_POSITION)) {
-			// get the new position
-			Integer newPosition = values.getAsInteger(COLUMN_PLAYLIST_POSITION);
-			values.remove(COLUMN_PLAYLIST_POSITION);
-
-			// no way to get changed record count until
-			// SQLiteStatement.executeUpdateDelete in API level 11
-			updatePlaylistPosition(episodeId, newPosition);
-
-			// if this was the active episode and it's no longer in the playlist or it was moved to the back
-			// don't restart on this episode
-			if (activeEpisodeId == episodeId && (newPosition == null || newPosition == Integer.MAX_VALUE)) {
-				prefs.edit().remove(PREF_ACTIVE).apply();
-				activeEpisodeId = episodeId; // make sure the active episode notification is sent
-			}
-
-			// if there is no episode podcast, the active episode may have changed
-			if (activeEpisodeId == -1)
-				activeEpisodeId = episodeId;
-		}
-
-		int count = 0;
-		if (values.size() > 0)
-			count += db.update("podcasts", values, where, whereArgs);
-		getContext().getContentResolver().notifyChange(ContentUris.withAppendedId(URI, episodeId), null);
-		notifyChange(episodeId);
-		if (values.containsKey(COLUMN_FILE_SIZE))
-			getContext().getContentResolver().notifyChange(Uri.withAppendedPath(URI, "to_download"), null);
-		if (episodeId == activeEpisodeId) {
-			getContext().getContentResolver().notifyChange(ACTIVE_EPISODE_URI, null);
-			notifyActiveChange();
-			ActiveEpisodeReceiver.notifyExternal(getContext());
-		}
-
-		if (values.containsKey(COLUMN_FINISHED_TIME))
-			EpisodeDB.notifyFinishedChange();
-
-
-		// if the current episode has updated the position but it's not from the player, tell the player to update
-		if (episodeId == activeEpisodeId && values.containsKey(COLUMN_LAST_POSITION))
-			getContext().getContentResolver().notifyChange(PLAYER_UPDATE_URI, null);
-
-		// update the full text search virtual table
-		if (hasFTSValues(values))
-			db.update("fts_podcasts", extractFTSValues(values), where, whereArgs);
-
-		return count;
-	}
-
-	private void notifyChange(long episodeId) {
-		EpisodeCursor episodeCursor = EpisodeCursor.getCursor(getContext(), episodeId);
-		if (episodeCursor != null) {
-			EpisodeDB.notifyChange(episodeCursor);
-			episodeCursor.closeCursor();
-		}
-	}
-
-	private void notifyActiveChange() {
-		PlayerStatus.notify(getContext());
-	}
-
-	private boolean hasFTSValues(ContentValues values) {
-		return values.containsKey(COLUMN_TITLE) || values.containsKey(COLUMN_DESCRIPTION);
-	}
-
-	private ContentValues extractFTSValues(ContentValues values) {
-		ContentValues ftsValues = new ContentValues(2);
-		if (values.containsKey(COLUMN_TITLE))
-			ftsValues.put(COLUMN_TITLE, values.getAsString(COLUMN_TITLE));
-		if (values.containsKey(COLUMN_DESCRIPTION))
-			ftsValues.put(COLUMN_DESCRIPTION, values.getAsString(COLUMN_DESCRIPTION));
-		return ftsValues;
-	}
-
-	void updatePlaylistPosition(long episodeId, Integer newPosition) {
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-
-		// get the old position
-		Cursor c = db.query("podcasts", new String[]{"queuePosition"},
-				"_id = ?", new String[]{String.valueOf(episodeId)}, null, null, null);
-		c.moveToFirst();
-		Integer oldPosition = null;
-		if (!c.isNull(0))
-			oldPosition = c.getInt(0);
-		c.close();
-
-		// no need to remove from playlist if it's not in playlist
-		if (oldPosition == null && newPosition == null)
-			return;
-
-		if (oldPosition == null) { // newPosition != null
-			// new at 3: 1 2 3 4 5 do: 3++ 4++ 5++
-			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 "
-					+ "WHERE queuePosition >= ?", new Object[]{newPosition});
-
-			// download the newly added episode
-			EpisodeDownloadService.downloadEpisodesSilently(getContext());
-		} else if (newPosition == null) { // oldPosition != null
-			// remove 3: 1 2 3 4 5 do: 4-- 5--
-			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 "
-					+ "WHERE queuePosition > ?", new Object[]{oldPosition});
-
-			// delete the episode's file
-			deleteFiles(getContext(), episodeId);
-		} else if (!oldPosition.equals(newPosition)) {
-			// moving up: 1 2 3 4 5 2 -> 4: 3-- 4-- 2->4
-			if (oldPosition < newPosition)
-				db.execSQL(
-						"UPDATE podcasts SET queuePosition = queuePosition - 1 "
-								+ "WHERE queuePosition > ? AND queuePosition <= ?",
-						new Object[]{oldPosition, newPosition});
-			// moving down: 1 2 3 4 5 4 -> 2: 2++ 3++ 4->2
-			if (newPosition < oldPosition)
-				db.execSQL(
-						"UPDATE podcasts SET queuePosition = queuePosition + 1 "
-								+ "WHERE queuePosition >= ? AND queuePosition < ?",
-						new Object[]{newPosition, oldPosition});
-		}
-
-
-		// if new position is max_value, put the episode at the end
-		if (newPosition != null && newPosition == Integer.MAX_VALUE) {
-			Cursor max = db.rawQuery(
-					"SELECT COALESCE(MAX(queuePosition) + 1, 0) FROM podcasts",
-					null);
-			max.moveToFirst();
-			newPosition = max.getInt(0);
-			max.close();
-		}
-
-		// update specified episode
-		db.execSQL("UPDATE podcasts SET queuePosition = ? WHERE _id = ?",
-			new Object[]{newPosition, episodeId});
-		if (getContext() != null) {
-			getContext().getContentResolver().notifyChange(PLAYLIST_URI, null);
-			EpisodeDB.notifyPlaylistChange();
-		}
+		return 0;
 	}
 
 	@Override
@@ -534,51 +289,20 @@ public class EpisodeProvider extends ContentProvider {
 		return 0;
 	}
 
-	private static void deleteFiles(Context context, final long episodeId) {
-		File storage = new File(EpisodeCursor.getPodcastStoragePath(context));
-		File[] files = storage.listFiles(pathname -> {
-			return pathname.getName().startsWith(String.valueOf(episodeId) + ".");
-		});
-		for (File f : files)
-			f.delete();
+	public static void restart(long episodeId) {
+		new EpisodeEditor(episodeId).setLastPosition(0).commit();
 	}
 
-	public static void restart(Context context, long episodeId) {
-		restart(context, EpisodeProvider.getContentUri(episodeId));
+	public static void movePositionTo(long episodeId, int position) {
+		new EpisodeEditor(episodeId).setLastPosition(position).commit();
 	}
 
-	public static void restart(Context context, Uri uri) {
-		ContentValues values = new ContentValues(1);
-		values.put(EpisodeProvider.COLUMN_LAST_POSITION, 0);
-		context.getContentResolver().update(uri, values, null, null);
-	}
-
-	public static void movePositionTo(Context context, long episodeId, int position) {
-		movePositionTo(context, EpisodeProvider.getContentUri(episodeId), position);
-	}
-
-	public static void movePositionTo(Context context, Uri uri, int position) {
-		ContentValues values = new ContentValues(1);
-		values.put(EpisodeProvider.COLUMN_LAST_POSITION, position);
-		context.getContentResolver().update(uri, values, null, null);
-	}
-
-	public static void movePositionBy(Context context, long episodeId, int delta) {
-		movePositionBy(context, EpisodeProvider.getContentUri(episodeId), delta);
-	}
-
-	public static void movePositionBy(Context context, Uri uri, int delta) {
-		String[] projection = new String[]{EpisodeProvider.COLUMN_LAST_POSITION, EpisodeProvider.COLUMN_DURATION};
-		Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
-		if (c == null)
+	public static void movePositionBy(long episodeId, int delta) {
+		EpisodeData ep = EpisodeData.create(episodeId);
+		if (ep == null)
 			return;
-		if (!c.moveToFirst()) {
-			c.close();
-			return;
-		}
-		int position = c.getInt(0);
-		int duration = c.getInt(1);
-		c.close();
+		int position = ep.getLastPosition();
+		int duration = ep.getDuration();
 
 		int newPosition = position + delta * 1000;
 		if (newPosition < 0)
@@ -586,14 +310,10 @@ public class EpisodeProvider extends ContentProvider {
 		if (duration != 0 && newPosition > duration)
 			newPosition = duration;
 
-		movePositionTo(context, uri, newPosition);
+		movePositionTo(episodeId, newPosition);
 	}
 
-	public static void skipToEnd(Context context, long episodeId) {
-		skipToEnd(context, EpisodeProvider.getContentUri(episodeId));
-	}
-
-	public static void skipToEnd(Context context, Uri uri) {
-		PlaylistManager.markEpisodeComplete(context, uri);
+	public static void skipToEnd(long episodeId) {
+		PlaylistManager.markEpisodeComplete(episodeId);
 	}
 }

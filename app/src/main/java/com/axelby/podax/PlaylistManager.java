@@ -1,13 +1,11 @@
 package com.axelby.podax;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.preference.PreferenceManager;
 
-import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.PodaxDB;
 
 import org.joda.time.LocalTime;
 
@@ -19,13 +17,13 @@ class PlaylistManager {
 		if (isInSleepytime(context))
 			PlayerService.stop(context);
 
-		markEpisodeComplete(context, EpisodeProvider.ACTIVE_EPISODE_URI);
+		markEpisodeComplete(EpisodeCursor.getActiveEpisodeId(context));
 
 		Stats.addCompletion(context);
 	}
 
-	public static void markEpisodeComplete(Context context, Uri uri) {
-		new EpisodeEditor(context, EpisodeData.parseId(context, uri))
+	public static void markEpisodeComplete(long episodeId) {
+		new EpisodeEditor(episodeId)
 			.setLastPosition(0)
 			.setPlaylistPosition(null)
 			.setFinishedDate(new Date())
@@ -47,10 +45,8 @@ class PlaylistManager {
 		return sleepytimeMode;
 	}
 
-	public static void changeActiveEpisode(Context context, long activeEpisodeId) {
-		ContentValues values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_ID, activeEpisodeId);
-		context.getContentResolver().update(EpisodeProvider.ACTIVE_EPISODE_URI, values, null, null);
+	public static void changeActiveEpisode(long activeEpisodeId) {
+		PodaxDB.episodes.setActiveEpisode(activeEpisodeId);
 	}
 
 }

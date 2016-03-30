@@ -13,6 +13,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.ui.MainActivity;
@@ -140,7 +141,7 @@ public class EpisodeDownloadService extends Service {
 
 	private void expireDownloadedFiles() {
 		EpisodeDB.getExpired().subscribe(
-			ep -> ep.removeFromPlaylist(this),
+			EpisodeData::removeFromPlaylist,
 			e -> Log.e("EpisodeDownloadService", "unable to expire downloaded files")
 		);
 	}
@@ -197,7 +198,7 @@ public class EpisodeDownloadService extends Service {
 			long lastWhen = notificationWhen;
 			showNotification(context, episode, 0, (int) body.contentLength(), notificationWhen);
 
-			new EpisodeEditor(context, episode.getId())
+			new EpisodeEditor(episode.getId())
 				.setFileSize(body.contentLength())
 				.commit();
 

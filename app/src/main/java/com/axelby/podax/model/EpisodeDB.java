@@ -2,14 +2,19 @@ package com.axelby.podax.model;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.axelby.podax.ActiveEpisodeReceiver;
+import com.axelby.podax.Constants;
 import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeProvider;
+import com.axelby.podax.PlayerStatus;
+import com.axelby.podax.Stats;
 
 import org.joda.time.LocalDate;
 
@@ -36,6 +41,109 @@ public class EpisodeDB {
 
 	EpisodeDB(DBAdapter dbAdapter) {
 		_dbAdapter = dbAdapter;
+	}
+
+	public void update(long episodeId, ContentValues values) {
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+
+		// tell gpodder the new position
+		if (values.containsKey(EpisodeProvider.COLUMN_LAST_POSITION)) {
+			values.put(EpisodeProvider.COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_POSITION);
+			values.put(EpisodeProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP, new Date().getTime());
+		}
+
+		// don't try to update subscription values
+		values.remove(EpisodeProvider.COLUMN_SUBSCRIPTION_TITLE);
+		values.remove(EpisodeProvider.COLUMN_SUBSCRIPTION_URL);
+
+		Integer playlistPosition = values.getAsInteger(EpisodeProvider.COLUMN_PLAYLIST_POSITION);
+		// shift the playlist if this is moving to the middle
+		if (values.containsKey(EpisodeProvider.COLUMN_PLAYLIST_POSITION) && playlistPosition != null && playlistPosition != Integer.MAX_VALUE)
+			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 WHERE queuePosition IS NOT NULL AND queuePosition >= ?",
+				new String[]{String.valueOf(playlistPosition)}
+			);
+
+		// if this was the active episode and it's no longer in the playlist, don't restart on this episode
+		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		long activeEpisodeId = prefs.getLong("active", -1);
+		if (activeEpisodeId == episodeId && playlistPosition == null) {
+			prefs.edit().remove("active").apply();
+			activeEpisodeId = -1;
+		}
+
+		// do updates
+		db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(episodeId) });
+		if (hasFTSValues(values))
+			db.update("fts_podcasts", extractFTSValues(values), "_id = ?", new String[] { String.valueOf(episodeId) });
+		ensureMonotonicQueue(db);
+
+		EpisodeData.evictFromCache(episodeId);
+
+		// active episode notification
+		if (activeEpisodeId == episodeId) {
+			PlayerStatus.notify(_context);
+			ActiveEpisodeReceiver.notifyExternal(_context);
+		}
+		// playlist notification
+		if (values.containsKey(EpisodeProvider.COLUMN_PLAYLIST_POSITION))
+			EpisodeDB.notifyPlaylistChange();
+		// finished notification
+		if (values.containsKey(EpisodeProvider.COLUMN_FINISHED_TIME))
+			EpisodeDB.notifyFinishedChange();
+		// regular notification
+		notifyChange(EpisodeData.create(episodeId));
+	}
+
+	public void resetGPodderUpdates() {
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+		ContentValues values = new ContentValues(1);
+		values.put(EpisodeProvider.COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_NONE);
+		db.update("podcasts", values, null, null);
+	}
+
+	public void setActiveEpisode(long episodeId) {
+		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		prefs.edit().putLong("active", episodeId).apply();
+
+		PlayerStatus.notify(_context);
+		ActiveEpisodeReceiver.notifyExternal(_context);
+		notifyChange(EpisodeData.create(episodeId));
+	}
+
+	public void updateActiveEpisode(ContentValues values) {
+		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		long activeEpisodeId = prefs.getLong("active", -1);
+		if (activeEpisodeId == -1)
+			return;
+		update(activeEpisodeId, values);
+	}
+
+	public void updateActiveEpisodePosition(int position) {
+		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
+
+		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		long activeEpisodeId = prefs.getLong("active", -1);
+		if (activeEpisodeId == -1)
+			return;
+
+		// saved the watched time to the stats
+		Cursor lastPositionCursor = db.rawQuery(
+			"SELECT " + EpisodeProvider.COLUMN_LAST_POSITION + " FROM podcasts WHERE _id = ?",
+			new String[] { String.valueOf(activeEpisodeId) }
+		);
+		if (lastPositionCursor == null || !lastPositionCursor.moveToFirst())
+			return;
+		Stats.addListenTime(_context, (position - lastPositionCursor.getInt(0)) / 1000.0f);
+		lastPositionCursor.close();
+
+		ContentValues values = new ContentValues();
+		values.put(EpisodeProvider.COLUMN_LAST_POSITION, position);
+		db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activeEpisodeId) });
+
+		// celebrate!
+		PlayerStatus.notify(_context);
+		ActiveEpisodeReceiver.notifyExternal(_context);
+		notifyChange(EpisodeData.create(activeEpisodeId));
 	}
 
 	public long insert(ContentValues values) {
@@ -71,16 +179,6 @@ public class EpisodeDB {
 
 		return id;
 	}
-
-	private ContentValues extractFTSValues(ContentValues values) {
-		ContentValues ftsValues = new ContentValues(2);
-		if (values.containsKey(EpisodeProvider.COLUMN_TITLE))
-			ftsValues.put(EpisodeProvider.COLUMN_TITLE, values.getAsString(EpisodeProvider.COLUMN_TITLE));
-		if (values.containsKey(EpisodeProvider.COLUMN_DESCRIPTION))
-			ftsValues.put(EpisodeProvider.COLUMN_DESCRIPTION, values.getAsString(EpisodeProvider.COLUMN_DESCRIPTION));
-		return ftsValues;
-	}
-
 
 	public void delete(long episodeId) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
@@ -145,12 +243,24 @@ public class EpisodeDB {
 	public static Observable<EpisodeData> getObservable(long episodeId) {
 		return EpisodeDB.getEpisodeWatcher(episodeId)
 			.subscribeOn(Schedulers.io())
-			.startWith(EpisodeData.create(_context, episodeId))
+			.startWith(EpisodeData.create(episodeId))
 			.observeOn(AndroidSchedulers.mainThread());
 	}
 
 	public static Observable<List<EpisodeData>> getAll() {
 		return queryToListObservable(EpisodeProvider.URI, null, null, null);
+	}
+
+	public EpisodeData get(long episodeId) {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		String selection = "_id = ?";
+		String[] selectionArgs = new String[] {String.valueOf(episodeId)};
+		Cursor c = db.query("podcasts_view", null, selection, selectionArgs, null, null, null);
+		if (c == null || !c.moveToNext())
+			return null;
+		EpisodeData ep = EpisodeData.from(new EpisodeCursor(c));
+		c.close();
+		return ep;
 	}
 
 	public static Observable<EpisodeData> getFor(String field, int value) {
@@ -167,10 +277,22 @@ public class EpisodeDB {
 		return queryToObservable(EpisodeProvider.URI, selection, selectionArgs, null);
 	}
 
+	public EpisodeData getForMediaUrl(String url) {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		String selection = "mediaUrl = ?";
+		String[] selectionArgs = new String[] { url };
+		Cursor c = db.query("podcasts_view", null, selection, selectionArgs, null, null, null);
+		if (c == null || !c.moveToNext())
+			return null;
+		EpisodeData ep = EpisodeData.from(new EpisodeCursor(c));
+		c.close();
+		return ep;
+	}
+
 	@NonNull
 	private List<EpisodeData> getList(String selection, String[] selectionArgs) {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		Cursor cursor = db.query("podcasts", null, selection, selectionArgs, null, null, null);
+		Cursor cursor = db.query("podcasts_view", null, selection, selectionArgs, null, null, null);
 
 		ArrayList<EpisodeData> eps = new ArrayList<>(cursor.getCount());
 		while (cursor.moveToNext())
@@ -260,8 +382,8 @@ public class EpisodeDB {
 	}
 
 	private static PublishSubject<EpisodeData> _changeSubject = PublishSubject.create();
-	public static void notifyChange(EpisodeCursor c) {
-		EpisodeData data = EpisodeData.cacheSwap(c);
+	public static void notifyChange(EpisodeData ep) {
+		EpisodeData data = EpisodeData.cacheSwap(ep);
 		_changeSubject.onNext(data);
 	}
 
@@ -288,5 +410,16 @@ public class EpisodeDB {
 		_finishedSubject = BehaviorSubject.create();
 		_playlistSubject = BehaviorSubject.create();
 		EpisodeData.evictCache();
+	}
+
+	private static boolean hasFTSValues(ContentValues values) {
+		return values.containsKey(EpisodeProvider.COLUMN_TITLE) || values.containsKey(EpisodeProvider.COLUMN_DESCRIPTION);
+	}
+
+	private static ContentValues extractFTSValues(ContentValues values) {
+		ContentValues ftsValues = new ContentValues(2);
+		ftsValues.put(EpisodeProvider.COLUMN_TITLE, values.getAsString(EpisodeProvider.COLUMN_TITLE));
+		ftsValues.put(EpisodeProvider.COLUMN_DESCRIPTION, values.getAsString(EpisodeProvider.COLUMN_DESCRIPTION));
+		return ftsValues;
 	}
 }

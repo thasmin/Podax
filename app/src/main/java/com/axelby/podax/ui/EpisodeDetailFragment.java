@@ -52,7 +52,7 @@ public class EpisodeDetailFragment extends RxFragment {
 		@Override
 		protected Void doInBackground(Long... params) {
 			Activity activity = getActivity();
-			EpisodeData episode = EpisodeData.create(activity, _podcastId);
+			EpisodeData episode = EpisodeData.create(_podcastId);
 			if (episode == null)
 				return null;
 
@@ -128,7 +128,7 @@ public class EpisodeDetailFragment extends RxFragment {
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				_seekbar_dragging = false;
-				EpisodeProvider.movePositionTo(getActivity(), _podcastId, seekBar.getProgress());
+				EpisodeProvider.movePositionTo(_podcastId, seekBar.getProgress());
 			}
 		};
 		_binding.seekbar.setOnSeekBarChangeListener(seekBarChangeListener);
@@ -136,7 +136,7 @@ public class EpisodeDetailFragment extends RxFragment {
 		_binding.payment.setOnClickListener(v -> _flattr_task.execute(_podcastId));
 
 		// initialize data and set up subscribers
-		initializeUI(EpisodeData.create(getActivity(), _podcastId));
+		initializeUI(EpisodeData.create(_podcastId));
 		if (_onActive)
 			subscribeToActivePodcastChanges();
 		subscribeToPodcastData();

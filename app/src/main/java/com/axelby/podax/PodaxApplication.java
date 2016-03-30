@@ -1,6 +1,7 @@
 package com.axelby.podax;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Build;
 import android.webkit.WebView;
 
