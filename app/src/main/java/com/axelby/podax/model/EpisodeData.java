@@ -15,8 +15,8 @@ import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
-import com.axelby.podax.PodaxApplication;
 import com.axelby.podax.R;
+import com.axelby.podax.player.AudioPlayerBase;
 import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
@@ -175,7 +175,7 @@ public class EpisodeData {
 		return _pubDate;
 	}
 
-	public Date getGpodderUpdateTimestamp() {
+	public Date getGPodderUpdateTimestamp() {
 		return _gpodderUpdateTimestamp;
 	}
 
@@ -231,6 +231,12 @@ public class EpisodeData {
 
 	public void moveToPlaylistPosition(int newPosition) {
 		new EpisodeEditor(getId()).setPlaylistPosition(newPosition).commit();
+	}
+
+	public int determineDuration(Context context) {
+		int duration = (int) (AudioPlayerBase.determineDuration(getFilename(context)) * 1000);
+		new EpisodeEditor(getId()).setDuration(duration).commit();
+		return duration;
 	}
 
 	public void restart(View view) {

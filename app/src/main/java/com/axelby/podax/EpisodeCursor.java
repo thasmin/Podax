@@ -1,19 +1,15 @@
 package com.axelby.podax;
 
-import android.annotation.SuppressLint;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 
-import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.PodaxDB;
-import com.axelby.podax.player.AudioPlayerBase;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 public class EpisodeCursor {
 
@@ -44,14 +40,6 @@ public class EpisodeCursor {
 			_cursor.moveToFirst();
 	}
 
-	public static EpisodeCursor getCursor(Context context, long episodeId) {
-		@SuppressLint("Recycle")
-		Cursor c = context.getContentResolver().query(EpisodeCursor.getContentUri(episodeId), null, null, null, null);
-		if (c == null)
-			return null;
-		return new EpisodeCursor(c);
-	}
-
 	public static long getActiveEpisodeId(Context context) {
 		// first check shared pref, then db
 		final String PREF_ACTIVE = "active";
@@ -60,26 +48,14 @@ public class EpisodeCursor {
 		if (activeId != -1)
 			return activeId;
 
-		Cursor c = context.getContentResolver().query(EpisodeProvider.URI,
-			new String[] { EpisodeProvider.COLUMN_ID },
-			EpisodeProvider.COLUMN_PLAYLIST_POSITION + " = 0", null, null);
-		if (c == null || !c.moveToNext())
+		List<EpisodeData> eps = PodaxDB.episodes.getFor(EpisodeProvider.COLUMN_PLAYLIST_POSITION, 0);
+		if (eps.size() == 0)
 			return -1;
-		activeId = c.getLong(0);
-		c.close();
-		return activeId;
-	}
-
-	private static Uri getContentUri(long id) {
-		return ContentUris.withAppendedId(EpisodeProvider.URI, id);
+		return eps.get(0).getId();
 	}
 
 	public void closeCursor() {
 		_cursor.close();
-	}
-
-	public Uri getContentUri() {
-		return EpisodeCursor.getContentUri(getId());
 	}
 
 	public long getId() {
@@ -239,11 +215,5 @@ public class EpisodeCursor {
 		if (_cursor.isNull(_finishedDateColumn ))
 			return null;
 		return new Date(_cursor.getLong(_finishedDateColumn) * 1000);
-	}
-
-	public int determineDuration(Context context) {
-		int duration = (int) (AudioPlayerBase.determineDuration(getFilename(context)) * 1000);
-		new EpisodeEditor(getId()).setDuration(duration).commit();
-		return duration;
 	}
 }

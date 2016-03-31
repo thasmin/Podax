@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -23,8 +22,6 @@ import com.axelby.gpodder.dto.EpisodeUpdate;
 import com.axelby.gpodder.dto.EpisodeUpdateResponse;
 import com.axelby.gpodder.dto.Podcast;
 import com.axelby.podax.Constants;
-import com.axelby.podax.EpisodeCursor;
-import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.UpdateService;
@@ -173,14 +170,11 @@ public class SyncService extends Service {
 		}
 
 		private boolean syncEpisodes(Client client, Account account) {
-			Cursor c = _context.getContentResolver().query(EpisodeProvider.NEED_GPODDER_UPDATE_URI, null, null, null, null);
-			if (c != null) {
-				ArrayList<EpisodeUpdate> changeUpdates = new ArrayList<>(c.getCount());
-				while (c.moveToNext()) {
-					EpisodeCursor p = new EpisodeCursor(c);
-					changeUpdates.add(new EpisodeUpdate(p.getSubscriptionUrl(), p.getMediaUrl(), _deviceId, "play", p.getGPodderUpdateTimestamp(), p.getLastPosition() / 1000));
-				}
-				c.close();
+			List<EpisodeData> eps = PodaxDB.episodes.getForGPodderUpdate();
+			if (eps.size() > 0) {
+				ArrayList<EpisodeUpdate> changeUpdates = new ArrayList<>(eps.size());
+				for (EpisodeData ep : eps)
+					changeUpdates.add(new EpisodeUpdate(ep.getSubscriptionUrl(), ep.getMediaUrl(), _deviceId, "play", ep.getGPodderUpdateTimestamp(), ep.getLastPosition() / 1000));
 
 				client.updateEpisodes(changeUpdates);
 				if (client.getErrorMessage() != null) {

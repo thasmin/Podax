@@ -14,12 +14,14 @@ import com.axelby.podax.BR;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.R;
+import com.axelby.podax.model.PodaxDB;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -35,7 +37,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PodcastAdapter();
-		EpisodeDB.getFinished()
+		Observable.just(PodaxDB.episodes.getFinished())
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())

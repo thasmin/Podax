@@ -117,8 +117,7 @@ public class SubscriptionDB {
 	}
 
 	private void doDelete(long subscriptionId) {
-		EpisodeDB.getForSubscriptionId(subscriptionId)
-			.flatMapIterable(sub -> sub)
+		Observable.from(PodaxDB.episodes.getForSubscriptionId(subscriptionId))
 			.subscribe(
 				s -> PodaxDB.episodes.delete(s.getId()),
 				e -> Log.e("Subscriptions", "unable to retrieve episodes to delete", e)

@@ -10,7 +10,7 @@ public class DataCacheClearer extends ExternalResource {
 	protected void before() throws Throwable {
 		super.before();
 
-		EpisodeDB.evictCache();
+		PodaxDB.episodes.evictCache();
 		PodaxDB.subscriptions.evictCache();
 	}
 }

@@ -6,6 +6,7 @@ import android.media.AudioManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.player.AudioPlayerBase;
 import com.axelby.podax.player.MediaDecoderPlayer;
 
@@ -47,7 +48,7 @@ class EpisodePlayer {
 	}
 
 	public void changeEpisode(long episodeId) {
-		EpisodeCursor episode = EpisodeCursor.getCursor(_context, episodeId);
+		EpisodeData episode = EpisodeData.create(episodeId);
 		if (episode == null)
 			return;
 

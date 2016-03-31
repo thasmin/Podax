@@ -20,7 +20,7 @@ import android.widget.TextView;
 import com.axelby.podax.AppFlow;
 import com.axelby.podax.R;
 import com.axelby.podax.model.EpisodeData;
-import com.axelby.podax.model.EpisodeDB;
+import com.axelby.podax.model.PodaxDB;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.joda.time.DateTime;
@@ -39,6 +39,7 @@ import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -52,10 +53,9 @@ public class LatestActivityFragment extends RxFragment {
 		super.onAttach(activity);
 
 		_adapter = new LatestActivityAdapter();
-		EpisodeDB.getLatestActivity()
+		Observable.just(PodaxDB.episodes.getLatestActivity())
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
-			.toList()
 			.compose(bindToLifecycle())
 			.subscribe(
 				this::setEpisodes,

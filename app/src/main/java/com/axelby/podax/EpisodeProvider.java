@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import com.axelby.podax.model.DBAdapter;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.PodaxDB;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -222,25 +223,13 @@ public class EpisodeProvider extends ContentProvider {
 	}
 
 	private static long getFirstDownloadedId(Context context) {
-		String[] projection = {
-				EpisodeProvider.COLUMN_ID,
-				EpisodeProvider.COLUMN_FILE_SIZE,
-				EpisodeProvider.COLUMN_MEDIA_URL,
-		};
-		Cursor c = context.getContentResolver().query(PLAYLIST_URI, projection, null, null, null);
-		if (c == null)
+		List<EpisodeData> playlist = PodaxDB.episodes.getPlaylist();
+		if (playlist.size() == 0)
 			return -1;
-
-		long episodeId = -1;
-		while (c.moveToNext()) {
-			EpisodeCursor episode = new EpisodeCursor(c);
-			if (episode.isDownloaded(context)) {
-				episodeId = episode.getId();
-				break;
-			}
-		}
-		c.close();
-		return episodeId;
+		for (EpisodeData ep : playlist)
+			if (ep.isDownloaded(context))
+				return ep.getId();
+		return -1;
 	}
 
 	private String getNeedsDownloadIds() {

@@ -13,7 +13,6 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.R;
 import com.axelby.podax.Stats;
 import com.axelby.podax.databinding.SubscriptionCheckboxBinding;
-import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.trello.rxlifecycle.components.RxFragment;
@@ -103,7 +102,8 @@ public class WeeklyPlannerFragment extends RxFragment {
 	}
 
 	private void getAutoAddedTimeAndUpdate() {
-		EpisodeDB.getNewForSubscriptionIds(_subIds)
+		Observable.from(PodaxDB.episodes.getNewForSubscriptionIds(_subIds))
+			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.reduce(0f, (carried, ep) -> carried += ep.getDuration() / 1000.0f)
 			.subscribe(

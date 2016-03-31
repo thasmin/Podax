@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -16,16 +15,19 @@ import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.Stats;
 
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.LocalDate;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
@@ -86,10 +88,10 @@ public class EpisodeDB {
 		}
 		// playlist notification
 		if (values.containsKey(EpisodeProvider.COLUMN_PLAYLIST_POSITION))
-			EpisodeDB.notifyPlaylistChange();
+			notifyPlaylistChange();
 		// finished notification
 		if (values.containsKey(EpisodeProvider.COLUMN_FINISHED_TIME))
-			EpisodeDB.notifyFinishedChange();
+			notifyFinishedChange();
 		// regular notification
 		notifyChange(EpisodeData.create(episodeId));
 	}
@@ -210,36 +212,6 @@ public class EpisodeDB {
 			f.delete();
 	}
 
-	private static Observable<EpisodeData> queryToObservable(Uri uri, String selection, String[] selectionArgs, String sortOrder) {
-		return Observable.create(subscriber -> {
-			Cursor cursor = _context.getContentResolver().query(uri, null, selection, selectionArgs, sortOrder);
-			if (cursor != null) {
-				while (cursor.moveToNext())
-					subscriber.onNext(EpisodeData.from(new EpisodeCursor(cursor)));
-				cursor.close();
-			}
-			subscriber.onCompleted();
-		});
-	}
-
-	private static Observable<List<EpisodeData>> queryToListObservable(Uri uri, String selection, String[] selectionArgs, String sortOrder) {
-		return Observable.create(subscriber -> {
-			Cursor cursor = _context.getContentResolver().query(uri, null, selection, selectionArgs, sortOrder);
-			if (cursor == null) {
-				subscriber.onCompleted();
-				return;
-			}
-
-			ArrayList<EpisodeData> list = new ArrayList<>(cursor.getCount());
-			while (cursor.moveToNext())
-				list.add(EpisodeData.from(new EpisodeCursor(cursor)));
-			cursor.close();
-
-			subscriber.onNext(list);
-			subscriber.onCompleted();
-		});
-	}
-
 	public static Observable<EpisodeData> getObservable(long episodeId) {
 		return EpisodeDB.getEpisodeWatcher(episodeId)
 			.subscribeOn(Schedulers.io())
@@ -247,53 +219,73 @@ public class EpisodeDB {
 			.observeOn(AndroidSchedulers.mainThread());
 	}
 
-	public static Observable<List<EpisodeData>> getAll() {
-		return queryToListObservable(EpisodeProvider.URI, null, null, null);
+	public List<EpisodeData> getAll() {
+		return getList(null, null);
 	}
 
 	public EpisodeData get(long episodeId) {
-		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 		String selection = "_id = ?";
 		String[] selectionArgs = new String[] {String.valueOf(episodeId)};
-		Cursor c = db.query("podcasts_view", null, selection, selectionArgs, null, null, null);
-		if (c == null || !c.moveToNext())
-			return null;
-		EpisodeData ep = EpisodeData.from(new EpisodeCursor(c));
-		c.close();
-		return ep;
+		return getSingle(selection, selectionArgs);
 	}
 
-	public static Observable<EpisodeData> getFor(String field, int value) {
-		String fieldName = EpisodeProvider.getColumnMap().get(field);
-		String selection = fieldName + " = ?";
+	public List<EpisodeData> getFor(String field, int value) {
+		String selection = EpisodeProvider.getColumnMap().get(field) + " = ?";
 		String[] selectionArgs = new String[] { String.valueOf(value) };
-		return queryToObservable(EpisodeProvider.URI, selection, selectionArgs, null);
+		return getList(selection, selectionArgs);
 	}
 
-	public static Observable<EpisodeData> getFor(String field, String value) {
+	public List<EpisodeData> getFor(String field, String value) {
 		String fieldName = EpisodeProvider.getColumnMap().get(field);
 		String selection = fieldName + " = ?";
 		String[] selectionArgs = new String[] { value };
-		return queryToObservable(EpisodeProvider.URI, selection, selectionArgs, null);
+		return getList(selection, selectionArgs, null);
 	}
 
 	public EpisodeData getForMediaUrl(String url) {
+		return getSingle("mediaUrl = ?", new String[] { url });
+	}
+
+	@Nullable
+	private EpisodeData getSingle(String selection, String[] selectionArgs) {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		String selection = "mediaUrl = ?";
-		String[] selectionArgs = new String[] { url };
 		Cursor c = db.query("podcasts_view", null, selection, selectionArgs, null, null, null);
 		if (c == null || !c.moveToNext())
 			return null;
 		EpisodeData ep = EpisodeData.from(new EpisodeCursor(c));
 		c.close();
 		return ep;
+	}
+
+	public List<EpisodeData> getForGPodderUpdate() {
+		return getList("podcasts.needsGpodderUpdate != 0", null);
 	}
 
 	@NonNull
 	private List<EpisodeData> getList(String selection, String[] selectionArgs) {
-		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
-		Cursor cursor = db.query("podcasts_view", null, selection, selectionArgs, null, null, null);
+		return getList(selection, selectionArgs, null, null);
+	}
 
+	@NonNull
+	private List<EpisodeData> getList(String selection, String[] selectionArgs, String orderBy) {
+		return getList(selection, selectionArgs, orderBy, null);
+	}
+
+	@NonNull
+	private List<EpisodeData> getList(String selection, String[] selectionArgs, String orderBy, Integer limit) {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		Cursor cursor;
+		if (limit != null)
+			cursor = db.query("podcasts_view", null, selection, selectionArgs, null, null, orderBy, String.valueOf(limit));
+		else
+			cursor = db.query("podcasts_view", null, selection, selectionArgs, null, null, orderBy);
+		List<EpisodeData> eps = getList(cursor);
+		cursor.close();
+		return eps;
+	}
+
+	@NonNull
+	private List<EpisodeData> getList(Cursor cursor) {
 		ArrayList<EpisodeData> eps = new ArrayList<>(cursor.getCount());
 		while (cursor.moveToNext())
 			eps.add(EpisodeData.from(new EpisodeCursor(cursor)));
@@ -303,39 +295,58 @@ public class EpisodeDB {
 		return eps;
 	}
 
-	public static Observable<EpisodeData> getDownloaded() {
-		return queryToObservable(EpisodeProvider.URI, EpisodeProvider.COLUMN_FILE_SIZE + " > 0", null, null)
-			.filter(ep -> ep.isDownloaded(_context));
+	private static <T> List<T> filter(Collection<T> list, Func1<T, Boolean> predicate) {
+		ArrayList<T> results = new ArrayList<>();
+		for (T t : list)
+			if (predicate.call(t))
+				results.add(t);
+		return results;
 	}
 
-	public static Observable<EpisodeData> getNeedsDownload() {
-		return queryToObservable(EpisodeProvider.PLAYLIST_URI, null, null, null)
-			.filter(ep -> !ep.isDownloaded(_context));
+	public List<EpisodeData> getDownloaded() {
+		List<EpisodeData> potential = getList(EpisodeProvider.COLUMN_FILE_SIZE + " > 0", null, null);
+		return filter(potential, ep -> ep.isDownloaded(_context));
 	}
 
-	public static Observable<List<EpisodeData>> getForSubscriptionId(long subscriptionId) {
-		String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + "=?";
-		String[] selectionArgs = { String.valueOf(subscriptionId) };
-		return queryToListObservable(EpisodeProvider.URI, selection, selectionArgs, "pubDate DESC");
+	public List<EpisodeData> getNeedsDownload() {
+		List<EpisodeData> potential = getList("queuePosition IS NOT NULL", null, "queuePosition");
+		return filter(potential, ep -> !ep.isDownloaded(_context));
+	}
+
+	public List<EpisodeData> getForSubscriptionId(long subscriptionId) {
+		return getList("subscriptionId = ?", new String[]{ String.valueOf(subscriptionId) }, "pubDate DESC");
 	}
 
 	// not attached to a subject because not attached to a timer
-	public static Observable<EpisodeData> getExpired() {
-		return queryToObservable(EpisodeProvider.EXPIRED_URI, null, null, null);
+	public List<EpisodeData> getExpired() {
+		String inWhere = "SELECT podcasts._id FROM podcasts " +
+				"JOIN subscriptions ON podcasts.subscriptionId = subscriptions._id " +
+				"WHERE expirationDays IS NOT NULL AND queuePosition IS NOT NULL AND " +
+				"date(pubDate, 'unixepoch', expirationDays || ' days') <= date('now')";
+		String selection = "podcasts_view._id IN (" + inWhere + ")";
+		return getList(selection, null);
 	}
 
-	public static Observable<EpisodeData> getLatestActivity() {
-		return queryToObservable(EpisodeProvider.LATEST_ACTIVITY_URI, null, null, EpisodeProvider.COLUMN_PUB_DATE + " DESC");
+	public List<EpisodeData> getLatestActivity() {
+		String sql = "SELECT p.* FROM podcasts_view p JOIN subscriptions s ON p.subscriptionId = s._id " +
+			"WHERE s.singleUse = 0";
+		return getList(_dbAdapter.getReadableDatabase().rawQuery(sql, null));
 	}
 
-	public static Observable<List<EpisodeData>> search(String query) {
-		return queryToListObservable(EpisodeProvider.SEARCH_URI, null, new String[] { query }, null);
+	public List<EpisodeData> search(String query) {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		// TODO: use an in clause to avoid getting duplicate table names
+		String tables = ("podcasts_view JOIN fts_podcasts on podcasts._id = fts_podcasts._id");
+		String selection = "fts_podcasts MATCH ?";
+		String orderBy = "pubDate DESC";
+		Cursor c = db.query(tables, null, selection, new String[] { query }, null, null, orderBy);
+		return getList(c);
 	}
 
-	public static boolean isLastActivityAfter(long when) {
-		Cursor c = _context.getContentResolver().query(EpisodeProvider.LATEST_ACTIVITY_URI,
-				null, EpisodeProvider.COLUMN_PUB_DATE + ">?",
-				new String[] { String.valueOf(when) }, null);
+	public boolean isLastActivityAfter(long when) {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		Cursor c = db.query("podcasts", null, EpisodeProvider.COLUMN_PUB_DATE + ">?",
+				new String[] { String.valueOf(when) }, null, null, null);
 		if (c == null)
 			return true;
 		boolean isAfter = c.getCount() > 0;
@@ -343,39 +354,27 @@ public class EpisodeDB {
 		return isAfter;
 	}
 
-	private static BehaviorSubject<List<EpisodeData>> _finishedSubject = BehaviorSubject.create();
-	public static void notifyFinishedChange() {
-		Cursor c = _context.getContentResolver().query(EpisodeProvider.FINISHED_URI, null, null, null, null);
-		if (c == null)
-			return;
-
-		List<EpisodeData> finished = new ArrayList<>(c.getCount());
-		while (c.moveToNext())
-			finished.add(EpisodeData.from(new EpisodeCursor(c)));
-		c.close();
-
-		_finishedSubject.onNext(finished);
+	private BehaviorSubject<List<EpisodeData>> _finishedSubject = BehaviorSubject.create();
+	public void notifyFinishedChange() {
+		_finishedSubject.onNext(getList("finishedTime IS NOT NULL", null, "finishedTime DESC"));
 	}
-	public static Observable<List<EpisodeData>> getFinished() {
+	public List<EpisodeData> getFinished() {
+		return getList("finishedTime IS NOT NULL", null, "finishedTime DESC");
+	}
+	public Observable<List<EpisodeData>> watchFinished() {
 		if (!_finishedSubject.hasValue())
 			notifyFinishedChange();
 		return _finishedSubject;
 	}
 
-	private static BehaviorSubject<List<EpisodeData>> _playlistSubject = BehaviorSubject.create();
-	public static void notifyPlaylistChange() {
-		Cursor c = _context.getContentResolver().query(EpisodeProvider.PLAYLIST_URI, null, null, null, null);
-		if (c == null)
-			return;
-
-		List<EpisodeData> playlist = new ArrayList<>(c.getCount());
-		while (c.moveToNext())
-			playlist.add(EpisodeData.from(new EpisodeCursor(c)));
-		c.close();
-
-		_playlistSubject.onNext(playlist);
+	private BehaviorSubject<List<EpisodeData>> _playlistSubject = BehaviorSubject.create();
+	public void notifyPlaylistChange() {
+		_playlistSubject.onNext(getList("queuePosition IS NOT NULL", null, "queuePosition"));
 	}
-	public static Observable<List<EpisodeData>> getPlaylist() {
+	public List<EpisodeData> getPlaylist() {
+		return getList("queuePosition IS NOT NULL", null, "queuePosition");
+	}
+	public Observable<List<EpisodeData>> watchPlaylist() {
 		if (!_playlistSubject.hasValue())
 			notifyPlaylistChange();
 		return _playlistSubject;
@@ -396,16 +395,16 @@ public class EpisodeDB {
 			.observeOn(AndroidSchedulers.mainThread());
 	}
 
-	public static Observable<EpisodeData> getNewForSubscriptionIds(List<Long> subIds) {
+	public List<EpisodeData> getNewForSubscriptionIds(List<Long> subIds) {
 		if (subIds.size() == 0)
-			return Observable.empty();
+			return new ArrayList<>();
 
 		String selection = EpisodeProvider.COLUMN_SUBSCRIPTION_ID + " IN (" + TextUtils.join(",", subIds) + ")" +
 			" AND " + EpisodeProvider.COLUMN_PUB_DATE + " > " + (LocalDate.now().minusDays(7).toDate().getTime() / 1000);
-		return queryToObservable(EpisodeProvider.URI, selection, null, null);
+		return getList(selection, null, null);
 	}
 
-	public static void evictCache() {
+	public void evictCache() {
 		_changeSubject = PublishSubject.create();
 		_finishedSubject = BehaviorSubject.create();
 		_playlistSubject = BehaviorSubject.create();

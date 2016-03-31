@@ -21,6 +21,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.TypedValue;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
+import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.ui.MainActivity;
@@ -162,11 +163,9 @@ public class PlayerService extends Service {
 			showNotification();
 
 			if (status.getDuration() == 0) {
-				EpisodeCursor ep = EpisodeCursor.getCursor(PlayerService.this, status.getEpisodeId());
-				if (ep != null) {
+				EpisodeData ep = EpisodeData.create(status.getEpisodeId());
+				if (ep != null)
 					ep.determineDuration(PlayerService.this);
-					ep.closeCursor();
-				}
 			}
 		}
 

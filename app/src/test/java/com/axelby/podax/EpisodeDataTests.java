@@ -5,6 +5,7 @@ import android.content.Context;
 import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionEditor;
 
 import org.joda.time.LocalDateTime;
@@ -34,8 +35,6 @@ public class EpisodeDataTests {
 
 	@Test
 	public void testGetEpisode() {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
@@ -59,8 +58,6 @@ public class EpisodeDataTests {
 
 	@Test
 	public void testGetPlaylist() {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
@@ -77,7 +74,7 @@ public class EpisodeDataTests {
 		Assert.assertNotEquals("unable to create episode 2", -1, ep2Id);
 
 		TestSubscriber<List<EpisodeData>> testSubscriber = new TestSubscriber<>();
-		EpisodeDB.getPlaylist().subscribe(testSubscriber);
+		PodaxDB.episodes.watchPlaylist().subscribe(testSubscriber);
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be two items in playlist", 2, testSubscriber.getOnNextEvents().get(0).size());
@@ -91,8 +88,6 @@ public class EpisodeDataTests {
 
 	@Test
 	public void testGetFinished() {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
@@ -103,7 +98,7 @@ public class EpisodeDataTests {
 		Assert.assertNotEquals("unable to create episode", -1, epId);
 
 		TestSubscriber<List<EpisodeData>> testSubscriber = new TestSubscriber<>();
-		EpisodeDB.getFinished().subscribe(testSubscriber);
+		PodaxDB.episodes.watchFinished().subscribe(testSubscriber);
 		testSubscriber.assertNoErrors();
 		testSubscriber.assertValueCount(1);
 		Assert.assertEquals("should be no finished episodes", 0, testSubscriber.getOnNextEvents().get(0).size());
@@ -116,8 +111,6 @@ public class EpisodeDataTests {
 
 	@Test
 	public void getExpired() {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").setExpirationDays(7).commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
@@ -137,17 +130,13 @@ public class EpisodeDataTests {
 			.commit();
 		Assert.assertNotEquals("unable to create episode 2", -1, ep2Id);
 
-		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
-		EpisodeDB.getExpired().subscribe(testSubscriber);
-		testSubscriber.assertNoErrors();
-		testSubscriber.assertValueCount(1);
-		Assert.assertEquals("only second episode should be expired", "two", testSubscriber.getOnNextEvents().get(0).getTitle());
+		List<EpisodeData> expired = PodaxDB.episodes.getExpired();
+		Assert.assertEquals("should be one expired episode", 1, expired.size());
+		Assert.assertEquals("only second episode should be expired", "two", expired.get(0).getTitle());
 	}
 
 	@Test
 	public void getLatestActivity() {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test").setRawTitle("Test Subscription").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
@@ -165,18 +154,14 @@ public class EpisodeDataTests {
 			.commit();
 		Assert.assertNotEquals("unable to create episode 2", -1, ep2Id);
 
-		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
-		EpisodeDB.getLatestActivity().subscribe(testSubscriber);
-		testSubscriber.assertNoErrors();
-		testSubscriber.assertValueCount(2);
-		Assert.assertEquals("one should be first", "one", testSubscriber.getOnNextEvents().get(0).getTitle());
-		Assert.assertEquals("two should be second", "two", testSubscriber.getOnNextEvents().get(1).getTitle());
+		List<EpisodeData> activity = PodaxDB.episodes.getLatestActivity();
+		Assert.assertEquals("should be two episodes", 2, activity.size());
+		Assert.assertEquals("one should be first", "one", activity.get(0).getTitle());
+		Assert.assertEquals("two should be second", "two", activity.get(1).getTitle());
 	}
 
 	@Test
 	public void getLastActivity() {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
@@ -188,8 +173,8 @@ public class EpisodeDataTests {
 			.commit();
 		Assert.assertNotEquals("unable to create episode", -1, epId);
 
-		Assert.assertTrue("latest activity should be after when - 1", EpisodeDB.isLastActivityAfter(when / 1000 - 1));
-		Assert.assertFalse("latest activity should not be after when + 1", EpisodeDB.isLastActivityAfter(when / 1000 + 1));
+		Assert.assertTrue("latest activity should be after when - 1", PodaxDB.episodes.isLastActivityAfter(when / 1000 - 1));
+		Assert.assertFalse("latest activity should not be after when + 1", PodaxDB.episodes.isLastActivityAfter(when / 1000 + 1));
 	}
 
 	@Test
@@ -206,21 +191,15 @@ public class EpisodeDataTests {
 			.commit();
 		Assert.assertNotEquals("unable to create episode", -1, epId);
 
-		TestSubscriber<EpisodeData> testSubscriber = new TestSubscriber<>();
-		EpisodeDB.getNeedsDownload().subscribe(testSubscriber);
-		testSubscriber.assertNoErrors();
-		testSubscriber.assertValueCount(1);
-		testSubscriber.unsubscribe();
+		List<EpisodeData> needsDownload = PodaxDB.episodes.getNeedsDownload();
+		Assert.assertEquals("should be one episode that needs to be downloaded", 1, needsDownload.size());
 
-		EpisodeData ep = testSubscriber.getOnNextEvents().get(0);
+		EpisodeData ep = needsDownload.get(0);
 		FileWriter fw = new FileWriter(ep.getFilename(context));
 		fw.write(new char[] { 32, 32, 32, 32, 32 });
 		fw.close();
 
-		testSubscriber = new TestSubscriber<>();
-		EpisodeDB.getNeedsDownload().subscribe(testSubscriber);
-		testSubscriber.assertNoErrors();
-		testSubscriber.assertValueCount(0);
-		testSubscriber.unsubscribe();
+		needsDownload = PodaxDB.episodes.getNeedsDownload();
+		Assert.assertEquals("should be no episodes that need to be downloaded", 0, needsDownload.size());
 	}
 }

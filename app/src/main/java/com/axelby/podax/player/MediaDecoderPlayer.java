@@ -10,7 +10,7 @@ import android.media.MediaFormat;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.axelby.podax.EpisodeCursor;
+import com.axelby.podax.model.EpisodeData;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.nio.ShortBuffer;
 
 public class MediaDecoderPlayer extends AudioPlayerBase {
 	private final Context _context;
-	private final EpisodeCursor _episode;
+	private final EpisodeData _episode;
 	private final MediaState _state;
 
 	private AudioTrack _track;
@@ -31,7 +31,7 @@ public class MediaDecoderPlayer extends AudioPlayerBase {
 	private float _seekFlag;
 	private boolean _stopFlag;
 
-	public MediaDecoderPlayer(@NonNull Context context, @NonNull EpisodeCursor episode, float playbackRate) throws InterruptedException {
+	public MediaDecoderPlayer(@NonNull Context context, @NonNull EpisodeData episode, float playbackRate) throws InterruptedException {
 		_context = context;
 		_episode = episode;
 		_playbackRate = playbackRate;
@@ -213,7 +213,6 @@ public class MediaDecoderPlayer extends AudioPlayerBase {
 			Log.e("mediadecoder", "catchall", e);
 		} finally {
 			_state.release();
-			_episode.closeCursor();
 
 			if (_track != null) {
 				try {
@@ -253,7 +252,7 @@ public class MediaDecoderPlayer extends AudioPlayerBase {
 	// TODO: make recycle and regenerate verbiage consistant
 	static class MediaState {
 		private final Context _context;
-		private final EpisodeCursor _episode;
+		private final EpisodeData _episode;
 		private final String _inputFilename;
 
 		public MediaExtractor extractor;
@@ -270,7 +269,7 @@ public class MediaDecoderPlayer extends AudioPlayerBase {
 		private boolean _inEOS = false;
 		private boolean _outEOS = false;
 
-		public MediaState(Context context, EpisodeCursor episode) throws InterruptedException {
+		public MediaState(Context context, EpisodeData episode) throws InterruptedException {
 			_context = context;
 			_episode = episode;
 			_inputFilename = episode.getFilename(context);

@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
-import com.axelby.podax.model.EpisodeDB;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.ui.MainActivity;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import okio.BufferedSource;
+import rx.Observable;
 
 public class EpisodeDownloadService extends Service {
 	private final static ArrayList<String> _currentlyDownloading = new ArrayList<>(5);
@@ -89,7 +90,7 @@ public class EpisodeDownloadService extends Service {
 
 			// make sure we don't download too many episodes
 			float maxEpisodes = PreferenceManager.getDefaultSharedPreferences(this).getFloat("queueMaxNumPodcasts", 10000);
-			Integer downloadedEpisodes = EpisodeDB.getDownloaded().count().toBlocking().first();
+			int downloadedEpisodes = PodaxDB.episodes.getDownloaded().size();
 			if (downloadedEpisodes >= maxEpisodes)
 				return;
 
@@ -98,7 +99,7 @@ public class EpisodeDownloadService extends Service {
 			verifyDownloadedFiles(this);
 			expireDownloadedFiles();
 
-			EpisodeDB.getNeedsDownload().subscribe(
+			Observable.from(PodaxDB.episodes.getNeedsDownload()).subscribe(
 				ep -> handleIntent(createDownloadEpisodeIntent(this, ep.getId())),
 				e -> Log.e("EpisodeDownloadService", "unable to get episodes that need to be downloaded", e)
 			);
@@ -114,9 +115,7 @@ public class EpisodeDownloadService extends Service {
 
 	// make sure all media files in the folder are for existing episodes
 	public static void verifyDownloadedFiles(Context context) {
-		List<String> validMediaFilenames = EpisodeDB.getPlaylist()
-			.first()
-			.flatMapIterable(eps -> eps)
+		List<String> validMediaFilenames = Observable.from(PodaxDB.episodes.getPlaylist())
 			.map(ep -> ep.getFilename(context))
 			.toList()
 			.toBlocking().first();
@@ -140,14 +139,14 @@ public class EpisodeDownloadService extends Service {
 	}
 
 	private void expireDownloadedFiles() {
-		EpisodeDB.getExpired().subscribe(
+		Observable.from(PodaxDB.episodes.getExpired()).subscribe(
 			EpisodeData::removeFromPlaylist,
 			e -> Log.e("EpisodeDownloadService", "unable to expire downloaded files")
 		);
 	}
 
 	public void download(Context context, long episodeId) {
-		EpisodeCursor episode = null;
+		EpisodeData episode = null;
 		FileOutputStream outStream = null;
 		File mediaFile = null;
 		try {
@@ -156,7 +155,7 @@ public class EpisodeDownloadService extends Service {
 				return;
 			}
 
-			episode = EpisodeCursor.getCursor(context, episodeId);
+			episode = EpisodeData.create(episodeId);
 			if (episode == null) {
 				Log.d("EpisodeDownloader", "episode cursor is null");
 				return;
@@ -228,7 +227,6 @@ public class EpisodeDownloadService extends Service {
 
 			if (episode != null) {
 				hideNotification(context, episode);
-				episode.closeCursor();
 			}
 
 			try {
@@ -240,7 +238,7 @@ public class EpisodeDownloadService extends Service {
 		}
 	}
 
-	private void showErrorNotification(Context context, EpisodeCursor podcast, Exception e) {
+	private void showErrorNotification(Context context, EpisodeData podcast, Exception e) {
 		Intent notificationIntent = new Intent(context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 		Notification notification = new NotificationCompat.Builder(context)
@@ -256,7 +254,7 @@ public class EpisodeDownloadService extends Service {
 		notificationManager.notify(Constants.NOTIFICATION_DOWNLOADING_BASE + (int) podcast.getId(), notification);
 	}
 
-	private void showNotification(Context context, EpisodeCursor podcast, int bytesRead, int fileSize, long when) {
+	private void showNotification(Context context, EpisodeData podcast, int bytesRead, int fileSize, long when) {
 		Intent notificationIntent = new Intent(context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 		Notification notification = new NotificationCompat.Builder(context)
@@ -273,7 +271,7 @@ public class EpisodeDownloadService extends Service {
 		notificationManager.notify(Constants.NOTIFICATION_DOWNLOADING_BASE + (int) podcast.getId(), notification);
 	}
 
-	private void hideNotification(Context context, EpisodeCursor podcast) {
+	private void hideNotification(Context context, EpisodeData podcast) {
 		String ns = Context.NOTIFICATION_SERVICE;
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(ns);
 		notificationManager.cancel(Constants.NOTIFICATION_DOWNLOADING_BASE + (int) podcast.getId());

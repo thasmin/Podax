@@ -23,6 +23,7 @@ import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.EpisodeDownloadService;
 import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.R;
+import com.axelby.podax.model.PodaxDB;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
+import rx.Observable;
 import rx.Subscriber;
 
 public class PlaylistFragment extends RxFragment {
@@ -155,7 +157,7 @@ public class PlaylistFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PlaylistListAdapter();
-		EpisodeDB.getPlaylist()
+		Observable.just(PodaxDB.episodes.getPlaylist())
 			.compose(bindToLifecycle())
 			.subscribe(
 				_adapter::setEpisodes,

@@ -1,10 +1,7 @@
 package com.axelby.podax;
 
-import android.content.Context;
-
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
-import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
@@ -15,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.io.File;
@@ -96,8 +92,6 @@ public class SubscriptionDataTests {
 
 	@Test
 	public void testDelete() throws IOException {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
@@ -111,14 +105,11 @@ public class SubscriptionDataTests {
 
 		PodaxDB.subscriptions.delete(subId);
 
-		TestSubscriber<SubscriptionData> subSubscriber = new TestSubscriber<>();
-		Observable.from(PodaxDB.subscriptions.getAll()).subscribe(subSubscriber);
-		subSubscriber.assertValueCount(0);
+		List<SubscriptionData> subs = PodaxDB.subscriptions.getAll();
+		Assert.assertEquals("should be no subscriptions", 0, subs.size());
 
-		TestSubscriber<List<EpisodeData>> epSubscriber = new TestSubscriber<>();
-		EpisodeDB.getAll().subscribe(epSubscriber);
-		epSubscriber.assertValueCount(1);
-		Assert.assertEquals(0, epSubscriber.getOnNextEvents().get(0).size());
+		List<EpisodeData> eps = PodaxDB.episodes.getAll();
+		Assert.assertEquals("should be no episodes", 0, eps.size());
 
 		Assert.assertFalse("subscription thumbnail should have been deleted", new File(thumbFn).exists());
 	}

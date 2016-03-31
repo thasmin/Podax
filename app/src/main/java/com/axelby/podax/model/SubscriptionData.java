@@ -260,7 +260,7 @@ public class SubscriptionData {
 	}
 
 	public List<EpisodeData> getEpisodes() {
-		return EpisodeDB.getForSubscriptionId(getId()).toBlocking().first();
+		return PodaxDB.episodes.getForSubscriptionId(getId());
 	}
 
 	@SuppressWarnings("unused")

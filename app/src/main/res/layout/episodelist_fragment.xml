@@ -31,7 +31,7 @@
                 android:transitionName="subscriptionImage" />
 
             <TextView
-                android:id="@+id/subscription"
+                android:id="@+id/subscriptionTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="24sp"

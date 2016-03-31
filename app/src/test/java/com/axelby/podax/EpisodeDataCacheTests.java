@@ -1,13 +1,8 @@
 package com.axelby.podax;
 
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
-
 import com.axelby.podax.model.EpisodeData;
-import com.axelby.podax.model.SubscriptionDB;
+import com.axelby.podax.model.EpisodeEditor;
+import com.axelby.podax.model.SubscriptionEditor;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -15,7 +10,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricGradleTestRunner.class)
@@ -27,49 +21,26 @@ public class EpisodeDataCacheTests {
 	@Ignore
 	@Test
 	public void testGetEpisode() {
-		Context context = RuntimeEnvironment.application;
+		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("cannot create subscription", -1, subId);
 
-		ContentValues values = new ContentValues();
-		values.put(SubscriptionDB.COLUMN_TITLE, "huh?");
-		values.put(SubscriptionDB.COLUMN_URL, "test://1");
-		Uri subUri = context.getContentResolver().insert(SubscriptionProvider.URI, values);
-		Assert.assertNotNull("subscription uri should not be null", subUri);
+		long epId = EpisodeEditor.fromNew(subId, "test://1.mp3").setTitle("huh?").commit();
+		Assert.assertNotEquals("cannot create episode", -1, epId);
 
-		values = new ContentValues();
-		values.put(EpisodeProvider.COLUMN_TITLE, "huh?");
-		values.put(EpisodeProvider.COLUMN_MEDIA_URL, "test://1");
-		values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, ContentUris.parseId(subUri));
-		Uri epUri = context.getContentResolver().insert(EpisodeProvider.URI, values);
-		Assert.assertNotNull("episode uri should not be null", epUri);
-
-		Cursor c = context.getContentResolver().query(EpisodeProvider.URI, null, null, null, null);
-		Assert.assertNotNull(c);
 		int loops = 1000000;
 		double n;
 
 		n = System.nanoTime();
 		for (int i = 0; i < loops; ++i) {
-			c.moveToFirst();
-			new EpisodeCursor(c);
-		}
-		System.out.println("baseline: " + (System.nanoTime() - n) / 1e+9);
-
-		n = System.nanoTime();
-		for (int i = 0; i < loops; ++i) {
-			c.moveToFirst();
-			EpisodeCursor ec = new EpisodeCursor(c);
 			EpisodeData.evictCache();
-			EpisodeData.from(ec);
+			EpisodeData.create(epId);
 		}
 		System.out.println("no cache: " + (System.nanoTime() - n) / 1e+9);
 
 		n = System.nanoTime();
 		for (int i = 0; i < loops; ++i) {
-			c.moveToFirst();
-			EpisodeCursor ec = new EpisodeCursor(c);
-			EpisodeData.from(ec);
+			EpisodeData.create(epId);
 		}
 		System.out.println("with cache: " + (System.nanoTime() - n) / 1e+9);
-
 	}
 }
