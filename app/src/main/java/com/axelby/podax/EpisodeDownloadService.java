@@ -120,14 +120,14 @@ public class EpisodeDownloadService extends Service {
 			.toList()
 			.toBlocking().first();
 
-		File dir = new File(EpisodeCursor.getPodcastStoragePath(context));
+		File dir = new File(Storage.getPodcastStoragePath(context));
 		File[] files = dir.listFiles();
 		// this is possible if the directory does not exist
 		if (files == null)
 			return;
 		for (File f : files) {
 			// make sure the file is a media file
-			String extension = EpisodeCursor.getExtension(f.getName());
+			String extension = Storage.getExtension(f.getName());
 			String[] mediaExtensions = new String[]{"m4a", "mp3", "ogg", "wma",};
 			if (Arrays.binarySearch(mediaExtensions, extension) < 0)
 				continue;

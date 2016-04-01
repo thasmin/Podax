@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.PodaxDB;
 
@@ -11,13 +12,13 @@ import org.joda.time.LocalTime;
 
 import java.util.Date;
 
-class PlaylistManager {
+public class PlaylistManager {
 
 	public static void completeActiveEpisode(Context context) {
 		if (isInSleepytime(context))
 			PlayerService.stop(context);
 
-		markEpisodeComplete(EpisodeCursor.getActiveEpisodeId(context));
+		markEpisodeComplete(PodaxDB.episodes.getActiveEpisodeId());
 
 		Stats.addCompletion(context);
 	}

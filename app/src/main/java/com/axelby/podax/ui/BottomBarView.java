@@ -54,7 +54,7 @@ public class BottomBarView extends RelativeLayout {
 		_expand = (ImageButton) findViewById(R.id.expand);
 
 		// TODO: does this leak the activity?
-		PlayerStatus.asObservable()
+		PlayerStatus.watch()
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.subscribe(this::update, this::onError);

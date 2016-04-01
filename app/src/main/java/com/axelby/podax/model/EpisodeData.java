@@ -1,21 +1,20 @@
 package com.axelby.podax.model;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.util.LruCache;
 import android.view.View;
 
 import com.axelby.podax.AppFlow;
-import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.EpisodeDownloadService;
-import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
+import com.axelby.podax.Storage;
 import com.axelby.podax.player.AudioPlayerBase;
 import com.squareup.picasso.RequestCreator;
 
@@ -48,33 +47,33 @@ public class EpisodeData {
 
 	private String _filename = null;
 
-	private EpisodeData(EpisodeCursor ep) {
-		_id = ep.getId();
-		_title = ep.getTitle();
-		_subscriptionId = ep.getSubscriptionId();
-		_subscriptionTitle = ep.getSubscriptionTitle();
-		_subscriptionUrl = ep.getSubscriptionUrl();
-		_playlistPosition = ep.getPlaylistPosition();
-		_mediaUrl = ep.getMediaUrl();
-		_fileSize = ep.getFileSize();
-		_description = ep.getDescription();
-		_link = ep.getLink();
-		_lastPosition = ep.getLastPosition();
-		_duration = ep.getDuration();
-		_pubDate = ep.getPubDate();
-		_gpodderUpdateTimestamp = ep.getGPodderUpdateTimestamp();
-		_payment = ep.getPaymentUrl();
-		_finishedDate = ep.getFinishedDate();
+	private EpisodeData(Cursor c) {
+		_id = c.getLong(c.getColumnIndex(EpisodeDB.COLUMN_ID));
+		_title = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_TITLE));
+		_subscriptionId = c.getLong(c.getColumnIndex(EpisodeDB.COLUMN_SUBSCRIPTION_ID));
+		_subscriptionTitle = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_SUBSCRIPTION_TITLE));
+		_subscriptionUrl = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_SUBSCRIPTION_URL));
+		_playlistPosition = c.getInt(c.getColumnIndex(EpisodeDB.COLUMN_PLAYLIST_POSITION));
+		_mediaUrl = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_MEDIA_URL));
+		_fileSize = c.getLong(c.getColumnIndex(EpisodeDB.COLUMN_FILE_SIZE));
+		_description = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_DESCRIPTION));
+		_link = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_LINK));
+		_lastPosition = c.getInt(c.getColumnIndex(EpisodeDB.COLUMN_LAST_POSITION));
+		_duration = c.getInt(c.getColumnIndex(EpisodeDB.COLUMN_DURATION));
+		_pubDate = new Date(c.getLong(c.getColumnIndex(EpisodeDB.COLUMN_PUB_DATE)) * 1000);
+		_gpodderUpdateTimestamp = new Date(c.getLong(c.getColumnIndex(EpisodeDB.COLUMN_GPODDER_UPDATE_TIMESTAMP)) * 1000);
+		_payment = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_PAYMENT));
+		_finishedDate = new Date(c.getLong(c.getColumnIndex(EpisodeDB.COLUMN_FINISHED_TIME)) * 1000);
 	}
 
-	public static EpisodeData from(EpisodeCursor ep) {
-		long episodeId = ep.getId();
+	public static EpisodeData from(Cursor cursor) {
+		long episodeId = cursor.getLong(cursor.getColumnIndex("_id"));
 		synchronized (_cache) {
 			if (_cache.get(episodeId) != null && _cache.get(episodeId).get() != null)
 				return _cache.get(episodeId).get();
 		}
 
-		EpisodeData episodeData = new EpisodeData(ep);
+		EpisodeData episodeData = new EpisodeData(cursor);
 		synchronized (_cache) {
 			_cache.put(episodeId, new SoftReference<>(episodeData));
 		}
@@ -93,27 +92,12 @@ public class EpisodeData {
 		return PodaxDB.episodes.get(episodeId);
 	}
 
-	public static EpisodeData getActive(Context context) {
-		long activeEpisodeId = EpisodeProvider.getActiveEpisodeId(context);
-		if (activeEpisodeId == -1)
-			return null;
-		return EpisodeData.create(activeEpisodeId);
-	}
-
 	public static void evictCache() {
 		_cache.evictAll();
 	}
 
 	public static void evictFromCache(long episodeId) {
 		_cache.remove(episodeId);
-	}
-
-	public static EpisodeData cacheSwap(EpisodeCursor c) {
-		EpisodeData data = new EpisodeData(c);
-		synchronized (_cache) {
-			_cache.put(c.getId(), new SoftReference<>(data));
-		}
-		return data;
 	}
 
 	public static EpisodeData cacheSwap(EpisodeData data) {
@@ -190,9 +174,9 @@ public class EpisodeData {
 	public String getFilename(Context context) {
 		if (_filename == null)
 			_filename = String.format("%s%s.%s",
-				EpisodeCursor.getPodcastStoragePath(context),
+				Storage.getPodcastStoragePath(context),
 				String.valueOf(getId()),
-				EpisodeCursor.getExtension(getMediaUrl())
+				Storage.getExtension(getMediaUrl())
 			);
 
 		return _filename;
@@ -240,10 +224,10 @@ public class EpisodeData {
 	}
 
 	public void restart(View view) {
-		EpisodeProvider.restart(getId());
+		EpisodeDB.restart(getId());
 	}
 	public void rewind(View view) {
-		EpisodeProvider.movePositionBy(getId(), -15);
+		EpisodeDB.movePositionBy(getId(), -15);
 	}
 	public void playstop(View view) {
 		PlayerStatus status = PlayerStatus.getCurrentState(view.getContext());
@@ -253,10 +237,10 @@ public class EpisodeData {
 			PlayerService.play(view.getContext(), getId());
 	}
 	public void forward(View view) {
-		EpisodeProvider.movePositionBy(getId(), 30);
+		EpisodeDB.movePositionBy(getId(), 30);
 	}
 	public void skipToEnd(View view) {
-		EpisodeProvider.skipToEnd(getId());
+		EpisodeDB.skipToEnd(getId());
 	}
 
 	public void viewDescription(View view) {
@@ -334,11 +318,5 @@ public class EpisodeData {
 
 	public boolean hasFlattrPaymentUrl() {
 		return getPaymentUrl() != null && FlattrHelper.isFlattrUri(Uri.parse(getPaymentUrl()));
-	}
-
-	public static long parseId(Context context, Uri uri) {
-		if (uri.equals(EpisodeProvider.ACTIVE_EPISODE_URI))
-			return EpisodeProvider.getActiveEpisodeId(context);
-		return ContentUris.parseId(uri);
 	}
 }

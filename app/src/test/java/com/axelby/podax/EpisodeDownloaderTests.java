@@ -49,7 +49,7 @@ public class EpisodeDownloaderTests {
 		fw.write(new char[] { 32, 32, 32, 32, 32 });
 		fw.close();
 
-		String badfile = String.format("%sbad.mp3", EpisodeCursor.getPodcastStoragePath(context));
+		String badfile = String.format("%sbad.mp3", Storage.getPodcastStoragePath(context));
 		fw = new FileWriter(badfile);
 		fw.write(new char[] { 32, 32, 32, 32, 32 });
 		fw.close();

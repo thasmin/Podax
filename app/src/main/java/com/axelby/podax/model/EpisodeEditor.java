@@ -2,8 +2,6 @@ package com.axelby.podax.model;
 
 import android.content.ContentValues;
 
-import com.axelby.podax.EpisodeProvider;
-
 import java.util.Date;
 
 public class EpisodeEditor {
@@ -134,44 +132,44 @@ public class EpisodeEditor {
 		ContentValues values = new ContentValues(16);
 
 		if (_idSet)
-			values.put(EpisodeProvider.COLUMN_ID, _id);
+			values.put(EpisodeDB.COLUMN_ID, _id);
 		if (_titleSet)
-			values.put(EpisodeProvider.COLUMN_TITLE, _title);
+			values.put(EpisodeDB.COLUMN_TITLE, _title);
 		if (_subscriptionIdSet)
-			values.put(EpisodeProvider.COLUMN_SUBSCRIPTION_ID, _subscriptionId);
+			values.put(EpisodeDB.COLUMN_SUBSCRIPTION_ID, _subscriptionId);
 		if (_playlistPositionSet)
-			values.put(EpisodeProvider.COLUMN_PLAYLIST_POSITION, _playlistPosition);
+			values.put(EpisodeDB.COLUMN_PLAYLIST_POSITION, _playlistPosition);
 		if (_mediaUrlSet)
-			values.put(EpisodeProvider.COLUMN_MEDIA_URL, _mediaUrl);
+			values.put(EpisodeDB.COLUMN_MEDIA_URL, _mediaUrl);
 		if (_fileSizeSet)
-			values.put(EpisodeProvider.COLUMN_FILE_SIZE, _fileSize);
+			values.put(EpisodeDB.COLUMN_FILE_SIZE, _fileSize);
 		if (_descriptionSet)
-			values.put(EpisodeProvider.COLUMN_DESCRIPTION, _description);
+			values.put(EpisodeDB.COLUMN_DESCRIPTION, _description);
 		if (_linkSet)
-			values.put(EpisodeProvider.COLUMN_LINK, _link);
+			values.put(EpisodeDB.COLUMN_LINK, _link);
 		if (_lastPositionSet)
-			values.put(EpisodeProvider.COLUMN_LAST_POSITION, _lastPosition);
+			values.put(EpisodeDB.COLUMN_LAST_POSITION, _lastPosition);
 		if (_durationSet)
-			values.put(EpisodeProvider.COLUMN_DURATION, _duration);
+			values.put(EpisodeDB.COLUMN_DURATION, _duration);
 		if (_pubDateSet) {
 			if (_pubDate != null)
-				values.put(EpisodeProvider.COLUMN_PUB_DATE, _pubDate.getTime() / 1000);
+				values.put(EpisodeDB.COLUMN_PUB_DATE, _pubDate.getTime() / 1000);
 			else
-				values.putNull(EpisodeProvider.COLUMN_PUB_DATE);
+				values.putNull(EpisodeDB.COLUMN_PUB_DATE);
 		}
 		if (_gpodderUpdateTimestampSet) {
 			if (_gpodderUpdateTimestamp != null)
-				values.put(EpisodeProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP, _gpodderUpdateTimestamp.getTime() / 1000);
+				values.put(EpisodeDB.COLUMN_GPODDER_UPDATE_TIMESTAMP, _gpodderUpdateTimestamp.getTime() / 1000);
 			else
-				values.putNull(EpisodeProvider.COLUMN_GPODDER_UPDATE_TIMESTAMP);
+				values.putNull(EpisodeDB.COLUMN_GPODDER_UPDATE_TIMESTAMP);
 		}
 		if (_paymentSet)
-			values.put(EpisodeProvider.COLUMN_PAYMENT, _payment);
+			values.put(EpisodeDB.COLUMN_PAYMENT, _payment);
 		if (_finishedDateSet) {
 			if (_finishedDate != null)
-				values.put(EpisodeProvider.COLUMN_FINISHED_TIME, _finishedDate.getTime() / 1000);
+				values.put(EpisodeDB.COLUMN_FINISHED_TIME, _finishedDate.getTime() / 1000);
 			else
-				values.putNull(EpisodeProvider.COLUMN_FINISHED_TIME);
+				values.putNull(EpisodeDB.COLUMN_FINISHED_TIME);
 		}
 
 		if (_episodeId != -1) {

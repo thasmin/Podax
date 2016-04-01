@@ -21,6 +21,8 @@ import org.robolectric.annotation.Config;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import rx.observers.TestSubscriber;
+
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 21)
 public class ActiveEpisodeTests {
@@ -61,15 +63,15 @@ public class ActiveEpisodeTests {
 		SharedPreferences prefs = context.getSharedPreferences("internals", Context.MODE_PRIVATE);
 		prefs.edit().putLong("active", 10).apply();
 		Assert.assertEquals("active episode id should be taken from prefs",
-			10, EpisodeProvider.getActiveEpisodeId(context));
+			10, PodaxDB.episodes.getActiveEpisodeId());
 
 		prefs.edit().remove("active").apply();
 		Assert.assertEquals("active episode id should be first downloaded episode",
-			ep2Id, EpisodeProvider.getActiveEpisodeId(context));
+			ep2Id, PodaxDB.episodes.getActiveEpisodeId());
 
 		PodaxDB.episodes.delete(ep2Id);
 		Assert.assertEquals("active episode id should be not be undownloaded episode",
-			-1, EpisodeProvider.getActiveEpisodeId(context));
+			-1, PodaxDB.episodes.getActiveEpisodeId());
 	}
 
 	@Test
@@ -121,5 +123,55 @@ public class ActiveEpisodeTests {
 		Assert.assertEquals("second item in queue", 1, c.getInt(0));
 		Assert.assertFalse(c.moveToNext());
 		c.close();
+	}
+
+	@Test
+	public void activeNotifier() {
+		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription uri should not be null", -1, subId);
+
+		long epId = EpisodeEditor.fromNew(subId, "test://1.mp3")
+			.setTitle("one")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.commit();
+		Assert.assertNotEquals("episode id should not be -1", -1, epId);
+
+		PodaxDB.episodes.setActiveEpisode(epId);
+
+		TestSubscriber<PlayerStatus> subscriber = new TestSubscriber<>();
+		PlayerStatus.watch().subscribe(subscriber);
+		subscriber.assertNoErrors();
+		subscriber.assertValueCount(1);
+
+		PodaxDB.episodes.updatePlayerPosition(1000);
+		subscriber.assertValueCount(2);
+
+		new EpisodeEditor(epId).setLastPosition(2000).commit();
+		subscriber.assertValueCount(3);
+	}
+
+	@Test
+	public void nonPlayerNotifier() {
+		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
+		Assert.assertNotEquals("subscription uri should not be null", -1, subId);
+
+		long epId = EpisodeEditor.fromNew(subId, "test://1.mp3")
+			.setTitle("one")
+			.setPlaylistPosition(Integer.MAX_VALUE)
+			.commit();
+		Assert.assertNotEquals("episode id should not be -1", -1, epId);
+
+		PodaxDB.episodes.setActiveEpisode(epId);
+
+		TestSubscriber<PlayerStatus> subscriber = new TestSubscriber<>();
+		PlayerStatus.watchNonPlayerUpdates().subscribe(subscriber);
+		subscriber.assertNoErrors();
+		subscriber.assertValueCount(1);
+
+		PodaxDB.episodes.updatePlayerPosition(1000);
+		subscriber.assertValueCount(1);
+
+		new EpisodeEditor(epId).setLastPosition(2000).commit();
+		subscriber.assertValueCount(2);
 	}
 }

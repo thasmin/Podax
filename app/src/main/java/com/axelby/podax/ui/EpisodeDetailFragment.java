@@ -16,9 +16,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.axelby.podax.Constants;
-import com.axelby.podax.EpisodeCursor;
 import com.axelby.podax.model.EpisodeData;
-import com.axelby.podax.EpisodeProvider;
 import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.FlattrHelper;
 import com.axelby.podax.FlattrHelper.NoAppSecretFlattrException;
@@ -26,6 +24,7 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
 import com.axelby.podax.databinding.EpisodeDetailBinding;
+import com.axelby.podax.model.PodaxDB;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import org.shredzone.flattr4j.exception.FlattrException;
@@ -97,7 +96,7 @@ public class EpisodeDetailFragment extends RxFragment {
 		if (getArguments() != null && getArguments().containsKey(Constants.EXTRA_EPISODE_ID)) {
 			_podcastId = getArguments().getLong(Constants.EXTRA_EPISODE_ID);
 		} else {
-			_podcastId = EpisodeCursor.getActiveEpisodeId(getActivity());
+			_podcastId = PodaxDB.episodes.getActiveEpisodeId();
 			_onActive = true;
 		}
 
@@ -128,7 +127,7 @@ public class EpisodeDetailFragment extends RxFragment {
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				_seekbar_dragging = false;
-				EpisodeProvider.movePositionTo(_podcastId, seekBar.getProgress());
+				EpisodeDB.movePositionTo(_podcastId, seekBar.getProgress());
 			}
 		};
 		_binding.seekbar.setOnSeekBarChangeListener(seekBarChangeListener);
@@ -143,7 +142,7 @@ public class EpisodeDetailFragment extends RxFragment {
 	}
 
 	private void subscribeToActivePodcastChanges() {
-		PlayerStatus.asObservable()
+		PlayerStatus.watch()
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(

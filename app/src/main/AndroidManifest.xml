@@ -157,11 +157,6 @@
             android:authorities="com.axelby.podax.searchsuggestionprovider"
             android:exported="false"
             android:label="Podax Search" />
-        <provider
-            android:name=".EpisodeProvider"
-            android:authorities="com.axelby.podax.podcastprovider"
-            android:exported="false"
-            android:label="Episodes" />
 
         <!-- GPodder section -->
         <activity

@@ -1,7 +1,6 @@
 package com.axelby.podax;
 
 import android.app.Application;
-import android.content.Context;
 import android.os.Build;
 import android.webkit.WebView;
 
@@ -46,7 +45,7 @@ public class PodaxApplication extends Application {
 
 		if (!isRoboUnitTest()) {
 			MediaButtonIntentReceiver.initialize(this);
-			PlayerStatus.notify(this);
+			PlayerStatus.update(this);
 		}
 
 		JodaTimeAndroid.init(this);

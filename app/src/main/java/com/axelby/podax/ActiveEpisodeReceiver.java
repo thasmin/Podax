@@ -5,8 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 
+import com.axelby.podax.model.EpisodeDB;
+import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.ui.SmallWidgetProvider;
 
 public class ActiveEpisodeReceiver extends BroadcastReceiver {
@@ -17,15 +18,15 @@ public class ActiveEpisodeReceiver extends BroadcastReceiver {
 			return;
 
 		// only receives com.axelby.podax.activeepisode intents
-		long activeEpisodeId = EpisodeCursor.getActiveEpisodeId(context);
+		long activeEpisodeId = PodaxDB.episodes.getActiveEpisodeId();
 		if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_RESTART))
-			EpisodeProvider.restart(activeEpisodeId);
+			EpisodeDB.restart(activeEpisodeId);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_BACK))
-			EpisodeProvider.movePositionBy(activeEpisodeId, -15);
+			EpisodeDB.movePositionBy(activeEpisodeId, -15);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_FORWARD))
-			EpisodeProvider.movePositionBy(activeEpisodeId, 30);
+			EpisodeDB.movePositionBy(activeEpisodeId, 30);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_END))
-			EpisodeProvider.skipToEnd(activeEpisodeId);
+			EpisodeDB.skipToEnd(activeEpisodeId);
 		else if (intent.getData().equals(Constants.ACTIVE_EPISODE_DATA_PAUSE))
 			PlayerService.playpause(context);
 	}

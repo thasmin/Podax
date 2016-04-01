@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.axelby.podax.model.EpisodeData;
+import com.axelby.podax.model.PodaxDB;
 
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
@@ -11,11 +12,23 @@ import rx.subjects.BehaviorSubject;
 public class PlayerStatus {
 
 	private static BehaviorSubject<PlayerStatus> _subject = BehaviorSubject.create();
-	public static Observable<PlayerStatus> asObservable() { return _subject; }
-	public static void notify(Context context) { _subject.onNext(getCurrentState(context)); }
+	public static Observable<PlayerStatus> watch() { return _subject; }
+
+	private static BehaviorSubject<PlayerStatus> _nonPlayerUpdates = BehaviorSubject.create();
+	public static Observable<PlayerStatus> watchNonPlayerUpdates() { return _nonPlayerUpdates; }
+
+	public static void update(Context context) {
+		PlayerStatus state = getCurrentState(context);
+		_subject.onNext(state);
+		_nonPlayerUpdates.onNext(state);
+	}
+
+	public static void updateFromPlayer(Context context) {
+		_subject.onNext(getCurrentState(context));
+	}
 
 	public static PlayerStatus getCurrentState(Context context) {
-		EpisodeData episode = EpisodeData.getActive(context);
+		EpisodeData episode = PodaxDB.episodes.getActive();
 		PlayerStatus status = new PlayerStatus();
 		if (episode == null) {
 			status._state = PlayerStates.PLAYLISTEMPTY;

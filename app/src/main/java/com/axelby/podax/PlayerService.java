@@ -7,17 +7,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.NotificationCompat;
+import android.util.Log;
 import android.util.TypedValue;
 
 import com.axelby.podax.PlayerStatus.PlayerStates;
@@ -26,6 +25,8 @@ import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.ui.MainActivity;
 
+import rx.Subscriber;
+
 // this class handles connects the app to the player
 // it handles events on two sides - app and player
 // app events are handled in onStartCommand and are send to the player
@@ -33,23 +34,6 @@ import com.axelby.podax.ui.MainActivity;
 public class PlayerService extends Service {
 	private long _currentEpisodeId;
 	private EpisodePlayer _player;
-
-	private final ContentObserver _episodeChangeObserver = new ContentObserver(new Handler()) {
-		@Override
-		public boolean deliverSelfNotifications() {
-			return false;
-		}
-
-		@Override
-		public void onChange(boolean selfChange) {
-			onChange(selfChange, null);
-		}
-
-		@Override
-		public void onChange(boolean selfChange, Uri uri) {
-			ensurePlayerStatus();
-		}
-	};
 
 	private final BroadcastReceiver _pauseReceiver = new BroadcastReceiver() {
 		@Override
@@ -108,6 +92,20 @@ public class PlayerService extends Service {
 		unregisterReceiver(_pauseReceiver);
 	}
 
+	private Subscriber<PlayerStatus> _statusSubscriber = new Subscriber<PlayerStatus>() {
+		@Override public void onCompleted() { }
+
+		@Override
+		public void onError(Throwable e) {
+			Log.e("PlayerService", "error watching for changes", e);
+		}
+
+		@Override
+		public void onNext(PlayerStatus playerStatus) {
+			ensurePlayerStatus();
+		}
+	};
+
 	private class EpisodeEventHandler implements EpisodePlayer.OnCompletionListener,
 			EpisodePlayer.OnPauseListener,
 			EpisodePlayer.OnPlayListener,
@@ -120,7 +118,7 @@ public class PlayerService extends Service {
 			updateActiveEpisode();
 
 			// listen for changes to the episode
-			getContentResolver().registerContentObserver(EpisodeProvider.PLAYER_UPDATE_URI, false, _episodeChangeObserver);
+			PlayerStatus.watchNonPlayerUpdates().subscribe(_statusSubscriber);
 
 			MediaButtonIntentReceiver.updateState(PlaybackStateCompat.STATE_PLAYING, positionInSeconds, playbackRate);
 			PlayerStatus.updateState(PlayerService.this, PlayerStates.PLAYING);
@@ -140,7 +138,7 @@ public class PlayerService extends Service {
 		public void onStop(float positionInSeconds) {
 			updateActiveEpisodePosition(positionInSeconds);
 			removeNotification();
-			getContentResolver().unregisterContentObserver(_episodeChangeObserver);
+			_statusSubscriber.unsubscribe();
 
 			MediaButtonIntentReceiver.updateState(PlaybackStateCompat.STATE_STOPPED, positionInSeconds, 0);
 			PlayerStatus.updateState(PlayerService.this, PlayerStatus.PlayerStates.STOPPED);
@@ -322,7 +320,7 @@ public class PlayerService extends Service {
 	}
 
 	private void updateActiveEpisodePosition(float positionInSeconds) {
-		PodaxDB.episodes.updateActiveEpisodePosition((int)(positionInSeconds * 1000));
+		PodaxDB.episodes.updatePlayerPosition((int)(positionInSeconds * 1000));
 	}
 
 }
