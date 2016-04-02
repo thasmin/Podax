@@ -149,13 +149,6 @@ public class EpisodeDB {
 		notifyChange(EpisodeData.create(episodeId));
 	}
 
-	public void resetGPodderUpdates() {
-		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
-		ContentValues values = new ContentValues(1);
-		values.put(COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_NONE);
-		db.update("podcasts", values, null, null);
-	}
-
 	public void setActiveEpisode(long episodeId) {
 		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
 		prefs.edit().putLong("active", episodeId).apply();
@@ -295,13 +288,13 @@ public class EpisodeDB {
 		return getSingle(selection, selectionArgs);
 	}
 
-	public List<EpisodeData> getFor(String field, int value) {
+	public List<EpisodeData> getFor(@NonNull String field, @NonNull int value) {
 		String selection = field + " = ?";
 		String[] selectionArgs = new String[] { String.valueOf(value) };
 		return getList(selection, selectionArgs);
 	}
 
-	public List<EpisodeData> getFor(String field, String value) {
+	public List<EpisodeData> getFor(@NonNull String field, @NonNull String value) {
 		String selection = field + " = ?";
 		String[] selectionArgs = new String[] { value };
 		return getList(selection, selectionArgs, null);
@@ -320,10 +313,6 @@ public class EpisodeDB {
 		EpisodeData ep = EpisodeData.from(c);
 		c.close();
 		return ep;
-	}
-
-	public List<EpisodeData> getForGPodderUpdate() {
-		return getList("podcasts.needsGpodderUpdate != 0", null);
 	}
 
 	@NonNull

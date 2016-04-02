@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
+import com.axelby.podax.Constants;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,9 +59,28 @@ public class GPodderDB {
 		db.close();
 	}
 
+	public List<EpisodeData> getEpisodesToUpdate() {
+		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
+		Cursor cursor = db.query("podcasts_view", null, EpisodeDB.COLUMN_NEEDS_GPODDER_UPDATE + " <> 0", null, null, null, null);
+		if (cursor == null)
+			return new ArrayList<>();
+		ArrayList<EpisodeData> eps = new ArrayList<>(cursor.getCount());
+		while (cursor.moveToNext())
+			eps.add(EpisodeData.from(cursor));
+
+		cursor.close();
+
+		return eps;
+	}
+
 	public void clear() {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 		db.delete("gpodder_sync", null, null);
+
+		ContentValues values = new ContentValues(1);
+		values.put(EpisodeDB.COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_NONE);
+		db.update("podcasts", values, null, null);
+
 		db.close();
 	}
 }

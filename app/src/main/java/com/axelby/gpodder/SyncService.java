@@ -103,6 +103,7 @@ public class SyncService extends Service {
 				return;
 			if (!syncEpisodes(client, account))
 				return;
+			PodaxDB.gPodder.clear();
 
 			client.logout();
 
@@ -170,7 +171,7 @@ public class SyncService extends Service {
 		}
 
 		private boolean syncEpisodes(Client client, Account account) {
-			List<EpisodeData> eps = PodaxDB.episodes.getForGPodderUpdate();
+			List<EpisodeData> eps = PodaxDB.gPodder.getEpisodesToUpdate();
 			if (eps.size() > 0) {
 				ArrayList<EpisodeUpdate> changeUpdates = new ArrayList<>(eps.size());
 				for (EpisodeData ep : eps)
@@ -204,9 +205,6 @@ public class SyncService extends Service {
 			SharedPreferences.Editor gpodderPrefsEditor = _gpodderPrefs.edit();
 			gpodderPrefsEditor.putLong("lastEpisodeTimestamp-" + account.name, updates.timestamp);
 			gpodderPrefsEditor.apply();
-
-			// tell db that gpodder has been synced
-			PodaxDB.episodes.resetGPodderUpdates();
 
 			return true;
 		}

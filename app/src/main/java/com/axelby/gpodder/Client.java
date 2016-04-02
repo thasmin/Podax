@@ -206,8 +206,6 @@ public class Client {
 			Log.e("gpodder.client", e.getMessage());
 			_errorMessage = _context.getString(R.string.gpodder_sync_error);
 		}
-
-		PodaxDB.gPodder.clear();
 	}
 
 	public EpisodeUpdateConfirmation updateEpisodes(List<EpisodeUpdate> updates) {
