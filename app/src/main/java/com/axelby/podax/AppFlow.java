@@ -265,16 +265,6 @@ public class AppFlow {
 
 	public AppFlow(Activity activity) {
 		_activity = activity;
-
-		String[] toolbar = new String[]{
-			"search"
-		};
-
-		String[] subscreens = new String[]{
-			"episode-detail",
-			"subscription-detail",
-			"add-subscription-rss-url",
-		};
 	}
 
 	public boolean onMainMenuItem(@MenuRes int itemId) {
