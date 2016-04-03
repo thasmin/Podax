@@ -142,7 +142,7 @@ public class AppFlow {
 
 		public static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass, Bundle args, Bundle options) {
 			ScreenChange sc = new ScreenChange();
-			sc._destination = Frame.Activity;
+			sc._destination = Frame.FragmentActivity;
 			sc._fragmentClass = fragmentClass;
 			sc._args = args;
 			sc._options = options;
