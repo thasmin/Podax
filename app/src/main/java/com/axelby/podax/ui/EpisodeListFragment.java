@@ -1,6 +1,7 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -140,14 +141,7 @@ public class EpisodeListFragment extends RxFragment {
 		}
 
 		@Override public void onNext(Long updatingId) {
-			if (updatingId == null || updatingId != _subscription.getId()) {
-				_binding.currentlyUpdating.setVisibility(View.GONE);
-				if (_binding.currentlyUpdating.getVisibility() == View.VISIBLE)
-					updateSubscription();
-				return;
-			}
-
-			_binding.currentlyUpdating.setVisibility(View.VISIBLE);
+			_binding.currentlyUpdating.setVisibility(_subscription.isCurrentlyUpdating() ? View.VISIBLE : View.GONE);
 		}
 	};
 
@@ -183,7 +177,7 @@ public class EpisodeListFragment extends RxFragment {
 
 		if (getView() == null)
 			return;
-		UpdateService.getUpdatingObservable().subscribe(_updateActivityObserver);
+		UpdateService.watch().subscribe(_updateActivityObserver);
 
 		// refresh changes from subscription settings fragment
 		updateSubscription();
@@ -201,6 +195,42 @@ public class EpisodeListFragment extends RxFragment {
             AppFlow.get(getActivity()).displaySubscriptionSettings(_subscription.getId());
             return true;
         }
-        return false;
+        if (item.getItemId() == R.id.unsubscribe) {
+			new ConfirmUnsubscribeDialog().setSubscription(_subscription).show(getFragmentManager(), "confirmUnsubscribe");
+            return true;
+        }
+		return false;
     }
+
+	public static class ConfirmUnsubscribeDialog extends DialogFragment {
+		private SubscriptionData _sub;
+
+		public ConfirmUnsubscribeDialog() { }
+
+		public ConfirmUnsubscribeDialog setSubscription(SubscriptionData subscription) {
+			_sub = subscription;
+			return this;
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+			return inflater.inflate(R.layout.episodelist_unsubscribe_dialog, container, false);
+		}
+
+		@Override
+		public void onViewCreated(View view, Bundle savedInstanceState) {
+			view.findViewById(R.id.unsubscribe).setOnClickListener(button -> {
+				PodaxDB.subscriptions.delete(_sub.getId());
+				AppFlow.get(getActivity()).goBack();
+				dismiss();
+			});
+			view.findViewById(R.id.cancel).setOnClickListener(button -> dismiss());
+		}
+
+		@Override
+		public void onStart() {
+			super.onStart();
+			getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		}
+	}
 }

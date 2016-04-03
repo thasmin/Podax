@@ -320,5 +320,6 @@ limitations under the License.</p>
     <string name="seconds">seconds</string>
     <string name="num_in_playlist">#%1$s in playlist</string>
     <string name="not_in_playlist">Not in playlist</string>
+    <string name="are_you_sure_you_want_to_unsubscribe_this_action_cannot_be_undone">Are you sure you want to unsubscribe? This action cannot be undone.</string>
 
 </resources>

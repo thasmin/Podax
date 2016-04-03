@@ -88,14 +88,14 @@ public class SubscriptionData {
 			_rawTitle = null;
 
 		if (values.containsKey(SubscriptionDB.COLUMN_LAST_MODIFIED)) {
-			long lastModifiedTimestamp = values.getAsLong(SubscriptionDB.COLUMN_LAST_MODIFIED);
-			_lastModified = new Date(lastModifiedTimestamp * 1000);
+			Long lastModifiedTimestamp = values.getAsLong(SubscriptionDB.COLUMN_LAST_MODIFIED);
+			_lastModified = lastModifiedTimestamp != null ? new Date(lastModifiedTimestamp * 1000) : null;
 		} else
 			_lastModified = null;
 
 		if (values.containsKey(SubscriptionDB.COLUMN_LAST_UPDATE)) {
-			long lastUpdateTimestamp = values.getAsLong(SubscriptionDB.COLUMN_LAST_UPDATE);
-			_lastUpdate = new Date(lastUpdateTimestamp * 1000);
+			Long lastUpdateTimestamp = values.getAsLong(SubscriptionDB.COLUMN_LAST_UPDATE);
+			_lastUpdate = lastUpdateTimestamp != null ? new Date(lastUpdateTimestamp * 1000) : null;
 		} else
 			_lastUpdate = null;
 
@@ -256,7 +256,7 @@ public class SubscriptionData {
 	   ------- */
 
 	public boolean isCurrentlyUpdating() {
-		return UpdateService.getUpdatingObservable().toBlocking().firstOrDefault(-1000L) == getId();
+		return UpdateService.areYouUpdating(getId());
 	}
 
 	public List<EpisodeData> getEpisodes() {

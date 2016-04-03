@@ -83,16 +83,23 @@ public class UpdateService extends IntentService {
 	}
 
 	private static PublishSubject<Long> _updatingSubject = PublishSubject.create();
-	public static Observable<Long> getUpdatingObservable() {
+	public static Observable<Long> watch() {
 		return _updatingSubject;
+	}
+
+	private static Long _updatingId = null;
+	public static boolean areYouUpdating(long id) {
+		return _updatingId != null && id == _updatingId;
 	}
 
 	private void updateSubscription(long subscriptionId) {
 		if (subscriptionId == -1)
 			return;
 
+		_updatingId = subscriptionId;
 		_updatingSubject.onNext(subscriptionId);
 		new SubscriptionUpdater(this).update(subscriptionId);
+		_updatingId = null;
 		_updatingSubject.onNext(null);
 	}
 
