@@ -11,9 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.axelby.podax.BR;
-import com.axelby.podax.model.EpisodeData;
-import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.R;
+import com.axelby.podax.model.EpisodeDB;
+import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.PodaxDB;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -81,7 +81,7 @@ public class FinishedEpisodeFragment extends RxFragment {
 			_episodes = episodes;
 			notifyDataSetChanged();
 
-			EpisodeDB.getEpisodeWatcher()
+			PodaxDB.episodes.watchAll()
 				.subscribeOn(Schedulers.io())
 				.observeOn(AndroidSchedulers.mainThread())
 				.compose(bindToLifecycle())
@@ -95,11 +95,16 @@ public class FinishedEpisodeFragment extends RxFragment {
 			_listView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
 		}
 
-		public void updateEpisode(EpisodeData episode) {
+		public void updateEpisode(EpisodeDB.EpisodeChange change) {
 			for (int i = 0; i <= _episodes.size(); ++i) {
-				if (_episodes.get(i).getId() == episode.getId()) {
-					_episodes.set(i, episode);
-					notifyItemChanged(i, episode);
+				if (_episodes.get(i).getId() == change.getId()) {
+					if (change.getNewData() == null) {
+						_episodes.remove(i);
+						notifyItemRemoved(i);
+					} else {
+						_episodes.set(i, change.getNewData());
+						notifyItemChanged(i, change.getNewData());
+					}
 					return;
 				}
 			}

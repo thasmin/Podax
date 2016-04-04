@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class EpisodeDetailFragment extends RxFragment {
 	private long _podcastId;
@@ -162,7 +163,9 @@ public class EpisodeDetailFragment extends RxFragment {
 			_episodeDataSubscriber.unsubscribe();
 		}
 
-		EpisodeDB.getObservable(_podcastId)
+		PodaxDB.episodes.watch(_podcastId)
+			.subscribeOn(Schedulers.io())
+			.observeOn(AndroidSchedulers.mainThread())
 			.compose(bindToLifecycle())
 			.subscribe(_episodeDataSubscriber);
 	}

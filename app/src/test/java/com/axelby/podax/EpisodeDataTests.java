@@ -2,7 +2,6 @@ package com.axelby.podax;
 
 import android.content.Context;
 
-import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.EpisodeEditor;
 import com.axelby.podax.model.PodaxDB;
@@ -44,7 +43,7 @@ public class EpisodeDataTests {
 		Assert.assertNotEquals("unable to create episode", -1, epId);
 
 		TestSubscriber<EpisodeData> epSubscriber = new TestSubscriber<>();
-		EpisodeDB.getObservable(epId).subscribe(epSubscriber);
+		PodaxDB.episodes.watch(epId).subscribe(epSubscriber);
 		epSubscriber.assertNoErrors();
 		epSubscriber.assertValueCount(1);
 		Assert.assertEquals("original title is incorrect", "huh?", epSubscriber.getOnNextEvents().get(0).getTitle());

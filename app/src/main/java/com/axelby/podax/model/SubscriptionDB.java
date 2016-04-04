@@ -38,7 +38,7 @@ public class SubscriptionDB {
 
 	// subscription id is old id, if null means inserted
 	// data is new data, if null means deleted
-	public class SubscriptionChange {
+	public static class SubscriptionChange {
 		private final Long _subscriptionId;
 		private final SubscriptionData _newData;
 

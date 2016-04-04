@@ -34,6 +34,8 @@ import javax.annotation.Nonnull;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class PlaylistFragment extends RxFragment {
 	private RecyclerView _listView;
@@ -212,7 +214,7 @@ public class PlaylistFragment extends RxFragment {
 
 		private List<EpisodeData> _episodes = new ArrayList<>(0);
 		private TreeMap<Long, Integer> _ids = new TreeMap<>();
-		private final Subscriber<EpisodeData> _episodeSubscriber = new Subscriber<EpisodeData>() {
+		private final Subscriber<EpisodeDB.EpisodeChange> _episodeSubscriber = new Subscriber<EpisodeDB.EpisodeChange>() {
 			@Override public void onCompleted() { }
 
 			@Override
@@ -221,8 +223,8 @@ public class PlaylistFragment extends RxFragment {
 			}
 
 			@Override
-			public void onNext(EpisodeData episodeData) {
-				updateEpisode(episodeData);
+			public void onNext(EpisodeDB.EpisodeChange change) {
+				updateEpisode(change);
 			}
 		};
 
@@ -239,18 +241,25 @@ public class PlaylistFragment extends RxFragment {
 				_ids.put(_episodes.get(i).getId(), i);
 
 			_episodeSubscriber.unsubscribe();
-			EpisodeDB.getEpisodeWatcher()
+			PodaxDB.episodes.watchAll()
+				.subscribeOn(Schedulers.io())
+				.observeOn(AndroidSchedulers.mainThread())
 				.filter(ep -> _ids.containsKey(ep.getId()))
 				.compose(bindToLifecycle())
 				.subscribe(_episodeSubscriber);
 		}
 
-		public void updateEpisode(EpisodeData episode) {
-			Integer position = _ids.get(episode.getId());
+		public void updateEpisode(EpisodeDB.EpisodeChange change) {
+			Integer position = _ids.get(change.getId());
 			if (position == null)
 				return;
-			_episodes.set(position, episode);
-			notifyItemChanged(position);
+			if (change.getNewData() == null) {
+				_episodes.remove((int)position);
+				notifyItemRemoved(position);
+			} else {
+				_episodes.set(position, change.getNewData());
+				notifyItemChanged(position, change.getNewData());
+			}
 		}
 
 		@Override

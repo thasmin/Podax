@@ -26,9 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
@@ -146,7 +144,7 @@ public class EpisodeDB {
 		if (values.containsKey(COLUMN_FINISHED_TIME))
 			notifyFinishedChange();
 		// regular notification
-		notifyChange(EpisodeData.create(episodeId));
+		notifyChange(episodeId, EpisodeData.create(episodeId));
 	}
 
 	public void setActiveEpisode(long episodeId) {
@@ -155,7 +153,6 @@ public class EpisodeDB {
 
 		PlayerStatus.update(_context);
 		ActiveEpisodeReceiver.notifyExternal(_context);
-		notifyChange(EpisodeData.create(episodeId));
 	}
 
 	public void updatePlayerPosition(int position) {
@@ -183,7 +180,7 @@ public class EpisodeDB {
 		// celebrate!
 		PlayerStatus.updateFromPlayer(_context);
 		ActiveEpisodeReceiver.notifyExternal(_context);
-		notifyChange(EpisodeData.create(activeEpisodeId));
+		notifyChange(activeEpisodeId, EpisodeData.create(activeEpisodeId));
 	}
 
 	public long insert(ContentValues values) {
@@ -217,6 +214,7 @@ public class EpisodeDB {
 
 		ensureMonotonicQueue(db);
 
+		notifyChange(null, EpisodeData.create(id));
 		return id;
 	}
 
@@ -230,7 +228,7 @@ public class EpisodeDB {
 
 		ensureMonotonicQueue(db);
 
-		// TODO: let everyone know
+		notifyChange(episodeId, null);
 	}
 
 	private void ensureMonotonicQueue(SQLiteDatabase db) {
@@ -269,13 +267,6 @@ public class EpisodeDB {
 		if (activeEpisodeId == -1)
 			return null;
 		return EpisodeData.create(activeEpisodeId);
-	}
-
-	public static Observable<EpisodeData> getObservable(long episodeId) {
-		return EpisodeDB.getEpisodeWatcher(episodeId)
-			.subscribeOn(Schedulers.io())
-			.startWith(EpisodeData.create(episodeId))
-			.observeOn(AndroidSchedulers.mainThread());
 	}
 
 	public List<EpisodeData> getAll() {
@@ -434,19 +425,34 @@ public class EpisodeDB {
 		return _playlistSubject;
 	}
 
-	private static PublishSubject<EpisodeData> _changeSubject = PublishSubject.create();
-	public static void notifyChange(EpisodeData ep) {
-		EpisodeData data = EpisodeData.cacheSwap(ep);
-		_changeSubject.onNext(data);
+	// episode id is old id, if null means inserted
+	// data is new data, if null means deleted
+	public static class EpisodeChange {
+		private final Long _id;
+		private final EpisodeData _newData;
+
+		public EpisodeChange(Long id, EpisodeData newData) {
+			_id = id;
+			_newData = newData;
+		}
+
+		public Long getId() { return _id; }
+		public EpisodeData getNewData() { return _newData; }
 	}
 
-	public static Observable<EpisodeData> getEpisodeWatcher() {
-		return _changeSubject.observeOn(AndroidSchedulers.mainThread());
+	private static PublishSubject<EpisodeChange> _changeSubject = PublishSubject.create();
+	public void notifyChange(Long id, EpisodeData ep) {
+		_changeSubject.onNext(new EpisodeChange(id, ep));
 	}
-	public static Observable<EpisodeData> getEpisodeWatcher(long id) {
+
+	public Observable<EpisodeChange> watchAll() {
+		return _changeSubject;
+	}
+	public Observable<EpisodeData> watch(long id) {
 		return _changeSubject
 			.filter(d -> d.getId() == id)
-			.observeOn(AndroidSchedulers.mainThread());
+			.map(EpisodeChange::getNewData)
+			.startWith(EpisodeData.create(id));
 	}
 
 	public List<EpisodeData> getNewForSubscriptionIds(List<Long> subIds) {
