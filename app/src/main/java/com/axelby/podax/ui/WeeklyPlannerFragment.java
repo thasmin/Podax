@@ -74,6 +74,15 @@ public class WeeklyPlannerFragment extends RxFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
+		loadSubscriptions();
+
+		PodaxDB.subscriptions.watchAll().subscribe(
+			sub -> loadSubscriptions(),
+			e -> Log.e("WeeklyPlannerFragment", "error while updating for a subscription change", e)
+		);
+	}
+
+	private void loadSubscriptions() {
 		Observable.from(PodaxDB.subscriptions.getAll())
 			.subscribeOn(Schedulers.io())
 			.filter(SubscriptionData::areNewEpisodesAddedToPlaylist)
@@ -86,19 +95,6 @@ public class WeeklyPlannerFragment extends RxFragment {
 				},
 				e -> Log.e("WeeklyPlannerFragment", "unable to retrieve subscription added to playlist", e)
 			);
-
-		PodaxDB.subscriptions.watchAll().subscribe(
-			sub -> {
-				if (_subIds == null)
-					return;
-				if (_subIds.contains(sub.getId()))
-					_subIds.remove(sub.getId());
-				else
-					_subIds.add(sub.getId());
-				getAutoAddedTimeAndUpdate();
-			},
-			e -> Log.e("WeeklyPlannerFragment", "error while updating for a subscription change", e)
-		);
 	}
 
 	private void getAutoAddedTimeAndUpdate() {

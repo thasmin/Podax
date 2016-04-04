@@ -459,7 +459,6 @@ public class EpisodeDB {
 	}
 
 	public void evictCache() {
-		_changeSubject = PublishSubject.create();
 		_finishedSubject = BehaviorSubject.create();
 		_playlistSubject = BehaviorSubject.create();
 		EpisodeData.evictCache();

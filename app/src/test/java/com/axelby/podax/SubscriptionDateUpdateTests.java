@@ -1,7 +1,5 @@
 package com.axelby.podax;
 
-import android.content.Context;
-
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
 
@@ -10,7 +8,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricGradleTestRunner.class)
@@ -25,8 +22,6 @@ public class SubscriptionDateUpdateTests {
 
 	@Test
 	public void testUpdateTitle() {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 
@@ -34,9 +29,7 @@ public class SubscriptionDateUpdateTests {
 		Assert.assertNotNull(sub);
 		Assert.assertEquals("huh?", sub.getTitle());
 
-		new SubscriptionEditor(subId)
-			.setTitleOverride("oh i see")
-			.commit();
+		new SubscriptionEditor(subId).setTitleOverride("oh i see").commit();
 
 		sub = SubscriptionData.create(subId);
 		Assert.assertNotNull(sub);
@@ -45,8 +38,6 @@ public class SubscriptionDateUpdateTests {
 
 	@Test
 	public void testUpdateExpiration() {
-		Context context = RuntimeEnvironment.application;
-
 		long subId = SubscriptionEditor.create("test://1").setRawTitle("huh?").commit();
 		Assert.assertNotEquals("subscription id should not be -1", -1, subId);
 

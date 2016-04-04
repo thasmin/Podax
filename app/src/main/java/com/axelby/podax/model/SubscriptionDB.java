@@ -36,13 +36,27 @@ public class SubscriptionDB {
 	   watcher
 	   ------- */
 
-	private PublishSubject<SubscriptionData> _changeSubject = PublishSubject.create();
-	public void notifyChange(SubscriptionData sub) {
-		SubscriptionData data = SubscriptionData.cacheSwap(sub);
-		_changeSubject.onNext(data);
+	// subscription id is old id, if null means inserted
+	// data is new data, if null means deleted
+	public class SubscriptionChange {
+		private final Long _subscriptionId;
+		private final SubscriptionData _newData;
+
+		public SubscriptionChange(Long subscriptionId, SubscriptionData newData) {
+			_subscriptionId = subscriptionId;
+			_newData = newData;
+		}
+
+		public Long getId() { return _subscriptionId; }
+		public SubscriptionData getNewData() { return _newData; }
 	}
 
-	public Observable<SubscriptionData> watchAll() {
+	private PublishSubject<SubscriptionChange> _changeSubject = PublishSubject.create();
+	public void notifyChange(Long subscriptionId, SubscriptionData sub) {
+		_changeSubject.onNext(new SubscriptionChange(subscriptionId, sub));
+	}
+
+	public Observable<SubscriptionChange> watchAll() {
 		return _changeSubject;
 	}
 
@@ -52,12 +66,12 @@ public class SubscriptionDB {
 
 		return _changeSubject
 			.filter(d -> d.getId() == id)
+			.map(SubscriptionChange::getNewData)
 			.startWith(SubscriptionData.create(id));
 	}
 
 	public void evictCache() {
 		SubscriptionData.evictCache();
-		_changeSubject = PublishSubject.create();
 	}
 
 	/* -------------
@@ -82,7 +96,7 @@ public class SubscriptionDB {
 		ftsValues.put(COLUMN_ID, id);
 		db.insert("fts_subscriptions", null, ftsValues);
 
-		notifyChange(SubscriptionData.from(values));
+		notifyChange(null, get(id));
 
 		return id;
 	}
@@ -99,8 +113,7 @@ public class SubscriptionDB {
 		if (hasFTSValues(values))
 			db.update("fts_subscriptions", extractFTSValues(values), "_id = ?", new String[] { String.valueOf(subscriptionId) });
 
-		SubscriptionData.evictFromCache(subscriptionId);
-		notifyChange(SubscriptionData.from(values));
+		notifyChange(subscriptionId, get(subscriptionId));
 	}
 
 	public void delete(long subscriptionId) {
@@ -129,7 +142,7 @@ public class SubscriptionDB {
 		db.delete("subscriptions", "_id = ?", new String[] { String.valueOf(subscriptionId) });
 		db.delete("fts_subscriptions", "_id = ?", new String[] { String.valueOf(subscriptionId) });
 
-		// TODO: notify everyone somehow
+		notifyChange(subscriptionId, null);
 	}
 
 	/* -------

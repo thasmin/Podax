@@ -1,6 +1,5 @@
 package com.axelby.podax.model;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -20,31 +19,39 @@ import java.lang.ref.SoftReference;
 import java.util.Date;
 import java.util.List;
 
+import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 public class SubscriptionData {
 
 	private final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
-
-	static {
-		PodaxDB.subscriptions.watchAll()
-			.subscribeOn(Schedulers.io())
-			.subscribe(
-				sub -> {
-					synchronized (_cache) {
-						SoftReference<SubscriptionData> reference = _cache.get(sub.getId());
-						if (reference != null && reference.get() != null)
-							_cache.put(sub.getId(), new SoftReference<>(sub));
-					}
-				},
-				e -> Log.e("SubscriptionData", "unable to watch subscriptions for changes", e)
-			);
-	}
-
-
 	private static Context _context;
 
+	private static Subscriber<? super SubscriptionDB.SubscriptionChange> _changeSubscription = new Subscriber<SubscriptionDB.SubscriptionChange>() {
+		@Override public void onCompleted() { }
+
+		@Override
+		public void onError(Throwable e) {
+			Log.e("SubscriptionData", "unable to watch subscriptions for changes", e);
+		}
+
+		@Override
+		public void onNext(SubscriptionDB.SubscriptionChange change) {
+			synchronized (_cache) {
+				// remove deleted sub from cache
+				if (change.getNewData() == null) {
+					_cache.remove(change.getId());
+					return;
+				}
+				_cache.put(change.getNewData().getId(), new SoftReference<>(change.getNewData()));
+			}
+		}
+	};
+
 	public static void setContext(Context context) {
+		// only start watching subscriptions once
+		if (_context == null)
+			PodaxDB.subscriptions.watchAll().subscribeOn(Schedulers.io()).subscribe(_changeSubscription);
 		_context = context;
 	}
 
@@ -66,8 +73,10 @@ public class SubscriptionData {
 		_rawTitle = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_TITLE));
 		_url = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_URL));
 
-		_lastModified = new Date(cursor.getLong(cursor.getColumnIndex(SubscriptionDB.COLUMN_LAST_MODIFIED)) * 1000);
-		_lastUpdate = new Date(cursor.getLong(cursor.getColumnIndex(SubscriptionDB.COLUMN_LAST_UPDATE)) * 1000);
+		int lastModifiedIndex = cursor.getColumnIndex(SubscriptionDB.COLUMN_LAST_MODIFIED);
+		_lastModified = cursor.isNull(lastModifiedIndex) ? null : new Date(cursor.getLong(lastModifiedIndex) * 1000);
+		int lastUpdateIndex = cursor.getColumnIndex(SubscriptionDB.COLUMN_LAST_UPDATE);
+		_lastUpdate = cursor.isNull(lastUpdateIndex) ? null : new Date(cursor.getLong(lastUpdateIndex) * 1000);
 
 		_etag = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_ETAG));
 		_thumbnail = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_THUMBNAIL));
@@ -75,64 +84,9 @@ public class SubscriptionData {
 		_description = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_DESCRIPTION));
 		_singleUse = cursor.getInt(cursor.getColumnIndex(SubscriptionDB.COLUMN_SINGLE_USE)) == 1;
 		_playlistNew = cursor.getInt(cursor.getColumnIndex(SubscriptionDB.COLUMN_PLAYLIST_NEW)) == 1;
-		_expirationDays = cursor.getInt(cursor.getColumnIndex(SubscriptionDB.COLUMN_EXPIRATION));
-	}
 
-	private SubscriptionData(ContentValues values) {
-		_id = values.getAsLong(SubscriptionDB.COLUMN_ID);
-		_url = values.getAsString(SubscriptionDB.COLUMN_URL);
-
-		if (values.containsKey(SubscriptionDB.COLUMN_TITLE))
-			_rawTitle = values.getAsString(SubscriptionDB.COLUMN_TITLE);
-		else
-			_rawTitle = null;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_LAST_MODIFIED)) {
-			Long lastModifiedTimestamp = values.getAsLong(SubscriptionDB.COLUMN_LAST_MODIFIED);
-			_lastModified = lastModifiedTimestamp != null ? new Date(lastModifiedTimestamp * 1000) : null;
-		} else
-			_lastModified = null;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_LAST_UPDATE)) {
-			Long lastUpdateTimestamp = values.getAsLong(SubscriptionDB.COLUMN_LAST_UPDATE);
-			_lastUpdate = lastUpdateTimestamp != null ? new Date(lastUpdateTimestamp * 1000) : null;
-		} else
-			_lastUpdate = null;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_ETAG))
-			_etag = values.getAsString(SubscriptionDB.COLUMN_ETAG);
-		else
-			_etag = null;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_THUMBNAIL))
-			_thumbnail = values.getAsString(SubscriptionDB.COLUMN_THUMBNAIL);
-		else
-		_thumbnail = null;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_TITLE_OVERRIDE))
-			_titleOverride = values.getAsString(SubscriptionDB.COLUMN_TITLE_OVERRIDE);
-		else
-		_titleOverride = null;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_DESCRIPTION))
-			_description = values.getAsString(SubscriptionDB.COLUMN_DESCRIPTION);
-		else
-		_description = null;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_SINGLE_USE))
-			_singleUse = values.getAsBoolean(SubscriptionDB.COLUMN_SINGLE_USE);
-		else
-			_singleUse = false;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_PLAYLIST_NEW))
-			_playlistNew = values.getAsBoolean(SubscriptionDB.COLUMN_PLAYLIST_NEW);
-		else
-			_playlistNew = true;
-
-		if (values.containsKey(SubscriptionDB.COLUMN_EXPIRATION))
-			_expirationDays = values.getAsInteger(SubscriptionDB.COLUMN_EXPIRATION);
-		else
-			_expirationDays = null;
+		int expirationIndex = cursor.getColumnIndex(SubscriptionDB.COLUMN_EXPIRATION);
+		_expirationDays = cursor.isNull(expirationIndex) ? null : cursor.getInt(expirationIndex);
 	}
 
 	static SubscriptionData from(Cursor cursor) {
@@ -148,10 +102,6 @@ public class SubscriptionData {
 			_cache.put(id, new SoftReference<>(data));
 		}
 		return data;
-	}
-
-	public static SubscriptionData from(ContentValues values) {
-		return new SubscriptionData(values);
 	}
 
 	public static SubscriptionData create(long id) {
@@ -180,13 +130,6 @@ public class SubscriptionData {
 
 	public static void evictFromCache(long subscriptionId) {
 		_cache.remove(subscriptionId);
-	}
-
-	public static SubscriptionData cacheSwap(SubscriptionData data) {
-		synchronized (_cache) {
-			_cache.put(data.getId(), new SoftReference<>(data));
-		}
-		return data;
 	}
 
 	public long getId() { return _id; }
