@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/are_you_sure_you_want_to_unsubscribe_this_action_cannot_be_undone"
+        android:id="@+id/question"
+        android:layout_alignParentTop="true"
+        android:gravity="center_horizontal"
+        android:layout_margin="10dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/unsubscribe"
+        android:id="@+id/unsubscribe"
+        android:layout_below="@+id/question"
+        android:layout_alignParentStart="true"
+        android:layout_margin="10dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_thanks"
+        android:id="@+id/cancel"
+        android:layout_below="@+id/question"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="10dp"/>
+</RelativeLayout>
