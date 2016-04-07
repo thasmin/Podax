@@ -48,6 +48,7 @@ public class EpisodeDownloaderTests {
 		FileWriter fw = new FileWriter(epfile);
 		fw.write(new char[] { 32, 32, 32, 32, 32 });
 		fw.close();
+		Assert.assertTrue("episode file should exist", new File(epfile).exists());
 
 		String badfile = String.format("%sbad.mp3", Storage.getPodcastStoragePath(context));
 		fw = new FileWriter(badfile);

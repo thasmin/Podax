@@ -47,7 +47,7 @@ public class Storage {
 		File podaxFile = new File(getStoragePath(context), "Podcasts");
 		if (!podaxFile.exists())
 			podaxFile.mkdirs();
-		return podaxFile.getAbsolutePath() + "/";
+		return podaxFile.getAbsolutePath() + File.separator;
 	}
 
 	public static String getExtension(String filename) {
