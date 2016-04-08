@@ -38,7 +38,6 @@ public class DummyTest {
 		onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
 		onView(withId(R.id.navmenu)).perform(navigateTo(R.id.subscriptions));
 		onView(withId(R.id.toolbar)).check(matches(withToolbarTitle(is("Subscriptions"))));
-		//onView(withId(R.id.drawer_layout)).check(matches(DrawerMatchers.isClosed()));
 	}
 
 	private static Matcher<Object> withToolbarTitle(final Matcher<CharSequence> textMatcher) {
