@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.Html;
 import android.util.Log;
 import android.util.LruCache;
 import android.widget.CompoundButton;
@@ -147,8 +148,8 @@ public class SubscriptionData {
 	public Integer getExpirationDays() { return _expirationDays; }
 	public String getTitle() {
 		if (_titleOverride != null && _titleOverride.length() > 0)
-			return _titleOverride;
-		return _rawTitle;
+			return Html.fromHtml(_titleOverride).toString();
+		return Html.fromHtml(_rawTitle).toString();
 	}
 
 	/* ---------
