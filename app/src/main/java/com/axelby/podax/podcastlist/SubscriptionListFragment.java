@@ -78,7 +78,7 @@ public class SubscriptionListFragment extends RxFragment {
 		};
 		getActivity().findViewById(R.id.add).setOnClickListener(addListener);
 
-		Observable<List<ItemModel>> models = Observable.from(PodaxDB.subscriptions.getAll())
+		Observable<List<ItemModel>> models = Observable.from(PodaxDB.subscriptions.getSubscribed())
 			.subscribeOn(Schedulers.io())
 			.map(sub -> ItemModel.fromSubscriptionId(sub.getTitle(), sub.getThumbnail(), sub.getId()))
 			.toList()

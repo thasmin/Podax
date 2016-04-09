@@ -42,7 +42,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 
-		Observable.from(PodaxDB.subscriptions.getAll())
+		Observable.from(PodaxDB.subscriptions.getSubscribed())
 			.subscribeOn(Schedulers.io())
 			.observeOn(AndroidSchedulers.mainThread())
 			.toList()
@@ -83,7 +83,7 @@ public class WeeklyPlannerFragment extends RxFragment {
 	}
 
 	private void loadSubscriptions() {
-		Observable.from(PodaxDB.subscriptions.getAll())
+		Observable.from(PodaxDB.subscriptions.getSubscribed())
 			.subscribeOn(Schedulers.io())
 			.filter(SubscriptionData::areNewEpisodesAddedToPlaylist)
 			.map(SubscriptionData::getId)
