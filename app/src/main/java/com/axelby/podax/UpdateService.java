@@ -57,7 +57,8 @@ public class UpdateService extends IntentService {
 		if (action == null)
 			return;
 
-		if (intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false) && Helper.isInvalidNetworkState(this)) {
+		boolean isManualRefresh = intent.getBooleanExtra(Constants.EXTRA_MANUAL_REFRESH, false);
+		if (!isManualRefresh && Helper.isInvalidNetworkState(this)) {
 			_uiHandler.post(() -> Toast.makeText(UpdateService.this,
 					R.string.update_request_no_wifi,
 					Toast.LENGTH_SHORT).show());

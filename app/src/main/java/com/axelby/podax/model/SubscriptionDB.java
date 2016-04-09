@@ -167,6 +167,10 @@ public class SubscriptionDB {
 		return getList(null, null);
 	}
 
+	public List<SubscriptionData> getSubscribed() {
+		return getList("isSingleUse = 0", null);
+	}
+
 	public List<SubscriptionData> getFor(String field, int value) {
 		return getFor(field, String.valueOf(value));
 	}

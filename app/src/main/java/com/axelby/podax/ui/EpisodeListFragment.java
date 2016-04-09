@@ -77,10 +77,11 @@ public class EpisodeListFragment extends RxFragment {
 
 			subIdObservable = rssUrlObservable
 				.subscribeOn(Schedulers.io())
-				.flatMap(this::getSubscriptionIdFromRSSUrl);
+				.flatMap(this::getSubscriptionFromRSSUrl);
 		}
 
 		subIdObservable
+			.map(this::ensureSubscriptionPopulated)
 			.observeOn(AndroidSchedulers.mainThread())
 			.compose(RxLifecycle.bindFragment(lifecycle()))
 			.subscribe(
@@ -89,7 +90,13 @@ public class EpisodeListFragment extends RxFragment {
 			);
 	}
 
-	private Observable<SubscriptionData> getSubscriptionIdFromRSSUrl(String rssUrl) {
+	private SubscriptionData ensureSubscriptionPopulated(SubscriptionData sub) {
+		if (sub.getTitle() == null)
+			UpdateService.updateSubscription(getActivity(), sub.getId());
+		return sub;
+	}
+
+	private Observable<SubscriptionData> getSubscriptionFromRSSUrl(String rssUrl) {
 		SubscriptionData sub = PodaxDB.subscriptions.getForRSSUrl(rssUrl);
 		if (sub != null)
 			return Observable.just(sub);
@@ -141,7 +148,11 @@ public class EpisodeListFragment extends RxFragment {
 		}
 
 		@Override public void onNext(Long updatingId) {
-			_binding.currentlyUpdating.setVisibility(_subscription.isCurrentlyUpdating() ? View.VISIBLE : View.GONE);
+			boolean wasUpdating = _binding.currentlyUpdating.getVisibility() == View.VISIBLE;
+			boolean isUpdating = _subscription.isCurrentlyUpdating();
+			_binding.currentlyUpdating.setVisibility(isUpdating ? View.VISIBLE : View.GONE);
+			if (wasUpdating && !isUpdating)
+				updateSubscription();
 		}
 	};
 
@@ -177,7 +188,7 @@ public class EpisodeListFragment extends RxFragment {
 
 		if (getView() == null)
 			return;
-		UpdateService.watch().subscribe(_updateActivityObserver);
+		UpdateService.watch().observeOn(AndroidSchedulers.mainThread()).subscribe(_updateActivityObserver);
 
 		// refresh changes from subscription settings fragment
 		updateSubscription();

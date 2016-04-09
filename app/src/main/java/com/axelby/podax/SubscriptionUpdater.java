@@ -48,9 +48,6 @@ class SubscriptionUpdater {
 
 	public void update(long subscriptionId) {
 		try {
-			if (Helper.isInvalidNetworkState(_context))
-				return;
-
 			SubscriptionData subscription = SubscriptionData.create(subscriptionId);
 			if (subscription == null)
 				return;
@@ -240,12 +237,13 @@ class SubscriptionUpdater {
 
 			serializer.startTag(null, "body");
 
-			Observable.from(PodaxDB.subscriptions.getAll())
+			Observable.from(PodaxDB.subscriptions.getSubscribed())
 				.subscribe(sub -> {
 					try {
 						serializer.startTag(null, "outline");
 						serializer.attribute(null, "type", "rss");
-						serializer.attribute(null, "title", sub.getTitle());
+						if (sub.getTitle() != null)
+							serializer.attribute(null, "title", sub.getTitle());
 						serializer.attribute(null, "xmlUrl", sub.getUrl());
 						serializer.endTag(null, "outline");
 					} catch (IOException e) {

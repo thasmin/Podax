@@ -34,7 +34,7 @@ public class RSSUrlFetcher {
 		private String saveToDB(String rssUrl) {
 			SQLiteDatabase db = new DBAdapter(_context).getWritableDatabase();
 			db.execSQL("UPDATE itunes " +
-				"SET subscriptionId = (SELECT subscriptionId FROM subscriptions WHERE url = ?) " +
+				"SET subscriptionId = (SELECT _id FROM subscriptions WHERE url = ?) " +
 				"WHERE idUrl = ?",
 				new String[] { rssUrl, _iTunesUrl });
 			return rssUrl;
