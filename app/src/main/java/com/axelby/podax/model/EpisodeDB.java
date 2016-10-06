@@ -1,5 +1,6 @@
 package com.axelby.podax.model;
 
+import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -49,10 +50,10 @@ public class EpisodeDB {
 	public static final String COLUMN_PAYMENT = "payment";
 	public static final String COLUMN_FINISHED_TIME = "finishedTime";
 
-	private static Context _context;
+	private static Application _application;
 
-	public static void setContext(@NonNull Context context) {
-		_context = context;
+	public static void setApplication(@NonNull Application application) {
+		_application = application;
 	}
 
 	public static void restart(long episodeId) {
@@ -117,7 +118,7 @@ public class EpisodeDB {
 			);
 
 		// if this was the active episode and it's no longer in the playlist, don't restart on this episode
-		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
 		long activeEpisodeId = prefs.getLong("active", -1);
 		if (activeEpisodeId == episodeId && isRemovingFromPlaylist) {
 			prefs.edit().remove("active").apply();
@@ -134,8 +135,8 @@ public class EpisodeDB {
 
 		// active episode notification
 		if (activeEpisodeId == episodeId) {
-			PlayerStatus.update(_context);
-			ActiveEpisodeReceiver.notifyExternal(_context);
+			PlayerStatus.update(_application);
+			ActiveEpisodeReceiver.notifyExternal(_application);
 		}
 		// playlist notification
 		if (isChangingPlaylistPosition)
@@ -148,17 +149,17 @@ public class EpisodeDB {
 	}
 
 	public void setActiveEpisode(long episodeId) {
-		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
 		prefs.edit().putLong("active", episodeId).apply();
 
-		PlayerStatus.update(_context);
-		ActiveEpisodeReceiver.notifyExternal(_context);
+		PlayerStatus.update(_application);
+		ActiveEpisodeReceiver.notifyExternal(_application);
 	}
 
 	public void updatePlayerPosition(int position) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
-		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
 		long activeEpisodeId = prefs.getLong("active", -1);
 		if (activeEpisodeId == -1)
 			return;
@@ -170,7 +171,7 @@ public class EpisodeDB {
 		);
 		if (lastPositionCursor == null || !lastPositionCursor.moveToFirst())
 			return;
-		Stats.addListenTime(_context, (position - lastPositionCursor.getInt(0)) / 1000.0f);
+		Stats.addListenTime(_application, (position - lastPositionCursor.getInt(0)) / 1000.0f);
 		lastPositionCursor.close();
 
 		ContentValues values = new ContentValues();
@@ -178,8 +179,8 @@ public class EpisodeDB {
 		db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activeEpisodeId) });
 
 		// celebrate!
-		PlayerStatus.updateFromPlayer(_context);
-		ActiveEpisodeReceiver.notifyExternal(_context);
+		PlayerStatus.updateFromPlayer(_application);
+		ActiveEpisodeReceiver.notifyExternal(_application);
 		notifyChange(activeEpisodeId, EpisodeData.create(activeEpisodeId));
 	}
 
@@ -240,7 +241,7 @@ public class EpisodeDB {
 	}
 
 	private static void deleteFiles(long episodeId) {
-		File storage = new File(Storage.getPodcastStoragePath(_context));
+		File storage = new File(Storage.getPodcastStoragePath(_application));
 		File[] files = storage.listFiles(pathname -> {
 			return pathname.getName().startsWith(String.valueOf(episodeId) + ".");
 		});
@@ -251,7 +252,7 @@ public class EpisodeDB {
 	public long getActiveEpisodeId() {
 		// first check shared pref, then db
 		final String PREF_ACTIVE = "active";
-		SharedPreferences prefs = _context.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
 		long activeId = prefs.getLong(PREF_ACTIVE, -1);
 		if (activeId != -1)
 			return activeId;
@@ -350,12 +351,12 @@ public class EpisodeDB {
 
 	public List<EpisodeData> getDownloaded() {
 		List<EpisodeData> potential = getList(COLUMN_FILE_SIZE + " > 0", null, "queuePosition");
-		return filter(potential, ep -> ep.isDownloaded(_context));
+		return filter(potential, ep -> ep.isDownloaded(_application));
 	}
 
 	public List<EpisodeData> getNeedsDownload() {
 		List<EpisodeData> potential = getList("queuePosition IS NOT NULL", null, "queuePosition");
-		return filter(potential, ep -> !ep.isDownloaded(_context));
+		return filter(potential, ep -> !ep.isDownloaded(_application));
 	}
 
 	public List<EpisodeData> getForSubscriptionId(long subscriptionId) {

@@ -31,8 +31,8 @@ public class PodaxApplication extends Application {
 	public void onCreate() {
 		AppFlow.setApplication(this);
 		PodaxDB.setContext(this);
-		EpisodeDB.setContext(this);
-		SubscriptionData.setContext(this);
+		EpisodeDB.setApplication(this);
+		SubscriptionData.setApplication(this);
 
         if (!PodaxLog.isDebuggable(this))
 			ACRA.init(this);

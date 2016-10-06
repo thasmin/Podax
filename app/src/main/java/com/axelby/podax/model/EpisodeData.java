@@ -53,7 +53,8 @@ public class EpisodeData {
 		_subscriptionId = c.getLong(c.getColumnIndex(EpisodeDB.COLUMN_SUBSCRIPTION_ID));
 		_subscriptionTitle = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_SUBSCRIPTION_TITLE));
 		_subscriptionUrl = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_SUBSCRIPTION_URL));
-		_playlistPosition = c.getInt(c.getColumnIndex(EpisodeDB.COLUMN_PLAYLIST_POSITION));
+		_playlistPosition = c.isNull(c.getColumnIndex(EpisodeDB.COLUMN_PLAYLIST_POSITION)) ? null :
+			c.getInt(c.getColumnIndex(EpisodeDB.COLUMN_PLAYLIST_POSITION));
 		_mediaUrl = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_MEDIA_URL));
 		_fileSize = c.getLong(c.getColumnIndex(EpisodeDB.COLUMN_FILE_SIZE));
 		_description = c.getString(c.getColumnIndex(EpisodeDB.COLUMN_DESCRIPTION));

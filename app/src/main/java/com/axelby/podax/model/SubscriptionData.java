@@ -1,6 +1,6 @@
 package com.axelby.podax.model;
 
-import android.content.Context;
+import android.app.Application;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,7 +26,7 @@ import rx.schedulers.Schedulers;
 public class SubscriptionData {
 
 	private final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
-	private static Context _context;
+	private static Application _application;
 
 	private static Subscriber<? super SubscriptionDB.SubscriptionChange> _changeSubscription = new Subscriber<SubscriptionDB.SubscriptionChange>() {
 		@Override public void onCompleted() { }
@@ -49,11 +49,11 @@ public class SubscriptionData {
 		}
 	};
 
-	public static void setContext(Context context) {
+	public static void setApplication(Application context) {
 		// only start watching subscriptions once
-		if (_context == null)
+		if (_application == null)
 			PodaxDB.subscriptions.watchAll().subscribeOn(Schedulers.io()).subscribe(_changeSubscription);
-		_context = context;
+		_application = context;
 	}
 
 	private final long _id;
@@ -149,7 +149,9 @@ public class SubscriptionData {
 	public String getTitle() {
 		if (_titleOverride != null && _titleOverride.length() > 0)
 			return Html.fromHtml(_titleOverride).toString();
-		return Html.fromHtml(_rawTitle).toString();
+		if (_rawTitle != null)
+			return Html.fromHtml(_rawTitle).toString();
+		return "";
 	}
 
 	/* ---------
@@ -157,27 +159,27 @@ public class SubscriptionData {
 	   --------- */
 
 	public static String getThumbnailFilename(long subscriptionId) {
-		String storagePath = Storage.getStoragePath(_context);
+		String storagePath = Storage.getStoragePath(_application);
 		return storagePath + String.valueOf(subscriptionId) + "podcast.image";
 	}
 
 	public String getThumbnailFilename() {
-		String storagePath = Storage.getStoragePath(_context);
+		String storagePath = Storage.getStoragePath(_application);
 		return storagePath + String.valueOf(getId()) + "podcast.image";
 	}
 
 	public RequestCreator getThumbnailImage() {
 		String filename = getThumbnailFilename(getId());
 		if (!new File(filename).exists())
-			return Picasso.with(_context).load(R.drawable.ic_menu_podax).fit();
-		return Picasso.with(_context).load(new File(filename)).fit();
+			return Picasso.with(_application).load(R.drawable.ic_menu_podax).fit();
+		return Picasso.with(_application).load(new File(filename)).fit();
 	}
 
 	public static RequestCreator getThumbnailImage(long subscriptionId) {
 		String filename = getThumbnailFilename(subscriptionId);
 		if (!new File(filename).exists())
-			return Picasso.with(_context).load(R.drawable.ic_menu_podax).fit();
-		return Picasso.with(_context).load(new File(filename)).fit();
+			return Picasso.with(_application).load(R.drawable.ic_menu_podax).fit();
+		return Picasso.with(_application).load(new File(filename)).fit();
 	}
 
 	public static Bitmap getThumbnailImageRaw(long subscriptionId) {
