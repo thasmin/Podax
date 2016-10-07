@@ -67,7 +67,7 @@ public class UpdateService extends IntentService {
 
 		switch (action) {
 			case Constants.ACTION_REFRESH_ALL_SUBSCRIPTIONS: {
-				Observable.from(PodaxDB.subscriptions.getFor(SubscriptionDB.COLUMN_SINGLE_USE, 1))
+				Observable.from(PodaxDB.subscriptions.getFor(SubscriptionDB.COLUMN_SINGLE_USE, 0))
 					.subscribe(
 						s -> updateSubscription(s.getId()),
 						e -> Log.e("UpdateService", "unable to get all subscriptions", e)
