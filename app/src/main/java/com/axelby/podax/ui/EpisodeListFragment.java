@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,21 +15,24 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import com.axelby.podax.AppFlow;
+import com.axelby.podax.BR;
 import com.axelby.podax.Constants;
 import com.axelby.podax.R;
 import com.axelby.podax.UpdateService;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.axelby.podax.model.DBAdapter;
+import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
+
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -39,7 +44,6 @@ import rx.schedulers.Schedulers;
 public class EpisodeListFragment extends RxFragment {
 	private SubscriptionData _subscription = null;
 	private EpisodelistFragmentBinding _binding = null;
-	private LinearLayout _listView = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -51,9 +55,6 @@ public class EpisodeListFragment extends RxFragment {
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-
-		if (_listView != null)
-			_listView.removeAllViews();
 
 		// extract subscription id
 		if (getArguments() == null)
@@ -133,12 +134,18 @@ public class EpisodeListFragment extends RxFragment {
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		_listView = _binding.list;
+		RecyclerView list = _binding.list;
+		list.setLayoutManager(new LinearLayoutManager(list.getContext()));
 	}
 
 	public void setSubscription(SubscriptionData subscription) {
 		_subscription = subscription;
 		_binding.setSubscription(subscription);
+
+		if (_binding.list.getAdapter() == null) {
+			EpisodeListAdapter adapter = new EpisodeListAdapter(subscription.getEpisodes());
+			_binding.list.setAdapter(adapter);
+		}
 	}
 
 	private Subscriber<Long> _updateActivityObserver = new Subscriber<Long>() {
@@ -241,7 +248,31 @@ public class EpisodeListFragment extends RxFragment {
 		@Override
 		public void onStart() {
 			super.onStart();
-			getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+			if (getDialog() != null && getDialog().getWindow() != null)
+				getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		}
+	}
+
+	private class EpisodeListAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
+		private final List<EpisodeData> _episodes;
+
+		EpisodeListAdapter(List<EpisodeData> episodes) {
+			_episodes = episodes;
+		}
+
+		@Override
+		public DataBoundViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			return DataBoundViewHolder.from(parent, R.layout.episodelist_item);
+		}
+
+		@Override
+		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
+			holder.binding.setVariable(BR.episode, _episodes.get(position));
+		}
+
+		@Override
+		public int getItemCount() {
+			return _episodes.size();
 		}
 	}
 }
