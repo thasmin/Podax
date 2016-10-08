@@ -354,18 +354,20 @@ public class AppFlow {
 	@Nullable
 	@SuppressWarnings("unchecked")
 	private Bundle getTransitionOptions(View... views) {
-		if (views.length == 0)
+		if (views.length == 0 || Build.VERSION.SDK_INT < 21)
 			return null;
-		if (Build.VERSION.SDK_INT >= 21) {
-			ArrayList<Pair<View, String>> pairs = new ArrayList<>(views.length);
-			for (View view : views) {
-				pairs.add(Pair.create(view, view.getTransitionName()));
-				if (view.getTransitionName() == null || view.getTransitionName().equals(""))
-					Log.e("AppFlow", "transitioning view has no transition name");
+
+		ArrayList<Pair<View, String>> pairs = new ArrayList<>(views.length);
+		for (View view : views) {
+			if (view == null)
+				continue;
+			if (view.getTransitionName() == null || view.getTransitionName().equals("")) {
+				Log.e("AppFlow", "transitioning view has no transition name");
+				continue;
 			}
-			return ActivityOptions.makeSceneTransitionAnimation(_activity, pairs.toArray(new Pair[pairs.size()])).toBundle();
+			pairs.add(Pair.create(view, view.getTransitionName()));
 		}
-		return null;
+		return ActivityOptions.makeSceneTransitionAnimation(_activity, pairs.toArray(new Pair[pairs.size()])).toBundle();
 	}
 
 	private void startActivityFragment(Class<? extends Fragment> fragmentClass) {
