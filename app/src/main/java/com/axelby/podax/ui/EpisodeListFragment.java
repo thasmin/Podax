@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,6 +25,7 @@ import com.axelby.podax.UpdateService;
 import com.axelby.podax.databinding.EpisodelistFragmentBinding;
 import com.axelby.podax.itunes.RSSUrlFetcher;
 import com.axelby.podax.model.DBAdapter;
+import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionDB;
@@ -33,6 +35,7 @@ import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
@@ -44,6 +47,7 @@ import rx.schedulers.Schedulers;
 public class EpisodeListFragment extends RxFragment {
 	private SubscriptionData _subscription = null;
 	private EpisodelistFragmentBinding _binding = null;
+	private EpisodeListAdapter _adapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -109,7 +113,11 @@ public class EpisodeListFragment extends RxFragment {
 	private Observable<String> getRSSUrlFromITunesUrl(String iTunesUrl) {
 		// TODO: put in model
 		SQLiteDatabase db = new DBAdapter(getActivity()).getReadableDatabase();
-		Cursor c = db.rawQuery("SELECT " + SubscriptionDB.COLUMN_URL + " FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)", new String[]{iTunesUrl});
+		String sql =
+			"SELECT " +
+			SubscriptionDB.COLUMN_URL +
+			" FROM subscriptions WHERE _id = (SELECT subscriptionID FROM itunes WHERE idUrl = ?)";
+		Cursor c = db.rawQuery(sql, new String[]{iTunesUrl});
 		if (c != null) {
 			if (c.moveToFirst() && c.isNull(0)) {
 				String url = c.getString(0);
@@ -142,10 +150,10 @@ public class EpisodeListFragment extends RxFragment {
 		_subscription = subscription;
 		_binding.setSubscription(subscription);
 
-		if (_binding.list.getAdapter() == null) {
-			EpisodeListAdapter adapter = new EpisodeListAdapter(subscription.getEpisodes());
-			_binding.list.setAdapter(adapter);
-		}
+		if (_adapter != null)
+			_adapter.stopWatching();
+		_adapter = new EpisodeListAdapter(subscription.getEpisodes());
+		_binding.list.setAdapter(_adapter);
 	}
 
 	private Subscriber<Long> _updateActivityObserver = new Subscriber<Long>() {
@@ -184,6 +192,9 @@ public class EpisodeListFragment extends RxFragment {
 			return;
 
 		_updateActivityObserver.unsubscribe();
+
+		if (_adapter != null)
+			_adapter.stopWatching();
 	}
 
 	@Override
@@ -199,6 +210,9 @@ public class EpisodeListFragment extends RxFragment {
 
 		// refresh changes from subscription settings fragment
 		updateSubscription();
+
+		if (_adapter != null)
+			_adapter.startWatching();
 	}
 
     @Override
@@ -255,9 +269,31 @@ public class EpisodeListFragment extends RxFragment {
 
 	private class EpisodeListAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
 		private final List<EpisodeData> _episodes;
+		private final List<Long> _ids;
+		private final Subscriber<? super EpisodeDB.EpisodeChange> _episodeUpdater = new Subscriber<EpisodeDB.EpisodeChange>() {
+			@Override public void onCompleted() { }
+			@Override public void onError(Throwable e) { }
+
+			@Override
+			public void onNext(EpisodeDB.EpisodeChange episodeChange) {
+				int index = Observable.from(_episodes)
+					.zipWith(Observable.range(0, _episodes.size()),
+						(ep, i) -> { return new Pair<>(ep.getId(), i); } )
+					.filter(pair -> Objects.equals(pair.first, episodeChange.getId()))
+					.toBlocking()
+					.single().second;
+				_episodes.set(index, episodeChange.getNewData());
+				notifyItemChanged(index, episodeChange.getNewData());
+			}
+		};
 
 		EpisodeListAdapter(List<EpisodeData> episodes) {
 			_episodes = episodes;
+			_ids = Observable.from(_episodes).map(EpisodeData::getId).toList().toBlocking().single();
+
+			PodaxDB.episodes.watchAll()
+				.filter(change -> _ids.contains(change.getId()))
+				.subscribe(_episodeUpdater);
 		}
 
 		@Override
@@ -273,6 +309,17 @@ public class EpisodeListFragment extends RxFragment {
 		@Override
 		public int getItemCount() {
 			return _episodes.size();
+		}
+
+		void startWatching() {
+			if (_episodeUpdater.isUnsubscribed())
+				PodaxDB.episodes.watchAll()
+					.filter(change -> _ids.contains(change.getId()))
+					.subscribe(_episodeUpdater);
+		}
+
+		void stopWatching() {
+			_episodeUpdater.unsubscribe();
 		}
 	}
 }
