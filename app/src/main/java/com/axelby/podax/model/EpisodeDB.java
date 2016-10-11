@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import rx.Observable;
 import rx.functions.Func1;
@@ -107,30 +108,53 @@ public class EpisodeDB {
 		values.remove(COLUMN_SUBSCRIPTION_TITLE);
 		values.remove(COLUMN_SUBSCRIPTION_URL);
 
-		boolean isChangingPlaylistPosition = values.containsKey(COLUMN_PLAYLIST_POSITION);
-		Integer playlistPosition = values.getAsInteger(COLUMN_PLAYLIST_POSITION);
-		boolean isRemovingFromPlaylist = isChangingPlaylistPosition && playlistPosition != null;
-
-		// shift the playlist if this is moving to the middle
-		if (isRemovingFromPlaylist && playlistPosition != Integer.MAX_VALUE)
-			db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 WHERE queuePosition IS NOT NULL AND queuePosition >= ?",
-				new String[]{String.valueOf(playlistPosition)}
-			);
-
-		// if this was the active episode and it's no longer in the playlist, don't restart on this episode
+		// we may need to change the active episode id
 		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
 		long activeEpisodeId = prefs.getLong("active", -1);
-		if (activeEpisodeId == episodeId && isRemovingFromPlaylist) {
-			prefs.edit().remove("active").apply();
-			activeEpisodeId = -1;
+
+		Integer playlistPosition = values.getAsInteger(COLUMN_PLAYLIST_POSITION);
+		Integer currentPosition = EpisodeData.create(episodeId).getPlaylistPosition();
+		boolean isChangingPlaylistPosition = values.containsKey(COLUMN_PLAYLIST_POSITION) && !Objects.equals(playlistPosition, currentPosition);
+		List<Long> toEvict = new ArrayList<>(0);
+		if (isChangingPlaylistPosition) {
+			String evictSql = "SELECT _id FROM podcasts ";
+			if (playlistPosition == null) {
+				// if this was the active episode and it's no longer in the playlist, don't restart on this episode
+				if (activeEpisodeId == episodeId) {
+					prefs.edit().remove("active").apply();
+					activeEpisodeId = -1;
+				}
+			} else if (currentPosition == null) {
+				// inserting - increment everything above the new position
+				String whereSql = "WHERE queuePosition IS NOT NULL AND queuePosition >= ?";
+				String[] selectionArgs = {String.valueOf(playlistPosition)};
+				toEvict = getIds(db, evictSql + whereSql, selectionArgs);
+				db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 " + whereSql, selectionArgs);
+			} else {
+				// shift queue depending on whether episode is moving towards start or back
+				// moving from 4 to 2 means that 2 and 3 need increment
+				// moving from 2 to 4 means that 3 and 4 need decrement
+				String[] selectionArgs = {String.valueOf(playlistPosition), String.valueOf(currentPosition)};
+				if (currentPosition > playlistPosition) {
+					String whereSql = "WHERE queuePosition IS NOT NULL AND queuePosition >= ? AND queuePosition < ?";
+					toEvict = getIds(db, evictSql + whereSql, selectionArgs);
+					db.execSQL("UPDATE podcasts SET queuePosition = queuePosition + 1 " + whereSql, selectionArgs);
+				} else {
+					String whereSql = "WHERE queuePosition IS NOT NULL AND queuePosition <= ? AND queuePosition > ?";
+					toEvict = getIds(db, evictSql + whereSql, selectionArgs);
+					db.execSQL("UPDATE podcasts SET queuePosition = queuePosition - 1 " + whereSql, selectionArgs);
+				}
+			}
 		}
 
 		// do updates
 		db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(episodeId) });
 		if (hasFTSValues(values))
 			db.update("fts_podcasts", extractFTSValues(values), "_id = ?", new String[] { String.valueOf(episodeId) });
-		ensureMonotonicQueue(db);
+		toEvict.addAll(ensureMonotonicQueue(db));
 
+		for (Long l : toEvict)
+			EpisodeData.evictFromCache(l);
 		EpisodeData.evictFromCache(episodeId);
 
 		// active episode notification
@@ -146,6 +170,18 @@ public class EpisodeDB {
 			notifyFinishedChange();
 		// regular notification
 		notifyChange(episodeId, EpisodeData.create(episodeId));
+	}
+
+	private List<Long> getIds(SQLiteDatabase db, String sql, String[] selectionArgs) {
+		Cursor evicts = db.rawQuery(sql, selectionArgs);
+		if (evicts == null)
+			return new ArrayList<>(0);
+
+		ArrayList<Long> needToEvict = new ArrayList<>(evicts.getCount());
+		while (evicts.moveToNext())
+			needToEvict.add(evicts.getLong(0));
+		evicts.close();
+		return needToEvict;
 	}
 
 	public void setActiveEpisode(long episodeId) {
@@ -232,12 +268,23 @@ public class EpisodeDB {
 		notifyChange(episodeId, null);
 	}
 
-	private void ensureMonotonicQueue(SQLiteDatabase db) {
-		// keep the queue order monotonic
-		String monotonicSQL = "UPDATE podcasts SET queuePosition = " +
-			"(SELECT COUNT(queuePosition) FROM podcasts sub WHERE queuePosition IS NOT NULL AND sub.queuePosition < podcasts.queuePosition) " +
-			"WHERE queuePosition IS NOT NULL";
+	private List<Long> ensureMonotonicQueue(SQLiteDatabase db) {
+		// find out which ids change
+		String subQuery = "(SELECT COUNT(queuePosition) FROM podcasts sub WHERE queuePosition IS NOT NULL AND sub.queuePosition < podcasts.queuePosition) ";
+		String changedIdsSQL = "SELECT _id FROM podcasts WHERE queuePosition IS NOT NULL AND queuePosition != " + subQuery;
+		Cursor c = db.rawQuery(changedIdsSQL, null);
+		ArrayList<Long> changedIds = new ArrayList<>(0);
+		if (c != null) {
+			changedIds = new ArrayList<>(c.getCount());
+			while (c.moveToNext())
+				changedIds.add(c.getLong(0));
+			c.close();
+		}
+
+		String monotonicSQL = "UPDATE podcasts SET queuePosition = " + subQuery + "WHERE queuePosition IS NOT NULL";
 		db.execSQL(monotonicSQL);
+
+		return changedIds;
 	}
 
 	private static void deleteFiles(long episodeId) {

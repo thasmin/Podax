@@ -1,13 +1,12 @@
 package com.axelby.podax.ui;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,13 +15,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.axelby.podax.BR;
-import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.EpisodeDownloadService;
-import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.R;
+import com.axelby.podax.model.EpisodeDB;
+import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.PodaxDB;
 import com.trello.rxlifecycle.components.RxFragment;
 
@@ -32,7 +30,6 @@ import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
-import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -41,116 +38,31 @@ public class PlaylistFragment extends RxFragment {
 	private RecyclerView _listView;
 	private PlaylistListAdapter _adapter;
 
-	private ImageView _overlay;
-	private boolean _isDragging;
-	private long _dragEpisodeId;
+	ItemTouchHelper _itemTouchHelper = new ItemTouchHelper(
+		new ItemTouchHelper.SimpleCallback(
+				ItemTouchHelper.UP   | ItemTouchHelper.DOWN,
+				ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+			@Override
+			public boolean onMove(RecyclerView recyclerView,
+								  RecyclerView.ViewHolder viewHolder,
+								  RecyclerView.ViewHolder target) {
+				int fromPos = viewHolder.getAdapterPosition();
+				int toPos = target.getAdapterPosition();
+				_adapter.moveItemByPosition(fromPos, toPos);
 
-	private final RecyclerView.OnItemTouchListener _touchListener = new RecyclerView.OnItemTouchListener() {
-		float _dragStartMouseY;
-		int _dragStartTop;
-
-		private boolean containsDragHandle(View itemView, MotionEvent e) {
-			int itemTop = itemView.getTop();
-			View dragHandle = itemView.findViewById(R.id.drag);
-			Rect r = new Rect();
-			dragHandle.getHitRect(r);
-			return r.contains((int) e.getX(), (int) e.getY() - itemTop);
-		}
-
-		@Override
-		public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-			// intercept the touch event if currently dragging
-			if (_isDragging)
 				return true;
+			}
 
-			// intercept the touch event if it's a drag handle
-			View itemView = rv.findChildViewUnder(e.getX(), e.getY());
-			if (itemView == null)
+			@Override
+			public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+				_adapter.removeFromPosition(viewHolder.getAdapterPosition());
+			}
+
+			@Override
+			public boolean isLongPressDragEnabled() {
 				return false;
-
-			if (containsDragHandle(itemView, e)) {
-				onTouchEvent(rv, e);
-				return true;
 			}
-
-			return false;
-		}
-
-		@Override
-		public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-			switch (e.getAction() & MotionEvent.ACTION_MASK) {
-				case MotionEvent.ACTION_DOWN:
-					_isDragging = true;
-
-					View itemView = rv.findChildViewUnder(e.getX(), e.getY());
-
-					// keep track of the mouse location, top of item, and episode id
-					_dragStartMouseY = e.getY();
-					_dragStartTop = itemView.getTop();
-					_dragEpisodeId = rv.getChildItemId(itemView);
-
-					// remove the episode from the list and show the overlay
-					_overlay.setImageBitmap(viewToBitmap(itemView));
-					_overlay.setPadding(0, _dragStartTop, 0, 0);
-					_overlay.setVisibility(View.VISIBLE);
-					itemView.setVisibility(View.INVISIBLE);
-					break;
-				case MotionEvent.ACTION_UP:
-				case MotionEvent.ACTION_CANCEL:
-					_isDragging = false;
-					_overlay.setVisibility(View.GONE);
-
-					int position = _adapter.getPositionForId(_dragEpisodeId);
-					View draggedView = rv.getChildAt(position);
-					if (draggedView != null)
-						draggedView.setVisibility(View.VISIBLE);
-					break;
-				case MotionEvent.ACTION_MOVE:
-					if (_listView.getItemAnimator().isRunning())
-						break;
-
-					float deltaY = e.getY() - _dragStartMouseY;
-					if (_overlay.getPaddingTop() < 0 && deltaY < -5)
-						rv.scrollBy(0, -10);
-
-					// switch if the overlay isn't on top of the original view
-					View underView = null;
-					for (int i = 0; i < rv.getChildCount(); ++i) {
-						View childAt = rv.getChildAt(i);
-						if (childAt.getTop() < e.getY() && childAt.getBottom() > e.getY()) {
-							underView = childAt;
-							break;
-						}
-					}
-					if (underView == null)
-						Log.d("PlaylistFragment", "now under null child");
-					else
-						Log.d("PlaylistFragment", "now under child at " + rv.getChildAdapterPosition(underView) + " id " + rv.getChildItemId(underView));
-
-					if (underView != null && rv.getChildItemId(underView) != _dragEpisodeId) {
-						int newPosition = rv.getChildLayoutPosition(underView);
-						_adapter.moveItem(_dragEpisodeId, newPosition);
-						if (newPosition == 0)
-							rv.smoothScrollToPosition(0);
-					}
-
-					// scroll down if overlay is below bottom
-					int overlayPaddingTop = (int) (_dragStartTop + deltaY);
-					int maxPadding = rv.getHeight() - (_overlay.getHeight() - _overlay.getPaddingTop());
-					if (overlayPaddingTop > maxPadding) {
-						rv.scrollBy(0, overlayPaddingTop - maxPadding);
-						overlayPaddingTop = maxPadding;
-					}
-					_overlay.setPadding(0, overlayPaddingTop, 0, 0);
-
-					break;
-			}
-		}
-
-		@Override
-		public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-		}
-	};
+		});
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -159,7 +71,7 @@ public class PlaylistFragment extends RxFragment {
 		setHasOptionsMenu(true);
 
 		_adapter = new PlaylistListAdapter();
-		Observable.just(PodaxDB.episodes.getPlaylist())
+		PodaxDB.episodes.watchPlaylist()
 			.compose(bindToLifecycle())
 			.subscribe(
 				_adapter::setEpisodes,
@@ -178,15 +90,13 @@ public class PlaylistFragment extends RxFragment {
 
 		_listView = (RecyclerView) view.findViewById(R.id.list);
 		_listView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-		_overlay = (ImageView) getActivity().findViewById(R.id.overlay);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		_listView.addOnItemTouchListener(_touchListener);
 		_listView.setAdapter(_adapter);
+		_itemTouchHelper.attachToRecyclerView(_listView);
 	}
 
 	@Override
@@ -201,13 +111,6 @@ public class PlaylistFragment extends RxFragment {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	private Bitmap viewToBitmap(View view) {
-		Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
-		Canvas canvas = new Canvas(bitmap);
-		view.draw(canvas);
-		return bitmap;
 	}
 
 	private class PlaylistListAdapter extends RecyclerView.Adapter<DataBoundViewHolder> {
@@ -228,7 +131,7 @@ public class PlaylistFragment extends RxFragment {
 			}
 		};
 
-		public PlaylistListAdapter() {
+		PlaylistListAdapter() {
 			setHasStableIds(true);
 		}
 
@@ -249,7 +152,7 @@ public class PlaylistFragment extends RxFragment {
 				.subscribe(_episodeSubscriber);
 		}
 
-		public void updateEpisode(EpisodeDB.EpisodeChange change) {
+		void updateEpisode(EpisodeDB.EpisodeChange change) {
 			Integer position = _ids.get(change.getId());
 			if (position == null)
 				return;
@@ -271,6 +174,11 @@ public class PlaylistFragment extends RxFragment {
         @Override
 		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
 			holder.binding.setVariable(BR.episode, _episodes.get(position));
+			holder.binding.getRoot().findViewById(R.id.drag).setOnTouchListener((v, event) -> {
+				if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN)
+					_itemTouchHelper.startDrag(holder);
+				return false;
+			});
 		}
 
 		@Override
@@ -283,21 +191,14 @@ public class PlaylistFragment extends RxFragment {
 			return _episodes.get(position).getId();
 		}
 
-		public int getPositionForId(long id) {
-			for (int i = 0; i < getItemCount(); ++i)
-				if (getItemId(i) == id)
-					return i;
-			return -1;
+		void moveItemByPosition(int from, int to) {
+			_episodes.get(from).moveToPlaylistPosition(to);
+			notifyItemMoved(from, to);
 		}
 
-		public void moveItem(long id, int newPosition) {
-			int oldPosition = getPositionForId(id);
-			EpisodeData ep = _episodes.get(newPosition);
-			ep.moveToPlaylistPosition(newPosition);
-			_episodes.set(newPosition, _episodes.get(oldPosition));
-			_episodes.set(oldPosition, ep);
-
-			notifyItemMoved(getPositionForId(id), newPosition);
+		void removeFromPosition(int position) {
+			_episodes.get(position).removeFromPlaylist();
+			notifyItemRemoved(position);
 		}
 	}
 }
