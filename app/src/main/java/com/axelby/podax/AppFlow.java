@@ -16,6 +16,7 @@ import android.view.View;
 
 import com.axelby.podax.ui.AboutFragment;
 import com.axelby.podax.ui.EpisodeDetailFragment;
+import com.axelby.podax.ui.BareFragmentActivity;
 import com.axelby.podax.ui.EpisodeListFragment;
 import com.axelby.podax.ui.LatestActivityFragment;
 import com.axelby.podax.ui.MainActivity;
@@ -320,6 +321,7 @@ public class AppFlow {
 
 	public boolean displayPodcastViaITunes(String title, String itunesUrl, View... transitions) {
 		Bundle args = new Bundle(1);
+		args.putString(Constants.EXTRA_FRAGMENT_CLASSNAME, EpisodeListFragment.class.getCanonicalName());
 		args.putString(Constants.EXTRA_ITUNES_ID, itunesUrl);
 		args.putString(Constants.EXTRA_SUBSCRIPTION_NAME, title);
 		Bundle options = getTransitionOptions(transitions);
@@ -328,19 +330,21 @@ public class AppFlow {
 	}
 
 	public boolean displaySubscription(long subscriptionId, View... transitions) {
-		Bundle args = new Bundle(1);
+		Bundle args = new Bundle(2);
+		args.putString(Constants.EXTRA_FRAGMENT_CLASSNAME, EpisodeListFragment.class.getCanonicalName());
 		args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
 		Bundle options = getTransitionOptions(transitions);
-		switchTo(ScreenChange.detailFragment(EpisodeListFragment.class, args, options));
+		switchTo(ScreenChange.activity(BareFragmentActivity.class, args, options));
 		return true;
 	}
 
 	public boolean displaySubscription(CharSequence title, long subscriptionId, View... transitions) {
-		Bundle args = new Bundle(2);
+		Bundle args = new Bundle(3);
+		args.putString(Constants.EXTRA_FRAGMENT_CLASSNAME, EpisodeListFragment.class.getCanonicalName());
 		args.putLong(Constants.EXTRA_SUBSCRIPTION_ID, subscriptionId);
 		args.putString(Constants.EXTRA_SUBSCRIPTION_NAME, title.toString());
 		Bundle options = getTransitionOptions(transitions);
-		switchTo(ScreenChange.detailFragment(EpisodeListFragment.class, args, options));
+		switchTo(ScreenChange.activity(BareFragmentActivity.class, args, options));
 		return true;
 	}
 

@@ -4,8 +4,12 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -154,6 +158,15 @@ public class EpisodeListFragment extends RxFragment {
 			_adapter.stopWatching();
 		_adapter = new EpisodeListAdapter(subscription.getEpisodes());
 		_binding.list.setAdapter(_adapter);
+
+		Bitmap thumbnail = SubscriptionData.getThumbnailImageRaw(subscription.getId());
+		if (thumbnail != null) {
+			Palette palette = Palette.from(thumbnail).generate();
+			Palette.Swatch swatch = palette.getDominantSwatch();
+			_binding.collapsingToolbar.setStatusBarScrimColor(palette.getDarkMutedColor(getResources().getColor(R.color.podaxColor)));
+			_binding.collapsingToolbar.setContentScrimColor(swatch.getRgb());
+			_binding.collapsingToolbar.setCollapsedTitleTextColor(swatch.getBodyTextColor());
+		}
 	}
 
 	private Subscriber<Long> _updateActivityObserver = new Subscriber<Long>() {

@@ -13,85 +13,95 @@
 
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
 
         <android.support.design.widget.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fitsSystemWindows="true"
             android:background="?android:attr/colorBackground">
 
-            <LinearLayout
-                android:id="@+id/topPanel"
+            <android.support.design.widget.CollapsingToolbarLayout
+                android:id="@+id/collapsing_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_scrollFlags="scroll">
+                android:layout_height="match_parent"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed"
+                app:contentScrim="?attr/colorPrimary"
+                app:title="@{subscription.title}"
+                app:expandedTitleTextAppearance="@style/TransparentText"
+                android:fitsSystemWindows="true">
 
-                <com.axelby.podax.ui.SquareImageView
-                    android:id="@+id/thumbnail"
+                <LinearLayout
+                    android:id="@+id/topPanel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@string/subscription_thumbnail"
-                    android:adjustViewBounds="true"
-                    app:picassoImageUrl="@{subscription.thumbnail}"
-                    tools:src="@drawable/icon"
-                    android:transitionName="subscriptionImage" />
+                    android:orientation="vertical"
+                    app:layout_collapseMode="parallax">
 
-                <TextView
-                    android:id="@+id/subscriptionTitle"
+                    <com.axelby.podax.ui.SquareImageView
+                        android:id="@+id/thumbnail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/subscription_thumbnail"
+                        android:adjustViewBounds="true"
+                        app:picassoImageUrl="@{subscription.thumbnail}"
+                        tools:src="@drawable/icon"
+                        android:transitionName="subscriptionImage" />
+
+                    <TextView
+                        android:id="@+id/currently_updating"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="@{subscription.isCurrentlyUpdating ? View.VISIBLE : View.GONE}"
+                        tools:visibility="visible"
+                        android:gravity="center"
+                        android:background="@color/orange500"
+                        android:padding="10dp"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#111111"
+                        android:text="@string/subscription_currently_updating"/>
+
+                    <!-- TODO: next two checkboxes width should be wrap_content -->
+                    <CheckBox
+                        android:id="@+id/subscribe"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/subscribe"
+                        android:checked="@{subscription.isSubscribed}"
+                        android:onChange="@{subscription.changeSubscribe}" />
+
+                    <CheckBox
+                        android:id="@+id/add_new_episodes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_new_episodes_to_playlist"
+                        android:checked="@{subscription.areNewEpisodesAddedToPlaylist}"
+                        android:onChange="@{subscription.changeAddNewToPlaylist}" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/episodes"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="18sp"
+                        android:textAllCaps="true"
+                        android:layout_marginTop="8dp"/>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:background="?attr/colorPrimary" />
+
+                </LinearLayout>
+
+                <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="24sp"
-                    android:gravity="center_horizontal"
-                    android:text="@{subscription.title}"
-                    tools:text="Subscription Name"
-                    android:transitionName="subscriptionName" />
+                    android:layout_height="?attr/actionBarSize"
+                    app:layout_collapseMode="pin" />
 
-                <TextView
-                    android:id="@+id/currently_updating"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="@{subscription.isCurrentlyUpdating ? View.VISIBLE : View.GONE}"
-                    tools:visibility="visible"
-                    android:gravity="center"
-                    android:background="@color/orange500"
-                    android:padding="10dp"
-                    android:layout_marginTop="10dp"
-                    android:textColor="#111111"
-                    android:text="@string/subscription_currently_updating"/>
-
-                <!-- TODO: next two checkboxes width should be wrap_content -->
-                <CheckBox
-                    android:id="@+id/subscribe"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/subscribe"
-                    android:checked="@{subscription.isSubscribed}"
-                    android:onChange="@{subscription.changeSubscribe}" />
-
-                <CheckBox
-                    android:id="@+id/add_new_episodes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/add_new_episodes_to_playlist"
-                    android:checked="@{subscription.areNewEpisodesAddedToPlaylist}"
-                    android:onChange="@{subscription.changeAddNewToPlaylist}" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/episodes"
-                    android:textColor="?attr/colorPrimary"
-                    android:textSize="18sp"
-                    android:textAllCaps="true"
-                    android:layout_marginTop="8dp"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:background="?attr/colorPrimary" />
-
-            </LinearLayout>
+            </android.support.design.widget.CollapsingToolbarLayout>
 
         </android.support.design.widget.AppBarLayout>
 
@@ -101,6 +111,7 @@
             android:layout_height="match_parent"
             android:layout_below="@id/topPanel"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            tools:listitem="@layout/episodelist_item"
             />
 
     </android.support.design.widget.CoordinatorLayout>

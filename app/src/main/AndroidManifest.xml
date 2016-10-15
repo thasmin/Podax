@@ -108,6 +108,7 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity android:name=".ui.PodaxFragmentActivity" />
+        <activity android:name=".ui.BareFragmentActivity" />
         <activity
             android:name="org.acra.CrashReportDialog"
             android:excludeFromRecents="true"
