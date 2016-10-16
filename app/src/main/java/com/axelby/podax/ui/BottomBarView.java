@@ -2,9 +2,13 @@ package com.axelby.podax.ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Point;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.graphics.Palette;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -17,6 +21,7 @@ import com.axelby.podax.Helper;
 import com.axelby.podax.PlayerService;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.R;
+import com.axelby.podax.model.SubscriptionData;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -80,6 +85,20 @@ public class BottomBarView extends RelativeLayout {
 
             _expand.setImageResource(R.drawable.ic_action_collapse);
 			_expand.setOnClickListener(view -> AppFlow.get(activity).displayActiveEpisode());
+
+			Palette.Swatch swatch = SubscriptionData.getThumbnailSwatch(playerState.getSubscriptionId());
+			if (swatch != null) {
+				_progressline.setBackgroundColor(swatch.getTitleTextColor());
+				_progressbg.setBackgroundColor(swatch.getRgb());
+				_episodeTitle.setBackgroundColor(swatch.getRgb());
+				_play.setBackgroundColor(swatch.getRgb());
+				_expand.setBackgroundColor(swatch.getRgb());
+				_episodeTitle.setTextColor(swatch.getBodyTextColor());
+				_play.setColorFilter(swatch.getBodyTextColor());
+				_expand.setColorFilter(swatch.getBodyTextColor());
+			} else {
+				resetColors();
+			}
         } else {
 			_progressbg.setVisibility(View.GONE);
 			_progressline.setVisibility(View.GONE);
@@ -88,7 +107,28 @@ public class BottomBarView extends RelativeLayout {
             _episodeTitle.setText(R.string.playlist_empty);
             _expand.setImageDrawable(null);
 			_expand.setOnClickListener(null);
+
+			resetColors();
         }
+	}
+
+	private void resetColors() {
+		_progressline.setBackgroundColor(ContextCompat.getColor(getContext(), getAccentColor()));
+		_progressbg.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.podaxColor));
+		_episodeTitle.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.podaxColor));
+		_play.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.podaxColor));
+		_expand.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.podaxColor));
+		_episodeTitle.setTextColor(null);
+		_play.setColorFilter(null);
+		_expand.setColorFilter(null);
+	}
+
+	private int getAccentColor() {
+		TypedValue typedValue = new TypedValue();
+		TypedArray a = getContext().obtainStyledAttributes(typedValue.data, new int[] { R.attr.colorAccent });
+		int color = a.getColor(0, 0);
+		a.recycle();
+		return color;
 	}
 
 	private int getProgressLineWidthPx(PlayerStatus playerState) {

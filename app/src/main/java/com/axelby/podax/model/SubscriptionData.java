@@ -4,6 +4,7 @@ import android.app.Application;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v7.graphics.Palette;
 import android.text.Html;
 import android.util.Log;
 import android.util.LruCache;
@@ -188,6 +189,14 @@ public class SubscriptionData {
 			return null;
 
 		return BitmapFactory.decodeFile(filename);
+	}
+
+	public static Palette.Swatch getThumbnailSwatch(long subscriptionId) {
+		Bitmap thumbnail = SubscriptionData.getThumbnailImageRaw(subscriptionId);
+		if (thumbnail == null)
+			return null;
+		Palette palette = Palette.from(thumbnail).generate();
+		return palette.getDominantSwatch();
 	}
 
 	public static void evictThumbnails(long subscriptionId) {
