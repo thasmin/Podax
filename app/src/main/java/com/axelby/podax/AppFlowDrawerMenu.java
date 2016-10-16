@@ -3,6 +3,8 @@ package com.axelby.podax;
 import android.app.Fragment;
 import android.support.annotation.MenuRes;
 import android.support.v7.view.menu.MenuBuilder;
+import android.util.ArrayMap;
+import android.util.SparseArray;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
@@ -18,15 +20,14 @@ import com.axelby.podax.ui.PodaxPreferenceFragment;
 import com.axelby.podax.ui.StatsFragment;
 import com.axelby.podax.ui.WeeklyPlannerFragment;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class AppFlowDrawerMenu {
-	private Map<Integer, CharSequence> _titles = new HashMap<>(12);
-	private Map<Integer, Class<? extends Fragment>> _fragmentClasses = new HashMap<>(12);
-	private Map<Class<? extends Fragment>, Integer> _fragmentClassLookup = new HashMap<>(12);
+class AppFlowDrawerMenu {
+	private SparseArray<CharSequence> _titles = new SparseArray<>(12);
+	private SparseArray<Class<? extends Fragment>> _fragmentClasses = new SparseArray<>(12);
+	private Map<Class<? extends Fragment>, Integer> _fragmentClassLookup = new ArrayMap<>(12);
 
-	public AppFlowDrawerMenu(PodaxApplication app) {
+	AppFlowDrawerMenu(PodaxApplication app) {
 		_fragmentClasses.put(R.id.playlist, PlaylistFragment.class);
 		_fragmentClasses.put(R.id.subscriptions, SubscriptionListFragment.class);
 		_fragmentClasses.put(R.id.discover, DiscoverFragment.class);
@@ -63,15 +64,15 @@ public class AppFlowDrawerMenu {
 		}
 	}
 
-	public boolean contains(@MenuRes int menuId) {
-		return _titles.containsKey(menuId) && _fragmentClasses.containsKey(menuId);
+	boolean contains(@MenuRes int menuId) {
+		return _titles.get(menuId) != null && _fragmentClasses.get(menuId) != null;
 	}
 
-	public AppFlow.ScreenChange getScreenChange(int id) {
+	AppFlow.ScreenChange getScreenChange(int id) {
 		return AppFlow.ScreenChange.mainFragment(_titles.get(id), _fragmentClasses.get(id));
 	}
 
-	public AppFlow.ScreenChange find(Class<? extends Fragment> fragmentClass) {
+	AppFlow.ScreenChange find(Class<? extends Fragment> fragmentClass) {
 		return getScreenChange(_fragmentClassLookup.get(fragmentClass));
 	}
 }
