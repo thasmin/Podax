@@ -13,9 +13,9 @@
         android:layout_height="wrap_content"
         app:cardBackgroundColor="@color/cardBG"
         app:cardCornerRadius="5dp"
-        app:cardElevation="8dp"
         app:cardUseCompatPadding="true"
-        android:onClick="@{episode.show}">
+        android:onClick="@{episode.show}"
+        app:contentPadding="0dp">
 
         <RelativeLayout
             android:layout_width="fill_parent"
@@ -25,10 +25,23 @@
                 android:id="@+id/drag"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignBottom="@id/thumbnail"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/play"
+                android:tint="?attr/colorPrimary"
                 android:contentDescription="@string/drag_handle"
                 android:src="@drawable/ic_action_drag" />
+
+            <ImageView
+                android:id="@+id/play"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/play"
+                android:tint="?attr/colorPrimary"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_action_play"
+                android:onClick="@{episode.play}" />
 
             <ImageView
                 android:id="@+id/thumbnail"
@@ -37,10 +50,9 @@
                 tools:src="@drawable/icon"
                 android:src="@{episode.subscriptionImageFilename}"
                 android:layout_alignParentStart="true"
-                android:layout_margin="10dp"
                 android:contentDescription="@string/thumbnail"
                 android:transitionName="subscriptionImage"
-                />
+                android:layout_marginEnd="10dp"/>
 
             <TextView
                 android:id="@+id/title"
@@ -52,61 +64,25 @@
                 android:layout_toEndOf="@id/thumbnail"
                 android:layout_alignTop="@id/thumbnail"
                 android:layout_toStartOf="@id/drag"
+                android:layout_marginTop="4dp"
                 android:textSize="17sp"
                 android:transitionName="subscriptionName"
                 />
-
-            <TextView
-                android:id="@+id/downloaded"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="downloaded"
-                android:text="@{episode.getDownloadStatus(context)}"
-                tools:textColor="@android:color/holo_green_dark"
-                android:textColor="@{episode.getDownloadStatusColor(context)}"
-                android:textAllCaps="true"
-                android:layout_alignBottom="@id/play"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:layout_marginStart="10dp" />
 
 
             <TextView
                 android:id="@+id/duration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="1:42:59"
+                tools:text="1 hour 42 minutes long"
                 android:text="@{episode.getDurationAsWords(context)}"
                 android:textColor="#99ffffff"
-                android:layout_above="@id/downloaded"
-                android:layout_alignStart="@id/downloaded"
-                android:layout_marginBottom="2dp"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <TextView
-                android:id="@+id/play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/play"
-                android:textAllCaps="true"
-                android:textStyle="bold"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@id/thumbnail"
-                android:layout_margin="20dp"
-                android:textColor="?attr/colorPrimary"
-                android:onClick="@{episode.play}" />
-
-            <TextView
-                android:id="@+id/remove"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/remove"
-                android:textAllCaps="true"
-                android:textStyle="bold"
-                android:layout_toStartOf="@id/play"
-                android:layout_alignBaseline="@+id/play"
-                android:layout_margin="20dp"
-                android:textColor="?attr/colorPrimary"
-                android:onClick="@{episode.removeFromPlaylist}" />
+                android:layout_alignStart="@id/title"
+                android:layout_toEndOf="@+id/thumbnail"
+                android:layout_alignBottom="@id/thumbnail"
+                android:layout_marginBottom="4dp"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                />
 
         </RelativeLayout>
 

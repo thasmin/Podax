@@ -193,16 +193,14 @@ public class PlaylistFragment extends RxFragment {
 				binding.card.setCardBackgroundColor(swatch.getRgb());
 				binding.title.setTextColor(swatch.getBodyTextColor());
 				binding.duration.setTextColor(swatch.getBodyTextColor());
-				binding.play.setTextColor(swatch.getTitleTextColor());
-				binding.remove.setTextColor(swatch.getTitleTextColor());
+				binding.play.setColorFilter(swatch.getTitleTextColor());
 				binding.drag.setColorFilter(swatch.getTitleTextColor());
 			} else {
 				binding.card.setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.cardBG));
 				binding.title.setTextColor(0x99ffffff);
 				binding.duration.setTextColor(0x99ffffff);
-				binding.play.setTextColor(Helper.getAttributeColor(getContext(), R.attr.colorPrimary));
-				binding.remove.setTextColor(Helper.getAttributeColor(getContext(), R.attr.colorPrimary));
-				binding.drag.setColorFilter(null);
+				binding.play.setColorFilter(Helper.getAttributeColor(getContext(), R.attr.colorPrimary));
+				binding.drag.setColorFilter(Helper.getAttributeColor(getContext(), R.attr.colorPrimary));
 			}
 		}
 
