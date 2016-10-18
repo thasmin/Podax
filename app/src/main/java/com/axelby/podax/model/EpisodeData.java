@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.util.LruCache;
 import android.view.View;
 
@@ -308,9 +309,9 @@ public class EpisodeData {
 		String filename = getFilename(context);
 		float downloaded = new File(filename).length();
 		if (getFileSize() == downloaded || EpisodeDownloadService.isDownloading(filename))
-			return android.R.color.holo_green_dark;
+			return ContextCompat.getColor(context, android.R.color.holo_green_dark);
 		else
-			return android.R.color.holo_red_dark;
+			return ContextCompat.getColor(context, android.R.color.holo_red_dark);
 	}
 
 	public String getReleaseDate(Context context) {
