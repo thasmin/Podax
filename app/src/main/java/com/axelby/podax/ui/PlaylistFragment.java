@@ -3,7 +3,9 @@ package com.axelby.podax.ui;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -18,10 +20,13 @@ import android.view.ViewGroup;
 
 import com.axelby.podax.BR;
 import com.axelby.podax.EpisodeDownloadService;
+import com.axelby.podax.Helper;
 import com.axelby.podax.R;
+import com.axelby.podax.databinding.PlaylistListItemBinding;
 import com.axelby.podax.model.EpisodeDB;
 import com.axelby.podax.model.EpisodeData;
 import com.axelby.podax.model.PodaxDB;
+import com.axelby.podax.model.SubscriptionData;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.ArrayList;
@@ -36,7 +41,7 @@ import rx.schedulers.Schedulers;
 
 public class PlaylistFragment extends RxFragment {
 	private RecyclerView _listView;
-	private PlaylistListAdapter _adapter;
+	PlaylistListAdapter _adapter;
 
 	ItemTouchHelper _itemTouchHelper = new ItemTouchHelper(
 		new ItemTouchHelper.SimpleCallback(
@@ -173,12 +178,32 @@ public class PlaylistFragment extends RxFragment {
 
         @Override
 		public void onBindViewHolder(DataBoundViewHolder holder, int position) {
-			holder.binding.setVariable(BR.episode, _episodes.get(position));
-			holder.binding.getRoot().findViewById(R.id.drag).setOnTouchListener((v, event) -> {
+			EpisodeData episode = _episodes.get(position);
+			holder.binding.setVariable(BR.episode, episode);
+
+			PlaylistListItemBinding binding = (PlaylistListItemBinding) holder.binding;
+			binding.drag.setOnTouchListener((v, event) -> {
 				if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN)
 					_itemTouchHelper.startDrag(holder);
 				return false;
 			});
+
+			Palette.Swatch swatch = SubscriptionData.getThumbnailSwatch(episode.getSubscriptionId());
+			if (swatch != null) {
+				binding.card.setCardBackgroundColor(swatch.getRgb());
+				binding.title.setTextColor(swatch.getBodyTextColor());
+				binding.duration.setTextColor(swatch.getBodyTextColor());
+				binding.play.setTextColor(swatch.getTitleTextColor());
+				binding.remove.setTextColor(swatch.getTitleTextColor());
+				binding.drag.setColorFilter(swatch.getTitleTextColor());
+			} else {
+				binding.card.setCardBackgroundColor(ContextCompat.getColor(getContext(), R.color.cardBG));
+				binding.title.setTextColor(0x99ffffff);
+				binding.duration.setTextColor(0x99ffffff);
+				binding.play.setTextColor(Helper.getAttributeColor(getContext(), R.attr.colorPrimary));
+				binding.remove.setTextColor(Helper.getAttributeColor(getContext(), R.attr.colorPrimary));
+				binding.drag.setColorFilter(null);
+			}
 		}
 
 		@Override

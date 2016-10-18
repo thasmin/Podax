@@ -26,7 +26,7 @@ import rx.schedulers.Schedulers;
 
 public class SubscriptionData {
 
-	private final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
+	final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
 	private static Application _application;
 
 	private static Subscriber<? super SubscriptionDB.SubscriptionChange> _changeSubscription = new Subscriber<SubscriptionDB.SubscriptionChange>() {
@@ -69,8 +69,9 @@ public class SubscriptionData {
 	private final boolean _singleUse;
 	private final boolean _playlistNew;
 	private final Integer _expirationDays;
+	private final int _dominantColor;
 
-	SubscriptionData(Cursor cursor) {
+	private SubscriptionData(Cursor cursor) {
 		_id = cursor.getLong(cursor.getColumnIndex(SubscriptionDB.COLUMN_ID));
 		_rawTitle = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_TITLE));
 		_url = cursor.getString(cursor.getColumnIndex(SubscriptionDB.COLUMN_URL));
@@ -89,6 +90,8 @@ public class SubscriptionData {
 
 		int expirationIndex = cursor.getColumnIndex(SubscriptionDB.COLUMN_EXPIRATION);
 		_expirationDays = cursor.isNull(expirationIndex) ? null : cursor.getInt(expirationIndex);
+
+		_dominantColor = cursor.getInt(cursor.getColumnIndex(SubscriptionDB.COLUMN_DOMINANT_COLOR));
 	}
 
 	static SubscriptionData from(Cursor cursor) {
@@ -143,10 +146,10 @@ public class SubscriptionData {
 	public String getThumbnail() { return _thumbnail; }
 	public String getTitleOverride() { return _titleOverride; }
 	public String getDescription() { return _description; }
-	public boolean isSingleUse() { return _singleUse; }
 	public boolean isSubscribed() { return !_singleUse; }
 	public boolean areNewEpisodesAddedToPlaylist() { return _playlistNew; }
 	public Integer getExpirationDays() { return _expirationDays; }
+	public int getDominantColor() { return _dominantColor; }
 	public String getTitle() {
 		if (_titleOverride != null && _titleOverride.length() > 0)
 			return Html.fromHtml(_titleOverride).toString();
@@ -192,11 +195,28 @@ public class SubscriptionData {
 	}
 
 	public static Palette.Swatch getThumbnailSwatch(long subscriptionId) {
+		SubscriptionData subscription = SubscriptionData.create(subscriptionId);
+		if (subscription == null)
+			return null;
+		return subscription.getThumbnailSwatch();
+	}
+
+	public static int findDominantColor(long subscriptionId) {
 		Bitmap thumbnail = SubscriptionData.getThumbnailImageRaw(subscriptionId);
 		if (thumbnail == null)
-			return null;
+			return -1;
 		Palette palette = Palette.from(thumbnail).generate();
-		return palette.getDominantSwatch();
+		int dominantColor = palette.getDominantColor(-1);
+		new SubscriptionEditor(subscriptionId).setDominantColor(dominantColor).commit();
+		return dominantColor;
+	}
+
+	public Palette.Swatch getThumbnailSwatch() {
+		if (getDominantColor() == -1)
+			findDominantColor(getId());
+		if (getDominantColor() == -1)
+			return null;
+		return new Palette.Swatch(getDominantColor(), 1);
 	}
 
 	public static void evictThumbnails(long subscriptionId) {

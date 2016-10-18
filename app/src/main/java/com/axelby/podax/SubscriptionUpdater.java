@@ -42,7 +42,7 @@ import rx.Observable;
 class SubscriptionUpdater {
 	private final Context _context;
 
-	public SubscriptionUpdater(Context context) {
+	SubscriptionUpdater(Context context) {
 		_context = context;
 	}
 
@@ -136,8 +136,10 @@ class SubscriptionUpdater {
 				Log.w("Podax", "error in subscription xml: " + e.getMessage());
 				showUpdateErrorNotification(subscription, _context.getString(R.string.rss_not_valid));
 			} finally {
-				if (inputStream != null)
-					inputStream.close();
+				try {
+					if (inputStream != null)
+						inputStream.close();
+				} catch (IOException ignored) { }
 			}
 
 			// finish grabbing subscription values and update
@@ -180,10 +182,13 @@ class SubscriptionUpdater {
 			SubscriptionData.evictThumbnails(subscriptionId);
 		}
 
-		downloadThumbnail(subscriptionId, newThumbnailUrl);
+		if (!downloadThumbnail(subscriptionId, newThumbnailUrl))
+			return;
+
+		SubscriptionData.findDominantColor(subscriptionId);
 	}
 
-	private void downloadThumbnail(long subscriptionId, @NonNull String thumbnailUrl) {
+	private boolean downloadThumbnail(long subscriptionId, @NonNull String thumbnailUrl) {
 		try {
 			Request request = new Request.Builder().url(thumbnailUrl).build();
 			Response response = new OkHttpClient().newCall(request).execute();
@@ -191,8 +196,10 @@ class SubscriptionUpdater {
 			BufferedSink sink = Okio.buffer(Okio.sink(new File(filename)));
 			sink.writeAll(response.body().source());
 			sink.close();
+			return true;
 		} catch (IOException e) {
 			Log.e("Podax", "ioexception downloading subscription bitmap: " + thumbnailUrl);
+			return false;
 		}
 	}
 
@@ -215,8 +222,7 @@ class SubscriptionUpdater {
 		notificationManager.notify(Constants.SUBSCRIPTION_UPDATE_ERROR, notification);
 	}
 
-
-	void writeSubscriptionOPML() {
+	private void writeSubscriptionOPML() {
 		try {
 			File file = new File(_context.getExternalFilesDir(null), "podax.opml");
 			FileOutputStream output = new FileOutputStream(file);
@@ -263,7 +269,7 @@ class SubscriptionUpdater {
 		}
 	}
 
-	void showNotification(SubscriptionData subscription) {
+	private void showNotification(SubscriptionData subscription) {
 		Intent notificationIntent = new Intent(_context, MainActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(_context, 0, notificationIntent, 0);
 

@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAdapter extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "podax.db";
-	private static final int DATABASE_VERSION = 19;
+	private static final int DATABASE_VERSION = 20;
 
 	public DBAdapter(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -26,7 +26,8 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"queueNew INTEGER NOT NULL DEFAULT 1," +
 				"description VARCHAR," +
 				"expirationDays INTEGER," +
-				"singleUse INTEGER DEFAULT 0);");
+				"singleUse INTEGER DEFAULT 0," +
+				"dominantColor INTEGER DEFAULT -1;");
 		db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 
 		db.execSQL("CREATE TABLE podcasts(" +
@@ -137,6 +138,9 @@ public class DBAdapter extends SQLiteOpenHelper {
 
 		if (oldVersion < 19)
 			createPodcastsView(db);
+
+		if (oldVersion < 20)
+			addSubscriptionColorField(db);
     }
 
 	private void upgradeV1toV2(SQLiteDatabase db) {
@@ -282,5 +286,9 @@ public class DBAdapter extends SQLiteOpenHelper {
 		db.execSQL("CREATE VIEW podcasts_view AS " +
 			"SELECT p.*, s.title subscriptionTitle, s.url subscriptionUrl " +
 			"FROM podcasts p JOIN subscriptions s on p.subscriptionId = s._id");
+	}
+
+	private void addSubscriptionColorField(SQLiteDatabase db) {
+		db.execSQL("ALTER TABLE subscriptions ADD COLUMN dominantColor INTEGER DEFAULT -1");
 	}
 }

@@ -25,6 +25,7 @@ public class SubscriptionDB {
 	public static final String COLUMN_EXPIRATION = "expirationDays";
 	public static final String COLUMN_DESCRIPTION = "description";
 	public static final String COLUMN_SINGLE_USE = "singleUse";
+	public static final String COLUMN_DOMINANT_COLOR = "dominantColor";
 
 	private DBAdapter _dbAdapter;
 

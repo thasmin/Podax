@@ -5,9 +5,13 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.support.annotation.AttrRes;
+import android.support.annotation.ColorInt;
+import android.util.TypedValue;
 import android.view.View;
 
 import org.joda.time.Duration;
@@ -99,5 +103,12 @@ public class Helper {
 			context = ((ContextWrapper)context).getBaseContext();
 		}
 		return null;
+	}
+
+	public static @ColorInt int getAttributeColor(Context context, @AttrRes int attr) {
+		TypedValue typedValue = new TypedValue();
+		Resources.Theme theme = context.getTheme();
+		theme.resolveAttribute(attr, typedValue, true);
+		return typedValue.data;
 	}
 }

@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.axelby.podax.ActiveEpisodeReceiver;
 import com.axelby.podax.Constants;
@@ -33,23 +34,23 @@ import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
 public class EpisodeDB {
-	public static final String COLUMN_ID = "_id";
-	public static final String COLUMN_TITLE = "title";
-	public static final String COLUMN_SUBSCRIPTION_ID = "subscriptionId";
-	public static final String COLUMN_SUBSCRIPTION_TITLE = "subscriptionTitle";
-	public static final String COLUMN_SUBSCRIPTION_URL = "subscriptionUrl";
-	public static final String COLUMN_PLAYLIST_POSITION = "queuePosition";
-	public static final String COLUMN_MEDIA_URL = "mediaUrl";
-	public static final String COLUMN_LINK = "link";
-	public static final String COLUMN_PUB_DATE = "pubDate";
-	public static final String COLUMN_DESCRIPTION = "description";
-	public static final String COLUMN_FILE_SIZE = "fileSize";
-	public static final String COLUMN_LAST_POSITION = "lastPosition";
-	public static final String COLUMN_DURATION = "duration";
-	public static final String COLUMN_NEEDS_GPODDER_UPDATE = "needsGpodderUpdate";
-	public static final String COLUMN_GPODDER_UPDATE_TIMESTAMP = "gpodderUpdateTimestamp";
-	public static final String COLUMN_PAYMENT = "payment";
-	public static final String COLUMN_FINISHED_TIME = "finishedTime";
+	static final String COLUMN_ID = "_id";
+	static final String COLUMN_TITLE = "title";
+	static final String COLUMN_SUBSCRIPTION_ID = "subscriptionId";
+	static final String COLUMN_SUBSCRIPTION_TITLE = "subscriptionTitle";
+	static final String COLUMN_SUBSCRIPTION_URL = "subscriptionUrl";
+	static final String COLUMN_PLAYLIST_POSITION = "queuePosition";
+	static final String COLUMN_MEDIA_URL = "mediaUrl";
+	static final String COLUMN_LINK = "link";
+	static final String COLUMN_PUB_DATE = "pubDate";
+	static final String COLUMN_DESCRIPTION = "description";
+	static final String COLUMN_FILE_SIZE = "fileSize";
+	static final String COLUMN_LAST_POSITION = "lastPosition";
+	static final String COLUMN_DURATION = "duration";
+	static final String COLUMN_NEEDS_GPODDER_UPDATE = "needsGpodderUpdate";
+	static final String COLUMN_GPODDER_UPDATE_TIMESTAMP = "gpodderUpdateTimestamp";
+	static final String COLUMN_PAYMENT = "payment";
+	static final String COLUMN_FINISHED_TIME = "finishedTime";
 
 	private static Application _application;
 
@@ -98,6 +99,12 @@ public class EpisodeDB {
 	void update(long episodeId, ContentValues values) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
+		EpisodeData episode = EpisodeData.create(episodeId);
+		if (episode == null) {
+			Log.e("EpisodeDB", "attempted to update non-existing episode with id " + episodeId);
+			return;
+		}
+
 		// tell gpodder the new position
 		if (values.containsKey(COLUMN_LAST_POSITION)) {
 			values.put(COLUMN_NEEDS_GPODDER_UPDATE, Constants.GPODDER_UPDATE_POSITION);
@@ -113,7 +120,7 @@ public class EpisodeDB {
 		long activeEpisodeId = prefs.getLong("active", -1);
 
 		Integer playlistPosition = values.getAsInteger(COLUMN_PLAYLIST_POSITION);
-		Integer currentPosition = EpisodeData.create(episodeId).getPlaylistPosition();
+		Integer currentPosition = episode.getPlaylistPosition();
 		boolean isChangingPlaylistPosition = values.containsKey(COLUMN_PLAYLIST_POSITION) && !Objects.equals(playlistPosition, currentPosition);
 		List<Long> toEvict = new ArrayList<>(0);
 		if (isChangingPlaylistPosition) {
@@ -169,7 +176,7 @@ public class EpisodeDB {
 		if (values.containsKey(COLUMN_FINISHED_TIME))
 			notifyFinishedChange();
 		// regular notification
-		notifyChange(episodeId, EpisodeData.create(episodeId));
+		notifyChange(episodeId, episode);
 	}
 
 	private List<Long> getIds(SQLiteDatabase db, String sql, String[] selectionArgs) {
@@ -233,7 +240,7 @@ public class EpisodeDB {
 		SubscriptionData sub = SubscriptionData.create(values.getAsLong(COLUMN_SUBSCRIPTION_ID));
 		if (sub != null) {
 			if (sub.areNewEpisodesAddedToPlaylist()
-					&& !sub.isSingleUse()
+					&& sub.isSubscribed()
 					&& values.containsKey(COLUMN_PUB_DATE)) {
 				Calendar c = Calendar.getInstance();
 				c.add(Calendar.DATE, -5);
@@ -429,7 +436,7 @@ public class EpisodeDB {
 	public List<EpisodeData> search(String query) {
 		SQLiteDatabase db = _dbAdapter.getReadableDatabase();
 		// TODO: use an in clause to avoid getting duplicate table names
-		String tables = ("podcasts_view JOIN fts_podcasts on podcasts._id = fts_podcasts._id");
+		String tables = ("podcasts_view JOIN fts_podcasts on podcasts_view._id = fts_podcasts._id");
 		String selection = "fts_podcasts MATCH ?";
 		String orderBy = "pubDate DESC";
 		Cursor c = db.query(tables, null, selection, new String[] { query }, null, null, orderBy);
@@ -479,7 +486,7 @@ public class EpisodeDB {
 		private final Long _id;
 		private final EpisodeData _newData;
 
-		public EpisodeChange(Long id, EpisodeData newData) {
+		EpisodeChange(Long id, EpisodeData newData) {
 			_id = id;
 			_newData = newData;
 		}
@@ -489,7 +496,7 @@ public class EpisodeDB {
 	}
 
 	private static PublishSubject<EpisodeChange> _changeSubject = PublishSubject.create();
-	public void notifyChange(Long id, EpisodeData ep) {
+	private void notifyChange(Long id, EpisodeData ep) {
 		_changeSubject.onNext(new EpisodeChange(id, ep));
 	}
 

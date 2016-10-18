@@ -33,6 +33,8 @@ public class SubscriptionEditor {
 	private boolean _playlistNew;
 	private boolean _expirationDaysSet = false;
 	private Integer _expirationDays;
+	private boolean _dominantColorSet = false;
+	private int _dominantColor = -1;
 
 	private boolean _fromGPodder = false;
 
@@ -129,6 +131,12 @@ public class SubscriptionEditor {
 		return this;
 	}
 
+	public SubscriptionEditor setDominantColor(int dominantColor) {
+		_dominantColorSet = true;
+		_dominantColor = dominantColor;
+		return this;
+	}
+
 	public SubscriptionEditor setFromGPodder(boolean fromGPodder) {
 		_fromGPodder = fromGPodder;
 		return this;
@@ -184,6 +192,8 @@ public class SubscriptionEditor {
 			values.put(SubscriptionDB.COLUMN_PLAYLIST_NEW, _playlistNew);
 		if (_expirationDaysSet)
 			values.put(SubscriptionDB.COLUMN_EXPIRATION, _expirationDays);
+		if (_dominantColorSet)
+			values.put(SubscriptionDB.COLUMN_DOMINANT_COLOR, _dominantColor);
 		return values;
 	}
 }
