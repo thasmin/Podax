@@ -1,6 +1,5 @@
 package com.axelby.podax.model;
 
-import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -14,6 +13,7 @@ import com.axelby.podax.ActiveEpisodeReceiver;
 import com.axelby.podax.Constants;
 import com.axelby.podax.PlayerStatus;
 import com.axelby.podax.PlaylistManager;
+import com.axelby.podax.PodaxApplication;
 import com.axelby.podax.Stats;
 import com.axelby.podax.Storage;
 
@@ -51,12 +51,6 @@ public class EpisodeDB {
 	static final String COLUMN_GPODDER_UPDATE_TIMESTAMP = "gpodderUpdateTimestamp";
 	static final String COLUMN_PAYMENT = "payment";
 	static final String COLUMN_FINISHED_TIME = "finishedTime";
-
-	private static Application _application;
-
-	public static void setApplication(@NonNull Application application) {
-		_application = application;
-	}
 
 	public static void restart(long episodeId) {
 		new EpisodeEditor(episodeId).setLastPosition(0).commit();
@@ -116,7 +110,7 @@ public class EpisodeDB {
 		values.remove(COLUMN_SUBSCRIPTION_URL);
 
 		// we may need to change the active episode id
-		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		SharedPreferences prefs = PodaxApplication.get().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		long activeEpisodeId = prefs.getLong("active", -1);
 
 		Integer playlistPosition = values.getAsInteger(COLUMN_PLAYLIST_POSITION);
@@ -163,11 +157,12 @@ public class EpisodeDB {
 		for (Long l : toEvict)
 			EpisodeData.evictFromCache(l);
 		EpisodeData.evictFromCache(episodeId);
+		episode = EpisodeData.create(episodeId);
 
 		// active episode notification
 		if (activeEpisodeId == episodeId) {
-			PlayerStatus.update(_application);
-			ActiveEpisodeReceiver.notifyExternal(_application);
+			PlayerStatus.update(PodaxApplication.get());
+			ActiveEpisodeReceiver.notifyExternal(PodaxApplication.get());
 		}
 		// playlist notification
 		if (isChangingPlaylistPosition)
@@ -192,17 +187,17 @@ public class EpisodeDB {
 	}
 
 	public void setActiveEpisode(long episodeId) {
-		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		SharedPreferences prefs = PodaxApplication.get().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		prefs.edit().putLong("active", episodeId).apply();
 
-		PlayerStatus.update(_application);
-		ActiveEpisodeReceiver.notifyExternal(_application);
+		PlayerStatus.update(PodaxApplication.get());
+		ActiveEpisodeReceiver.notifyExternal(PodaxApplication.get());
 	}
 
 	public void updatePlayerPosition(int position) {
 		SQLiteDatabase db = _dbAdapter.getWritableDatabase();
 
-		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		SharedPreferences prefs = PodaxApplication.get().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		long activeEpisodeId = prefs.getLong("active", -1);
 		if (activeEpisodeId == -1)
 			return;
@@ -214,7 +209,7 @@ public class EpisodeDB {
 		);
 		if (lastPositionCursor == null || !lastPositionCursor.moveToFirst())
 			return;
-		Stats.addListenTime(_application, (position - lastPositionCursor.getInt(0)) / 1000.0f);
+		Stats.addListenTime(PodaxApplication.get(), (position - lastPositionCursor.getInt(0)) / 1000.0f);
 		lastPositionCursor.close();
 
 		ContentValues values = new ContentValues();
@@ -222,8 +217,8 @@ public class EpisodeDB {
 		db.update("podcasts", values, "_id = ?", new String[] { String.valueOf(activeEpisodeId) });
 
 		// celebrate!
-		PlayerStatus.updateFromPlayer(_application);
-		ActiveEpisodeReceiver.notifyExternal(_application);
+		PlayerStatus.updateFromPlayer(PodaxApplication.get());
+		ActiveEpisodeReceiver.notifyExternal(PodaxApplication.get());
 		notifyChange(activeEpisodeId, EpisodeData.create(activeEpisodeId));
 	}
 
@@ -295,7 +290,7 @@ public class EpisodeDB {
 	}
 
 	private static void deleteFiles(long episodeId) {
-		File storage = new File(Storage.getPodcastStoragePath(_application));
+		File storage = new File(Storage.getPodcastStoragePath(PodaxApplication.get()));
 		File[] files = storage.listFiles(pathname -> {
 			return pathname.getName().startsWith(String.valueOf(episodeId) + ".");
 		});
@@ -306,7 +301,7 @@ public class EpisodeDB {
 	public long getActiveEpisodeId() {
 		// first check shared pref, then db
 		final String PREF_ACTIVE = "active";
-		SharedPreferences prefs = _application.getSharedPreferences("internals", Context.MODE_PRIVATE);
+		SharedPreferences prefs = PodaxApplication.get().getSharedPreferences("internals", Context.MODE_PRIVATE);
 		long activeId = prefs.getLong(PREF_ACTIVE, -1);
 		if (activeId != -1)
 			return activeId;
@@ -332,18 +327,6 @@ public class EpisodeDB {
 		String selection = "_id = ?";
 		String[] selectionArgs = new String[] {String.valueOf(episodeId)};
 		return getSingle(selection, selectionArgs);
-	}
-
-	public List<EpisodeData> getFor(@NonNull String field, @NonNull int value) {
-		String selection = field + " = ?";
-		String[] selectionArgs = new String[] { String.valueOf(value) };
-		return getList(selection, selectionArgs);
-	}
-
-	public List<EpisodeData> getFor(@NonNull String field, @NonNull String value) {
-		String selection = field + " = ?";
-		String[] selectionArgs = new String[] { value };
-		return getList(selection, selectionArgs, null);
 	}
 
 	public EpisodeData getForMediaUrl(String url) {
@@ -405,12 +388,12 @@ public class EpisodeDB {
 
 	public List<EpisodeData> getDownloaded() {
 		List<EpisodeData> potential = getList(COLUMN_FILE_SIZE + " > 0", null, "queuePosition");
-		return filter(potential, ep -> ep.isDownloaded(_application));
+		return filter(potential, ep -> ep.isDownloaded(PodaxApplication.get()));
 	}
 
 	public List<EpisodeData> getNeedsDownload() {
 		List<EpisodeData> potential = getList("queuePosition IS NOT NULL", null, "queuePosition");
-		return filter(potential, ep -> !ep.isDownloaded(_application));
+		return filter(potential, ep -> !ep.isDownloaded(PodaxApplication.get()));
 	}
 
 	public List<EpisodeData> getForSubscriptionId(long subscriptionId) {

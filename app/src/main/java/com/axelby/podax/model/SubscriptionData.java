@@ -1,15 +1,14 @@
 package com.axelby.podax.model;
 
-import android.app.Application;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
-import android.util.Log;
 import android.util.LruCache;
 import android.widget.CompoundButton;
 
+import com.axelby.podax.PodaxApplication;
 import com.axelby.podax.R;
 import com.axelby.podax.Storage;
 import com.axelby.podax.UpdateService;
@@ -21,41 +20,9 @@ import java.lang.ref.SoftReference;
 import java.util.Date;
 import java.util.List;
 
-import rx.Subscriber;
-import rx.schedulers.Schedulers;
-
 public class SubscriptionData {
 
-	final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
-	private static Application _application;
-
-	private static Subscriber<? super SubscriptionDB.SubscriptionChange> _changeSubscription = new Subscriber<SubscriptionDB.SubscriptionChange>() {
-		@Override public void onCompleted() { }
-
-		@Override
-		public void onError(Throwable e) {
-			Log.e("SubscriptionData", "unable to watch subscriptions for changes", e);
-		}
-
-		@Override
-		public void onNext(SubscriptionDB.SubscriptionChange change) {
-			synchronized (_cache) {
-				// remove deleted sub from cache
-				if (change.getNewData() == null) {
-					_cache.remove(change.getId());
-					return;
-				}
-				_cache.put(change.getNewData().getId(), new SoftReference<>(change.getNewData()));
-			}
-		}
-	};
-
-	public static void setApplication(Application context) {
-		// only start watching subscriptions once
-		if (_application == null)
-			PodaxDB.subscriptions.watchAll().subscribeOn(Schedulers.io()).subscribe(_changeSubscription);
-		_application = context;
-	}
+	private final static LruCache<Long, SoftReference<SubscriptionData>> _cache = new LruCache<>(50);
 
 	private final long _id;
 	private final String _rawTitle;
@@ -163,27 +130,27 @@ public class SubscriptionData {
 	   --------- */
 
 	public static String getThumbnailFilename(long subscriptionId) {
-		String storagePath = Storage.getStoragePath(_application);
+		String storagePath = Storage.getStoragePath(PodaxApplication.get());
 		return storagePath + String.valueOf(subscriptionId) + "podcast.image";
 	}
 
 	public String getThumbnailFilename() {
-		String storagePath = Storage.getStoragePath(_application);
+		String storagePath = Storage.getStoragePath(PodaxApplication.get());
 		return storagePath + String.valueOf(getId()) + "podcast.image";
 	}
 
 	public RequestCreator getThumbnailImage() {
 		String filename = getThumbnailFilename(getId());
 		if (!new File(filename).exists())
-			return Picasso.with(_application).load(R.drawable.ic_menu_podax).fit();
-		return Picasso.with(_application).load(new File(filename)).fit();
+			return Picasso.with(PodaxApplication.get()).load(R.drawable.ic_menu_podax).fit();
+		return Picasso.with(PodaxApplication.get()).load(new File(filename)).fit();
 	}
 
 	public static RequestCreator getThumbnailImage(long subscriptionId) {
 		String filename = getThumbnailFilename(subscriptionId);
 		if (!new File(filename).exists())
-			return Picasso.with(_application).load(R.drawable.ic_menu_podax).fit();
-		return Picasso.with(_application).load(new File(filename)).fit();
+			return Picasso.with(PodaxApplication.get()).load(R.drawable.ic_menu_podax).fit();
+		return Picasso.with(PodaxApplication.get()).load(new File(filename)).fit();
 	}
 
 	public static Bitmap getThumbnailImageRaw(long subscriptionId) {

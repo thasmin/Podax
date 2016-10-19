@@ -98,15 +98,8 @@ public class EpisodeData {
 		_cache.evictAll();
 	}
 
-	public static void evictFromCache(long episodeId) {
+	static void evictFromCache(long episodeId) {
 		_cache.remove(episodeId);
-	}
-
-	public static EpisodeData cacheSwap(EpisodeData data) {
-		synchronized (_cache) {
-			_cache.put(data.getId(), new SoftReference<>(data));
-		}
-		return data;
 	}
 
 	public long getId() {
@@ -257,7 +250,7 @@ public class EpisodeData {
 	public void show(View view) {
 		View thumbnail = view.findViewById(R.id.thumbnail);
 		View title = view.findViewById(R.id.title);
-		AppFlow.get(view.getContext()).displayEpisode(_id, thumbnail, title);
+		AppFlow.get(Helper.getActivityFromView(view)).displayEpisode(_id, thumbnail, title);
 	}
 
 	public void play(View view) {

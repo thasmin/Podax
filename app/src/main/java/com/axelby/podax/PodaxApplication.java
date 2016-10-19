@@ -27,12 +27,17 @@ public class PodaxApplication extends Application {
 
 	public static final String GPODDER_AUTHORITY = "com.axelby.podax.gpodder_sync";
 
+	private static PodaxApplication _instance;
+
+	public static PodaxApplication get() {
+		return _instance;
+	}
+
 	@Override
 	public void onCreate() {
+		_instance = this;
 		AppFlow.setApplication(this);
 		PodaxDB.setContext(this);
-		EpisodeDB.setApplication(this);
-		SubscriptionData.setApplication(this);
 
         if (!PodaxLog.isDebuggable(this))
 			ACRA.init(this);

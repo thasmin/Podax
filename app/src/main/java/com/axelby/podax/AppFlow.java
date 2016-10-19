@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,8 +14,8 @@ import android.util.Pair;
 import android.view.View;
 
 import com.axelby.podax.ui.AboutFragment;
-import com.axelby.podax.ui.EpisodeDetailFragment;
 import com.axelby.podax.ui.BareFragmentActivity;
+import com.axelby.podax.ui.EpisodeDetailFragment;
 import com.axelby.podax.ui.EpisodeListFragment;
 import com.axelby.podax.ui.LatestActivityFragment;
 import com.axelby.podax.ui.MainActivity;
@@ -45,7 +44,7 @@ public class AppFlow {
 	}
 
 	private static Deque<ScreenChange> _backstack = new ArrayDeque<>(10);
-	private static Activity _currentActivity = null;
+	private static WeakReference<Activity> _currentActivity = null;
 	private static WeakReference<MainActivity> _mainActivity = new WeakReference<>(null);
 	private static boolean _hasDetailFragment = true;
 
@@ -58,23 +57,16 @@ public class AppFlow {
 		return new AppFlow(activity);
 	}
 
-	// be sure to use an activity when using this method
-	public static AppFlow get(Context context) {
-		if (!(context instanceof Activity))
-			Log.e("AppFlow", "creating with a Context that is not an Activity");
-		return new AppFlow((Activity) context);
-	}
-
 	private final Activity _activity;
 
-	public enum Frame {
+	private enum Frame {
 		MainFragment,
 		DetailFragment,
 		FragmentActivity,
 		Activity
 	}
 
-	public static class ScreenChange {
+	static class ScreenChange {
 		private Class<? extends Fragment> _fragmentClass = null;
 		private Class<? extends Activity> _activityClass = null;
 		private Frame _destination;
@@ -112,7 +104,7 @@ public class AppFlow {
 			return sc;
 		}
 
-		public static ScreenChange mainFragment(CharSequence title, Class<? extends Fragment> fragmentClass) {
+		static ScreenChange mainFragment(CharSequence title, Class<? extends Fragment> fragmentClass) {
 			ScreenChange sc = new ScreenChange();
 			sc._destination = Frame.MainFragment;
 			sc._fragmentClass = fragmentClass;
@@ -120,11 +112,11 @@ public class AppFlow {
 			return sc;
 		}
 
-		public static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass, Bundle args) {
+		static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass, Bundle args) {
 			return ScreenChange.detailFragment(fragmentClass, args, null);
 		}
 
-		public static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass, Bundle args, Bundle options) {
+		static ScreenChange detailFragment(Class<? extends Fragment> fragmentClass, Bundle args, Bundle options) {
 			ScreenChange sc = new ScreenChange();
 			sc._destination = Frame.DetailFragment;
 			sc._fragmentClass = fragmentClass;
@@ -133,15 +125,15 @@ public class AppFlow {
 			return sc;
 		}
 
-		public static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass) {
+		static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass) {
 			return ScreenChange.fragmentActivity(fragmentClass, null);
 		}
 
-		public static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass, Bundle args) {
+		static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass, Bundle args) {
 			return ScreenChange.fragmentActivity(fragmentClass, args, null);
 		}
 
-		public static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass, Bundle args, Bundle options) {
+		static ScreenChange fragmentActivity(Class<? extends Fragment> fragmentClass, Bundle args, Bundle options) {
 			ScreenChange sc = new ScreenChange();
 			sc._destination = Frame.FragmentActivity;
 			sc._fragmentClass = fragmentClass;
@@ -150,7 +142,7 @@ public class AppFlow {
 			return sc;
 		}
 
-		public boolean openedActivity() {
+		boolean openedActivity() {
 			return _destination == Frame.FragmentActivity ||
 				_destination == Frame.Activity ||
 				(_destination == Frame.DetailFragment && !_hasDetailFragment);
@@ -214,7 +206,7 @@ public class AppFlow {
 			return false;
 		}
 
-		public boolean restore(Activity activity) {
+		boolean restore(Activity activity) {
 			// restore activities by restarting them
 			if (_destination == Frame.Activity || _destination == Frame.FragmentActivity)
 				return apply(activity);
@@ -255,8 +247,8 @@ public class AppFlow {
 		Log.d("AppFlow", "popping " + ending);
 
 		// finishing an activity restores the previous state
-		if (ending.openedActivity()) {
-			ActivityCompat.finishAfterTransition(_currentActivity);
+		if (ending.openedActivity() && _currentActivity.get() != null) {
+			ActivityCompat.finishAfterTransition(_currentActivity.get());
 			return;
 		}
 
@@ -288,7 +280,7 @@ public class AppFlow {
 	}
 
 	public boolean displayLatestActivity() {
-		if (_mainActivity != null && _mainActivity.get() == _currentActivity)
+		if (_mainActivity != null && _mainActivity.get() == _currentActivity.get())
 			switchTo(_drawerMenu.find(LatestActivityFragment.class));
 		else
 			startActivityFragment(LatestActivityFragment.class);
@@ -380,9 +372,12 @@ public class AppFlow {
 	}
 
 	private static class LifecycleCallbackHandler implements Application.ActivityLifecycleCallbacks {
+		LifecycleCallbackHandler() {
+		}
+
 		@Override
 		public void onActivityCreated(Activity activity, Bundle inState) {
-			_currentActivity = activity;
+			_currentActivity = new WeakReference<>(activity);
 
 			// keep reference to main activity so we can change its fragment
 			if (activity instanceof MainActivity) {

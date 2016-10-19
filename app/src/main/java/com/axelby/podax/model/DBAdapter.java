@@ -27,7 +27,7 @@ public class DBAdapter extends SQLiteOpenHelper {
 				"description VARCHAR," +
 				"expirationDays INTEGER," +
 				"singleUse INTEGER DEFAULT 0," +
-				"dominantColor INTEGER DEFAULT -1;");
+				"dominantColor INTEGER DEFAULT -1);");
 		db.execSQL("CREATE UNIQUE INDEX subscription_url ON subscriptions(url)");
 
 		db.execSQL("CREATE TABLE podcasts(" +
