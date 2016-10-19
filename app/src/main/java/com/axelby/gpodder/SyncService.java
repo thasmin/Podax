@@ -2,6 +2,7 @@ package com.axelby.gpodder;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -34,8 +35,11 @@ import com.axelby.podax.ui.MainActivity;
 import java.util.ArrayList;
 import java.util.List;
 
+// suppressions are consistent with android documentation
+// https://developer.android.com/training/sync-adapters/creating-sync-adapter.html
 public class SyncService extends Service {
 	private static final Object _syncAdapterLock = new Object();
+	@SuppressLint("StaticFieldLeak")
 	private static SyncAdapter _syncAdapter = null;
 
 	@Override
@@ -58,6 +62,7 @@ public class SyncService extends Service {
 		private final String _deviceId;
 		private final SharedPreferences _gpodderPrefs;
 
+		@SuppressWarnings("WeakerAccess")
 		public SyncAdapter(Context context, boolean autoInitialize) {
 			super(context, autoInitialize);
 			_context = context;

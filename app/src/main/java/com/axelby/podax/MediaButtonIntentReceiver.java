@@ -67,8 +67,6 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 		return true;
 	}
 
-	private static Context _context;
-
 	private static MediaSessionCompat _mediaSession = null;
 	public static MediaSessionCompat.Token getSessionToken() {
 		if (_mediaSession != null)
@@ -79,22 +77,22 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 	private static MediaSessionCompat.Callback _mediaCallback = new MediaSessionCompat.Callback() {
 		@Override
 		public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
-			return handleMediaButton(_context, mediaButtonEvent);
+			return handleMediaButton(PodaxApplication.get(), mediaButtonEvent);
 		}
 
 		@Override public void onPlay() {
 			super.onPlay();
-			PlayerService.play(_context);
+			PlayerService.play(PodaxApplication.get());
 		}
 
 		@Override public void onPause() {
 			super.onPause();
-			PlayerService.pause(_context);
+			PlayerService.pause(PodaxApplication.get());
 		}
 
 		@Override public void onStop() {
 			super.onStop();
-			PlayerService.stop(_context);
+			PlayerService.stop(PodaxApplication.get());
 		}
 
 		@Override public void onSkipToNext() {
@@ -123,8 +121,6 @@ public class MediaButtonIntentReceiver extends BroadcastReceiver {
 	};
 
 	public static void initialize(Context context) {
-		_context = context;
-
 		_mediaSession = new MediaSessionCompat(context, "podax", new ComponentName(context, MediaButtonIntentReceiver.class), null);
 		_mediaSession.setCallback(_mediaCallback);
 		_mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
