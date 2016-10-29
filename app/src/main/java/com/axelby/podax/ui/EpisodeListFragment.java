@@ -5,8 +5,6 @@ import android.app.DialogFragment;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.graphics.Palette;
@@ -35,7 +33,7 @@ import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionDB;
 import com.axelby.podax.model.SubscriptionData;
 import com.axelby.podax.model.SubscriptionEditor;
-import com.trello.rxlifecycle.RxLifecycle;
+import com.trello.rxlifecycle.android.RxLifecycleAndroid;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.List;
@@ -92,7 +90,7 @@ public class EpisodeListFragment extends RxFragment {
 		subIdObservable
 			.map(this::ensureSubscriptionPopulated)
 			.observeOn(AndroidSchedulers.mainThread())
-			.compose(RxLifecycle.bindFragment(lifecycle()))
+			.compose(RxLifecycleAndroid.bindFragment(lifecycle()))
 			.subscribe(
 				this::setSubscription,
 				e -> Log.e("EpisodeListFragment", "error while retrieving episodes", e)

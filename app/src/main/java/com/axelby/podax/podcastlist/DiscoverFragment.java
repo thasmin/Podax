@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 
 import com.axelby.podax.R;
 import com.axelby.podax.itunes.PodcastFetcher;
-import com.trello.rxlifecycle.RxLifecycle;
+import com.trello.rxlifecycle.android.RxLifecycleAndroid;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import rx.Observable;
@@ -31,6 +31,8 @@ public class DiscoverFragment extends RxFragment {
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
 		final int[] _categoryIds = {
 			0,
 			1301, 1321, 1303, 1304, 1323, 1325, 1307, 1305,
@@ -65,7 +67,7 @@ public class DiscoverFragment extends RxFragment {
 					.flatMap(Observable::from)
 					.map(podcast -> ItemModel.fromITunes(podcast.name, podcast.imageUrl, podcast.idUrl))
 					.toList()
-					.compose(RxLifecycle.bindFragment(lifecycle()))
+					.compose(RxLifecycleAndroid.bindFragment(lifecycle()))
 				)
 			)
 		);

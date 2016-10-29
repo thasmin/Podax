@@ -17,7 +17,7 @@ import com.axelby.podax.R;
 import com.axelby.podax.UpdateService;
 import com.axelby.podax.model.PodaxDB;
 import com.axelby.podax.model.SubscriptionEditor;
-import com.trello.rxlifecycle.RxLifecycle;
+import com.trello.rxlifecycle.android.RxLifecycleAndroid;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.List;
@@ -82,7 +82,7 @@ public class SubscriptionListFragment extends RxFragment {
 			.subscribeOn(Schedulers.io())
 			.map(sub -> ItemModel.fromSubscriptionId(sub.getTitle(), sub.getThumbnail(), sub.getId()))
 			.toList()
-			.compose(RxLifecycle.bindFragment(lifecycle()));
+			.compose(RxLifecycleAndroid.bindFragment(lifecycle()));
 
 		RecyclerView list = (RecyclerView) view.findViewById(R.id.list);
 		list.setLayoutManager(new GridLayoutManager(getActivity(), 3));

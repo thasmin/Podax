@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 
 import com.axelby.podax.R;
 import com.axelby.podax.podaxapp.PodaxAppClient;
-import com.trello.rxlifecycle.RxLifecycle;
+import com.trello.rxlifecycle.android.RxLifecycleAndroid;
 import com.trello.rxlifecycle.components.RxFragment;
 
 import rx.Observable;
@@ -32,6 +32,8 @@ public class NetworksFragment extends RxFragment {
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
 		String[] ids = {
 			"npr", "podcastone"
 		};
@@ -49,7 +51,7 @@ public class NetworksFragment extends RxFragment {
 					.flatMap(network -> Observable.from(network.podcasts))
 					.map(podcast -> ItemModel.fromRSS(podcast.title, podcast.imageUrl, podcast.rssUrl))
 					.toList()
-					.compose(RxLifecycle.bindFragment(lifecycle()))
+					.compose(RxLifecycleAndroid.bindFragment(lifecycle()))
 				)
 			)
 		);

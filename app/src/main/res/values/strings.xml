@@ -42,13 +42,11 @@
         <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a>.<br>
             <a href="http://acra.ch">ACRA</a><br>
             <a href="http://www.shredzone.org/projects/flattr4j">Flattr4j</a><br>
-            <a href="https://github.com/JakeWharton/NineOldAndroids">NineOldAndroids</a><br>
             <a href="https://code.google.com/li/google-gson/">GSON</a><br>
             <a href="https://code.google.com/li/guava-libraries/">Guava</a><br>
             <a href="https://android.googlesource.com/platform/frameworks/volley">Volley</a><br>
             <a href="https://square.github.io/retrofit/">Retrofit</a><br>
             <a href="http://square.github.io/okhttp/">OKHttp</a><br>
-            <a href="http://joanzapata.com/android-iconify/">Android Iconify</a><br>
         </p>
 
         <h4><a href="https://code.google.com/p/jsr-305/">JSR 305</a></h4>
