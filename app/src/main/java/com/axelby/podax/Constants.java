@@ -49,4 +49,7 @@ public class Constants {
 	public static final String GPODDER_ACCOUNT_TYPE = "com.axelby.gpodder";
 	public static final int GPODDER_UPDATE_NONE = 0;
 	public static final int GPODDER_UPDATE_POSITION = 1;
+
+	// permissions
+	public static final int PERMISSION_GPODDER = 0;
 }
