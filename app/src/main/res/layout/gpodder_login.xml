@@ -25,7 +25,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="@string/username"/>
+            android:text="@string/username"
+            android:labelFor="@+id/username" />
 
     <EditText
             android:id="@+id/username"
@@ -37,22 +38,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:singleLine="true"
-            android:text="@string/password"/>
+            android:maxLines="1"
+            android:text="@string/password"
+            android:labelFor="@+id/password" />
 
     <EditText
             android:id="@+id/password"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
-            android:singleLine="true"/>
+            android:maxLines="1"/>
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:singleLine="true"
-            android:text="@string/device_name"/>
+            android:maxLines="1"
+            android:text="@string/device_name"
+            android:labelFor="@+id/devicename" />
 
     <EditText
             android:id="@+id/devicename"
@@ -60,15 +63,15 @@
             android:layout_height="wrap_content"
             android:text="podax"
             android:inputType="textShortMessage"
-            android:singleLine="true"
+            android:maxLines="1"
             tools:ignore="HardcodedText"/>
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:singleLine="true"
-            android:text="@string/device_type"/>
+            android:maxLines="1"
+            android:text="@string/device_type" />
 
     <RadioGroup
             android:id="@+id/devicetype"

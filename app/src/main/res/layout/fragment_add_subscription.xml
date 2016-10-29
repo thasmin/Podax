@@ -25,6 +25,7 @@
                 android:text="@string/add_rss_feed"
                 android:id="@+id/add_rss_text"
                 android:textAllCaps="true"
+                android:labelFor="@+id/rssurl"
             />
 
             <EditText
