@@ -40,7 +40,7 @@
                 android:layout_margin="2dp"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:textColor="#cccccc"
                 android:textIsSelectable="true"/>
 
