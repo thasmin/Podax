@@ -16,7 +16,6 @@
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:id="@+id/logo"
-                android:layout_marginRight="5dp"
                 android:layout_marginEnd="5dp"
                 android:contentDescription="@string/episode_picture"/>
 
@@ -55,7 +54,6 @@
                 android:layout_height="wrap_content"
                 android:text="@string/subscribe"
                 android:id="@+id/add"
-                android:layout_marginRight="10dp"
                 android:layout_marginEnd="10dp"
                 android:layout_weight=".5"/>
 
@@ -64,7 +62,6 @@
                 android:layout_height="wrap_content"
                 android:text="@string/view_website"
                 android:layout_weight=".5"
-                android:layout_marginLeft="10dp"
                 android:layout_marginStart="10dp"
                 android:id="@+id/view_website"/>
     </LinearLayout>

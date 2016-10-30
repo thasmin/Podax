@@ -13,7 +13,6 @@
         android:layout_height="0dp"
         android:contentDescription="@string/subscription_thumbnail"
         tools:src="@drawable/ic_menu_podax"
-        android:paddingRight="10dp"
         android:paddingEnd="10dp"
         tools:ignore="RtlSymmetry"
         android:transitionName="subscriptionImage"

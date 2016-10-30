@@ -16,7 +16,6 @@
             android:gravity="center_vertical"
             android:text="@string/gpodder_authenticator_activity_title"
             style="@android:style/TextAppearance.Large"
-            android:drawableLeft="@drawable/mygpo"
             android:drawableStart="@drawable/mygpo"
             android:drawablePadding="10dp"
             android:textIsSelectable="true"/>

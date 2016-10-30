@@ -16,7 +16,7 @@
         android:id="@+id/gpodder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/clear_log"
+        android:layout_toEndOf="@+id/clear_log"
         android:text="GPodder"
         tools:ignore="HardcodedText" />
 

@@ -30,7 +30,6 @@
                 android:id="@+id/version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignRight="@id/header"
                 android:layout_alignEnd="@id/header"
                 android:layout_below="@id/header"
                 android:text="@string/app_version"
