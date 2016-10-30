@@ -215,7 +215,7 @@ public class EpisodeDetailFragment extends RxFragment {
 			_binding.seekbar.setEnabled(false);
 		} else if (!_seekbar_dragging) {
 			_binding.position.setText(Helper.getTimeString(status.getPosition()));
-			_binding.duration.setText("-" + Helper.getTimeString(status.getDuration() - status.getPosition()));
+			_binding.duration.setText(getString(R.string.negative_time, Helper.getTimeString(status.getDuration() - status.getPosition())));
 			_binding.seekbar.setProgress(status.getPosition());
 			_binding.seekbar.setMax(status.getDuration());
 			_binding.seekbar.setEnabled(true);

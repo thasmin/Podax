@@ -40,11 +40,11 @@ public class EpisodeProgress extends RelativeLayout {
 
 	void clear() {
 		if (isInEditMode()) {
-			_position.setText("12:34");
+			_position.setText(R.string.editmode_position);
 			_progressbar.setVisibility(VISIBLE);
 			_progressbar.setMax(100);
 			_progressbar.setProgress(50);
-			_remaining.setText("-43:21");
+			_remaining.setText(R.string.editmode_remaining);
 		} else {
 			_position.setText("");
 			_progressbar.setVisibility(INVISIBLE);

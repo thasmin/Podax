@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/url"
         android:inputType="textUri"
-        android:hint="Podcast RSS feed Url"
+        android:hint="@string/podcast_rss_feed_url"
         android:imeOptions="actionDone" />
 
     <Button

@@ -131,7 +131,7 @@ public class AuthenticatorActivity extends FragmentActivity {
 	void onAuthenticationResult(boolean isValid) {
 		hideProgress();
 		if (!isValid) {
-			_messageText.setText("That username and password did not work on gpodder.net.");
+			_messageText.setText(R.string.gpodder_incorrect_username_password);
 			return;
 		}
 

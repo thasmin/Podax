@@ -320,5 +320,10 @@ limitations under the License.</p>
     <string name="not_in_playlist">Not in playlist</string>
     <string name="are_you_sure_you_want_to_unsubscribe_this_action_cannot_be_undone">Are you sure you want to unsubscribe? This action cannot be undone.</string>
     <string name="drag_handle">drag handle</string>
+    <string name="podcast_rss_feed_url">Podcast RSS feed Url</string>
+    <string name="gpodder_incorrect_username_password">That username and password did not work on gpodder.net.</string>
+    <string name="negative_time">-%1$s</string>
+    <string name="editmode_position">12:34</string>
+    <string name="editmode_remaining">-43:21</string>
 
 </resources>
