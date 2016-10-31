@@ -2,13 +2,12 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
 
-<LinearLayout android:id="@+id/layout"
+<LinearLayout
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical">
 
     <RelativeLayout
-            android:id="@+id/relativeLayout1"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal">
@@ -27,7 +26,6 @@
                 android:textAppearance="?android:attr/textAppearanceLarge"/>
 
         <TextView
-                android:id="@+id/version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignEnd="@id/header"

@@ -19,7 +19,6 @@
             android:text="@string/no_episodes_in_playlist"/>
 
     <ImageView
-        android:id="@+id/overlay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/icon"

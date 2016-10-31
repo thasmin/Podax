@@ -2,11 +2,9 @@
 <PreferenceScreen
         xmlns:android="http://schemas.android.com/apk/res/android">
     <EditTextPreference
-            android:id="@+id/device_name"
             android:key="device_name"
             android:title="@string/device_name"/>
     <ListPreference
-            android:id="@+id/device_type"
             android:key="device_type"
             android:title="@string/device_type"
             android:entries="@array/gpodder_device_types"

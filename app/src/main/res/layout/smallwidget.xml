@@ -27,7 +27,6 @@
             android:background="@color/podaxColor"/>
 
         <LinearLayout
-            android:id="@+id/innerLayout"
             android:layout_width="0dip"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -45,7 +44,6 @@
                 android:textIsSelectable="true"/>
 
             <include
-                android:id="@+id/positionstring"
                 layout="@layout/episode_progress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,7 +51,6 @@
                 android:layout_marginRight="2dp"/>
 
             <LinearLayout
-                android:id="@+id/bottomrow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:weightSum="5">

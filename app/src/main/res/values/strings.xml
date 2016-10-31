@@ -74,8 +74,6 @@ limitations under the License.</p>
     ]]>
     </string>
 
-    <string name="add_rss_feed">Add RSS feed</string>
-    <string name="add_subscription">Add Subscription</string>
     <string name="rss_not_valid">RSS not valid</string>
     <string name="go_to_details">Go To Details</string>
     <string name="rewind">Rewind</string>
@@ -122,7 +120,6 @@ limitations under the License.</p>
     <string name="name">Name</string>
     <string name="gpodder_authenticator_activity_title">GPodder Account</string>
     <string name="gpodder">GPodder</string>
-    <string name="podcasts">Podcasts</string>
     <string name="password">Password</string>
     <string name="login">Login</string>
     <string name="subscription">Subscription</string>
@@ -227,16 +224,7 @@ limitations under the License.</p>
         <item quantity="one">day</item>
         <item quantity="other">days</item>
     </plurals>
-    <plurals name="hours">
-        <item quantity="one">hour</item>
-        <item quantity="other">hours</item>
-    </plurals>
-    <plurals name="minutes">
-        <item quantity="one">minute</item>
-        <item quantity="other">minutes</item>
-    </plurals>
 
-    <string name="none">none</string>
     <string name="release_notes">Release Notes</string>
     <string name="release_notes_detailed">        Version 7 of Podax has many new things, including an all new audio player that has a speed knob that works.</string>
     <string name="view_release_notes">View Release Notes</string>
@@ -249,19 +237,12 @@ limitations under the License.</p>
     <string name="only_after_ive_listened_to_it">Only after I\'ve listened to it</string>
     <string name="after_7_days">After 7 days</string>
     <string name="after_14_days">After 14 days</string>
-    <string name="find_a_podcast">Find a Podcast from iTunes Toplists</string>
     <string name="released_on">Released on</string>
-    <string name="in_duration">long</string>
-    <string name="playlist_caps">PLAYLIST</string>
     <string name="expand">Expand</string>
-    <string name="subscribe_on_web">Subscribe on the Web</string>
-    <string name="your_code_is">Your code is</string>
-    <string name="web_subscribe_instructions">Podax Web Subscribe lets you subscribe to a podcast without leaving your computer.\n\nGo to the link below on your computer and enter the podcast or website URL and the code below.</string>
     <string name="not_downloaded">Not downloaded</string>
     <string name="downloaded">Downloaded</string>
     <string name="stream">Stream</string>
     <string name="decorative_image">Decorative Image</string>
-    <string name="episode_list">Episode List</string>
     <string name="subscription_currently_updating">This subscription is currently updating. It will automatically refresh when it\'s ready.</string>
     <string name="subscription_logo">subscription logo</string>
     <string name="now_downloading">Now Downloading</string>
@@ -271,11 +252,9 @@ limitations under the License.</p>
     <string name="show_when_new_episodes">Show when there are new episodes</string>
     <string name="latest_activity">Latest Activity</string>
     <string name="search">Search</string>
-    <string name="spinner">spinner</string>
     <string name="finished_episodes">Finished Episodes</string>
     <string name="no_finished_episodes">You haven\'t finished any episodes yet. Get to it!</string>
     <string name="finished_on">Finished on %1$s</string>
-    <string name="search_results">Search Results</string>
     <string name="subscriptions">Subscriptions</string>
     <string name="episodes">Episodes</string>
     <string name="no_subscription_matches">No subscriptions match this search.</string>
